@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "TurboPhotos"
+rootProject.name = "CoonGallery"
 include(":app")
