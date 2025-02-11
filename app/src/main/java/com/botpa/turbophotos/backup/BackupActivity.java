@@ -10,11 +10,18 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.botpa.turbophotos.R;
+import com.botpa.turbophotos.util.Library;
 import com.botpa.turbophotos.util.Orion;
 import com.botpa.turbophotos.util.Storage;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,6 +45,7 @@ public class BackupActivity extends AppCompatActivity {
     private EditText connectName;
     private EditText connectURL;
     private View connectConnect;
+    private View connectLoading;
     private RecyclerView connectList;
 
 
@@ -74,7 +82,7 @@ public class BackupActivity extends AppCompatActivity {
         super.onDestroy();
 
         //Close web socket
-        if (webSocketClient != null) webSocketClient.close(1000, 0, "Left app");
+        if (webSocketClient != null) webSocketClient.close(1000, 1001, "Left app");
     }
 
     //App
@@ -83,6 +91,7 @@ public class BackupActivity extends AppCompatActivity {
         connectName = findViewById(R.id.connectName);
         connectURL = findViewById(R.id.connectURL);
         connectConnect = findViewById(R.id.connectConnect);
+        connectLoading = findViewById(R.id.connectLoading);
         connectList = findViewById(R.id.connectList);
     }
 
@@ -143,12 +152,23 @@ public class BackupActivity extends AppCompatActivity {
             return;
         }
 
+        //Create client
         webSocketClient = new WebSocketClient(uri) {
             @Override
             public void onOpen() {
                 setStatus(STATUS_ONLINE);
-                webSocketClient.send("Bomba");
-                webSocketClient.send(new byte[10]);
+
+                File file = Library.files.get(0).file;
+                int size = (int) file.length();
+                byte[] bytes = new byte[size];
+                try {
+                    BufferedInputStream buf = new BufferedInputStream(Files.newInputStream(file.toPath()));
+                    buf.read(bytes, 0, bytes.length);
+                    buf.close();
+                    webSocketClient.send(bytes);
+                } catch (IOException e) {
+                    System.out.println(e.getMessage());
+                }
             }
 
             @Override
@@ -183,10 +203,11 @@ public class BackupActivity extends AppCompatActivity {
             }
         };
 
+        //Connect client
         webSocketClient.setConnectTimeout(10000);
-        webSocketClient.setReadTimeout(60000);
-        webSocketClient.addHeader("Origin", "http://developer.example.com");
-        webSocketClient.enableAutomaticReconnection(5000);
+        //webSocketClient.setReadTimeout(5000);
+        webSocketClient.addHeader("Origin", "http://botpa.vercel.app/");
+        //webSocketClient.enableAutomaticReconnection(5000);
         webSocketClient.connect();
     }
 
@@ -196,9 +217,14 @@ public class BackupActivity extends AppCompatActivity {
             switch (status) {
                 case STATUS_OFFLINE:
                     connectLayout.setVisibility(View.VISIBLE);
+                    connectLoading.setVisibility(View.GONE);
+                    break;
+                case STATUS_CONNECTING:
+                    connectLoading.setVisibility(View.VISIBLE);
                     break;
                 case STATUS_ONLINE:
                     connectLayout.setVisibility(View.GONE);
+                    connectLoading.setVisibility(View.GONE);
                     break;
             }
         });
