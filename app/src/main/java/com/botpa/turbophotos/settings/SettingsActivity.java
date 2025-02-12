@@ -14,7 +14,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.botpa.turbophotos.util.Album;
 import com.botpa.turbophotos.R;
-import com.botpa.turbophotos.backup.BackupActivity;
 import com.botpa.turbophotos.util.Library;
 import com.botpa.turbophotos.util.Orion;
 import com.botpa.turbophotos.util.Storage;
@@ -60,7 +59,6 @@ public class SettingsActivity extends AppCompatActivity {
 
     private RecyclerView albumsFoldersList;
     private View albumsFoldersAdd;
-    private View albumsFoldersBackup;
 
 
     @Override
@@ -97,7 +95,6 @@ public class SettingsActivity extends AppCompatActivity {
         //Albums
         albumsFoldersList = findViewById(R.id.albumsFoldersList);
         albumsFoldersAdd = findViewById(R.id.albumsFoldersAdd);
-        albumsFoldersBackup = findViewById(R.id.albumsFoldersBackup);
     }
 
     private void loadSettings() {
@@ -171,10 +168,6 @@ public class SettingsActivity extends AppCompatActivity {
             albumsAdapter.notifyItemInserted(Library.albums.size() - 1);
             albumsFoldersList.scrollToPosition(Library.albums.size() - 1);
             Library.saveAlbums();
-        });
-
-        albumsFoldersBackup.setOnClickListener(view -> {
-            startActivity(new Intent(SettingsActivity.this, BackupActivity.class));
         });
     }
 }

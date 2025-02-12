@@ -30,7 +30,7 @@ class AlbumAdapter(private val context: Context, private val albums: ArrayList<A
         val album = albums[position]
 
         //Load album folder & metadata file names
-        holder.name.text = "Album ${position + 1}"
+        holder.name.text = "Album ${position}"
         holder.imagesFolder.text = album.imagesFolder.name
         holder.metadataFile.text = album.metadataFile.name
 

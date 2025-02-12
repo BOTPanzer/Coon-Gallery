@@ -117,8 +117,12 @@ public class Library {
                 }
 
                 //Add image to list
+                album.files.add(image);
                 files.add(image);
             }
+
+            //Sort images by last modified
+            album.files.sort((f1, f2) -> Long.compare(f2.file.lastModified(), f1.file.lastModified()));
         }
 
         //Sort images by last modified

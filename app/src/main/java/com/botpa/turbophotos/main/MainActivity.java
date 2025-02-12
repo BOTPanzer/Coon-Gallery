@@ -18,6 +18,7 @@ import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.botpa.turbophotos.backup.BackupActivity;
 import com.botpa.turbophotos.util.BackManager;
 import com.botpa.turbophotos.util.Library;
 import com.botpa.turbophotos.util.Orion;
@@ -47,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean isLoading = false;
 
     //Settings
+    private CardView backup;
     private CardView settings;
 
     //Gallery
@@ -283,7 +285,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getViews() {
-        //Settings
+        //Activities
+        backup = findViewById(R.id.backup);
         settings = findViewById(R.id.settings);
 
         //Gallery
@@ -328,7 +331,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void addListeners() {
-        //Settings
+        //Activities
+        backup.setOnClickListener(view -> {
+            startActivity(new Intent(MainActivity.this, BackupActivity.class));
+        });
+
         settings.setOnClickListener(view -> {
             //Close search
             searchClose.performClick();

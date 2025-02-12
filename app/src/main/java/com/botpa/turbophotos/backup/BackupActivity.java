@@ -10,9 +10,15 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.botpa.turbophotos.R;
+import com.botpa.turbophotos.util.Album;
 import com.botpa.turbophotos.util.Library;
 import com.botpa.turbophotos.util.Orion;
 import com.botpa.turbophotos.util.Storage;
+import com.botpa.turbophotos.util.TurboImage;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -158,7 +164,21 @@ public class BackupActivity extends AppCompatActivity {
             public void onOpen() {
                 setStatus(STATUS_ONLINE);
 
-                File file = Library.files.get(0).file;
+                //Send albums info
+                try {
+                    JSONObject obj = new JSONObject();
+                    obj.put("action", "albumsInfo");
+                    obj.put("size", Library.albums.size());
+                    webSocketClient.send(obj.toString());
+                } catch (JSONException e) {
+                    System.out.println("Error sending albums info");
+                    return;
+                }
+
+
+                //webSocketClient.send("holiwi pititwi");
+
+                /*File file = Library.files.get(0).file;
                 int size = (int) file.length();
                 byte[] bytes = new byte[size];
                 try {
@@ -168,12 +188,12 @@ public class BackupActivity extends AppCompatActivity {
                     webSocketClient.send(bytes);
                 } catch (IOException e) {
                     System.out.println(e.getMessage());
-                }
+                }*/
             }
 
             @Override
             public void onTextReceived(String message) {
-                System.out.println(message);
+                parseStringMessage(message);
             }
 
             @Override
@@ -230,6 +250,45 @@ public class BackupActivity extends AppCompatActivity {
         });
     }
 
+    //Messages
+    private void parseStringMessage(String message) {
+        try {
+            JSONObject messageJSON = new JSONObject(message);
+            String action = messageJSON.getString("action");
+            switch (action) {
+                //Send albums files lists to server
+                case "requestAlbums": {
+                    ArrayList<String> files = new ArrayList<>();
+                    for (int i = Library.albums.size() - 1; i >= 0; i--) {
+                        //Get album
+                        Album album = Library.albums.get(i);
+
+                        //Create files list
+                        files.clear();
+                        for (TurboImage image: album.files) {
+                            files.add(image.file.getName());
+                        }
+
+                        //Create & send JSON with album file names
+                        try {
+                            JSONObject obj = new JSONObject();
+                            obj.put("action", "album");
+                            obj.put("index", i);
+                            obj.put("files", new JSONArray(files));
+                            webSocketClient.send(obj.toString());
+                        } catch (JSONException e) {
+                            System.out.println("Error creating album JSON");
+                        }
+                    }
+                    break;
+                }
+            }
+        } catch (JSONException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    //Users
     private void loadUsers() {
         //Var to check if save needed
         boolean needsSave = false;

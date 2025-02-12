@@ -8,6 +8,7 @@ class Album(imagesPath: String, metadataPath: String) {
     @JvmField var imagesFolder: File = File(imagesPath)
     @JvmField var metadataFile: File = File(metadataPath)
     @JvmField var metadata: JSONObject? = null
+    @JvmField var files: ArrayList<TurboImage> = ArrayList()
 
     //Getters
     val absoluteImagesPath: String get() = imagesFolder.absolutePath
