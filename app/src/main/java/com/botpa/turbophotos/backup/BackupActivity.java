@@ -113,7 +113,7 @@ public class BackupActivity extends AppCompatActivity {
         });
 
         connectConnect.setOnClickListener(view -> {
-            //Trying to connect
+            //Already trying to connect
             if (connectStatus != STATUS_OFFLINE) return;
 
             //Get URL
@@ -134,8 +134,8 @@ public class BackupActivity extends AppCompatActivity {
 
                 //Save user
                 if (!isSaved) {
-                    users.add(new User(name, URL));
-                    connectAdapter.notifyItemInserted(users.size() - 1);
+                    users.add(0, new User(name, URL));
+                    connectAdapter.notifyItemInserted(0);
                     saveUsers();
                 }
             }

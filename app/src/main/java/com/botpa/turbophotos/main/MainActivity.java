@@ -333,10 +333,17 @@ public class MainActivity extends AppCompatActivity {
     private void addListeners() {
         //Activities
         backup.setOnClickListener(view -> {
+            //Loading
+            if (isLoading) return;
+
+            //Open backup
             startActivity(new Intent(MainActivity.this, BackupActivity.class));
         });
 
         settings.setOnClickListener(view -> {
+            //Loading
+            if (isLoading) return;
+
             //Close search
             searchClose.performClick();
 
