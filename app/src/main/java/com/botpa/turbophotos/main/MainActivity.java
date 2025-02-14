@@ -596,7 +596,7 @@ public class MainActivity extends AppCompatActivity {
                             break;
                         }
                     }
-                } catch (JSONException e) {
+                } catch (Exception e) {
                     //Error while checking if metadata contains filter
                     continue;
                 }

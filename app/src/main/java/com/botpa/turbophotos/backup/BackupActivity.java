@@ -25,10 +25,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import dev.gustavoavila.websocketclient.WebSocketClient;
@@ -164,31 +167,30 @@ public class BackupActivity extends AppCompatActivity {
             public void onOpen() {
                 setStatus(STATUS_ONLINE);
 
-                //Send albums info
+                //Send albums
+                JSONObject obj = new JSONObject();
                 try {
-                    JSONObject obj = new JSONObject();
-                    obj.put("action", "albumsInfo");
-                    obj.put("size", Library.albums.size());
-                    webSocketClient.send(obj.toString());
+                    obj.put("action", "albums");
+                    JSONArray albums = new JSONArray();
+                    for (int i = Library.albums.size() - 1; i >= 0; i--) {
+                        //Get album
+                        Album album = Library.albums.get(i);
+
+                        //Create files list
+                        ArrayList<String> files = new ArrayList<>();
+                        for (TurboImage image: album.files) {
+                            files.add(image.file.getName());
+                        }
+
+                        //Add array with album files
+                        albums.put(i, new JSONArray(files));
+                    }
+                    obj.put("albums", albums);
                 } catch (JSONException e) {
-                    System.out.println("Error sending albums info");
-                    return;
-                }
-
-
-                //webSocketClient.send("holiwi pititwi");
-
-                /*File file = Library.files.get(0).file;
-                int size = (int) file.length();
-                byte[] bytes = new byte[size];
-                try {
-                    BufferedInputStream buf = new BufferedInputStream(Files.newInputStream(file.toPath()));
-                    buf.read(bytes, 0, bytes.length);
-                    buf.close();
-                    webSocketClient.send(bytes);
-                } catch (IOException e) {
+                    Orion.snack("Error creating albums JSON", BackupActivity.this);
                     System.out.println(e.getMessage());
-                }*/
+                }
+                webSocketClient.send(obj.toString());
             }
 
             @Override
@@ -251,34 +253,95 @@ public class BackupActivity extends AppCompatActivity {
     }
 
     //Messages
-    private void parseStringMessage(String message) {
+    private void parseStringMessage(String messageString) {
         try {
-            JSONObject messageJSON = new JSONObject(message);
-            String action = messageJSON.getString("action");
+            JSONObject message = new JSONObject(messageString);
+            String action = message.getString("action");
             switch (action) {
-                //Send albums files lists to server
-                case "requestAlbums": {
-                    ArrayList<String> files = new ArrayList<>();
-                    for (int i = Library.albums.size() - 1; i >= 0; i--) {
-                        //Get album
-                        Album album = Library.albums.get(i);
+                //Send image
+                case "requestImage": {
+                    //Get album
+                    int albumIndex = message.getInt("albumIndex");
+                    Album album = Library.albums.get(albumIndex);
 
-                        //Create files list
-                        files.clear();
-                        for (TurboImage image: album.files) {
-                            files.add(image.file.getName());
-                        }
+                    //Get image
+                    int imageIndex = message.getInt("imageIndex");
+                    TurboImage image = album.files.get(imageIndex);
 
-                        //Create & send JSON with album file names
-                        try {
-                            JSONObject obj = new JSONObject();
-                            obj.put("action", "album");
-                            obj.put("index", i);
-                            obj.put("files", new JSONArray(files));
-                            webSocketClient.send(obj.toString());
-                        } catch (JSONException e) {
-                            System.out.println("Error creating album JSON");
-                        }
+                    //Get image data
+                    File file = image.file;
+                    byte[] bytes = new byte[(int) file.length()];
+                    try {
+                        BufferedInputStream buf = new BufferedInputStream(Files.newInputStream(file.toPath()));
+                        buf.read(bytes, 0, bytes.length);
+                        buf.close();
+                    } catch (IOException e) {
+                        Orion.snack("Error reading image data", BackupActivity.this);
+                        System.out.println(e.getMessage());
+                        return;
+                    }
+
+                    //Send image
+                    try {
+                        JSONObject obj = new JSONObject();
+                        obj.put("action", "image");
+                        obj.put("lastModified", image.file.lastModified());
+                        obj.put("data", new String(bytes, StandardCharsets.UTF_8));
+                        //obj.put("data", new JSONArray(bytes));
+                        webSocketClient.send(obj.toString());
+                    } catch (JSONException e) {
+                        Orion.snack("Error sending image info", BackupActivity.this);
+                        System.out.println(e.getMessage());
+                    }
+                    break;
+                }
+
+                //Send image info (last modified)
+                case "requestImageInfo": {
+                    //Get album
+                    int albumIndex = message.getInt("albumIndex");
+                    Album album = Library.albums.get(albumIndex);
+
+                    //Get image
+                    int imageIndex = message.getInt("imageIndex");
+                    TurboImage image = album.files.get(imageIndex);
+
+                    //Send image info
+                    try {
+                        JSONObject obj = new JSONObject();
+                        obj.put("action", "imageInfo");
+                        obj.put("albumIndex", albumIndex);
+                        obj.put("imageIndex", imageIndex);
+                        obj.put("lastModified", image.file.lastModified());
+                        webSocketClient.send(obj.toString());
+                    } catch (JSONException e) {
+                        Orion.snack("Error sending image info", BackupActivity.this);
+                        System.out.println(e.getMessage());
+                    }
+                    break;
+                }
+
+                //Send image data
+                case "requestImageData": {
+                    //Get album
+                    int albumIndex = message.getInt("albumIndex");
+                    Album album = Library.albums.get(albumIndex);
+
+                    //Get image
+                    int imageIndex = message.getInt("imageIndex");
+                    TurboImage image = album.files.get(imageIndex);
+
+                    //Send image data
+                    File file = image.file;
+                    byte[] bytes = new byte[(int) file.length()];
+                    try {
+                        BufferedInputStream buf = new BufferedInputStream(Files.newInputStream(file.toPath()));
+                        buf.read(bytes, 0, bytes.length);
+                        buf.close();
+                        webSocketClient.send(bytes);
+                    } catch (IOException e) {
+                        Orion.snack("Error sending image data", BackupActivity.this);
+                        System.out.println(e.getMessage());
                     }
                     break;
                 }

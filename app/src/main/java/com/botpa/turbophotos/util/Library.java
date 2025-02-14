@@ -108,10 +108,10 @@ public class Library {
                 }
 
                 //Create image container
-                TurboImage image = new TurboImage(file, album);
+                TurboImage image = new TurboImage(file, album, file.lastModified());
 
                 //Check if image appears in metadata
-                if (!album.metadata.has(file.getName())) {
+                if (album.metadata == null || !album.metadata.has(file.getName())) {
                     filesWithoutMetadata.get(album).add(image);
                     filesWithoutMetadataCount++;
                 }
@@ -122,10 +122,10 @@ public class Library {
             }
 
             //Sort images by last modified
-            album.files.sort((f1, f2) -> Long.compare(f2.file.lastModified(), f1.file.lastModified()));
+            album.files.sort((f1, f2) -> Long.compare(f2.lastModified, f1.lastModified));
         }
 
         //Sort images by last modified
-        files.sort((f1, f2) -> Long.compare(f2.file.lastModified(), f1.file.lastModified()));
+        files.sort((f1, f2) -> Long.compare(f2.lastModified, f1.lastModified));
     }
 }
