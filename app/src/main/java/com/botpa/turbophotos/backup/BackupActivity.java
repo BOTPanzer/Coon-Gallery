@@ -258,44 +258,6 @@ public class BackupActivity extends AppCompatActivity {
             JSONObject message = new JSONObject(messageString);
             String action = message.getString("action");
             switch (action) {
-                //Send image
-                case "requestImage": {
-                    //Get album
-                    int albumIndex = message.getInt("albumIndex");
-                    Album album = Library.albums.get(albumIndex);
-
-                    //Get image
-                    int imageIndex = message.getInt("imageIndex");
-                    TurboImage image = album.files.get(imageIndex);
-
-                    //Get image data
-                    File file = image.file;
-                    byte[] bytes = new byte[(int) file.length()];
-                    try {
-                        BufferedInputStream buf = new BufferedInputStream(Files.newInputStream(file.toPath()));
-                        buf.read(bytes, 0, bytes.length);
-                        buf.close();
-                    } catch (IOException e) {
-                        Orion.snack("Error reading image data", BackupActivity.this);
-                        System.out.println(e.getMessage());
-                        return;
-                    }
-
-                    //Send image
-                    try {
-                        JSONObject obj = new JSONObject();
-                        obj.put("action", "image");
-                        obj.put("lastModified", image.file.lastModified());
-                        obj.put("data", new String(bytes, StandardCharsets.UTF_8));
-                        //obj.put("data", new JSONArray(bytes));
-                        webSocketClient.send(obj.toString());
-                    } catch (JSONException e) {
-                        Orion.snack("Error sending image info", BackupActivity.this);
-                        System.out.println(e.getMessage());
-                    }
-                    break;
-                }
-
                 //Send image info (last modified)
                 case "requestImageInfo": {
                     //Get album
