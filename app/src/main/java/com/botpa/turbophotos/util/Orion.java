@@ -524,7 +524,7 @@ public class Orion {
     }
 
     public static Uri getUriFromFile(final Context context, final File file) {
-        return FileProvider.getUriForFile(context, "com.com.botpa.turbophotos.FileProvider", file);
+        return FileProvider.getUriForFile(context, "com.botpa.turbophotos.FileProvider", file);
     }
 
     private static String getDataColumn(Context context, Uri uri, String selection, String[] selectionArgs) {

@@ -24,7 +24,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import com.botpa.turbophotos.backup.BackupActivity;
-import com.botpa.turbophotos.backup.BackupService;
 import com.botpa.turbophotos.util.BackManager;
 import com.botpa.turbophotos.util.Library;
 import com.botpa.turbophotos.util.Orion;
@@ -45,11 +44,11 @@ public class MainActivity extends AppCompatActivity {
     //Permissions
     private boolean permissionCheck = false;
     private boolean permissionWrite = false;
-    private boolean permissionNotis = false;
-    private ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(
+    private boolean permissionNotifications = false;
+    private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(
             new ActivityResultContracts.RequestPermission(),
             isGranted -> {
-                permissionNotis = isGranted;
+                permissionNotifications = isGranted;
                 checkPermissions();
             }
     );
@@ -179,12 +178,12 @@ public class MainActivity extends AppCompatActivity {
             findViewById(R.id.permissionWrite).setAlpha(0.5f);
         }
         if (NotificationManagerCompat.from(MainActivity.this).areNotificationsEnabled()) {
-            permissionNotis = true;
+            permissionNotifications = true;
             findViewById(R.id.permissionNotifications).setAlpha(0.5f);
         }
 
         //Has permissions
-        if (permissionWrite && permissionNotis) {
+        if (permissionWrite && permissionNotifications) {
             findViewById(R.id.permissionLayout).setVisibility(View.GONE);
 
             //Start
@@ -391,7 +390,7 @@ public class MainActivity extends AppCompatActivity {
             Orion.showKeyboard(MainActivity.this);
 
             //Back button
-            backManager.register("search", () -> searchClose.performClick());
+            backManager.register("searchMenu", () -> searchClose.performClick());
         });
 
         searchClose.setOnClickListener(view -> {
@@ -400,7 +399,7 @@ public class MainActivity extends AppCompatActivity {
             Orion.clearFocus(MainActivity.this);
 
             //Back button
-            backManager.unregister("search");
+            backManager.unregister("searchMenu");
         });
 
         searchText.setOnKeyListener((view, i, keyEvent) -> {
@@ -587,6 +586,13 @@ public class MainActivity extends AppCompatActivity {
 
         //Clear files list
         galleryFiles.clear();
+
+        //Back button
+        if (filter.isEmpty()) {
+            backManager.unregister("search");
+        } else {
+            backManager.register("search", () -> filterGallery(""));
+        }
 
         //Search in metadata files
         new Thread(() -> {
