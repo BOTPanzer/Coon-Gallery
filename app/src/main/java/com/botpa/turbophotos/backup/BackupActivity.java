@@ -1,40 +1,25 @@
 package com.botpa.turbophotos.backup;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.botpa.turbophotos.R;
-import com.botpa.turbophotos.util.Album;
-import com.botpa.turbophotos.util.Library;
 import com.botpa.turbophotos.util.Orion;
 import com.botpa.turbophotos.util.Storage;
-import com.botpa.turbophotos.util.TurboImage;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-
-import dev.gustavoavila.websocketclient.WebSocketClient;
 
 public class BackupActivity extends AppCompatActivity {
 
@@ -42,20 +27,22 @@ public class BackupActivity extends AppCompatActivity {
     private final int STATUS_CONNECTING = 1;
     private final int STATUS_ONLINE = 2;
 
-    //App
-    private final List<User> users = new ArrayList<>();
-    private WebSocketClient webSocketClient;
+    //Connection
     private int connectStatus = STATUS_OFFLINE;
 
-    //Connect
-    private UserAdapter connectAdapter;
+    //Users
+    private final List<User> users = new ArrayList<>();
 
-    private View connectLayout;
-    private EditText connectName;
-    private EditText connectURL;
-    private View connectConnect;
-    private View connectLoading;
-    private RecyclerView connectList;
+    //Connect
+    private UserAdapter usersAdapter;
+    private BroadcastReceiver broadcastReceiver;
+
+    private View usersLayout;
+    private EditText usersName;
+    private EditText usersURL;
+    private View usersConnect;
+    private View usersLoading;
+    private RecyclerView usersList;
 
 
     @Override
@@ -73,58 +60,67 @@ public class BackupActivity extends AppCompatActivity {
 
 
         //Init users list
-        connectAdapter = new UserAdapter(BackupActivity.this, users);
-        connectAdapter.setOnClickListener((view, index) -> {
-            connect(users.get(index).URL);
-        });
-        connectAdapter.setOnDeleteListener((view, index) -> {
+        usersAdapter = new UserAdapter(BackupActivity.this, users);
+        usersAdapter.setOnClickListener((view, index) -> send("connect", users.get(index).URL));
+        usersAdapter.setOnDeleteListener((view, index) -> {
             users.remove(index);
-            connectAdapter.notifyItemRemoved(index);
+            usersAdapter.notifyItemRemoved(index);
             saveUsers();
         });
-        connectList.setAdapter(connectAdapter);
-        connectList.setLayoutManager(new LinearLayoutManager(BackupActivity.this));
+        usersList.setAdapter(usersAdapter);
+        usersList.setLayoutManager(new LinearLayoutManager(BackupActivity.this));
+
+
+        //Register receiver
+        registerReceiver();
+
+        //Start service
+        Intent intent = new Intent(this, BackupService.class);
+        startService(intent);
     }
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
+        //Close service
+        send("stop");
 
-        //Close web socket
-        if (webSocketClient != null) webSocketClient.close(1000, 1001, "Left app");
+        //Unregister receiver
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
+
+        super.onDestroy();
     }
 
     //App
     private void getViews() {
-        connectLayout = findViewById(R.id.connectLayout);
-        connectName = findViewById(R.id.connectName);
-        connectURL = findViewById(R.id.connectURL);
-        connectConnect = findViewById(R.id.connectConnect);
-        connectLoading = findViewById(R.id.connectLoading);
-        connectList = findViewById(R.id.connectList);
+        usersLayout = findViewById(R.id.usersLayout);
+        usersName = findViewById(R.id.usersName);
+        usersURL = findViewById(R.id.usersURL);
+        usersConnect = findViewById(R.id.usersConnect);
+        usersLoading = findViewById(R.id.usersLoading);
+        usersList = findViewById(R.id.usersList);
     }
 
     private void addListeners() {
         //Connect
-        connectURL.setOnKeyListener((view, i, keyEvent) -> {
+        usersURL.setOnKeyListener((view, i, keyEvent) -> {
             if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
                 Orion.clearFocus(BackupActivity.this);
                 Orion.hideKeyboard(BackupActivity.this);
-                connectConnect.performClick();
+                usersConnect.performClick();
             }
             return false;
         });
 
-        connectConnect.setOnClickListener(view -> {
+        usersConnect.setOnClickListener(view -> {
             //Already trying to connect
             if (connectStatus != STATUS_OFFLINE) return;
 
             //Get URL
-            String URL = connectURL.getText().toString();
+            String URL = usersURL.getText().toString();
             if (URL.isEmpty()) return;
 
             //Get name
-            String name = connectName.getText().toString();
+            String name = usersName.getText().toString();
             if (!name.isEmpty()) {
                 //Check if IP is saved
                 boolean isSaved = false;
@@ -138,179 +134,14 @@ public class BackupActivity extends AppCompatActivity {
                 //Save user
                 if (!isSaved) {
                     users.add(0, new User(name, URL));
-                    connectAdapter.notifyItemInserted(0);
+                    usersAdapter.notifyItemInserted(0);
                     saveUsers();
                 }
             }
 
             //Connect
-            connect(URL);
+            send("connect", URL);
         });
-    }
-
-    private void connect(String URL) {
-        //Try to connect
-        setStatus(STATUS_CONNECTING);
-
-        //Connect
-        URI uri;
-        try {
-            uri = new URI("ws://" + URL);
-        } catch (URISyntaxException e) {
-            setStatus(STATUS_OFFLINE);
-            return;
-        }
-
-        //Create client
-        webSocketClient = new WebSocketClient(uri) {
-            @Override
-            public void onOpen() {
-                setStatus(STATUS_ONLINE);
-
-                //Send albums
-                JSONObject obj = new JSONObject();
-                try {
-                    obj.put("action", "albums");
-                    JSONArray albums = new JSONArray();
-                    for (int i = Library.albums.size() - 1; i >= 0; i--) {
-                        //Get album
-                        Album album = Library.albums.get(i);
-
-                        //Create files list
-                        ArrayList<String> files = new ArrayList<>();
-                        for (TurboImage image: album.files) {
-                            files.add(image.file.getName());
-                        }
-
-                        //Add array with album files
-                        albums.put(i, new JSONArray(files));
-                    }
-                    obj.put("albums", albums);
-                } catch (JSONException e) {
-                    Orion.snack("Error creating albums JSON", BackupActivity.this);
-                    System.out.println(e.getMessage());
-                }
-                webSocketClient.send(obj.toString());
-            }
-
-            @Override
-            public void onTextReceived(String message) {
-                parseStringMessage(message);
-            }
-
-            @Override
-            public void onBinaryReceived(byte[] data) {
-                System.out.println("binary received");
-            }
-
-            @Override
-            public void onPingReceived(byte[] data) {
-                System.out.println("ping received");
-            }
-
-            @Override
-            public void onPongReceived(byte[] data) {
-                System.out.println("pong received");
-            }
-
-            @Override
-            public void onException(Exception e) {
-                setStatus(STATUS_OFFLINE);
-                System.out.println(e.getMessage());
-            }
-
-            @Override
-            public void onCloseReceived(int reason, String description) {
-                setStatus(STATUS_OFFLINE);
-            }
-        };
-
-        //Connect client
-        webSocketClient.setConnectTimeout(10000);
-        //webSocketClient.setReadTimeout(5000);
-        webSocketClient.addHeader("Origin", "http://botpa.vercel.app/");
-        //webSocketClient.enableAutomaticReconnection(5000);
-        webSocketClient.connect();
-    }
-
-    private void setStatus(int status) {
-        connectStatus = status;
-        runOnUiThread(() -> {
-            switch (status) {
-                case STATUS_OFFLINE:
-                    connectLayout.setVisibility(View.VISIBLE);
-                    connectLoading.setVisibility(View.GONE);
-                    break;
-                case STATUS_CONNECTING:
-                    connectLoading.setVisibility(View.VISIBLE);
-                    break;
-                case STATUS_ONLINE:
-                    connectLayout.setVisibility(View.GONE);
-                    connectLoading.setVisibility(View.GONE);
-                    break;
-            }
-        });
-    }
-
-    //Messages
-    private void parseStringMessage(String messageString) {
-        try {
-            JSONObject message = new JSONObject(messageString);
-            String action = message.getString("action");
-            switch (action) {
-                //Send image info (last modified)
-                case "requestImageInfo": {
-                    //Get album
-                    int albumIndex = message.getInt("albumIndex");
-                    Album album = Library.albums.get(albumIndex);
-
-                    //Get image
-                    int imageIndex = message.getInt("imageIndex");
-                    TurboImage image = album.files.get(imageIndex);
-
-                    //Send image info
-                    try {
-                        JSONObject obj = new JSONObject();
-                        obj.put("action", "imageInfo");
-                        obj.put("albumIndex", albumIndex);
-                        obj.put("imageIndex", imageIndex);
-                        obj.put("lastModified", image.file.lastModified());
-                        webSocketClient.send(obj.toString());
-                    } catch (JSONException e) {
-                        Orion.snack("Error sending image info", BackupActivity.this);
-                        System.out.println(e.getMessage());
-                    }
-                    break;
-                }
-
-                //Send image data
-                case "requestImageData": {
-                    //Get album
-                    int albumIndex = message.getInt("albumIndex");
-                    Album album = Library.albums.get(albumIndex);
-
-                    //Get image
-                    int imageIndex = message.getInt("imageIndex");
-                    TurboImage image = album.files.get(imageIndex);
-
-                    //Send image data
-                    File file = image.file;
-                    byte[] bytes = new byte[(int) file.length()];
-                    try {
-                        BufferedInputStream buf = new BufferedInputStream(Files.newInputStream(file.toPath()));
-                        buf.read(bytes, 0, bytes.length);
-                        buf.close();
-                        webSocketClient.send(bytes);
-                    } catch (IOException e) {
-                        Orion.snack("Error sending image data", BackupActivity.this);
-                        System.out.println(e.getMessage());
-                    }
-                    break;
-                }
-            }
-        } catch (JSONException e) {
-            System.out.println(e.getMessage());
-        }
     }
 
     //Users
@@ -343,5 +174,79 @@ public class BackupActivity extends AppCompatActivity {
 
         //Save list
         Storage.putStringList("Backup.users", userStrings);
+    }
+
+    //Broadcasts
+    private void registerReceiver() {
+        //Create broadcast receiver
+        broadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context arg0, Intent intent) {
+                //Invalid command
+                if (intent.getExtras() == null) return;
+                String command = intent.getStringExtra("command");
+                if (command == null) return;
+
+                //Check command
+                switch (command) {
+                    //Service started
+                    case "init":
+                        break;
+
+                    //Status changed
+                    case "status":
+                        connectStatus = intent.getIntExtra(command, STATUS_OFFLINE);
+                        switch (connectStatus) {
+                            case STATUS_OFFLINE:
+                                usersLayout.setVisibility(View.VISIBLE);
+                                usersLoading.setVisibility(View.GONE);
+                                break;
+                            case STATUS_CONNECTING:
+                                usersLoading.setVisibility(View.VISIBLE);
+                                break;
+                            case STATUS_ONLINE:
+                                usersLayout.setVisibility(View.GONE);
+                                usersLoading.setVisibility(View.GONE);
+                                break;
+                        }
+                        break;
+
+                    //Snack
+                    case "snack":
+                        Orion.snack(intent.getStringExtra(command), BackupActivity.this);
+                        break;
+                }
+            }
+        };
+
+        //Register receiver filter
+        LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, new IntentFilter(BackupService.BROADCAST_ID));
+    }
+
+    private void send(String name) {
+        Intent intent = new Intent(BackupService.BROADCAST_ID);
+        intent.putExtra("command", name);
+        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+    }
+
+    private void send(String name, String value) {
+        Intent intent = new Intent(BackupService.BROADCAST_ID);
+        intent.putExtra("command", name);
+        intent.putExtra(name, value);
+        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+    }
+
+    private void send(String name, boolean value) {
+        Intent intent = new Intent(BackupService.BROADCAST_ID);
+        intent.putExtra("command", name);
+        intent.putExtra(name, value);
+        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+    }
+
+    private void send(String name, int value) {
+        Intent intent = new Intent(BackupService.BROADCAST_ID);
+        intent.putExtra("command", name);
+        intent.putExtra(name, value);
+        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
     }
 }

@@ -658,18 +658,18 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginBottom="10dp"
             android:fontFamily="@font/opificio_bold_rounded"
             android:text="Permissions:"
             android:textAlignment="center"
-            android:textSize="20sp"
-            android:textColor="?attr/colorOnSurface" />
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="20sp" />
 
         <androidx.cardview.widget.CardView
             android:id="@+id/permissionWrite"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_marginHorizontal="50dp"
+            android:layout_marginTop="10dp"
             app:cardBackgroundColor="?attr/colorPrimary"
             app:cardCornerRadius="25dp"
             app:cardElevation="0dp">
@@ -686,6 +686,34 @@
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/comfortaa_medium"
                     android:text="Write"
+                    android:textAlignment="center"
+                    android:textColor="?attr/colorOnPrimary" />
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/permissionNotifications"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginHorizontal="50dp"
+            android:layout_marginTop="10dp"
+            app:cardBackgroundColor="?attr/colorPrimary"
+            app:cardCornerRadius="25dp"
+            app:cardElevation="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="?attr/selectableItemBackground"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/comfortaa_medium"
+                    android:text="Notifications"
                     android:textAlignment="center"
                     android:textColor="?attr/colorOnPrimary" />
             </LinearLayout>

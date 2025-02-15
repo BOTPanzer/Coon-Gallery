@@ -2,11 +2,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
 
     <application
         android:name=".App"
@@ -23,6 +28,7 @@
         <!-- Activities -->
         <activity
             android:name=".main.MainActivity"
+            android:launchMode="singleTask"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -31,12 +37,24 @@
         </activity>
         <activity
             android:name=".settings.SettingsActivity"
+            android:launchMode="singleTask"
             android:exported="false">
         </activity>
         <activity
             android:name=".backup.BackupActivity"
+            android:launchMode="singleTask"
             android:exported="false">
         </activity>
+
+        <!-- Services -->
+        <service
+            android:name=".backup.BackupService"
+            android:foregroundServiceType="dataSync"
+            android:exported="false">
+        </service>
+        <receiver
+            android:name=".backup.BackupService$NotificationDeleteReceiver"
+            android:exported="false"/>
 
         <!-- Providers -->
         <provider

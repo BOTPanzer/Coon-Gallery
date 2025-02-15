@@ -45,7 +45,7 @@
             </ScrollView>
 
             <LinearLayout
-                android:id="@+id/connectLayout"
+                android:id="@+id/usersLayout"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="?attr/colorSurface"
@@ -54,7 +54,7 @@
                 android:padding="20dp">
 
                 <EditText
-                    android:id="@+id/connectName"
+                    android:id="@+id/usersName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:ems="10"
@@ -63,7 +63,7 @@
                     android:singleLine="true" />
 
                 <EditText
-                    android:id="@+id/connectURL"
+                    android:id="@+id/usersURL"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:ems="10"
@@ -72,7 +72,7 @@
                     android:singleLine="true" />
 
                 <androidx.cardview.widget.CardView
-                    android:id="@+id/connectConnect"
+                    android:id="@+id/usersConnect"
                     android:layout_width="match_parent"
                     android:layout_height="40dp"
                     android:layout_marginVertical="10dp"
@@ -106,7 +106,7 @@
                             android:orientation="vertical">
 
                             <ProgressBar
-                                android:id="@+id/connectLoading"
+                                android:id="@+id/usersLoading"
                                 style="?android:attr/progressBarStyle"
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
@@ -121,7 +121,7 @@
                 </androidx.cardview.widget.CardView>
 
                 <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/connectList"
+                    android:id="@+id/usersList"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
             </LinearLayout>

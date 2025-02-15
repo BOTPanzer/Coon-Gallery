@@ -3,6 +3,7 @@ package com.botpa.turbophotos.main;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
@@ -13,12 +14,17 @@ import android.widget.HorizontalScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.Manifest;
 import com.botpa.turbophotos.backup.BackupActivity;
+import com.botpa.turbophotos.backup.BackupService;
 import com.botpa.turbophotos.util.BackManager;
 import com.botpa.turbophotos.util.Library;
 import com.botpa.turbophotos.util.Orion;
@@ -37,8 +43,16 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity {
 
     //Permissions
-    private boolean permissionWrite = false;
     private boolean permissionCheck = false;
+    private boolean permissionWrite = false;
+    private boolean permissionNotis = false;
+    private ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(
+            new ActivityResultContracts.RequestPermission(),
+            isGranted -> {
+                permissionNotis = isGranted;
+                checkPermissions();
+            }
+    );
 
     //App
     private BackManager backManager;
@@ -153,11 +167,24 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        findViewById(R.id.permissionNotifications).setOnClickListener(v -> {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            }
+        });
+
         //Check for permissions
-        if (Environment.isExternalStorageManager()) permissionWrite = true;
+        if (Environment.isExternalStorageManager()) {
+            permissionWrite = true;
+            findViewById(R.id.permissionWrite).setAlpha(0.5f);
+        }
+        if (NotificationManagerCompat.from(MainActivity.this).areNotificationsEnabled()) {
+            permissionNotis = true;
+            findViewById(R.id.permissionNotifications).setAlpha(0.5f);
+        }
 
         //Has permissions
-        if (permissionWrite) {
+        if (permissionWrite && permissionNotis) {
             findViewById(R.id.permissionLayout).setVisibility(View.GONE);
 
             //Start
