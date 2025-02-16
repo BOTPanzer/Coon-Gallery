@@ -10,18 +10,18 @@ import com.botpa.turbophotos.R
 import com.botpa.turbophotos.util.TurboImage
 import com.bumptech.glide.Glide
 
-class GalleryAdapter(private val context: Context, private val images: ArrayList<TurboImage>) : RecyclerView.Adapter<GalleryAdapter.DisplayHolder>() {
+class GalleryAdapter(private val context: Context, private val images: ArrayList<TurboImage>) : RecyclerView.Adapter<GalleryAdapter.GalleryHolder>() {
 
     private var onItemClickListener: OnItemClickListener? = null
     private var onItemLongClickListener: OnItemLongClickListener? = null
 
 
-    override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): DisplayHolder {
-        val myView = LayoutInflater.from(context).inflate(R.layout.display_item, viewGroup, false)
-        return DisplayHolder(myView)
+    override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): GalleryHolder {
+        val myView = LayoutInflater.from(context).inflate(R.layout.gallery_item, viewGroup, false)
+        return GalleryHolder(myView)
     }
 
-    override fun onBindViewHolder(holder: DisplayHolder, i: Int) {
+    override fun onBindViewHolder(holder: GalleryHolder, i: Int) {
         //Get holder position
         val position = holder.bindingAdapterPosition
 
@@ -68,7 +68,7 @@ class GalleryAdapter(private val context: Context, private val images: ArrayList
     }
 
     //Holder
-    class DisplayHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class GalleryHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var background: View = itemView.findViewById(R.id.background)
         var image: ImageView = itemView.findViewById(R.id.image)
         var missingInfo: View = itemView.findViewById(R.id.missingInfo)

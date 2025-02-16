@@ -7,7 +7,7 @@ class Album(imagesPath: String, metadataPath: String) {
 
     @JvmField var imagesFolder: File = File(imagesPath)
     @JvmField var metadataFile: File = File(metadataPath)
-    @JvmField var metadata: JSONObject? = null
+    lateinit var metadata: JSONObject
     @JvmField var files: ArrayList<TurboImage> = ArrayList()
 
     //Getters

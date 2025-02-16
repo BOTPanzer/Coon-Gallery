@@ -2,6 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/background"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
@@ -226,12 +227,12 @@
         android:background="?attr/colorSurface"
         android:visibility="gone">
 
-        <com.botpa.turbophotos.main.ZoomableImageView
-            android:id="@+id/displayImage"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/displayList"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:importantForAccessibility="no"
-            app:srcCompat="@drawable/app_icon" />
+            android:layout_height="match_parent">
+
+        </androidx.recyclerview.widget.RecyclerView>
 
         <LinearLayout
             android:id="@+id/displayOverlayLayout"
@@ -413,7 +414,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:hint="Caption"
-                            android:theme="@style/EditTextStyle"/>
+                            android:theme="@style/EditTextStyle" />
 
                         <TextView
                             android:layout_width="match_parent"
@@ -429,7 +430,7 @@
                             android:layout_height="wrap_content"
                             android:hint="Labels (coma separated)"
                             android:singleLine="true"
-                            android:theme="@style/EditTextStyle"/>
+                            android:theme="@style/EditTextStyle" />
 
                         <androidx.cardview.widget.CardView
                             android:id="@+id/displayEditSave"
@@ -502,7 +503,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="No caption"
-                        android:textColor="?attr/colorOnPrimary"/>
+                        android:textColor="?attr/colorOnPrimary" />
 
                     <TextView
                         android:layout_width="match_parent"
@@ -527,7 +528,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:hint="No labels"
-                                android:textColor="?attr/colorOnPrimary"/>
+                                android:textColor="?attr/colorOnPrimary" />
                         </LinearLayout>
                     </HorizontalScrollView>
 

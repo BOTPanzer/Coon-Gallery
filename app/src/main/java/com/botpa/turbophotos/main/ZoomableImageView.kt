@@ -50,9 +50,14 @@ class ZoomableImageView(context: Context, attr: AttributeSet?) : AppCompatImageV
     private var bmWidth: Float = 0f
     private var bmHeight: Float = 0f
 
+    //Getters
+    val pointers: Int get() = fingers
+    val zoom: Float get() = saveScale
+
     //Click
     private var lastClickTimestamp: Long = 0
     private var onClick: Runnable? = null
+    private var onZoomChange: Runnable? = null
 
 
     //Constructor
@@ -101,6 +106,9 @@ class ZoomableImageView(context: Context, attr: AttributeSet?) : AppCompatImageV
                     //Save position
                     last[curr.x] = curr.y
                     start.set(last)
+
+                    //Finger down -> Zoom changed
+                    onZoomChange?.run()
                 }
 
                 MotionEvent.ACTION_POINTER_UP -> {
@@ -109,6 +117,10 @@ class ZoomableImageView(context: Context, attr: AttributeSet?) : AppCompatImageV
 
                     //Save position
                     last[curr.x] = curr.y
+
+                    //Finger up -> Zoom changed
+                    fingers--
+                    onZoomChange?.run()
                 }
 
                 MotionEvent.ACTION_UP -> {
@@ -119,6 +131,10 @@ class ZoomableImageView(context: Context, attr: AttributeSet?) : AppCompatImageV
                     val xDiff = abs((curr.x - start.x).toDouble()).toInt()
                     val yDiff = abs((curr.y - start.y).toDouble()).toInt()
                     if (xDiff < CLICK && yDiff < CLICK) performClick()
+
+                    //Finger up -> Zoom changed
+                    fingers--
+                    onZoomChange?.run()
                 }
 
                 MotionEvent.ACTION_MOVE -> {
@@ -202,6 +218,10 @@ class ZoomableImageView(context: Context, attr: AttributeSet?) : AppCompatImageV
         onClick = runnable
     }
 
+    fun setOnZoomChange(runnable: Runnable) {
+        onZoomChange = runnable
+    }
+
     //Other
     override fun setImageBitmap(bm: Bitmap?) {
         if (bm == null) return
@@ -257,6 +277,7 @@ class ZoomableImageView(context: Context, attr: AttributeSet?) : AppCompatImageV
                     else if (y > 0) matrix.postTranslate(0f, -y)
                 }
             }
+            onZoomChange?.run()
             return true
         }
     }

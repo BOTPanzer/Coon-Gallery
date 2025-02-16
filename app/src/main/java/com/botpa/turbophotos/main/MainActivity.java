@@ -1,5 +1,6 @@
 package com.botpa.turbophotos.main;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.net.Uri;
@@ -14,13 +15,21 @@ import android.widget.HorizontalScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.PagerSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.SnapHelper;
 
 import android.Manifest;
 import com.botpa.turbophotos.backup.BackupActivity;
@@ -31,7 +40,6 @@ import com.botpa.turbophotos.R;
 import com.botpa.turbophotos.util.Storage;
 import com.botpa.turbophotos.util.TurboImage;
 import com.botpa.turbophotos.settings.SettingsActivity;
-import com.bumptech.glide.Glide;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -39,19 +47,17 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+@SuppressLint({"SetTextI18n", "NotifyDataSetChanged"})
 public class MainActivity extends AppCompatActivity {
 
     //Permissions
     private boolean permissionCheck = false;
     private boolean permissionWrite = false;
     private boolean permissionNotifications = false;
-    private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(
-            new ActivityResultContracts.RequestPermission(),
-            isGranted -> {
-                permissionNotifications = isGranted;
-                checkPermissions();
-            }
-    );
+    private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+        permissionNotifications = isGranted;
+        checkPermissions();
+    });
 
     //App
     private BackManager backManager;
@@ -86,7 +92,12 @@ public class MainActivity extends AppCompatActivity {
     private TextView searchIndicatorText;
 
     //Display
-    private TurboImage displayCurrent;
+    private final ArrayList<TurboImage> displayFiles = new ArrayList<>();
+    private DisplayLayoutManager displayLayoutManager;
+    private DisplayAdapter displayAdapter;
+    private int displayCurrentIndex = -1;
+    private int displayCurrentRelativeIndex = -1;
+    private TurboImage displayCurrent = null;
 
     private View displayLayout;
     private TextView displayNameText;
@@ -94,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
     private View displayInfo;
     private View displayEdit;
     private View displayOptions;
-    private ZoomableImageView displayImage;
+    private RecyclerView displayList;
     private View displayOverlayLayout;
 
     private View displayEditLayout;
@@ -215,95 +226,8 @@ public class MainActivity extends AppCompatActivity {
         loadMetadata();
 
 
-        //Create gallery
-        galleryAdapter = new GalleryAdapter(this, galleryFiles);
-        galleryAdapter.setOnItemClickListener((view, index) -> {
-            //Get file & metadata from list
-            displayCurrent = galleryFiles.get(index);
-
-            //Load image in display
-            Glide.with(MainActivity.this).asBitmap().load(displayCurrent.file).into(displayImage);
-            displayImage.fit(); //In case the image is the same as before, make it fit
-            displayNameText.setText(displayCurrent.file.getName());
-
-            //Prepare options menu
-            findViewById(R.id.displayOptionsDelete).setOnClickListener(view2 -> {
-                //Delete metadata key
-                displayCurrent.album.metadata.remove(displayCurrent.file.getName());
-                displayCurrent.album.saveMetadata();
-
-                //Delete image
-                Orion.deleteFile(displayCurrent.file);
-                Library.files.remove(displayCurrent);
-                galleryFiles.remove(index);
-                galleryAdapter.notifyItemRemoved(index);
-                displayClose.performClick();
-
-                //Close menu
-                displayOptionsLayout.performClick();
-            });
-
-            findViewById(R.id.displayOptionsShare).setOnClickListener(view2 -> {
-                Intent intent = new Intent(Intent.ACTION_SEND);
-                intent.putExtra(Intent.EXTRA_STREAM, Orion.getUriFromFile(MainActivity.this, displayCurrent.file));
-                intent.setType("image/*");
-                startActivity(Intent.createChooser(intent, null));
-
-                //Close menu
-                displayOptionsLayout.performClick();
-            });
-
-            findViewById(R.id.displayOptionsOpen).setOnClickListener(view2 -> {
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setDataAndType(Uri.parse(displayCurrent.file.getAbsolutePath()), "image/*");
-                startActivity(intent);
-
-                //Close menu
-                displayOptionsLayout.performClick();
-            });
-
-            //Load image info (caption & labels)
-            String caption = "";
-            String labels = "";
-            try {
-                JSONObject metadata = displayCurrent.album.metadata.getJSONObject(displayCurrent.file.getName());
-
-                //Load caption
-                try { caption = metadata.getString("caption"); } catch (JSONException ignored) {}
-
-                //Load labels
-                try {
-                    //Add labels
-                    StringBuilder info = new StringBuilder();
-                    if (metadata.has("labels")) {
-                        //Get labels array
-                        JSONArray array = metadata.getJSONArray("labels");
-
-                        //Get array max & append all labels to info
-                        int arrayMax = array.length() - 1;
-                        if (arrayMax >= 0 && info.length() > 0) info.append("\n\n");
-                        for (int i = 0; i <= arrayMax; i++) {
-                            info.append(array.getString(i));
-                            if (i != arrayMax) info.append(", ");
-                        }
-                    }
-
-                    //Update info text
-                    labels = info.toString();
-                } catch (JSONException ignored) {}
-            } catch (JSONException ignored) {}
-            displayInfoCaptionText.setText(caption);
-            displayInfoLabelsText.setText(labels);
-
-            //Close search & show display
-            searchClose.performClick();
-            Orion.showAnim(displayLayout);
-
-            //Back button
-            backManager.register("display", () -> displayClose.performClick());
-        });
-        galleryList.setAdapter(galleryAdapter);
-        galleryList.setLayoutManager(new GridLayoutManager(this, Storage.getInt("Settings.galleryItemsPerRow", 3)));
+        //Init gallery & display lists
+        initGallery();
 
 
         //Add listeners
@@ -338,7 +262,7 @@ public class MainActivity extends AppCompatActivity {
         displayOptions = findViewById(R.id.displayOptions);
         displayInfo = findViewById(R.id.displayInfo);
         displayEdit = findViewById(R.id.displayEdit);
-        displayImage = findViewById(R.id.displayImage);
+        displayList = findViewById(R.id.displayList);
 
         displayOverlayLayout = findViewById(R.id.displayOverlayLayout);
 
@@ -419,7 +343,7 @@ public class MainActivity extends AppCompatActivity {
         //Display
         displayClose.setOnClickListener(view -> {
             //Reset display current
-            displayCurrent = null;
+            selectImage(-1);
 
             //Hide display
             Orion.hideAnim(displayLayout);
@@ -427,14 +351,6 @@ public class MainActivity extends AppCompatActivity {
 
             //Back button
             backManager.unregister("display");
-        });
-
-        displayImage.setOnClick(() -> {
-            if (displayOverlayLayout.getVisibility() == View.VISIBLE) {
-                Orion.hideAnim(displayOverlayLayout);
-            } else {
-                Orion.showAnim(displayOverlayLayout);
-            }
         });
 
         displayEdit.setOnClickListener(view -> {
@@ -523,7 +439,61 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    //Gallery
+    //Gallery & Display
+    private void initGallery() {
+        //Create gallery
+        galleryList.setLayoutManager(new GridLayoutManager(this, Storage.getInt("Settings.galleryItemsPerRow", 3)));
+
+        galleryAdapter = new GalleryAdapter(this, galleryFiles);
+        galleryAdapter.setOnItemClickListener((view, index) -> selectImage(index));
+        galleryList.setAdapter(galleryAdapter);
+
+        //Create display
+        displayLayoutManager = new DisplayLayoutManager(this);
+        displayLayoutManager.setOrientation(RecyclerView.HORIZONTAL);
+        displayList.setLayoutManager(displayLayoutManager);
+
+        SnapHelper snapHelper = new PagerSnapHelper();
+        snapHelper.attachToRecyclerView(displayList);
+
+        displayAdapter = new DisplayAdapter(this, displayFiles);
+        displayAdapter.setOnClickListener((view, index) -> {
+            if (displayOverlayLayout.getVisibility() == View.VISIBLE)
+                Orion.hideAnim(displayOverlayLayout);
+            else
+                Orion.showAnim(displayOverlayLayout);
+        });
+        displayAdapter.setOnZoomListener((view, index) -> {
+            //Enable scrolling only if not zoomed and one finger is over
+            displayLayoutManager.setScrollEnabled(view.getZoom() <= 1 && view.getPointers() <= 1);
+        });
+        displayList.setAdapter(displayAdapter);
+
+        displayList.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                if (newState == RecyclerView.SCROLL_STATE_IDLE && displayLayoutManager.canScrollHorizontally()) {
+                    //Get position
+                    View view = snapHelper.findSnapView(displayLayoutManager);
+                    int position = (view != null) ? displayLayoutManager.getPosition(view) : -1;
+                    if (position == -1) return;
+
+                    //Check what to do
+                    if (position < displayCurrentRelativeIndex) {
+                        //Previous
+                        displayLayoutManager.setScrollEnabled(false);
+                        selectImage(displayCurrentIndex - 1);
+                    } else if (position > displayCurrentRelativeIndex) {
+                        //Next
+                        displayLayoutManager.setScrollEnabled(false);
+                        selectImage(displayCurrentIndex + 1);
+                    }
+                }
+                super.onScrollStateChanged(recyclerView, newState);
+            }
+        });
+    }
+
     public interface LoadingIndicator { void show(String folderName); }
     public LoadingIndicator showLoadingIndicator = (folderName) -> {
         runOnUiThread(() -> {
@@ -588,11 +558,10 @@ public class MainActivity extends AppCompatActivity {
         galleryFiles.clear();
 
         //Back button
-        if (filter.isEmpty()) {
+        if (filter.isEmpty())
             backManager.unregister("search");
-        } else {
+        else
             backManager.register("search", () -> filterGallery(""));
-        }
 
         //Search in metadata files
         new Thread(() -> {
@@ -650,5 +619,117 @@ public class MainActivity extends AppCompatActivity {
                 isSearching = false;
             });
         }).start();
+    }
+
+    private void selectImage(int index) {
+        //Deselect
+        if (index == -1) {
+            displayCurrentRelativeIndex = -1;
+            displayCurrentIndex = -1;
+            displayCurrent = null;
+            return;
+        }
+
+        //Fill display files
+        displayFiles.clear();
+        displayCurrentIndex = index;
+        displayCurrentRelativeIndex = 0;
+
+        //Add files to list
+        if (index > 0) {
+            //Has file before
+            displayFiles.add(galleryFiles.get(index - 1));
+            displayCurrentRelativeIndex++;
+        }
+        displayFiles.add(galleryFiles.get(index));
+        if (index < galleryFiles.size() - 1) {
+            //Has file after
+            displayFiles.add(galleryFiles.get(index + 1));
+        }
+
+        //Get current image, update adapter & select it
+        displayCurrent = displayFiles.get(displayCurrentRelativeIndex);
+        displayAdapter.notifyDataSetChanged();
+        displayList.scrollToPosition(displayCurrentRelativeIndex);
+        displayLayoutManager.setScrollEnabled(true);
+
+        //Change image name
+        displayNameText.setText(displayCurrent.file.getName());
+
+        //Prepare options menu
+        findViewById(R.id.displayOptionsDelete).setOnClickListener(view2 -> {
+            //Delete metadata key
+            displayCurrent.album.metadata.remove(displayCurrent.file.getName());
+            displayCurrent.album.saveMetadata();
+
+            //Delete image
+            Orion.deleteFile(displayCurrent.file);
+            Library.files.remove(displayCurrent);
+            galleryFiles.remove(index);
+            galleryAdapter.notifyItemRemoved(index);
+            displayClose.performClick();
+
+            //Close menu
+            displayOptionsLayout.performClick();
+        });
+
+        findViewById(R.id.displayOptionsShare).setOnClickListener(view2 -> {
+            Intent intent = new Intent(Intent.ACTION_SEND);
+            intent.putExtra(Intent.EXTRA_STREAM, Orion.getUriFromFile(MainActivity.this, displayCurrent.file));
+            intent.setType("image/*");
+            startActivity(Intent.createChooser(intent, null));
+
+            //Close menu
+            displayOptionsLayout.performClick();
+        });
+
+        findViewById(R.id.displayOptionsOpen).setOnClickListener(view2 -> {
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setDataAndType(Uri.parse(displayCurrent.file.getAbsolutePath()), "image/*");
+            startActivity(intent);
+
+            //Close menu
+            displayOptionsLayout.performClick();
+        });
+
+        //Load image info (caption & labels)
+        String caption = "";
+        String labels = "";
+        try {
+            JSONObject metadata = displayCurrent.album.metadata.getJSONObject(displayCurrent.file.getName());
+
+            //Load caption
+            try { caption = metadata.getString("caption"); } catch (JSONException ignored) {}
+
+            //Load labels
+            try {
+                //Add labels
+                StringBuilder info = new StringBuilder();
+                if (metadata.has("labels")) {
+                    //Get labels array
+                    JSONArray array = metadata.getJSONArray("labels");
+
+                    //Get array max & append all labels to info
+                    int arrayMax = array.length() - 1;
+                    if (arrayMax >= 0 && info.length() > 0) info.append("\n\n");
+                    for (int i = 0; i <= arrayMax; i++) {
+                        info.append(array.getString(i));
+                        if (i != arrayMax) info.append(", ");
+                    }
+                }
+
+                //Update info text
+                labels = info.toString();
+            } catch (JSONException ignored) {}
+        } catch (JSONException ignored) {}
+        displayInfoCaptionText.setText(caption);
+        displayInfoLabelsText.setText(labels);
+
+        //Close search & show display
+        searchClose.performClick();
+        Orion.showAnim(displayLayout);
+
+        //Back button
+        backManager.register("display", () -> displayClose.performClick());
     }
 }
