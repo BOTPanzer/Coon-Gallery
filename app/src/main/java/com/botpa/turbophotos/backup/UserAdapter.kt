@@ -11,6 +11,7 @@ import com.botpa.turbophotos.R
 class UserAdapter(private val context: Context, private val users: List<User>) : RecyclerView.Adapter<UserAdapter.AlbumHolder>() {
 
     private var onClickListener: OnClickListener? = null
+    private var onLongClickListener: OnClickListener? = null
     private var onDeleteListener: OnClickListener? = null
 
 
@@ -32,11 +33,16 @@ class UserAdapter(private val context: Context, private val users: List<User>) :
 
         //Add listeners
         holder.background.setOnClickListener { view: View ->
-            onClickListener?.onDelete(view, holder.bindingAdapterPosition)
+            onClickListener?.run(view, holder.bindingAdapterPosition)
+        }
+
+        holder.background.setOnLongClickListener { view: View ->
+            onLongClickListener?.run(view, holder.bindingAdapterPosition)
+            true
         }
 
         holder.delete.setOnClickListener { view: View ->
-            onDeleteListener?.onDelete(view, holder.bindingAdapterPosition)
+            onDeleteListener?.run(view, holder.bindingAdapterPosition)
         }
     }
 
@@ -46,14 +52,18 @@ class UserAdapter(private val context: Context, private val users: List<User>) :
 
     //Listeners
     fun interface OnClickListener {
-        fun onDelete(view: View, index: Int)
+        fun run(view: View, index: Int)
     }
 
-    fun setOnClickListener(onClickListener: OnClickListener?) {
+    fun setOnClickListener(onClickListener: OnClickListener) {
         this.onClickListener = onClickListener
     }
 
-    fun setOnDeleteListener(onDeleteListener: OnClickListener?) {
+    fun setOnLongClickListener(onLongClickListener: OnClickListener) {
+        this.onLongClickListener = onLongClickListener
+    }
+
+    fun setOnDeleteListener(onDeleteListener: OnClickListener) {
         this.onDeleteListener = onDeleteListener
     }
 

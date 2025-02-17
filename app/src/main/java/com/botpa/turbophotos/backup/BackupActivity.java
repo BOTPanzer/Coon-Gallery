@@ -61,7 +61,14 @@ public class BackupActivity extends AppCompatActivity {
 
         //Init users list
         usersAdapter = new UserAdapter(BackupActivity.this, users);
-        usersAdapter.setOnClickListener((view, index) -> send("connect", users.get(index).URL));
+        usersAdapter.setOnClickListener((view, index) -> connect(users.get(index).URL));
+        usersAdapter.setOnLongClickListener((view, index) -> {
+            User user = users.get(index);
+            usersName.setText(user.name);
+            usersURL.setText(user.URL);
+            Orion.hideKeyboard(BackupActivity.this);
+            Orion.clearFocus(BackupActivity.this);
+        });
         usersAdapter.setOnDeleteListener((view, index) -> {
             users.remove(index);
             usersAdapter.notifyItemRemoved(index);
@@ -122,10 +129,10 @@ public class BackupActivity extends AppCompatActivity {
             //Get name
             String name = usersName.getText().toString();
             if (!name.isEmpty()) {
-                //Check if IP is saved
+                //Check if name is saved
                 boolean isSaved = false;
                 for (User user: users) {
-                    if (user.URL.equals(URL)) {
+                    if (user.name.equals(name)) {
                         isSaved = true;
                         break;
                     }
@@ -140,7 +147,7 @@ public class BackupActivity extends AppCompatActivity {
             }
 
             //Connect
-            send("connect", URL);
+            connect(URL);
         });
     }
 
@@ -174,6 +181,16 @@ public class BackupActivity extends AppCompatActivity {
 
         //Save list
         Storage.putStringList("Backup.users", userStrings);
+    }
+
+    //Connection
+    private void connect(String URL) {
+        //Hide keyboard
+        Orion.hideKeyboard(BackupActivity.this);
+        Orion.clearFocus(BackupActivity.this);
+
+        //Connect
+        send("connect", URL);
     }
 
     //Broadcasts
