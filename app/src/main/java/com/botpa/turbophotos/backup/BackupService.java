@@ -252,6 +252,27 @@ public class BackupService extends Service {
                     }
                     break;
                 }
+
+                //Send image data
+                case "requestMetadataData": {
+                    //Get album
+                    int albumIndex = message.getInt("albumIndex");
+                    Album album = Library.albums.get(albumIndex);
+
+                    //Send metadata data
+                    File file = album.metadataFile;
+                    byte[] bytes = new byte[(int) file.length()];
+                    try {
+                        BufferedInputStream buf = new BufferedInputStream(Files.newInputStream(file.toPath()));
+                        buf.read(bytes, 0, bytes.length);
+                        buf.close();
+                        webSocketClient.send(bytes);
+                    } catch (IOException e) {
+                        send("snack", "Error sending metadata data");
+                        System.out.println(e.getMessage());
+                    }
+                    break;
+                }
             }
         } catch (JSONException e) {
             System.out.println(e.getMessage());
