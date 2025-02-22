@@ -20,6 +20,7 @@ import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.botpa.turbophotos.R;
+import com.botpa.turbophotos.main.MainActivity;
 import com.botpa.turbophotos.util.Album;
 import com.botpa.turbophotos.util.Library;
 import com.botpa.turbophotos.util.TurboImage;
@@ -29,11 +30,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.attribute.FileTime;
+import java.time.Instant;
 import java.util.ArrayList;
 
 import dev.gustavoavila.websocketclient.WebSocketClient;
@@ -62,6 +67,10 @@ public class BackupService extends Service {
 
     //Service
     private boolean init = false;
+
+    //Requests
+    private int metadataRequestIndex = 0;
+    private MetadataInfo metadataRequest;
 
 
     @Nullable
@@ -143,7 +152,7 @@ public class BackupService extends Service {
                     obj.put("albums", albums);
                 } catch (JSONException e) {
                     BackupService.this.send("snack", "Error creating albums JSON");
-                    System.out.println(e.getMessage());
+                    Log.e("Create albums JSON", e.getMessage());
                 }
                 webSocketClient.send(obj.toString());
             }
@@ -154,9 +163,7 @@ public class BackupService extends Service {
             }
 
             @Override
-            public void onBinaryReceived(byte[] data) {
-                System.out.println("binary received");
-            }
+            public void onBinaryReceived(byte[] data) { parseBinaryMessage(data); }
 
             @Override
             public void onPingReceived(byte[] data) {
@@ -172,7 +179,7 @@ public class BackupService extends Service {
             @Override
             public void onException(Exception e) {
                 setStatus(STATUS_OFFLINE);
-                System.out.println(e.getMessage());
+                Log.e("WebSocket Exception", e.getMessage());
             }
 
             @Override
@@ -203,7 +210,7 @@ public class BackupService extends Service {
             JSONObject message = new JSONObject(messageString);
             String action = message.getString("action");
             switch (action) {
-                //Send image info (last modified)
+                //Send image info
                 case "requestImageInfo": {
                     //Get album
                     int albumIndex = message.getInt("albumIndex");
@@ -211,19 +218,19 @@ public class BackupService extends Service {
 
                     //Get image
                     int imageIndex = message.getInt("imageIndex");
-                    TurboImage image = album.files.get(imageIndex);
 
                     //Send image info
+                    File file = album.files.get(imageIndex).file;
                     try {
                         JSONObject obj = new JSONObject();
                         obj.put("action", "imageInfo");
                         obj.put("albumIndex", albumIndex);
                         obj.put("imageIndex", imageIndex);
-                        obj.put("lastModified", image.file.lastModified());
+                        if (file.exists()) obj.put("lastModified", file.lastModified());
                         webSocketClient.send(obj.toString());
                     } catch (JSONException e) {
                         send("snack", "Error sending image info");
-                        System.out.println(e.getMessage());
+                        Log.e("Send image info", e.getMessage());
                     }
                     break;
                 }
@@ -242,13 +249,35 @@ public class BackupService extends Service {
                     File file = image.file;
                     byte[] bytes = new byte[(int) file.length()];
                     try {
-                        BufferedInputStream buf = new BufferedInputStream(Files.newInputStream(file.toPath()));
-                        int read = buf.read(bytes, 0, bytes.length);
-                        buf.close();
+                        BufferedInputStream buffer = new BufferedInputStream(Files.newInputStream(file.toPath()));
+                        int read = buffer.read(bytes, 0, bytes.length);
+                        buffer.close();
                         webSocketClient.send(bytes);
                     } catch (IOException e) {
                         send("snack", "Error sending image data");
-                        System.out.println(e.getMessage());
+                        Log.e("Send image data", e.getMessage());
+                        webSocketClient.send(new byte[0]);
+                    }
+                    break;
+                }
+
+                //Send metadata info
+                case "requestMetadataInfo": {
+                    //Get album
+                    int albumIndex = message.getInt("albumIndex");
+                    Album album = Library.albums.get(albumIndex);
+
+                    //Send metadata info
+                    File file = album.metadataFile;
+                    try {
+                        JSONObject obj = new JSONObject();
+                        obj.put("action", "metadataInfo");
+                        obj.put("albumIndex", albumIndex);
+                        if (file.exists()) obj.put("lastModified", file.lastModified());
+                        webSocketClient.send(obj.toString());
+                    } catch (JSONException e) {
+                        send("snack", "Error sending metadata info");
+                        Log.e("Send metadata info", e.getMessage());
                     }
                     break;
                 }
@@ -263,20 +292,83 @@ public class BackupService extends Service {
                     File file = album.metadataFile;
                     byte[] bytes = new byte[(int) file.length()];
                     try {
-                        BufferedInputStream buf = new BufferedInputStream(Files.newInputStream(file.toPath()));
-                        int read = buf.read(bytes, 0, bytes.length);
-                        buf.close();
+                        BufferedInputStream buffer = new BufferedInputStream(Files.newInputStream(file.toPath()));
+                        int read = buffer.read(bytes, 0, bytes.length);
+                        buffer.close();
                         webSocketClient.send(bytes);
                     } catch (IOException e) {
                         send("snack", "Error sending metadata data");
-                        System.out.println(e.getMessage());
+                        Log.e("Send metadata data", e.getMessage());
+                        webSocketClient.send(new byte[0]);
+                    }
+                    break;
+                }
+
+                //Request metadata
+                case "startMetadataRequest": {
+                    requestNextMetadata(true);
+                    break;
+                }
+
+                //Received metadata info
+                case "metadataInfo": {
+                    //Invalid info -> Request next
+                    if (!message.has("lastModified")) {
+                        requestNextMetadata(false);
+                        return;
+                    }
+
+                    //Get album
+                    int albumIndex = message.getInt("albumIndex");
+
+                    //Get last modified
+                    long lastModified = message.getLong("lastModified");
+
+                    //Save request
+                    metadataRequest = new MetadataInfo(albumIndex, lastModified);
+
+                    //Request metadata data
+                    try {
+                        JSONObject obj = new JSONObject();
+                        obj.put("action", "requestMetadataData");
+                        obj.put("albumIndex", albumIndex);
+                        webSocketClient.send(obj.toString());
+                    } catch (JSONException e) {
+                        send("snack", "Error requesting metadata data");
+                        Log.e("Request metadata data", e.getMessage());
                     }
                     break;
                 }
             }
         } catch (JSONException e) {
-            System.out.println(e.getMessage());
+            Log.e("Parse message", e.getMessage());
         }
+    }
+
+    private void parseBinaryMessage(byte[] data) {
+        //Show notification again
+        notificationManager.notify(NOTIFICATION_ID, notification);
+
+        //No request
+        if (metadataRequest == null) return;
+
+        //Save file
+        File file = Library.albums.get(metadataRequest.albumIndex).metadataFile;
+        try {
+            BufferedOutputStream buffer = new BufferedOutputStream(Files.newOutputStream(file.toPath()));
+            buffer.write(data, 0, data.length);
+            buffer.close();
+            Files.setLastModifiedTime(Paths.get(file.getAbsolutePath()), FileTime.from(Instant.ofEpochMilli(metadataRequest.lastModified)));
+
+            //File modified -> Should restart
+            MainActivity.shouldRestart();
+        } catch (IOException e) {
+            send("snack", "Error saving metadata data");
+            Log.e("Save metadata data", e.getMessage());
+        }
+
+        //Request next
+        requestNextMetadata(false);
     }
 
     //Notifications
@@ -378,5 +470,57 @@ public class BackupService extends Service {
         intent.putExtra("command", name);
         intent.putExtra(name, value);
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+    }
+
+    //Metadata requests
+    private void requestNextMetadata(boolean isFirst) {
+        //Reset index
+        if (isFirst)
+            metadataRequestIndex = 0;
+        else
+            metadataRequestIndex++;
+
+        //Finished
+        if (metadataRequestIndex >= Library.albums.size()) {
+            try {
+                JSONObject obj = new JSONObject();
+                obj.put("action", "endSync");
+                obj.put("message", "Finished metadata sync");
+                webSocketClient.send(obj.toString());
+            } catch (JSONException e) {
+                send("snack", "Error ending metadata request");
+                Log.e("End metadata requests", e.getMessage());
+            }
+            return;
+        }
+
+        //Check if metadata file exists
+        File file = Library.albums.get(metadataRequestIndex).metadataFile;
+        if (!file.exists()) {
+            Log.e("Metadata missing", "Metadata file " + metadataRequestIndex + " does not exist");
+            requestNextMetadata(false);
+            return;
+        }
+
+        //Request next metadata
+        try {
+            JSONObject obj = new JSONObject();
+            obj.put("action", "requestMetadataInfo");
+            obj.put("albumIndex", metadataRequestIndex);
+            webSocketClient.send(obj.toString());
+        } catch (JSONException e) {
+            send("snack", "Error requesting metadata info");
+            Log.e("Request metadata info", e.getMessage());
+        }
+    }
+
+    private static class MetadataInfo {
+        public int albumIndex;
+        public long lastModified;
+
+        public MetadataInfo(int albumIndex, long lastModified) {
+            this.albumIndex = albumIndex;
+            this.lastModified = lastModified;
+        }
     }
 }
