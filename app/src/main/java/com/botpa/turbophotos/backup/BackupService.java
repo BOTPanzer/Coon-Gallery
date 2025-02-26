@@ -151,8 +151,10 @@ public class BackupService extends Service {
                     }
                     obj.put("albums", albums);
                 } catch (JSONException e) {
-                    BackupService.this.send("snack", "Error creating albums JSON");
-                    Log.e("Create albums JSON", e.getMessage());
+                    //Error sending message
+                    String errorMessage = e.getMessage();
+                    if (errorMessage != null) Log.e("Create albums JSON", errorMessage);
+                    BackupService.this.send("log", "Error creating albums JSON");
                 }
                 webSocketClient.send(obj.toString());
             }
@@ -179,7 +181,8 @@ public class BackupService extends Service {
             @Override
             public void onException(Exception e) {
                 setStatus(STATUS_OFFLINE);
-                Log.e("WebSocket Exception", e.getMessage());
+                String errorMessage = e.getMessage();
+                if (errorMessage != null) Log.e("WebSocket Exception", e.getMessage());
             }
 
             @Override
@@ -222,15 +225,23 @@ public class BackupService extends Service {
                     //Send image info
                     File file = album.files.get(imageIndex).file;
                     try {
+                        //Log
+                        send("log", "Sending image info for: " + file.getName());
+
+                        //Create message
                         JSONObject obj = new JSONObject();
                         obj.put("action", "imageInfo");
                         obj.put("albumIndex", albumIndex);
                         obj.put("imageIndex", imageIndex);
                         if (file.exists()) obj.put("lastModified", file.lastModified());
+
+                        //Send message
                         webSocketClient.send(obj.toString());
                     } catch (JSONException e) {
-                        send("snack", "Error sending image info");
-                        Log.e("Send image info", e.getMessage());
+                        //Error sending message
+                        String errorMessage = e.getMessage();
+                        if (errorMessage != null) Log.e("Send image info", errorMessage);
+                        send("log", "Error sending image info");
                     }
                     break;
                 }
@@ -249,13 +260,23 @@ public class BackupService extends Service {
                     File file = image.file;
                     byte[] bytes = new byte[(int) file.length()];
                     try {
+                        //Log
+                        send("log", "Sending metadata data for: " + file.getName());
+
+                        //Read file bytes
                         BufferedInputStream buffer = new BufferedInputStream(Files.newInputStream(file.toPath()));
                         int read = buffer.read(bytes, 0, bytes.length);
                         buffer.close();
+
+                        //Send message
                         webSocketClient.send(bytes);
                     } catch (IOException e) {
-                        send("snack", "Error sending image data");
-                        Log.e("Send image data", e.getMessage());
+                        //Error sending message
+                        String errorMessage = e.getMessage();
+                        if (errorMessage != null) Log.e("Send image data", errorMessage);
+                        send("log", "Error sending image data");
+
+                        //Send empty blob
                         webSocketClient.send(new byte[0]);
                     }
                     break;
@@ -270,14 +291,22 @@ public class BackupService extends Service {
                     //Send metadata info
                     File file = album.metadataFile;
                     try {
+                        //Log
+                        send("log", "Sending metadata info for: " + file.getName());
+
+                        //Create message
                         JSONObject obj = new JSONObject();
                         obj.put("action", "metadataInfo");
                         obj.put("albumIndex", albumIndex);
                         if (file.exists()) obj.put("lastModified", file.lastModified());
+
+                        //Send message
                         webSocketClient.send(obj.toString());
                     } catch (JSONException e) {
-                        send("snack", "Error sending metadata info");
-                        Log.e("Send metadata info", e.getMessage());
+                        //Error sending message
+                        String errorMessage = e.getMessage();
+                        if (errorMessage != null) Log.e("Send metadata info", errorMessage);
+                        send("log", "Error sending metadata info");
                     }
                     break;
                 }
@@ -292,13 +321,23 @@ public class BackupService extends Service {
                     File file = album.metadataFile;
                     byte[] bytes = new byte[(int) file.length()];
                     try {
+                        //Log
+                        send("log", "Sending metadata data for: " + file.getName());
+
+                        //Read file bytes
                         BufferedInputStream buffer = new BufferedInputStream(Files.newInputStream(file.toPath()));
                         int read = buffer.read(bytes, 0, bytes.length);
                         buffer.close();
+
+                        //Send message
                         webSocketClient.send(bytes);
                     } catch (IOException e) {
-                        send("snack", "Error sending metadata data");
-                        Log.e("Send metadata data", e.getMessage());
+                        //Error sending message
+                        String errorMessage = e.getMessage();
+                        if (errorMessage != null) Log.e("Send metadata data", errorMessage);
+                        send("log", "Error sending metadata data");
+
+                        //Send empty blob
                         webSocketClient.send(new byte[0]);
                     }
                     break;
@@ -329,13 +368,18 @@ public class BackupService extends Service {
 
                     //Request metadata data
                     try {
+                        //Create message
                         JSONObject obj = new JSONObject();
                         obj.put("action", "requestMetadataData");
                         obj.put("albumIndex", albumIndex);
+
+                        //Send message
                         webSocketClient.send(obj.toString());
                     } catch (JSONException e) {
-                        send("snack", "Error requesting metadata data");
-                        Log.e("Request metadata data", e.getMessage());
+                        //Error sending message
+                        String errorMessage = e.getMessage();
+                        if (errorMessage != null) Log.e("Request metadata data", errorMessage);
+                        send("log", "Error requesting metadata data");
                     }
                     break;
                 }
@@ -363,8 +407,10 @@ public class BackupService extends Service {
             //File modified -> Should restart
             MainActivity.shouldRestart();
         } catch (IOException e) {
-            send("snack", "Error saving metadata data");
-            Log.e("Save metadata data", e.getMessage());
+            //Error sending message
+            String errorMessage = e.getMessage();
+            if (errorMessage != null) Log.e("Save metadata data", errorMessage);
+            send("log", "Error saving metadata data");
         }
 
         //Request next
@@ -483,13 +529,18 @@ public class BackupService extends Service {
         //Finished
         if (metadataRequestIndex >= Library.albums.size()) {
             try {
+                //Create message
                 JSONObject obj = new JSONObject();
                 obj.put("action", "endSync");
                 obj.put("message", "Finished metadata sync");
+
+                //Send message
                 webSocketClient.send(obj.toString());
             } catch (JSONException e) {
-                send("snack", "Error ending metadata request");
-                Log.e("End metadata requests", e.getMessage());
+                //Error sending message
+                String errorMessage = e.getMessage();
+                if (errorMessage != null) Log.e("End metadata requests", errorMessage);
+                send("log", "Error ending metadata request");
             }
             return;
         }
@@ -504,13 +555,18 @@ public class BackupService extends Service {
 
         //Request next metadata
         try {
+            //Create message
             JSONObject obj = new JSONObject();
             obj.put("action", "requestMetadataInfo");
             obj.put("albumIndex", metadataRequestIndex);
+
+            //Send message
             webSocketClient.send(obj.toString());
         } catch (JSONException e) {
-            send("snack", "Error requesting metadata info");
-            Log.e("Request metadata info", e.getMessage());
+            //Error sending message
+            String errorMessage = e.getMessage();
+            if (errorMessage != null) Log.e("Request metadata info", errorMessage);
+            send("log", "Error requesting metadata info");
         }
     }
 

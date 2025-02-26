@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -32,9 +33,9 @@ public class BackupActivity extends AppCompatActivity {
 
     //Users
     private final List<User> users = new ArrayList<>();
+    private UserAdapter usersAdapter;
 
     //Connect
-    private UserAdapter usersAdapter;
     private BroadcastReceiver broadcastReceiver;
 
     private View usersLayout;
@@ -43,6 +44,13 @@ public class BackupActivity extends AppCompatActivity {
     private View usersConnect;
     private View usersLoading;
     private RecyclerView usersList;
+
+    //Logs
+    private static final int logsMax = 200;
+    private final List<String> logs = new ArrayList<>();
+    private LogAdapter logsAdapter;
+
+    private RecyclerView logsList;
 
 
     @Override
@@ -78,6 +86,13 @@ public class BackupActivity extends AppCompatActivity {
         usersList.setLayoutManager(new LinearLayoutManager(BackupActivity.this));
 
 
+        //Init logs list
+        logsAdapter = new LogAdapter(BackupActivity.this, logs);
+        logsList.setAdapter(logsAdapter);
+        logsList.setLayoutManager(new LinearLayoutManager(BackupActivity.this, LinearLayoutManager.VERTICAL, true));
+        logsList.setItemAnimator(null);
+
+
         //Register receiver
         registerReceiver();
 
@@ -105,6 +120,7 @@ public class BackupActivity extends AppCompatActivity {
         usersConnect = findViewById(R.id.usersConnect);
         usersLoading = findViewById(R.id.usersLoading);
         usersList = findViewById(R.id.usersList);
+        logsList = findViewById(R.id.logsList);
     }
 
     private void addListeners() {
@@ -149,6 +165,9 @@ public class BackupActivity extends AppCompatActivity {
             //Connect
             connect(URL);
         });
+
+        //Logs
+        findViewById(R.id.logsExit).setOnClickListener(view -> finish());
     }
 
     //Users
@@ -193,6 +212,22 @@ public class BackupActivity extends AppCompatActivity {
         send("connect", URL);
     }
 
+    //Logs
+    private void log(String log) {
+        //Reached maximum size -> Remove first
+        if (logs.size() >= logsMax) {
+            logs.remove(logs.size() - 1);
+            logsAdapter.notifyItemRemoved(logs.size() - 1);
+        }
+
+        //Add new log
+        logs.add(0, log);
+        logsAdapter.notifyItemInserted(0);
+
+        //Scroll to bottom
+        logsList.scrollToPosition(0);
+    }
+
     //Broadcasts
     private void registerReceiver() {
         //Create broadcast receiver
@@ -208,6 +243,7 @@ public class BackupActivity extends AppCompatActivity {
                 switch (command) {
                     //Service started
                     case "init":
+                        log("Service started");
                         break;
 
                     //Status changed
@@ -215,13 +251,16 @@ public class BackupActivity extends AppCompatActivity {
                         connectStatus = intent.getIntExtra(command, STATUS_OFFLINE);
                         switch (connectStatus) {
                             case STATUS_OFFLINE:
+                                log("Disconnected");
                                 usersLayout.setVisibility(View.VISIBLE);
                                 usersLoading.setVisibility(View.GONE);
                                 break;
                             case STATUS_CONNECTING:
+                                log("Connecting...");
                                 usersLoading.setVisibility(View.VISIBLE);
                                 break;
                             case STATUS_ONLINE:
+                                log("Connected");
                                 usersLayout.setVisibility(View.GONE);
                                 usersLoading.setVisibility(View.GONE);
                                 break;
@@ -231,6 +270,11 @@ public class BackupActivity extends AppCompatActivity {
                     //Snack
                     case "snack":
                         Orion.snack(intent.getStringExtra(command), BackupActivity.this);
+                        break;
+
+                    //Log
+                    case "log":
+                        log(intent.getStringExtra(command));
                         break;
                 }
             }
