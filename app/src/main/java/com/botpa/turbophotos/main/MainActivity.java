@@ -22,10 +22,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.app.NotificationManagerCompat;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.PagerSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
@@ -40,10 +36,9 @@ import com.botpa.turbophotos.R;
 import com.botpa.turbophotos.util.Storage;
 import com.botpa.turbophotos.util.TurboImage;
 import com.botpa.turbophotos.settings.SettingsActivity;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
 import java.util.ArrayList;
 
@@ -390,13 +385,14 @@ public class MainActivity extends AppCompatActivity {
             displayInfoLabelsText.setText(labels);
 
             //Update metadata
-            try {
-                JSONObject metadata = displayCurrent.album.metadata.getJSONObject(displayCurrent.file.getName());
-                metadata.put("caption", caption);
-                metadata.put("labels", new JSONArray(labelsArray));
-                boolean saved = displayCurrent.album.saveMetadata();
-                Toast.makeText(MainActivity.this, saved ? "Saved successfully" : "An error occurred while saving", Toast.LENGTH_SHORT).show();
-            } catch (JSONException ignored) {}
+            JsonObject metadata = displayCurrent.album.metadata.getAsJsonObject(displayCurrent.file.getName());
+            if (metadata == null) metadata = new JsonObject();
+            metadata.addProperty("caption", caption);
+            metadata.add("labels", Orion.arrayToJson(labelsArray));
+
+            //Save
+            boolean saved = displayCurrent.album.saveMetadata();
+            Toast.makeText(MainActivity.this, saved ? "Saved successfully" : "An error occurred while saving", Toast.LENGTH_SHORT).show();
 
             //Close menu
             displayEditLayout.performClick();
@@ -567,7 +563,8 @@ public class MainActivity extends AppCompatActivity {
         new Thread(() -> {
             //Temp variables
             boolean addToList;
-            JSONObject metadata;
+            JsonObject metadata;
+            JsonPrimitive caption, labels;
 
             //Look for files that contain filter
             for (TurboImage image: Library.files) {
@@ -577,25 +574,31 @@ public class MainActivity extends AppCompatActivity {
                     continue;
                 }
 
-                //Check if file contains filter
+                //Check if JSON contains filter
                 addToList = false;
-
-                //Check JSON contains filter
                 try {
-                    metadata = image.album.metadata.getJSONObject(image.file.getName());
+                    //Get metadata
+                    metadata = image.album.metadata.getAsJsonObject(image.file.getName());
+                    if (metadata == null) continue;
 
                     //Check caption
-                    if (metadata.has("caption") && metadata.getString("caption").toLowerCase().contains(filter)) {
-                        addToList = true;
+                    if (metadata.has("caption")) {
+                        caption = metadata.getAsJsonPrimitive("caption");
+                        if (caption.isString() && caption.getAsString().toLowerCase().contains(filter)) {
+                            addToList = true;
+                        }
                     }
 
                     //Check labels
                     if (!addToList && metadata.has("labels")) {
-                        JSONArray labels = metadata.getJSONArray("labels");
-                        for (int i = 0; i < labels.length(); i++) {
-                            if (!labels.getString(i).toLowerCase().contains(filter)) continue;
-                            addToList = true;
-                            break;
+                        labels = metadata.getAsJsonPrimitive("labels");
+                        if (labels.isJsonArray()) {
+                            JsonArray labelsArray = metadata.getAsJsonArray("labels");
+                            for (int i = 0; i < labelsArray.size(); i++) {
+                                if (!labelsArray.get(i).getAsString().toLowerCase().contains(filter)) continue;
+                                addToList = true;
+                                break;
+                            }
                         }
                     }
                 } catch (Exception e) {
@@ -696,32 +699,32 @@ public class MainActivity extends AppCompatActivity {
         String caption = "";
         String labels = "";
         try {
-            JSONObject metadata = displayCurrent.album.metadata.getJSONObject(displayCurrent.file.getName());
+            JsonObject metadata = displayCurrent.album.metadata.getAsJsonObject(displayCurrent.file.getName());
+            if (metadata == null) throw new Exception();
 
             //Load caption
-            try { caption = metadata.getString("caption"); } catch (JSONException ignored) {}
+            caption = metadata.get("caption").getAsString();
 
-            //Load labels
-            try {
-                //Add labels
-                StringBuilder info = new StringBuilder();
-                if (metadata.has("labels")) {
-                    //Get labels array
-                    JSONArray array = metadata.getJSONArray("labels");
+            //Add labels
+            StringBuilder info = new StringBuilder();
+            if (metadata.has("labels")) {
+                //Get labels array
+                JsonArray array = metadata.getAsJsonArray("labels");
 
-                    //Get array max & append all labels to info
-                    int arrayMax = array.length() - 1;
-                    if (arrayMax >= 0 && info.length() > 0) info.append("\n\n");
-                    for (int i = 0; i <= arrayMax; i++) {
-                        info.append(array.getString(i));
-                        if (i != arrayMax) info.append(", ");
-                    }
+                //Get array max & append all labels to info
+                int arrayMax = array.size() - 1;
+                if (arrayMax >= 0 && info.length() > 0) info.append("\n\n");
+                for (int i = 0; i <= arrayMax; i++) {
+                    info.append(array.get(i).getAsString());
+                    if (i != arrayMax) info.append(", ");
                 }
+            }
 
-                //Update info text
-                labels = info.toString();
-            } catch (JSONException ignored) {}
-        } catch (JSONException ignored) {}
+            //Update info text
+            labels = info.toString();
+        } catch (Exception ignored) {
+            //Error while parsing JSON
+        }
         displayInfoCaptionText.setText(caption);
         displayInfoLabelsText.setText(labels);
 

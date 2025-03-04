@@ -10,10 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
-import android.os.Looper;
 import android.util.Log;
-import android.view.View;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -23,11 +20,10 @@ import com.botpa.turbophotos.R;
 import com.botpa.turbophotos.main.MainActivity;
 import com.botpa.turbophotos.util.Album;
 import com.botpa.turbophotos.util.Library;
+import com.botpa.turbophotos.util.Orion;
 import com.botpa.turbophotos.util.TurboImage;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -131,31 +127,24 @@ public class BackupService extends Service {
             public void onOpen() {
                 setStatus(STATUS_ONLINE);
 
-                //Send albums
-                JSONObject obj = new JSONObject();
-                try {
-                    obj.put("action", "albums");
-                    JSONArray albums = new JSONArray();
-                    for (int i = Library.albums.size() - 1; i >= 0; i--) {
-                        //Get album
-                        Album album = Library.albums.get(i);
+                //Create albums object
+                JsonObject obj = new JsonObject();
+                obj.addProperty("action", "albums");
+                JsonArray albums = new JsonArray(Library.albums.size());
+                for (int i = 0; i < Library.albums.size(); i++) {
+                    //Get album
+                    Album album = Library.albums.get(i);
 
-                        //Create files list
-                        ArrayList<String> files = new ArrayList<>();
-                        for (TurboImage image: album.files) {
-                            files.add(image.file.getName());
-                        }
+                    //Create files list
+                    String[] files = new String[album.files.size()];
+                    for (int j = 0; j < album.files.size(); j++) files[j] = album.files.get(j).file.getName();
 
-                        //Add array with album files
-                        albums.put(i, new JSONArray(files));
-                    }
-                    obj.put("albums", albums);
-                } catch (JSONException e) {
-                    //Error sending message
-                    String errorMessage = e.getMessage();
-                    if (errorMessage != null) Log.e("Create albums JSON", errorMessage);
-                    BackupService.this.send("log", "Error creating albums JSON");
+                    //Add array with album files
+                    albums.add(Orion.arrayToJson(files));
                 }
+                obj.add("albums", albums);
+
+                //Send albums
                 webSocketClient.send(obj.toString());
             }
 
@@ -210,50 +199,45 @@ public class BackupService extends Service {
 
         //Check message
         try {
-            JSONObject message = new JSONObject(messageString);
-            String action = message.getString("action");
+            JsonObject message = Orion.loadJSON(messageString);
+            if (!message.has("action")) throw new Exception("Message has no action key");
+            String action = message.get("action").getAsString();
             switch (action) {
                 //Send image info
                 case "requestImageInfo": {
                     //Get album
-                    int albumIndex = message.getInt("albumIndex");
+                    int albumIndex = message.get("albumIndex").getAsInt();
                     Album album = Library.albums.get(albumIndex);
 
                     //Get image
-                    int imageIndex = message.getInt("imageIndex");
+                    int imageIndex = message.get("imageIndex").getAsInt();
 
                     //Send image info
                     File file = album.files.get(imageIndex).file;
-                    try {
-                        //Log
-                        send("log", "Sending image info for: " + file.getName());
 
-                        //Create message
-                        JSONObject obj = new JSONObject();
-                        obj.put("action", "imageInfo");
-                        obj.put("albumIndex", albumIndex);
-                        obj.put("imageIndex", imageIndex);
-                        if (file.exists()) obj.put("lastModified", file.lastModified());
+                    //Log
+                    send("log", "Sending image info for: " + file.getName());
 
-                        //Send message
-                        webSocketClient.send(obj.toString());
-                    } catch (JSONException e) {
-                        //Error sending message
-                        String errorMessage = e.getMessage();
-                        if (errorMessage != null) Log.e("Send image info", errorMessage);
-                        send("log", "Error sending image info");
-                    }
+                    //Create message
+                    JsonObject obj = new JsonObject();
+                    obj.addProperty("action", "imageInfo");
+                    obj.addProperty("albumIndex", albumIndex);
+                    obj.addProperty("imageIndex", imageIndex);
+                    if (file.exists()) obj.addProperty("lastModified", file.lastModified());
+
+                    //Send message
+                    webSocketClient.send(obj.toString());
                     break;
                 }
 
                 //Send image data
                 case "requestImageData": {
                     //Get album
-                    int albumIndex = message.getInt("albumIndex");
+                    int albumIndex = message.get("albumIndex").getAsInt();
                     Album album = Library.albums.get(albumIndex);
 
                     //Get image
-                    int imageIndex = message.getInt("imageIndex");
+                    int imageIndex = message.get("imageIndex").getAsInt();
                     TurboImage image = album.files.get(imageIndex);
 
                     //Send image data
@@ -285,36 +269,30 @@ public class BackupService extends Service {
                 //Send metadata info
                 case "requestMetadataInfo": {
                     //Get album
-                    int albumIndex = message.getInt("albumIndex");
+                    int albumIndex = message.get("albumIndex").getAsInt();
                     Album album = Library.albums.get(albumIndex);
 
                     //Send metadata info
                     File file = album.metadataFile;
-                    try {
-                        //Log
-                        send("log", "Sending metadata info for: " + file.getName());
 
-                        //Create message
-                        JSONObject obj = new JSONObject();
-                        obj.put("action", "metadataInfo");
-                        obj.put("albumIndex", albumIndex);
-                        if (file.exists()) obj.put("lastModified", file.lastModified());
+                    //Log
+                    send("log", "Sending metadata info for: " + file.getName());
 
-                        //Send message
-                        webSocketClient.send(obj.toString());
-                    } catch (JSONException e) {
-                        //Error sending message
-                        String errorMessage = e.getMessage();
-                        if (errorMessage != null) Log.e("Send metadata info", errorMessage);
-                        send("log", "Error sending metadata info");
-                    }
+                    //Create message
+                    JsonObject obj = new JsonObject();
+                    obj.addProperty("action", "metadataInfo");
+                    obj.addProperty("albumIndex", albumIndex);
+                    if (file.exists()) obj.addProperty("lastModified", file.lastModified());
+
+                    //Send message
+                    webSocketClient.send(obj.toString());
                     break;
                 }
 
                 //Send metadata data
                 case "requestMetadataData": {
                     //Get album
-                    int albumIndex = message.getInt("albumIndex");
+                    int albumIndex = message.get("albumIndex").getAsInt();
                     Album album = Library.albums.get(albumIndex);
 
                     //Send metadata data
@@ -358,34 +336,27 @@ public class BackupService extends Service {
                     }
 
                     //Get album
-                    int albumIndex = message.getInt("albumIndex");
+                    int albumIndex = message.get("albumIndex").getAsInt();
 
                     //Get last modified
-                    long lastModified = message.getLong("lastModified");
+                    long lastModified = message.get("lastModified").getAsLong();
 
                     //Save request
                     metadataRequest = new MetadataInfo(albumIndex, lastModified);
 
-                    //Request metadata data
-                    try {
-                        //Create message
-                        JSONObject obj = new JSONObject();
-                        obj.put("action", "requestMetadataData");
-                        obj.put("albumIndex", albumIndex);
+                    //Create message
+                    JsonObject obj = new JsonObject();
+                    obj.addProperty("action", "requestMetadataData");
+                    obj.addProperty("albumIndex", albumIndex);
 
-                        //Send message
-                        webSocketClient.send(obj.toString());
-                    } catch (JSONException e) {
-                        //Error sending message
-                        String errorMessage = e.getMessage();
-                        if (errorMessage != null) Log.e("Request metadata data", errorMessage);
-                        send("log", "Error requesting metadata data");
-                    }
+                    //Send message
+                    webSocketClient.send(obj.toString());
                     break;
                 }
             }
-        } catch (JSONException e) {
-            Log.e("Parse message", e.getMessage());
+        } catch (Exception e) {
+            String errorMessage = e.getMessage();
+            if (errorMessage != null) Log.e("Parse message", errorMessage);
         }
     }
 
@@ -528,20 +499,13 @@ public class BackupService extends Service {
 
         //Finished
         if (metadataRequestIndex >= Library.albums.size()) {
-            try {
-                //Create message
-                JSONObject obj = new JSONObject();
-                obj.put("action", "endSync");
-                obj.put("message", "Finished metadata sync");
+            //Create message
+            JsonObject obj = new JsonObject();
+            obj.addProperty("action", "endSync");
+            obj.addProperty("message", "Finished metadata sync");
 
-                //Send message
-                webSocketClient.send(obj.toString());
-            } catch (JSONException e) {
-                //Error sending message
-                String errorMessage = e.getMessage();
-                if (errorMessage != null) Log.e("End metadata requests", errorMessage);
-                send("log", "Error ending metadata request");
-            }
+            //Send message
+            webSocketClient.send(obj.toString());
             return;
         }
 
@@ -554,20 +518,12 @@ public class BackupService extends Service {
         }
 
         //Request next metadata
-        try {
-            //Create message
-            JSONObject obj = new JSONObject();
-            obj.put("action", "requestMetadataInfo");
-            obj.put("albumIndex", metadataRequestIndex);
+        JsonObject obj = new JsonObject();
+        obj.addProperty("action", "requestMetadataInfo");
+        obj.addProperty("albumIndex", metadataRequestIndex);
 
-            //Send message
-            webSocketClient.send(obj.toString());
-        } catch (JSONException e) {
-            //Error sending message
-            String errorMessage = e.getMessage();
-            if (errorMessage != null) Log.e("Request metadata info", errorMessage);
-            send("log", "Error requesting metadata info");
-        }
+        //Send message
+        webSocketClient.send(obj.toString());
     }
 
     private static class MetadataInfo {

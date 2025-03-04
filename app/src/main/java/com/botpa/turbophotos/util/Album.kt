@@ -1,13 +1,13 @@
 package com.botpa.turbophotos.util
 
-import org.json.JSONObject
+import com.google.gson.JsonObject
 import java.io.File
 
 class Album(imagesPath: String, metadataPath: String) {
 
     @JvmField var imagesFolder: File = File(imagesPath)
     @JvmField var metadataFile: File = File(metadataPath)
-    lateinit var metadata: JSONObject
+    lateinit var metadata: JsonObject
     @JvmField var files: ArrayList<TurboImage> = ArrayList()
 
     //Getters
@@ -17,7 +17,7 @@ class Album(imagesPath: String, metadataPath: String) {
     //Load & save metadata
     fun loadMetadata() {
         val metadataFile = File(absoluteMetadataPath)
-        metadata =  if (!metadataFile.exists()) JSONObject() else Orion.loadJSON(metadataFile.absolutePath)
+        metadata =  if (!metadataFile.exists()) JsonObject() else Orion.loadJSON(metadataFile)
     }
 
     fun saveMetadata(): Boolean {

@@ -32,6 +32,12 @@ import androidx.core.content.FileProvider;
 import com.botpa.turbophotos.R;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.snackbar.Snackbar.SnackbarLayout;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -361,14 +367,14 @@ public class Orion {
         }
     }
 
-    public static boolean writeJSON(File file, JSONObject json) {
+    public static boolean writeJSON(File file, JsonObject json) {
         createFile(file.getAbsolutePath());
         FileWriter fileWriter = null;
         boolean success = true;
 
         try {
             fileWriter = new FileWriter(file, false);
-            fileWriter.write(json.toString(2));
+            fileWriter.write(json.toString());
             fileWriter.flush();
         } catch (Exception e) {
             e.printStackTrace();
@@ -428,12 +434,22 @@ public class Orion {
         return file.exists();
     }
 
-    public static JSONObject loadJSON(String path) {
-        try {
-            return new JSONObject(readFile(path));
-        } catch (JSONException e) {
-            return new JSONObject();
-        }
+    public static JsonObject loadJSON(File file) {
+        return loadJSON(readFile(file.getAbsolutePath()));
+    }
+
+    public static JsonObject loadJSON(String json) {
+        /*Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        JsonElement gsonElem = gson.fromJson(readFile(path), JsonElement.class);
+        return new gsonElem.getAsJsonObject();*/
+        JsonObject obj = new Gson().fromJson(json, JsonObject.class);
+        return obj == null ? new JsonObject() : obj;
+    }
+
+    public static JsonArray arrayToJson(String[] array) {
+        JsonArray jsonArray = new JsonArray();
+        for (String obj : array) jsonArray.add(obj);
+        return jsonArray;
     }
 
     //Files: directories

@@ -48,5 +48,6 @@ dependencies {
     implementation(libs.glide)
     implementation(libs.recyclerview)
     implementation(libs.material3)
-    implementation("dev.gustavoavila:java-android-websocket-client:2.0.2")
+    implementation(libs.gson)
+    implementation(libs.java.android.websocket.client)
 }
