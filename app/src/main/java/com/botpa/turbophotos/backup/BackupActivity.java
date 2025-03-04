@@ -146,14 +146,20 @@ public class BackupActivity extends AppCompatActivity {
             if (!name.isEmpty()) {
                 //Check if name is saved
                 boolean isSaved = false;
-                for (User user: users) {
-                    if (user.name.equals(name)) {
-                        isSaved = true;
-                        break;
-                    }
+                for (int i = 0; i < users.size(); i++) {
+                    //Get user
+                    User user = users.get(i);
+                    if (!user.name.equals(name)) continue;
+
+                    //Update user
+                    user.URL = URL;
+                    usersAdapter.notifyItemChanged(i);
+                    saveUsers();
+                    isSaved = true;
+                    break;
                 }
 
-                //Save user
+                //Add new user
                 if (!isSaved) {
                     users.add(0, new User(name, URL));
                     usersAdapter.notifyItemInserted(0);
