@@ -564,7 +564,8 @@ public class MainActivity extends AppCompatActivity {
             //Temp variables
             boolean addToList;
             JsonObject metadata;
-            JsonPrimitive caption, labels;
+            JsonPrimitive caption;
+            JsonArray labels, text;
 
             //Look for files that contain filter
             for (TurboImage image: Library.files) {
@@ -591,14 +592,21 @@ public class MainActivity extends AppCompatActivity {
 
                     //Check labels
                     if (!addToList && metadata.has("labels")) {
-                        labels = metadata.getAsJsonPrimitive("labels");
-                        if (labels.isJsonArray()) {
-                            JsonArray labelsArray = metadata.getAsJsonArray("labels");
-                            for (int i = 0; i < labelsArray.size(); i++) {
-                                if (!labelsArray.get(i).getAsString().toLowerCase().contains(filter)) continue;
-                                addToList = true;
-                                break;
-                            }
+                        labels = metadata.getAsJsonArray("labels");
+                        for (int i = 0; i < labels.size(); i++) {
+                            if (!labels.get(i).getAsString().toLowerCase().contains(filter)) continue;
+                            addToList = true;
+                            break;
+                        }
+                    }
+
+                    //Check text
+                    if (!addToList && metadata.has("text")) {
+                        text = metadata.getAsJsonArray("text");
+                        for (int i = 0; i < text.size(); i++) {
+                            if (!text.get(i).getAsString().toLowerCase().contains(filter)) continue;
+                            addToList = true;
+                            break;
                         }
                     }
                 } catch (Exception e) {
