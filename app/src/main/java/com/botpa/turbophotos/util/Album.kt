@@ -1,5 +1,6 @@
 package com.botpa.turbophotos.util
 
+import android.app.Activity
 import com.google.gson.JsonObject
 import java.io.File
 

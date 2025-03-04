@@ -16,6 +16,7 @@ import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,12 +37,23 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.Writer;
 import java.net.URLDecoder;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class Orion {
 
@@ -289,76 +301,127 @@ public class Orion {
     }
 
     //Files
-    private static void createFile(String path) {
-        int lastSep = path.lastIndexOf(File.separator);
-        if (lastSep > 0) {
-            String dirPath = path.substring(0, lastSep);
-            makeDir(dirPath);
-        }
-
-        File file = new File(path);
+    private static Charset detectCharset(Path path) {
+        Charset charset = StandardCharsets.UTF_8;
+        FileInputStream fis = null;
 
         try {
-            if (!file.exists()) file.createNewFile();
-        } catch (IOException e) {
+            fis = new FileInputStream(path.toFile());
+            byte[] bytes = new byte[4096]; // Read a chunk of bytes
+            int bytesRead = fis.read(bytes);
+            charset = bytesRead == -1 ? StandardCharsets.UTF_8 : detectCharsetFromBytes(bytes, bytesRead);
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
-        }
-    }
-
-    public static void makeDir(String path) {
-        if (!existsFile(path)) {
-            File file = new File(path);
-            file.mkdirs();
-        }
-    }
-
-    public static String readFile(String path) {
-        createFile(path);
-
-        StringBuilder sb = new StringBuilder();
-        FileReader fr = null;
-        try {
-            fr = new FileReader(new File(path));
-
-            char[] buff = new char[1024];
-            int length = 0;
-
-            while ((length = fr.read(buff)) > 0) {
-                sb.append(new String(buff, 0, length));
-            }
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            if (fr != null) {
-                try {
-                    fr.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+            try {
+                if (fis != null) fis.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return charset;
+    }
+
+    private static Charset detectCharsetFromBytes(byte[] bytes, int length) {
+        // Simple BOM detection (UTF-8, UTF-16, UTF-32)
+        if (length >= 3 && bytes[0] == (byte) 0xEF && bytes[1] == (byte) 0xBB && bytes[2] == (byte) 0xBF) {
+            return StandardCharsets.UTF_8; // UTF-8 BOM
+        } else if (length >= 2 && bytes[0] == (byte) 0xFE && bytes[1] == (byte) 0xFF) {
+            return StandardCharsets.UTF_16BE; // UTF-16BE BOM
+        } else if (length >= 2 && bytes[0] == (byte) 0xFF && bytes[1] == (byte) 0xFE) {
+            return StandardCharsets.UTF_16LE; // UTF-16LE BOM
+        }/* else if (length >= 4 && bytes[0] == (byte) 0x00 && bytes[1] == (byte) 0x00 && bytes[2] == (byte) 0xFE && bytes[3] == (byte) 0xFF) {
+            return "UTF-32BE"; // UTF-32BE BOM
+        } else if (length >= 4 && bytes[0] == (byte) 0xFF && bytes[1] == (byte) 0xFE && bytes[2] == (byte) 0x00 && bytes[3] == (byte) 0x00) {
+            return "UTF-32LE"; // UTF-32LE BOM
+        }*/
+
+        return StandardCharsets.UTF_8; //default if unable to detect.
+    }
+
+    public static String readFile(File file) {
+        Path path = file.toPath();
+        Charset charset = detectCharset(path);
+        Reader reader = null;
+
+        StringBuilder sb = new StringBuilder();
+
+        try {
+            reader = new BufferedReader(new InputStreamReader(Files.newInputStream(path), charset));
+
+            char[] buff = new char[1024];
+            int length;
+
+            while ((length = reader.read(buff)) > 0) {
+                sb.append(new String(buff, 0, length));
+            }
+        } catch (IOException e) {
+            String message = e.getMessage();
+            if (message != null) Log.e("Read file", message);
+        } finally {
+            try {
+                if (reader != null) reader.close();
+            } catch (Exception e) {
+                String message = e.getMessage();
+                if (message != null) Log.e("Read file (2)", message);
             }
         }
 
         return sb.toString();
     }
 
-    public static void writeFile(String path, String str) {
-        createFile(path);
-        FileWriter fileWriter = null;
+    /*public static String readFile(File file) {
+        StringBuilder sb = new StringBuilder();
+        Reader reader = null;
 
         try {
-            fileWriter = new FileWriter(new File(path), false);
-            fileWriter.write(str);
-            fileWriter.flush();
+            reader = new BufferedReader(new InputStreamReader(Files.newInputStream(file.toPath())));
+
+            char[] buff = new char[1024];
+            int length;
+
+            while ((length = reader.read(buff)) > 0) {
+                sb.append(new String(buff, 0, length));
+            }
         } catch (IOException e) {
-            e.printStackTrace();
+            String message = e.getMessage();
+            if (message != null) Log.e("Read file", message);
         } finally {
             try {
-                if (fileWriter != null)
-                    fileWriter.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+                if (reader != null) reader.close();
+            } catch (Exception e) {
+                String message = e.getMessage();
+                if (message != null) Log.e("Read file (2)", message);
             }
         }
+
+        return sb.toString();
+    }*/
+
+    public static boolean writeFile(File file, String data) {
+        Writer writer = null;
+        boolean success = true;
+
+        try {
+            writer = new BufferedWriter(new OutputStreamWriter(Files.newOutputStream(file.toPath()), StandardCharsets.UTF_16));
+            writer.write(data);
+        } catch (IOException e) {
+            String message = e.getMessage();
+            if (message != null) Log.e("Write file", message);
+            success = false;
+        } finally {
+            try {
+                if (writer != null) writer.close();
+            } catch (Exception e) {
+                String message = e.getMessage();
+                if (message != null) Log.e("Write file (2)", message);
+            }
+        }
+
+        return success;
     }
 
     public static void deleteFile(File file) {
@@ -374,7 +437,7 @@ public class Orion {
         if (fileArr != null) {
             for (File subFile : fileArr) {
                 if (subFile.isDirectory()) {
-                    deleteFile(subFile.getAbsolutePath());
+                    deleteFile(new File(subFile.getAbsolutePath()));
                 }
 
                 if (subFile.isFile()) {
@@ -384,16 +447,6 @@ public class Orion {
         }
 
         file.delete();
-    }
-
-    public static void deleteFile(String path) {
-        deleteFile(new File(path));
-    }
-
-    public static boolean moveFile(String oldPath, String newPath) {
-        File oldFile = new File(oldPath);
-        File newFile = new File(newPath);
-        return moveFile(oldFile, newFile);
     }
 
     public static boolean moveFile(File oldFile, File newFile) {
@@ -407,30 +460,11 @@ public class Orion {
 
     //Files: JSON
     public static boolean writeJson(File file, JsonObject json) {
-        createFile(file.getAbsolutePath());
-        FileWriter fileWriter = null;
-        boolean success = true;
-
-        try {
-            fileWriter = new FileWriter(file, false);
-            fileWriter.write(json.toString());
-            fileWriter.flush();
-        } catch (Exception e) {
-            e.printStackTrace();
-            success = false;
-        } finally {
-            try {
-                if (fileWriter != null) fileWriter.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return success;
+        return writeFile(file, json.toString());
     }
 
     public static JsonObject loadJson(File file) {
-        return loadJson(readFile(file.getAbsolutePath()));
+        return loadJson(readFile(file));
     }
 
     public static JsonObject loadJson(String json) {
@@ -577,7 +611,6 @@ public class Orion {
     //Files: bitmaps
     private static void saveBitmap(Bitmap bitmap, String destPath) {
         FileOutputStream out = null;
-        createFile(destPath);
         try {
             out = new FileOutputStream(destPath);
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);

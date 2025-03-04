@@ -350,7 +350,7 @@ public class MainActivity extends AppCompatActivity {
 
         displayEdit.setOnClickListener(view -> {
             //No metadata
-            if (!displayCurrent.album.metadata.has(displayCurrent.file.getName())) {
+            if (!displayCurrent.hasMetadata()) {
                 Toast.makeText(this, "This file does not contain metadata", Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -400,7 +400,7 @@ public class MainActivity extends AppCompatActivity {
 
         displayInfo.setOnClickListener(view -> {
             //No metadata
-            if (!displayCurrent.album.metadata.has(displayCurrent.file.getName())) {
+            if (!displayCurrent.hasMetadata()) {
                 Toast.makeText(this, "This file does not contain metadata", Toast.LENGTH_SHORT).show();
                 return;
             }

@@ -33,7 +33,7 @@ class GalleryAdapter(private val context: Context, private val images: ArrayList
         Glide.with(context).asBitmap().load(image.file.absolutePath).thumbnail(requestBuilder).into(holder.image)
 
         //Toggle missing info icon
-        holder.missingInfo.visibility = if (image.album.metadata!!.has(image.file.name)) View.GONE else View.VISIBLE
+        holder.missingInfo.visibility = if (image.album.metadata.has(image.file.name)) View.GONE else View.VISIBLE
 
         //Add click listeners
         holder.background.setOnClickListener { view: View ->
