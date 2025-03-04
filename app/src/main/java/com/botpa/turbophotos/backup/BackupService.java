@@ -35,7 +35,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.time.Instant;
-import java.util.ArrayList;
 
 import dev.gustavoavila.websocketclient.WebSocketClient;
 
@@ -199,7 +198,7 @@ public class BackupService extends Service {
 
         //Check message
         try {
-            JsonObject message = Orion.loadJSON(messageString);
+            JsonObject message = Orion.loadJson(messageString);
             if (!message.has("action")) throw new Exception("Message has no action key");
             String action = message.get("action").getAsString();
             switch (action) {

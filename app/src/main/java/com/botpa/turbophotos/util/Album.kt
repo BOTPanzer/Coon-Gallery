@@ -17,11 +17,11 @@ class Album(imagesPath: String, metadataPath: String) {
     //Load & save metadata
     fun loadMetadata() {
         val metadataFile = File(absoluteMetadataPath)
-        metadata =  if (!metadataFile.exists()) JsonObject() else Orion.loadJSON(metadataFile)
+        metadata =  if (!metadataFile.exists()) JsonObject() else Orion.loadJson(metadataFile)
     }
 
     fun saveMetadata(): Boolean {
-        return Orion.writeJSON(metadataFile, metadata)
+        return Orion.writeJson(metadataFile, metadata)
     }
 
     //Override toString to be able to save albums in a string

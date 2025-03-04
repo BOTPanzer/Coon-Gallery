@@ -33,14 +33,8 @@ import com.botpa.turbophotos.R;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.snackbar.Snackbar.SnackbarLayout;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -367,29 +361,6 @@ public class Orion {
         }
     }
 
-    public static boolean writeJSON(File file, JsonObject json) {
-        createFile(file.getAbsolutePath());
-        FileWriter fileWriter = null;
-        boolean success = true;
-
-        try {
-            fileWriter = new FileWriter(file, false);
-            fileWriter.write(json.toString());
-            fileWriter.flush();
-        } catch (Exception e) {
-            e.printStackTrace();
-            success = false;
-        } finally {
-            try {
-                if (fileWriter != null) fileWriter.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return success;
-    }
-
     public static void deleteFile(File file) {
         if (!file.exists()) return;
 
@@ -434,11 +405,35 @@ public class Orion {
         return file.exists();
     }
 
-    public static JsonObject loadJSON(File file) {
-        return loadJSON(readFile(file.getAbsolutePath()));
+    //Files: JSON
+    public static boolean writeJson(File file, JsonObject json) {
+        createFile(file.getAbsolutePath());
+        FileWriter fileWriter = null;
+        boolean success = true;
+
+        try {
+            fileWriter = new FileWriter(file, false);
+            fileWriter.write(json.toString());
+            fileWriter.flush();
+        } catch (Exception e) {
+            e.printStackTrace();
+            success = false;
+        } finally {
+            try {
+                if (fileWriter != null) fileWriter.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return success;
     }
 
-    public static JsonObject loadJSON(String json) {
+    public static JsonObject loadJson(File file) {
+        return loadJson(readFile(file.getAbsolutePath()));
+    }
+
+    public static JsonObject loadJson(String json) {
         /*Gson gson = new GsonBuilder().setPrettyPrinting().create();
         JsonElement gsonElem = gson.fromJson(readFile(path), JsonElement.class);
         return new gsonElem.getAsJsonObject();*/
