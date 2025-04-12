@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.botpa.turbophotos.R;
+import com.botpa.turbophotos.settings.SettingsActivity;
 import com.botpa.turbophotos.util.Orion;
 import com.botpa.turbophotos.util.Storage;
 
@@ -274,7 +275,7 @@ public class BackupActivity extends AppCompatActivity {
 
                     //Snack
                     case "snack":
-                        Orion.snack(intent.getStringExtra(command), BackupActivity.this);
+                        Orion.snack(BackupActivity.this, intent.getStringExtra(command));
                         break;
 
                     //Log

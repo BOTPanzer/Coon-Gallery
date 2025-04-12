@@ -106,6 +106,15 @@
                         android:textSize="16sp"
                         android:textColor="?attr/colorOnSurface" />
 
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/poppins"
+                        android:text="Click the &quot;images&quot; or &quot;metadata&quot; icons to select where they are located"
+                        android:textAlignment="center"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="14sp" />
+
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/albumsFoldersList"
                         android:layout_width="match_parent"

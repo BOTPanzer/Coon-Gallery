@@ -11,9 +11,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
+        android:fontFamily="@font/opificio_bold_rounded"
         android:singleLine="true"
         android:text="Album 1"
-        android:textColor="?attr/colorOnSurface" />
+        android:textColor="?attr/colorOnSurface"
+        android:textSize="16sp" />
 
     <LinearLayout
         android:layout_width="match_parent"

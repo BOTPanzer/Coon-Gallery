@@ -53,7 +53,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 public class Orion {
 
@@ -65,15 +64,15 @@ public class Orion {
     }
 
     //Snack bar
-    public static void snack(String msg, Activity activity) {
-        snack(msg, "ok", null, activity);
+    public static void snack(Activity activity, String msg) {
+        snack(activity, msg, "ok", null);
     }
 
-    public static void snack(String msg, String btn, Activity activity) {
-        snack(msg, btn, null, activity);
+    public static void snack(Activity activity, String msg, String btn) {
+        snack(activity, msg, btn, null);
     }
 
-    public static void snack(String msg, String btn, Runnable runnable, Activity activity) {
+    public static void snack(Activity activity, String msg, String btn, Runnable runnable) {
         LinearLayout.LayoutParams objLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         View rootView = activity.getWindow().getDecorView().findViewById(android.R.id.content);
         final Snackbar snackbar = Snackbar.make(rootView, "nepe", Snackbar.LENGTH_LONG);
@@ -83,8 +82,8 @@ public class Orion {
         layout.setPadding(0,0, 0,0);
         layout.setBackgroundColor(0x00000000);
 
-        LayoutInflater inflter = (LayoutInflater.from(activity));
-        View snackView = inflter.inflate(R.layout.snackbar_one, null);
+        LayoutInflater inflater = (LayoutInflater.from(activity));
+        View snackView = inflater.inflate(R.layout.snackbar_one, null);
 
         TextView snackText = snackView.findViewById(R.id.textView);
         snackText.setText(msg);
@@ -100,7 +99,7 @@ public class Orion {
         snackbar.show();
     }
 
-    public static void snack2(String msg, String btnCancel, String btnConfirm, Runnable runnable, Activity activity) {
+    public static void snack2(Activity activity, String msg, String btnCancel, String btnConfirm, Runnable runnable) {
         LinearLayout.LayoutParams objLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         View rootView = activity.getWindow().getDecorView().findViewById(android.R.id.content);
         final Snackbar snackbar = Snackbar.make(rootView, "nepe", Snackbar.LENGTH_LONG);
@@ -110,8 +109,8 @@ public class Orion {
         layout.setPadding(0,0, 0,0);
         layout.setBackgroundColor(0x00000000);
 
-        LayoutInflater inflter = (LayoutInflater.from(activity));
-        View snackView = inflter.inflate(R.layout.snackbar_two, null);
+        LayoutInflater inflater = (LayoutInflater.from(activity));
+        View snackView = inflater.inflate(R.layout.snackbar_two, null);
 
         TextView snackText = snackView.findViewById(R.id.textView);
         snackText.setText(msg);
@@ -124,6 +123,44 @@ public class Orion {
         textViewTwo.setText(btnConfirm.toUpperCase());
         textViewTwo.setOnClickListener(view -> {
             runnable.run();
+            snackbar.dismiss();
+        });
+
+        layout.addView(snackView, objLayoutParams);
+        snackbar.show();
+    }
+
+    public static void snack2(Activity activity, String msg, String btn1, Runnable runnable1, String btn2, Runnable runnable2) {
+        snack2(activity, msg, btn1, runnable1, btn2, runnable2, Snackbar.LENGTH_LONG);
+    }
+
+    public static void snack2(Activity activity, String msg, String btn1, Runnable runnable1, String btn2, Runnable runnable2, int length) {
+        LinearLayout.LayoutParams objLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        View rootView = activity.getWindow().getDecorView().findViewById(android.R.id.content);
+        final Snackbar snackbar = Snackbar.make(rootView, "nepe", length);
+
+        @SuppressLint("RestrictedApi")
+        SnackbarLayout layout = (SnackbarLayout) snackbar.getView();
+        layout.setPadding(0,0, 0,0);
+        layout.setBackgroundColor(0x00000000);
+
+        LayoutInflater inflater = (LayoutInflater.from(activity));
+        View snackView = inflater.inflate(R.layout.snackbar_two, null);
+
+        TextView snackText = snackView.findViewById(R.id.textView);
+        snackText.setText(msg);
+
+        TextView textViewOne = snackView.findViewById(R.id.txtOne);
+        textViewOne.setText(btn1.toUpperCase());
+        textViewOne.setOnClickListener(view -> {
+            runnable1.run();
+            snackbar.dismiss();
+        });
+
+        TextView textViewTwo = snackView.findViewById(R.id.txtTwo);
+        textViewTwo.setText(btn2.toUpperCase());
+        textViewTwo.setOnClickListener(view -> {
+            runnable2.run();
             snackbar.dismiss();
         });
 
@@ -265,7 +302,7 @@ public class Orion {
         ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
         ClipData clip = ClipData.newPlainText("", str);
         clipboard.setPrimaryClip(clip);
-        Orion.snack("Copied to Clipboard", "Ok", activity);
+        Orion.snack(activity, "Copied to Clipboard");
     }
 
     //Colors

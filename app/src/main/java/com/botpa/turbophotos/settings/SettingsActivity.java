@@ -19,6 +19,7 @@ import com.botpa.turbophotos.util.Orion;
 import com.botpa.turbophotos.util.Storage;
 import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.android.material.slider.Slider;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
 
@@ -31,7 +32,8 @@ public class SettingsActivity extends AppCompatActivity {
     //Albums
     private AlbumAdapter albumsAdapter;
     private int albumsFilePickerIndex;
-    private boolean albumsFilePickerIsFolder;
+    private enum PickerAction { SelectFolder, SelectFile, CreateFile }
+    private PickerAction albumsFilePickerAction;
     private final ActivityResultLauncher<Intent> albumsFilePickerLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
         //Bad result
         if (result.getResultCode() != Activity.RESULT_OK || result.getData() == null) return;
@@ -44,10 +46,26 @@ public class SettingsActivity extends AppCompatActivity {
 
             //Update
             Album album = Library.albums.get(albumsFilePickerIndex);
-            if (albumsFilePickerIsFolder)
-                album.imagesFolder = file;
-            else
-                album.metadataFile = file;
+            switch (albumsFilePickerAction) {
+                case SelectFolder:
+                    album.imagesFolder = file;
+                    break;
+                case SelectFile:
+                    album.metadataFile = file;
+                    break;
+                case CreateFile:
+                    File metadataFile;
+                    String name;
+                    int i = 0;
+                    do {
+                        name = album.imagesFolder.getName().toLowerCase().replace(" ", "-") + (i > 0 ? " (" + i + ")" : "") + ".metadata.json";
+                        metadataFile =  new File(file.getAbsolutePath() + "/" + name);
+                        i++;
+                    } while (metadataFile.exists());
+                    Orion.writeFile(metadataFile, "{}");
+                    album.metadataFile = metadataFile;
+                    break;
+            }
             albumsAdapter.notifyItemChanged(albumsFilePickerIndex);
 
             //Save albums
@@ -120,30 +138,47 @@ public class SettingsActivity extends AppCompatActivity {
             Library.saveAlbums();
         });
         albumsAdapter.setOnChooseFolderListener((view, index) -> {
-            //Save info
+            //Save album index
             albumsFilePickerIndex = index;
-            albumsFilePickerIsFolder = true;
 
-            //Get start folder
-            //intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, DocumentFile.fromTreeUri(MainActivity.this, Uri.parse(albums.get(index).imagesFolder.getPath())).getUri());
+            //Feedback toast
+            Toast.makeText(SettingsActivity.this, "Select a folder to use as album", Toast.LENGTH_LONG).show();
 
             //Ask for a folder
+            albumsFilePickerAction = PickerAction.SelectFolder;
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
             albumsFilePickerLauncher.launch(intent);
         });
         albumsAdapter.setOnChooseFileListener((view, index) -> {
-            //Save info
+            //Save album index
             albumsFilePickerIndex = index;
-            albumsFilePickerIsFolder = false;
 
-            //Get start folder
-            //intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, DocumentFile.fromTreeUri(MainActivity.this, Uri.parse(albums.get(index).metadataFile.getParent())).getUri());
+            //Check action
+            Orion.snack2(SettingsActivity.this, "Do you have an already created metadata file?", "Select", () -> {
+                //Feedback toast
+                Toast.makeText(SettingsActivity.this, "Select a file to use as metadata", Toast.LENGTH_LONG).show();
 
-            //Ask for a file
-            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-            intent.addCategory(Intent.CATEGORY_OPENABLE);
-            intent.setType("application/json");
-            albumsFilePickerLauncher.launch(intent);
+                //Ask for a file
+                albumsFilePickerAction = PickerAction.SelectFile;
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("application/json");
+                albumsFilePickerLauncher.launch(intent);
+            }, "Create", () -> {
+                //Album folder is needed to take the name
+                if (!Library.albums.get(index).imagesFolder.exists()) {
+                    Toast.makeText(SettingsActivity.this, "Please select an album folder first", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                //Feedback toast
+                Toast.makeText(SettingsActivity.this, "Select a folder to create the album metadata", Toast.LENGTH_LONG).show();
+
+                //Ask for a folder & create file inside
+                albumsFilePickerAction = PickerAction.CreateFile;
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                albumsFilePickerLauncher.launch(intent);
+            }, Snackbar.LENGTH_INDEFINITE);
         });
 
         //Add adapter to list
