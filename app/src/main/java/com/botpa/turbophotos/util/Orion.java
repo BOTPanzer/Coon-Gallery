@@ -31,11 +31,13 @@ import android.widget.TextView;
 import androidx.core.content.FileProvider;
 
 import com.botpa.turbophotos.R;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.snackbar.Snackbar.SnackbarLayout;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -54,7 +56,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+/** @noinspection CallToPrintStackTrace*/
 public class Orion {
+
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
 
     //Get attribute color
     public static int getColor(Context context, int attr) {
@@ -496,24 +502,63 @@ public class Orion {
     }
 
     //Files: JSON
-    public static boolean writeJson(File file, JsonObject json) {
+    public static ObjectNode getEmptyJson() {
+        return objectMapper.createObjectNode();
+    }
+
+    public static ArrayNode getEmptyJsonArray() {
+        return objectMapper.createArrayNode();
+    }
+
+    public static boolean writeJson(File file, ObjectNode json) {
         return writeFile(file, json.toString());
     }
 
-    public static JsonObject loadJson(File file) {
-        return loadJson(readFile(file));
+    public static ObjectNode loadJson(File file) {
+        //Check if file exists and has content before trying to parse
+        if (file == null || !file.exists() || file.length() == 0) return objectMapper.createObjectNode();
+
+        try {
+            JsonNode rootNode = objectMapper.readTree(file);
+
+            //Check if it's a valid json object
+            if (rootNode != null && rootNode.isObject()) {
+                //Cast and return
+                return (ObjectNode) rootNode;
+            } else {
+                //Not an object -> Return empty
+                return objectMapper.createObjectNode();
+            }
+        } catch (IOException e) {
+            //Return empty on error
+            return objectMapper.createObjectNode();
+        }
     }
 
-    public static JsonObject loadJson(String json) {
-        /*Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        JsonElement gsonElem = gson.fromJson(readFile(path), JsonElement.class);
-        return new gsonElem.getAsJsonObject();*/
-        JsonObject obj = new Gson().fromJson(json, JsonObject.class);
-        return obj == null ? new JsonObject() : obj;
+    public static ObjectNode loadJson(String json) {
+        //Basic check for null or empty string
+        if (json == null || json.trim().isEmpty()) return objectMapper.createObjectNode();
+
+        try {
+            JsonNode rootNode = objectMapper.readTree(json);
+
+            //Check if it's a valid json object
+            if (rootNode != null && rootNode.isObject()) {
+                //Cast and return
+                return (ObjectNode) rootNode;
+            } else {
+                //Not an object -> Return empty
+                return objectMapper.createObjectNode();
+            }
+        } catch (JsonProcessingException e) {
+            //Return empty on error
+            return objectMapper.createObjectNode();
+        }
     }
 
-    public static JsonArray arrayToJson(String[] array) {
-        JsonArray jsonArray = new JsonArray();
+    public static ArrayNode arrayToJson(String[] array) {
+        ArrayNode jsonArray = objectMapper.createArrayNode();
+        if (array == null) return jsonArray;
         for (String obj : array) jsonArray.add(obj);
         return jsonArray;
     }

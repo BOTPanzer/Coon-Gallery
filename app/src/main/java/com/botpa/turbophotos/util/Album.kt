@@ -1,14 +1,13 @@
 package com.botpa.turbophotos.util
 
-import android.app.Activity
-import com.google.gson.JsonObject
+import com.fasterxml.jackson.databind.node.ObjectNode
 import java.io.File
 
 class Album(imagesPath: String, metadataPath: String) {
 
     @JvmField var imagesFolder: File = File(imagesPath)
     @JvmField var metadataFile: File = File(metadataPath)
-    lateinit var metadata: JsonObject
+    @JvmField var metadata: ObjectNode? = null
     @JvmField var files: ArrayList<TurboImage> = ArrayList()
 
     //Getters
@@ -18,11 +17,31 @@ class Album(imagesPath: String, metadataPath: String) {
     //Load & save metadata
     fun loadMetadata() {
         val metadataFile = File(absoluteMetadataPath)
-        metadata =  if (!metadataFile.exists()) JsonObject() else Orion.loadJson(metadataFile)
+        metadata = Orion.loadJson(metadataFile)
     }
 
     fun saveMetadata(): Boolean {
         return Orion.writeJson(metadataFile, metadata)
+    }
+
+    //Metadata actions
+    fun hasMetadata(): Boolean {
+        return metadata != null
+    }
+
+    fun hasMetadataKey(key: String): Boolean {
+        return if (metadata != null)
+            metadata!!.has(key)
+        else
+            false
+    }
+
+    fun getMetadataKey(key: String): ObjectNode? {
+        return metadata!!.get(key) as ObjectNode?
+    }
+
+    fun removeMetadataKey(key: String) {
+        metadata!!.remove(key);
     }
 
     //Override toString to be able to save albums in a string

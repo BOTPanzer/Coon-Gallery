@@ -7,9 +7,13 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -62,10 +66,8 @@ public class BackupActivity extends AppCompatActivity {
         getViews();
         addListeners();
 
-
         //Load users
         loadUsers();
-
 
         //Init users list
         usersAdapter = new UserAdapter(BackupActivity.this, users);
@@ -85,13 +87,11 @@ public class BackupActivity extends AppCompatActivity {
         usersList.setAdapter(usersAdapter);
         usersList.setLayoutManager(new LinearLayoutManager(BackupActivity.this));
 
-
         //Init logs list
         logsAdapter = new LogAdapter(BackupActivity.this, logs);
         logsList.setAdapter(logsAdapter);
         logsList.setLayoutManager(new LinearLayoutManager(BackupActivity.this, LinearLayoutManager.VERTICAL, true));
         logsList.setItemAnimator(null);
-
 
         //Register receiver
         registerReceiver();
@@ -316,4 +316,5 @@ public class BackupActivity extends AppCompatActivity {
         intent.putExtra(name, value);
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
     }
+
 }

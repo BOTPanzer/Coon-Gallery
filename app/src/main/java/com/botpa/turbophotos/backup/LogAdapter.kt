@@ -31,4 +31,5 @@ class LogAdapter(private val context: Context, private val logs: List<String>) :
     class LogHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var log: TextView = itemView.findViewById(R.id.log)
     }
+
 }

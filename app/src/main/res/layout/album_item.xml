@@ -59,8 +59,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:ems="10"
+                    android:hint="Images folder"
                     android:singleLine="true"
-                    android:text="Images folder"
                     android:textColor="?attr/colorOnSurface" />
             </LinearLayout>
 
@@ -94,8 +94,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:ems="10"
+                    android:hint="Metadata file"
                     android:singleLine="true"
-                    android:text="Metadata file"
                     android:textColor="?attr/colorOnSurface" />
             </LinearLayout>
         </LinearLayout>

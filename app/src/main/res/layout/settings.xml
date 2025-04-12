@@ -2,6 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/background"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".SettingsActivity">
@@ -23,8 +24,8 @@
                 android:layout_marginHorizontal="20dp"
                 android:fontFamily="@font/opificio_bold_rounded"
                 android:text="Settings"
-                android:textSize="16sp"
-                android:textColor="?attr/colorOnSurface" />
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="16sp" />
 
         </LinearLayout>
 
@@ -52,8 +53,8 @@
                         android:fontFamily="@font/opificio_bold_rounded"
                         android:text="App"
                         android:textAlignment="center"
-                        android:textSize="16sp"
-                        android:textColor="?attr/colorOnSurface" />
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="16sp" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -87,7 +88,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/poppins"
-                        android:text="Show missing metadata message"/>
+                        android:text="Show missing metadata message" />
 
                 </LinearLayout>
 
@@ -103,14 +104,14 @@
                         android:fontFamily="@font/opificio_bold_rounded"
                         android:text="Albums"
                         android:textAlignment="center"
-                        android:textSize="16sp"
-                        android:textColor="?attr/colorOnSurface" />
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="16sp" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/poppins"
-                        android:text="Click the &quot;images&quot; or &quot;metadata&quot; icons to select where they are located"
+                        android:text="Click the &quot;images folder&quot; or &quot;metadata file&quot; icons to select where they are located"
                         android:textAlignment="center"
                         android:textColor="?attr/colorOnSurface"
                         android:textSize="14sp" />

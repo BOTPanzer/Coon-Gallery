@@ -22,8 +22,8 @@ import com.botpa.turbophotos.util.Album;
 import com.botpa.turbophotos.util.Library;
 import com.botpa.turbophotos.util.Orion;
 import com.botpa.turbophotos.util.TurboImage;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -127,9 +127,9 @@ public class BackupService extends Service {
                 setStatus(STATUS_ONLINE);
 
                 //Create albums object
-                JsonObject obj = new JsonObject();
-                obj.addProperty("action", "albums");
-                JsonArray albums = new JsonArray(Library.albums.size());
+                ObjectNode obj = Orion.getEmptyJson();
+                obj.put("action", "albums");
+                ArrayNode albums = Orion.getEmptyJsonArray();
                 for (int i = 0; i < Library.albums.size(); i++) {
                     //Get album
                     Album album = Library.albums.get(i);
@@ -141,7 +141,7 @@ public class BackupService extends Service {
                     //Add array with album files
                     albums.add(Orion.arrayToJson(files));
                 }
-                obj.add("albums", albums);
+                obj.set("albums", albums);
 
                 //Send albums
                 webSocketClient.send(obj.toString());
@@ -198,18 +198,18 @@ public class BackupService extends Service {
 
         //Check message
         try {
-            JsonObject message = Orion.loadJson(messageString);
+            ObjectNode message = Orion.loadJson(messageString);
             if (!message.has("action")) throw new Exception("Message has no action key");
-            String action = message.get("action").getAsString();
+            String action = message.get("action").asText();
             switch (action) {
                 //Send image info
                 case "requestImageInfo": {
                     //Get album
-                    int albumIndex = message.get("albumIndex").getAsInt();
+                    int albumIndex = message.get("albumIndex").asInt();
                     Album album = Library.albums.get(albumIndex);
 
                     //Get image
-                    int imageIndex = message.get("imageIndex").getAsInt();
+                    int imageIndex = message.get("imageIndex").asInt();
 
                     //Send image info
                     File file = album.files.get(imageIndex).file;
@@ -218,11 +218,11 @@ public class BackupService extends Service {
                     send("log", "Sending image info for: " + file.getName());
 
                     //Create message
-                    JsonObject obj = new JsonObject();
-                    obj.addProperty("action", "imageInfo");
-                    obj.addProperty("albumIndex", albumIndex);
-                    obj.addProperty("imageIndex", imageIndex);
-                    if (file.exists()) obj.addProperty("lastModified", file.lastModified());
+                    ObjectNode obj = Orion.getEmptyJson();
+                    obj.put("action", "imageInfo");
+                    obj.put("albumIndex", albumIndex);
+                    obj.put("imageIndex", imageIndex);
+                    if (file.exists()) obj.put("lastModified", file.lastModified());
 
                     //Send message
                     webSocketClient.send(obj.toString());
@@ -232,11 +232,11 @@ public class BackupService extends Service {
                 //Send image data
                 case "requestImageData": {
                     //Get album
-                    int albumIndex = message.get("albumIndex").getAsInt();
+                    int albumIndex = message.get("albumIndex").asInt();
                     Album album = Library.albums.get(albumIndex);
 
                     //Get image
-                    int imageIndex = message.get("imageIndex").getAsInt();
+                    int imageIndex = message.get("imageIndex").asInt();
                     TurboImage image = album.files.get(imageIndex);
 
                     //Send image data
@@ -268,7 +268,7 @@ public class BackupService extends Service {
                 //Send metadata info
                 case "requestMetadataInfo": {
                     //Get album
-                    int albumIndex = message.get("albumIndex").getAsInt();
+                    int albumIndex = message.get("albumIndex").asInt();
                     Album album = Library.albums.get(albumIndex);
 
                     //Send metadata info
@@ -278,10 +278,10 @@ public class BackupService extends Service {
                     send("log", "Sending metadata info for: " + file.getName());
 
                     //Create message
-                    JsonObject obj = new JsonObject();
-                    obj.addProperty("action", "metadataInfo");
-                    obj.addProperty("albumIndex", albumIndex);
-                    if (file.exists()) obj.addProperty("lastModified", file.lastModified());
+                    ObjectNode obj = Orion.getEmptyJson();
+                    obj.put("action", "metadataInfo");
+                    obj.put("albumIndex", albumIndex);
+                    if (file.exists()) obj.put("lastModified", file.lastModified());
 
                     //Send message
                     webSocketClient.send(obj.toString());
@@ -291,7 +291,7 @@ public class BackupService extends Service {
                 //Send metadata data
                 case "requestMetadataData": {
                     //Get album
-                    int albumIndex = message.get("albumIndex").getAsInt();
+                    int albumIndex = message.get("albumIndex").asInt();
                     Album album = Library.albums.get(albumIndex);
 
                     //Send metadata data
@@ -335,18 +335,18 @@ public class BackupService extends Service {
                     }
 
                     //Get album
-                    int albumIndex = message.get("albumIndex").getAsInt();
+                    int albumIndex = message.get("albumIndex").asInt();
 
                     //Get last modified
-                    long lastModified = message.get("lastModified").getAsLong();
+                    long lastModified = message.get("lastModified").asLong();
 
                     //Save request
                     metadataRequest = new MetadataInfo(albumIndex, lastModified);
 
                     //Create message
-                    JsonObject obj = new JsonObject();
-                    obj.addProperty("action", "requestMetadataData");
-                    obj.addProperty("albumIndex", albumIndex);
+                    ObjectNode obj = Orion.getEmptyJson();
+                    obj.put("action", "requestMetadataData");
+                    obj.put("albumIndex", albumIndex);
 
                     //Send message
                     webSocketClient.send(obj.toString());
@@ -499,9 +499,9 @@ public class BackupService extends Service {
         //Finished
         if (metadataRequestIndex >= Library.albums.size()) {
             //Create message
-            JsonObject obj = new JsonObject();
-            obj.addProperty("action", "endSync");
-            obj.addProperty("message", "Finished metadata sync");
+            ObjectNode obj = Orion.getEmptyJson();
+            obj.put("action", "endSync");
+            obj.put("message", "Finished metadata sync");
 
             //Send message
             webSocketClient.send(obj.toString());
@@ -517,9 +517,9 @@ public class BackupService extends Service {
         }
 
         //Request next metadata
-        JsonObject obj = new JsonObject();
-        obj.addProperty("action", "requestMetadataInfo");
-        obj.addProperty("albumIndex", metadataRequestIndex);
+        ObjectNode obj = Orion.getEmptyJson();
+        obj.put("action", "requestMetadataInfo");
+        obj.put("albumIndex", metadataRequestIndex);
 
         //Send message
         webSocketClient.send(obj.toString());
@@ -534,4 +534,5 @@ public class BackupService extends Service {
             this.lastModified = lastModified;
         }
     }
+
 }

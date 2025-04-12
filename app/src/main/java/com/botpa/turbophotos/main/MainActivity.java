@@ -10,6 +10,7 @@ import android.os.Environment;
 import android.provider.Settings;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.HorizontalScrollView;
 import android.widget.TextView;
@@ -21,6 +22,9 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.PagerSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
@@ -35,9 +39,8 @@ import com.botpa.turbophotos.R;
 import com.botpa.turbophotos.util.Storage;
 import com.botpa.turbophotos.util.TurboImage;
 import com.botpa.turbophotos.settings.SettingsActivity;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.util.ArrayList;
 
@@ -119,7 +122,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        //EdgeToEdge.enable(this); //Enable edge to edge (fullscreen)
 
         //Load storage
         Storage.load(MainActivity.this);
@@ -216,8 +218,8 @@ public class MainActivity extends AppCompatActivity {
         Library.loadAlbums();
 
 
-        //Load metadata
-        loadMetadata();
+        //Load gallery (images & metadata)
+        loadGallery();
 
 
         //Init gallery & display lists
@@ -384,10 +386,14 @@ public class MainActivity extends AppCompatActivity {
             displayInfoLabelsText.setText(labels);
 
             //Update metadata
-            JsonObject metadata = displayCurrent.album.metadata.getAsJsonObject(displayCurrent.file.getName());
-            if (metadata == null) metadata = new JsonObject();
-            metadata.addProperty("caption", caption);
-            metadata.add("labels", Orion.arrayToJson(labelsArray));
+            String key = displayCurrent.file.getName();
+            ObjectNode metadata = displayCurrent.album.getMetadataKey(key);
+            if (metadata == null) {
+                metadata = Orion.getEmptyJson();
+                displayCurrent.album.metadata.set(key, metadata);
+            }
+            metadata.put("caption", caption);
+            metadata.set("labels", Orion.arrayToJson(labelsArray));
 
             //Save
             boolean saved = displayCurrent.album.saveMetadata();
@@ -440,7 +446,9 @@ public class MainActivity extends AppCompatActivity {
         galleryList.setLayoutManager(new GridLayoutManager(this, Storage.getInt("Settings.galleryItemsPerRow", 3)));
 
         galleryAdapter = new GalleryAdapter(this, galleryFiles);
-        galleryAdapter.setOnItemClickListener((view, index) -> selectImage(index));
+        galleryAdapter.setOnItemClickListener((view, index) -> {
+            if (!isLoading) selectImage(index);
+        });
         galleryList.setAdapter(galleryAdapter);
 
         //Create display
@@ -489,15 +497,15 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public interface LoadingIndicator { void show(String folderName); }
-    public LoadingIndicator showLoadingIndicator = (folderName) -> {
+    public interface LoadingIndicator { void show(String folderName, String type); }
+    public LoadingIndicator showLoadingIndicator = (folderName, type) -> {
         runOnUiThread(() -> {
-            searchIndicatorText.setText("Loading \"" + folderName + "\" metadata...");
+            searchIndicatorText.setText("Loading \"" + folderName + "\" " + type + "...");
             searchIndicator.setVisibility(View.VISIBLE);
         });
     };
 
-    private void loadMetadata() {
+    private void loadGallery() {
         //Loading or searching
         if (isLoading || isSearching) return;
 
@@ -509,22 +517,35 @@ public class MainActivity extends AppCompatActivity {
         //Read metadata files
         new Thread(() -> {
             //Load metadata
-            Library.loadMetadata(showLoadingIndicator);
+            long loadGalleryDuration = Library.loadGallery(showLoadingIndicator);
 
             //Add all files to gallery list
             galleryFiles.addAll(Library.files);
 
             //Show gallery
             runOnUiThread(() -> {
-                //Show gallery
+                //Toast.makeText(MainActivity.this, "" + loadGalleryDuration, Toast.LENGTH_SHORT).show();
+
+                //Show gallery (without loaded metadata)
                 galleryAdapter.notifyDataSetChanged();
                 galleryList.stopScroll();
                 galleryList.scrollToPosition(0);
                 galleryList.setVisibility(View.VISIBLE);
+            });
+
+            //Load metadata after gallery is loaded
+            long loadMetadataDuration = Library.loadMetadata(showLoadingIndicator);
+
+            //Update gallery
+            runOnUiThread(() -> {
+                //Toast.makeText(MainActivity.this, "" + loadMetadataDuration, Toast.LENGTH_SHORT).show();
+
+                //Update gallery
+                galleryAdapter.notifyDataSetChanged();
 
                 //Finish loading
                 searchIndicator.setVisibility(View.GONE);
-                galleryList.setVisibility(View.VISIBLE);
+                Orion.showAnim(searchLayoutClosed);
                 isLoading = false;
 
                 //Log amount of images with missing metadata
@@ -560,12 +581,6 @@ public class MainActivity extends AppCompatActivity {
 
         //Search in metadata files
         new Thread(() -> {
-            //Temp variables
-            boolean addToList;
-            JsonObject metadata;
-            JsonPrimitive caption;
-            JsonArray labels, text;
-
             //Look for files that contain filter
             for (TurboImage image: Library.files) {
                 //No filter -> Skip check
@@ -574,47 +589,8 @@ public class MainActivity extends AppCompatActivity {
                     continue;
                 }
 
-                //Check if JSON contains filter
-                addToList = false;
-                try {
-                    //Get metadata
-                    metadata = image.album.metadata.getAsJsonObject(image.file.getName());
-                    if (metadata == null) continue;
-
-                    //Check caption
-                    if (metadata.has("caption")) {
-                        caption = metadata.getAsJsonPrimitive("caption");
-                        if (caption.isString() && caption.getAsString().toLowerCase().contains(filter)) {
-                            addToList = true;
-                        }
-                    }
-
-                    //Check labels
-                    if (!addToList && metadata.has("labels")) {
-                        labels = metadata.getAsJsonArray("labels");
-                        for (int i = 0; i < labels.size(); i++) {
-                            if (!labels.get(i).getAsString().toLowerCase().contains(filter)) continue;
-                            addToList = true;
-                            break;
-                        }
-                    }
-
-                    //Check text
-                    if (!addToList && metadata.has("text")) {
-                        text = metadata.getAsJsonArray("text");
-                        for (int i = 0; i < text.size(); i++) {
-                            if (!text.get(i).getAsString().toLowerCase().contains(filter)) continue;
-                            addToList = true;
-                            break;
-                        }
-                    }
-                } catch (Exception e) {
-                    //Error while checking if metadata contains filter
-                    continue;
-                }
-
-                //Add to list
-                if (addToList) galleryFiles.add(image);
+                //Check if json contains filter
+                if (filterImage(image.album.getMetadataKey(image.file.getName()), filter)) galleryFiles.add(image);
             }
 
             //Show gallery
@@ -629,6 +605,39 @@ public class MainActivity extends AppCompatActivity {
                 isSearching = false;
             });
         }).start();
+    }
+
+    private boolean filterImage(ObjectNode metadata, String filter) {
+        //No metadata
+        if (metadata == null) return false;
+
+        //Check caption
+        if (metadata.has("caption")) {
+            JsonNode caption = metadata.path("caption");
+            if (caption.isTextual() && caption.asText().toLowerCase().contains(filter))
+                return true;
+        }
+
+        //Check labels
+        if (metadata.has("labels")) {
+            JsonNode labels = metadata.path("labels");
+            for (int i = 0; i < labels.size(); i++) {
+                if (labels.get(i).asText().toLowerCase().contains(filter))
+                    return true;
+            }
+        }
+
+        //Check text
+        if (metadata.has("text")) {
+            JsonNode text = metadata.path("text");
+            for (int i = 0; i < text.size(); i++) {
+                if (!text.get(i).asText().toLowerCase().contains(filter))
+                    return true;
+            }
+        }
+
+        //Not found
+        return false;
     }
 
     private void selectImage(int index) {
@@ -669,7 +678,7 @@ public class MainActivity extends AppCompatActivity {
         //Prepare options menu
         findViewById(R.id.displayOptionsDelete).setOnClickListener(view2 -> {
             //Delete metadata key
-            displayCurrent.album.metadata.remove(displayCurrent.file.getName());
+            displayCurrent.album.removeMetadataKey(displayCurrent.file.getName());
             displayCurrent.album.saveMetadata();
 
             //Delete image
@@ -706,23 +715,23 @@ public class MainActivity extends AppCompatActivity {
         String caption = "";
         String labels = "";
         try {
-            JsonObject metadata = displayCurrent.album.metadata.getAsJsonObject(displayCurrent.file.getName());
+            JsonNode metadata = displayCurrent.album.getMetadataKey(displayCurrent.file.getName());
             if (metadata == null) throw new Exception();
 
             //Load caption
-            caption = metadata.get("caption").getAsString();
+            caption = metadata.path("caption").asText();
 
             //Add labels
             StringBuilder info = new StringBuilder();
             if (metadata.has("labels")) {
                 //Get labels array
-                JsonArray array = metadata.getAsJsonArray("labels");
+                JsonNode array = metadata.path("labels");
 
                 //Get array max & append all labels to info
                 int arrayMax = array.size() - 1;
                 if (arrayMax >= 0 && info.length() > 0) info.append("\n\n");
                 for (int i = 0; i <= arrayMax; i++) {
-                    info.append(array.get(i).getAsString());
+                    info.append(array.get(i).asText());
                     if (i != arrayMax) info.append(", ");
                 }
             }

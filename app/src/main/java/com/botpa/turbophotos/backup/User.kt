@@ -6,4 +6,5 @@ class User(@JvmField var name: String, @JvmField var URL: String) {
     override fun toString(): String {
         return "$name\n$URL"
     }
+
 }

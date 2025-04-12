@@ -74,4 +74,5 @@ class UserAdapter(private val context: Context, private val users: List<User>) :
         var url: TextView = itemView.findViewById(R.id.url)
         var delete: View = itemView.findViewById(R.id.delete)
     }
+
 }

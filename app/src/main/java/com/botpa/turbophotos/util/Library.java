@@ -5,7 +5,9 @@ import android.os.Environment;
 import com.botpa.turbophotos.main.MainActivity;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -58,22 +60,46 @@ public class Library {
     }
 
     //Files
-    public static void loadMetadata() {
-        //Load metadata without loading indicator
-        loadMetadata(null);
+    public static void loadGallery() {
+        //Load gallery without loading indicator
+        loadGallery(null);
     }
 
-    public static void loadMetadata(MainActivity.LoadingIndicator indicator) {
+    public static long loadGallery(MainActivity.LoadingIndicator indicator) {
+        //Duration for testing which part is the slowest
+        long duration = 0;
+        long startTimestamp = new Date().toInstant().toEpochMilli();
+
         //Clear previous files
         files.clear();
-        filesWithoutMetadata.clear();
-        filesWithoutMetadataCount = 0;
+
+        //Create filter
+        FileFilter imageFileFilter = file -> {
+            //Skip directories
+            if (!file.isFile()) return false;
+
+            //Skip hidden files (like .trashed)
+            String fileName = file.getName().toLowerCase();
+            if (fileName.startsWith(".")) return false;
+
+            ////Skip files without an extension
+            int lastDotIndex = fileName.lastIndexOf(".");
+            if (lastDotIndex == -1) return false;
+
+            //Check if file is an image
+            switch (fileName.substring(lastDotIndex + 1)) {
+                case "png":
+                case "jpg":
+                case "jpeg":
+                case "webp":
+                    return true;
+                default:
+                    return false;
+            }
+        };
 
         //Load files from all albums
         for (Album album: Library.albums) {
-            //Create missing metadata files list for the album
-            filesWithoutMetadata.put(album, new ArrayList<>());
-
             //Check if images folder & metadata file exist
             File imagesFolder = new File(album.getAbsoluteImagesPath());
             if (!imagesFolder.exists()) continue;
@@ -81,40 +107,17 @@ public class Library {
             if (!metadataFile.exists()) continue;
 
             //Update load indicator
-            if (indicator != null) indicator.show(imagesFolder.getName());
+            if (indicator != null) indicator.show(imagesFolder.getName(), "images");
 
-            //Load metadata
-            album.loadMetadata();
+            //Get folder files
+            File[] folder = imagesFolder.listFiles(imageFileFilter);
+            if (folder == null) continue;
+            album.files.ensureCapacity(folder.length);
 
             //Save images with a key in metadata
-            File[] folder = imagesFolder.listFiles();
-            if (folder == null) continue;
             for (File file: folder) {
-                //Get file extension
-                String extension = file.getName().toLowerCase();
-                if (extension.startsWith(".")) continue; //Skip .trashed files
-                if (!extension.contains(".")) continue; //Skip files without a format
-                extension = extension.substring(extension.lastIndexOf(".") + 1);
-
-                //Check if file is an image
-                switch (extension) {
-                    case "png":
-                    case "jpg":
-                    case "jpeg":
-                    case "webp":
-                        break;
-                    default:
-                        continue;
-                }
-
                 //Create image container
                 TurboImage image = new TurboImage(file, album, file.lastModified());
-
-                //Check if image appears in metadata
-                if (album.metadata == null || !album.metadata.has(file.getName())) {
-                    filesWithoutMetadata.get(album).add(image);
-                    filesWithoutMetadataCount++;
-                }
 
                 //Add image to list
                 album.files.add(image);
@@ -127,5 +130,49 @@ public class Library {
 
         //Sort images by last modified
         files.sort((f1, f2) -> Long.compare(f2.lastModified, f1.lastModified));
+
+        duration += new Date().toInstant().toEpochMilli() - startTimestamp;
+        return duration;
     }
+
+    public static long loadMetadata(MainActivity.LoadingIndicator indicator) {
+        //Duration for testing which part is the slowest
+        long duration = 0;
+        long startTimestamp = new Date().toInstant().toEpochMilli();
+
+        //Clear previous files
+        filesWithoutMetadata.clear();
+        filesWithoutMetadataCount = 0;
+
+        //Load files from all albums
+        for (Album album: Library.albums) {
+            //Create missing metadata files list for the album
+            ArrayList<TurboImage> filesWithoutMetadataList = new ArrayList<>();
+            filesWithoutMetadata.put(album, filesWithoutMetadataList);
+
+            //Check if images folder & metadata file exist
+            File imagesFolder = new File(album.getAbsoluteImagesPath());
+            if (!imagesFolder.exists()) continue;
+            File metadataFile = new File(album.getAbsoluteMetadataPath());
+            if (!metadataFile.exists()) continue;
+
+            //Update load indicator
+            if (indicator != null) indicator.show(imagesFolder.getName(), "metadata");
+
+            //Load metadata
+            album.loadMetadata();
+
+            //Check if image appears in metadata
+            for (TurboImage image: album.files) {
+                if (!album.hasMetadataKey(image.file.getName())) {
+                    filesWithoutMetadataList.add(image);
+                    filesWithoutMetadataCount++;
+                }
+            }
+        }
+
+        duration += new Date().toInstant().toEpochMilli() - startTimestamp;
+        return duration;
+    }
+
 }
