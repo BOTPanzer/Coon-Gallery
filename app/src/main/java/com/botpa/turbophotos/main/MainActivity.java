@@ -614,16 +614,18 @@ public class MainActivity extends AppCompatActivity {
         //Check caption
         if (metadata.has("caption")) {
             JsonNode caption = metadata.path("caption");
-            if (caption.isTextual() && caption.asText().toLowerCase().contains(filter))
+            if (caption.isTextual() && caption.asText().toLowerCase().contains(filter)) {
                 return true;
+            }
         }
 
         //Check labels
         if (metadata.has("labels")) {
             JsonNode labels = metadata.path("labels");
             for (int i = 0; i < labels.size(); i++) {
-                if (labels.get(i).asText().toLowerCase().contains(filter))
+                if (labels.get(i).asText().toLowerCase().contains(filter)) {
                     return true;
+                }
             }
         }
 
@@ -631,8 +633,9 @@ public class MainActivity extends AppCompatActivity {
         if (metadata.has("text")) {
             JsonNode text = metadata.path("text");
             for (int i = 0; i < text.size(); i++) {
-                if (!text.get(i).asText().toLowerCase().contains(filter))
+                if (text.get(i).asText().toLowerCase().contains(filter)) {
                     return true;
+                }
             }
         }
 
