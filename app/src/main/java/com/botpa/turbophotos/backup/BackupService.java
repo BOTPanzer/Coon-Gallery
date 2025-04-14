@@ -202,8 +202,19 @@ public class BackupService extends Service {
             if (!message.has("action")) throw new Exception("Message has no action key");
             String action = message.get("action").asText();
             switch (action) {
+
                 //Send image info
                 case "requestImageInfo": {
+                    //Request index & count
+                    if (message.has("requestIndex") && message.has("requestCount")) {
+                        //Get request index & count
+                        int requestIndex = message.get("requestIndex").asInt();
+                        int requestCount = message.get("requestCount").asInt();
+
+                        //Log
+                        send("log", "Request (" + requestIndex + "/" + requestCount + ")");
+                    }
+
                     //Get album
                     int albumIndex = message.get("albumIndex").asInt();
                     Album album = Library.albums.get(albumIndex);
@@ -244,7 +255,7 @@ public class BackupService extends Service {
                     byte[] bytes = new byte[(int) file.length()];
                     try {
                         //Log
-                        send("log", "Sending metadata data for: " + file.getName());
+                        send("log", "Sending image data for: " + file.getName());
 
                         //Read file bytes
                         BufferedInputStream buffer = new BufferedInputStream(Files.newInputStream(file.toPath()));
