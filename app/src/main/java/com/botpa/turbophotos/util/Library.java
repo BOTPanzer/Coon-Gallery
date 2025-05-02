@@ -82,7 +82,7 @@ public class Library {
             String fileName = file.getName().toLowerCase();
             if (fileName.startsWith(".")) return false;
 
-            ////Skip files without an extension
+            //Skip files without an extension
             int lastDotIndex = fileName.lastIndexOf(".");
             if (lastDotIndex == -1) return false;
 

@@ -70,6 +70,8 @@ public class MainActivity extends AppCompatActivity {
     //Gallery
     private final ArrayList<TurboImage> galleryFiles = new ArrayList<>();
 
+    private GridLayoutManager galleryLayoutManager;
+    private AlbumsAdapter albumsAdapter;
     private GalleryAdapter galleryAdapter;
     private RecyclerView galleryList;
 
@@ -149,14 +151,10 @@ public class MainActivity extends AppCompatActivity {
         }
 
         //Update gallery horizontal item count
-        if (galleryList != null) {
-            GridLayoutManager gridLayoutManager = ((GridLayoutManager) galleryList.getLayoutManager());
-            if (gridLayoutManager != null) {
-                int newHorizontalItemCount = Storage.getInt("Settings.galleryItemsPerRow", 3);
-                if (gridLayoutManager.getSpanCount() != newHorizontalItemCount) {
-                    gridLayoutManager.setSpanCount(newHorizontalItemCount);
-                    galleryAdapter.notifyItemRangeChanged(0, galleryAdapter.getItemCount());
-                }
+        if (galleryList != null && galleryLayoutManager != null) {
+            int newHorizontalItemCount = Storage.getInt("Settings.galleryItemsPerRow", 3);
+            if (galleryLayoutManager.getSpanCount() != newHorizontalItemCount) {
+                galleryLayoutManager.setSpanCount(newHorizontalItemCount);
             }
         }
     }
@@ -443,7 +441,11 @@ public class MainActivity extends AppCompatActivity {
     //Gallery & Display
     private void initGallery() {
         //Create gallery
-        galleryList.setLayoutManager(new GridLayoutManager(this, Storage.getInt("Settings.galleryItemsPerRow", 3)));
+        galleryLayoutManager = new GridLayoutManager(this, Storage.getInt("Settings.galleryItemsPerRow", 3));
+        galleryList.setLayoutManager(galleryLayoutManager);
+
+        albumsAdapter = new AlbumsAdapter(this, Library.albums);
+        //galleryList.setAdapter(albumsAdapter);
 
         galleryAdapter = new GalleryAdapter(this, galleryFiles);
         galleryAdapter.setOnItemClickListener((view, index) -> {
