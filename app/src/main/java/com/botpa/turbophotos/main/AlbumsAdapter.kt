@@ -9,6 +9,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.util.Album
+import com.botpa.turbophotos.util.Library
 import com.botpa.turbophotos.util.TurboImage
 import com.bumptech.glide.Glide
 
@@ -25,33 +26,46 @@ class AlbumsAdapter(private val context: Context, private val albums: ArrayList<
 
     override fun onBindViewHolder(holder: AlbumHolder, i: Int) {
         //Get holder position
-        val position = holder.bindingAdapterPosition
+        val position = holder.bindingAdapterPosition - 1
 
         //Get album from albums
-        val album = albums[position]
+        if (position < 0) {
+            //First album is all files
 
-        //Load image in imageview
-        if (album.files.isNotEmpty()) {
-            val requestBuilder = Glide.with(holder.itemView.context).asBitmap().sizeMultiplier(0.3f)
-            Glide.with(context).asBitmap().load(album.files[0].file.absolutePath).thumbnail(requestBuilder).into(holder.image)
+            //Load image in imageview
+            if (Library.files.isNotEmpty()) {
+                val requestBuilder = Glide.with(holder.itemView.context).asBitmap().sizeMultiplier(0.3f)
+                Glide.with(context).asBitmap().load(Library.files[0].file.absolutePath).thumbnail(requestBuilder).into(holder.image)
+            }
+
+            //Update album name
+            holder.name.text = "All"
+        } else {
+            val album = albums[position]
+
+            //Load image in imageview
+            if (album.files.isNotEmpty()) {
+                val requestBuilder = Glide.with(holder.itemView.context).asBitmap().sizeMultiplier(0.3f)
+                Glide.with(context).asBitmap().load(album.files[0].file.absolutePath).thumbnail(requestBuilder).into(holder.image)
+            }
+
+            //Update album name
+            holder.name.text = album.name
         }
-
-        //Update album name
-        holder.name.text = album.name
 
         //Add click listeners
         holder.background.setOnClickListener { view: View ->
-            onItemClickListener?.onItemClick(view, holder.bindingAdapterPosition)
+            onItemClickListener?.onItemClick(view, holder.bindingAdapterPosition - 1)
         }
 
         holder.background.setOnLongClickListener { view: View ->
             if (onItemLongClickListener == null) return@setOnLongClickListener true
-            else onItemLongClickListener!!.onItemLongClick(view, holder.bindingAdapterPosition)
+            else onItemLongClickListener!!.onItemLongClick(view, holder.bindingAdapterPosition - 1)
         }
     }
 
     override fun getItemCount(): Int {
-        return albums.size
+        return albums.size + 1
     }
 
     //Listeners

@@ -18,8 +18,6 @@ public class Library {
 
     //Files
     public static final ArrayList<TurboImage> files = new ArrayList<>();
-    public static final Map<Album, ArrayList<TurboImage>> filesWithoutMetadata = new HashMap<>();
-    public static int filesWithoutMetadataCount = 0;
 
 
     //Albums
@@ -135,44 +133,26 @@ public class Library {
         return duration;
     }
 
-    public static long loadMetadata(MainActivity.LoadingIndicator indicator) {
-        //Duration for testing which part is the slowest
-        long duration = 0;
-        long startTimestamp = new Date().toInstant().toEpochMilli();
-
-        //Clear previous files
-        filesWithoutMetadata.clear();
-        filesWithoutMetadataCount = 0;
-
+    public static void loadMetadata(MainActivity.LoadingIndicator indicator) {
         //Load files from all albums
-        for (Album album: Library.albums) {
-            //Create missing metadata files list for the album
-            ArrayList<TurboImage> filesWithoutMetadataList = new ArrayList<>();
-            filesWithoutMetadata.put(album, filesWithoutMetadataList);
+        for (Album album: Library.albums) loadMetadata(indicator, album);
+    }
 
-            //Check if images folder & metadata file exist
-            File imagesFolder = new File(album.getAbsoluteImagesPath());
-            if (!imagesFolder.exists()) continue;
-            File metadataFile = new File(album.getAbsoluteMetadataPath());
-            if (!metadataFile.exists()) continue;
+    public static void loadMetadata(MainActivity.LoadingIndicator indicator, Album album) {
+        //Already loaded
+        if (album.hasMetadata()) return;
 
-            //Update load indicator
-            if (indicator != null) indicator.show(imagesFolder.getName(), "metadata");
+        //Check if images folder & metadata file exist
+        File imagesFolder = new File(album.getAbsoluteImagesPath());
+        if (!imagesFolder.exists()) return;
+        File metadataFile = new File(album.getAbsoluteMetadataPath());
+        if (!metadataFile.exists()) return;
 
-            //Load metadata
-            album.loadMetadata();
+        //Update load indicator
+        if (indicator != null) indicator.show(imagesFolder.getName(), "metadata");
 
-            //Check if image appears in metadata
-            for (TurboImage image: album.files) {
-                if (!album.hasMetadataKey(image.file.getName())) {
-                    filesWithoutMetadataList.add(image);
-                    filesWithoutMetadataCount++;
-                }
-            }
-        }
-
-        duration += new Date().toInstant().toEpochMilli() - startTimestamp;
-        return duration;
+        //Load metadata
+        album.loadMetadata();
     }
 
 }

@@ -31,7 +31,6 @@ public class SettingsActivity extends AppCompatActivity {
 
     //App
     private Slider galleryItemsPerRow;
-    private MaterialSwitch showMissingMetadata;
 
     //Albums
     private AlbumAdapter albumsAdapter;
@@ -112,7 +111,6 @@ public class SettingsActivity extends AppCompatActivity {
     private void getViews() {
         //App
         galleryItemsPerRow = findViewById(R.id.galleryItemsPerRow);
-        showMissingMetadata = findViewById(R.id.showMissingMetadata);
 
         //Albums
         albumsFoldersList = findViewById(R.id.albumsFoldersList);
@@ -122,7 +120,6 @@ public class SettingsActivity extends AppCompatActivity {
     private void loadSettings() {
         //App
         galleryItemsPerRow.setValue(Storage.getInt("Settings.galleryItemsPerRow", 3));
-        showMissingMetadata.setChecked(Storage.getBool("Settings.showMissingMetadataMessage", true));
     }
 
     private void initAlbumsList() {
@@ -195,10 +192,6 @@ public class SettingsActivity extends AppCompatActivity {
         //App
         galleryItemsPerRow.addOnChangeListener((slider, value, fromUser) -> {
             Storage.putInt("Settings.galleryItemsPerRow", (int) value);
-        });
-
-        showMissingMetadata.setOnCheckedChangeListener((compoundButton, b) -> {
-            Storage.putBool("Settings.showMissingMetadataMessage", b);
         });
 
         //Albums

@@ -10,7 +10,6 @@ import android.os.Environment;
 import android.provider.Settings;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.HorizontalScrollView;
 import android.widget.TextView;
@@ -22,9 +21,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.app.NotificationManagerCompat;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.PagerSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
@@ -32,6 +28,7 @@ import androidx.recyclerview.widget.SnapHelper;
 
 import android.Manifest;
 import com.botpa.turbophotos.backup.BackupActivity;
+import com.botpa.turbophotos.util.Album;
 import com.botpa.turbophotos.util.BackManager;
 import com.botpa.turbophotos.util.Library;
 import com.botpa.turbophotos.util.Orion;
@@ -61,13 +58,15 @@ public class MainActivity extends AppCompatActivity {
     private static boolean shouldRestart = false;
 
     //Files
-    private boolean isLoading = false;
+    private boolean hasLoadedImages = false;
+    private boolean hasLoadedMetadata = false;
 
     //Settings
     private CardView backup;
     private CardView settings;
 
     //Gallery
+    private ArrayList<TurboImage> galleryFilesUnfiltered = new ArrayList<>();
     private final ArrayList<TurboImage> galleryFiles = new ArrayList<>();
 
     private GridLayoutManager galleryLayoutManager;
@@ -217,11 +216,11 @@ public class MainActivity extends AppCompatActivity {
 
 
         //Load gallery (images & metadata)
-        loadGallery();
+        loadGalleryImages();
 
 
         //Init gallery & display lists
-        initGallery();
+        initGalleryAdapters();
 
 
         //Add listeners
@@ -278,16 +277,13 @@ public class MainActivity extends AppCompatActivity {
         //Activities
         backup.setOnClickListener(view -> {
             //Loading
-            if (isLoading) return;
+            if (!hasLoadedMetadata) return;
 
             //Open backup
             startActivity(new Intent(MainActivity.this, BackupActivity.class));
         });
 
         settings.setOnClickListener(view -> {
-            //Loading
-            if (isLoading) return;
-
             //Close search
             searchClose.performClick();
 
@@ -298,7 +294,7 @@ public class MainActivity extends AppCompatActivity {
         //Search
         searchOpen.setOnClickListener(view -> {
             //Loading or searching
-            if (isLoading || isSearching) return;
+            if (isSearching) return;
 
             //Open search layout
             Orion.showAnim(searchLayoutOpen);
@@ -322,9 +318,6 @@ public class MainActivity extends AppCompatActivity {
 
         searchText.setOnKeyListener((view, i, keyEvent) -> {
             if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
-                //Loading or searching
-                if (isLoading || isSearching) return false;
-
                 //Get search text
                 String search = searchText.getText().toString();
 
@@ -438,29 +431,47 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    //Gallery & Display
-    private void initGallery() {
-        //Create gallery
+    //Gallery
+    public interface LoadingIndicator { void show(String folderName, String type); }
+    public LoadingIndicator loadingIndicator = (folderName, type) -> {
+        runOnUiThread(() -> {
+            searchIndicatorText.setText("Loading \"" + folderName + "\" " + type + "...");
+            searchIndicator.setVisibility(View.VISIBLE);
+        });
+    };
+
+    private void initGalleryAdapters() {
+        //Create gallery list viewer
         galleryLayoutManager = new GridLayoutManager(this, Storage.getInt("Settings.galleryItemsPerRow", 3));
         galleryList.setLayoutManager(galleryLayoutManager);
 
+        //Create gallery albums adapter
         albumsAdapter = new AlbumsAdapter(this, Library.albums);
-        //galleryList.setAdapter(albumsAdapter);
+        albumsAdapter.setOnItemClickListener((view, index) -> {
+            selectAlbum(index);
+            showAlbumList(true);
+        });
+        galleryList.setAdapter(albumsAdapter);
 
+        //Create gallery selected album adapter
         galleryAdapter = new GalleryAdapter(this, galleryFiles);
         galleryAdapter.setOnItemClickListener((view, index) -> {
-            if (!isLoading) selectImage(index);
+            if (!hasLoadedMetadata) return;
+            selectImage(index);
         });
-        galleryList.setAdapter(galleryAdapter);
+        //galleryList.setAdapter(galleryAdapter);
 
-        //Create display
+
+        //Create display list viewer
         displayLayoutManager = new DisplayLayoutManager(this);
         displayLayoutManager.setOrientation(RecyclerView.HORIZONTAL);
         displayList.setLayoutManager(displayLayoutManager);
 
+        //Create display snap helper
         SnapHelper snapHelper = new PagerSnapHelper();
         snapHelper.attachToRecyclerView(displayList);
 
+        //Create display adapter
         displayAdapter = new DisplayAdapter(this, displayFiles);
         displayAdapter.setOnClickListener((view, index) -> {
             if (displayOverlayLayout.getVisibility() == View.VISIBLE)
@@ -474,6 +485,7 @@ public class MainActivity extends AppCompatActivity {
         });
         displayList.setAdapter(displayAdapter);
 
+        //Add snap listener
         displayList.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
@@ -499,94 +511,90 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public interface LoadingIndicator { void show(String folderName, String type); }
-    public LoadingIndicator showLoadingIndicator = (folderName, type) -> {
-        runOnUiThread(() -> {
-            searchIndicatorText.setText("Loading \"" + folderName + "\" " + type + "...");
-            searchIndicator.setVisibility(View.VISIBLE);
-        });
-    };
-
-    private void loadGallery() {
-        //Loading or searching
-        if (isLoading || isSearching) return;
-
+    private void loadGalleryImages() {
         //Start loading
-        isLoading = true;
-        galleryFiles.clear();
+        hasLoadedImages = false;
         galleryList.setVisibility(View.GONE);
 
-        //Read metadata files
+        //Load images
         new Thread(() -> {
-            //Load metadata
-            long loadGalleryDuration = Library.loadGallery(showLoadingIndicator);
-
-            //Add all files to gallery list
-            galleryFiles.addAll(Library.files);
+            //Load images
+            long loadGalleryDuration = Library.loadGallery(loadingIndicator);
 
             //Show gallery
             runOnUiThread(() -> {
                 //Toast.makeText(MainActivity.this, "" + loadGalleryDuration, Toast.LENGTH_SHORT).show();
 
-                //Show gallery (without loaded metadata)
-                galleryAdapter.notifyDataSetChanged();
-                galleryList.stopScroll();
-                galleryList.scrollToPosition(0);
+                //Show gallery list (albums)
                 galleryList.setVisibility(View.VISIBLE);
-            });
 
-            //Load metadata after gallery is loaded
-            long loadMetadataDuration = Library.loadMetadata(showLoadingIndicator);
+                //Finished loading images
+                searchIndicator.setVisibility(View.GONE);
+                hasLoadedImages = true;
+            });
+        }).start();
+    }
+
+    private void loadGalleryMetadata(Album album) {
+        //Start loading
+        hasLoadedMetadata = false;
+
+        //Load metadata
+        new Thread(() -> {
+            //Load metadata
+            if (album == null) {
+                Library.loadMetadata(loadingIndicator);
+            } else {
+                Library.loadMetadata(loadingIndicator, album);
+            }
 
             //Update gallery
             runOnUiThread(() -> {
-                //Toast.makeText(MainActivity.this, "" + loadMetadataDuration, Toast.LENGTH_SHORT).show();
-
                 //Update gallery
                 galleryAdapter.notifyDataSetChanged();
 
                 //Finish loading
                 searchIndicator.setVisibility(View.GONE);
-                Orion.showAnim(searchLayoutClosed);
-                isLoading = false;
-
-                //Log amount of images with missing metadata
-                if (Library.filesWithoutMetadataCount > 0 && Storage.getBool("Settings.showMissingMetadataMessage", true))
-                    Toast.makeText(MainActivity.this, "Found " + Library.filesWithoutMetadataCount + " images without metadata", Toast.LENGTH_SHORT).show();
+                hasLoadedMetadata = true;
             });
         }).start();
     }
 
-    private void filterGallery(String _filter) {
-        //Loading or searching
-        if (isLoading || isSearching) return;
+    private void filterGallery() { filterGallery(""); }
 
+    private void filterGallery(String _filter) {
         //Ignore case
         String filter = _filter.toLowerCase();
+        boolean isFiltering = !filter.isEmpty();
+
+        //Loading or searching
+        if (isSearching || (!hasLoadedMetadata && isFiltering)) return;
 
         //Start search
         isSearching = true;
-        searchFilterText.setText(filter.isEmpty() ? "" : "Search: " + filter);
-        searchFilterText.setVisibility(filter.isEmpty() ? View.GONE : View.VISIBLE);
-        searchIndicatorText.setText("Searching...");
-        searchIndicator.setVisibility(View.VISIBLE);
+        searchFilterText.setText(isFiltering ? "Search: " + filter : "");
+        searchFilterText.setVisibility(isFiltering ? View.VISIBLE : View.GONE);
+        if (isFiltering) {
+            searchIndicatorText.setText("Searching...");
+            searchIndicator.setVisibility(View.VISIBLE);
+        }
         searchClose.performClick();
 
         //Clear files list
         galleryFiles.clear();
 
         //Back button
-        if (filter.isEmpty())
-            backManager.unregister("search");
+        if (isFiltering)
+            backManager.register("search", this::filterGallery);
         else
-            backManager.register("search", () -> filterGallery(""));
+            backManager.unregister("search");
 
         //Search in metadata files
         new Thread(() -> {
             //Look for files that contain filter
-            for (TurboImage image: Library.files) {
+            for (TurboImage image: galleryFilesUnfiltered) {
                 //No filter -> Skip check
-                if (filter.isEmpty()) {
+                if (!isFiltering) {
                     galleryFiles.add(image);
                     continue;
                 }
@@ -603,7 +611,7 @@ public class MainActivity extends AppCompatActivity {
                 galleryList.scrollToPosition(0);
 
                 //Finish searching
-                searchIndicator.setVisibility(View.GONE);
+                if (isFiltering) searchIndicator.setVisibility(View.GONE);
                 isSearching = false;
             });
         }).start();
@@ -645,6 +653,32 @@ public class MainActivity extends AppCompatActivity {
         return false;
     }
 
+    private void showAlbumList(boolean show) {
+        if (show) {
+            Orion.showAnim(searchLayoutClosed);
+            galleryList.setAdapter(galleryAdapter);
+            backManager.register("albums", () -> showAlbumList(false));
+        } else {
+            Orion.hideAnim(searchLayoutClosed);
+            galleryList.setAdapter(albumsAdapter);
+            backManager.unregister("albums");
+        }
+    }
+
+    private void selectAlbum(int albumIndex) {
+        if (albumIndex < 0) {
+            galleryFilesUnfiltered = Library.files;
+            loadGalleryMetadata(null);
+        } else {
+            Album album = Library.albums.get(albumIndex);
+            galleryFilesUnfiltered = album.files;
+            loadGalleryMetadata(album);
+        }
+        searchText.setText("");
+        filterGallery();
+    }
+
+    //Display
     private void selectImage(int index) {
         //Deselect
         if (index == -1) {
@@ -756,4 +790,5 @@ public class MainActivity extends AppCompatActivity {
         //Back button
         backManager.register("display", () -> displayClose.performClick());
     }
+
 }
