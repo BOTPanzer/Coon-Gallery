@@ -283,7 +283,7 @@ public class MainActivity extends AppCompatActivity {
         //Activities
         backup.setOnClickListener(view -> {
             //Loading
-            if (!hasLoadedMetadata) return;
+            if (!hasLoadedImages) return;
 
             //Open backup
             startActivity(new Intent(MainActivity.this, BackupActivity.class));
