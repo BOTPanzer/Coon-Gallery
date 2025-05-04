@@ -66,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
     private CardView settings;
 
     //Gallery
+    private boolean galleryInHome = true;
     private ArrayList<TurboImage> galleryFilesUnfiltered = new ArrayList<>();
     private final ArrayList<TurboImage> galleryFiles = new ArrayList<>();
 
@@ -151,7 +152,12 @@ public class MainActivity extends AppCompatActivity {
 
         //Update gallery horizontal item count
         if (galleryList != null && galleryLayoutManager != null) {
-            int newHorizontalItemCount = Storage.getInt("Settings.galleryItemsPerRow", 3);
+            //Get horizontal item count
+            int newHorizontalItemCount = Storage.getInt(
+                    galleryInHome ? "Settings.galleryAlbumsPerRow" : "Settings.galleryImagesPerRow",
+                    galleryInHome ? 2 : 3);
+
+            //Check if it changed
             if (galleryLayoutManager.getSpanCount() != newHorizontalItemCount) {
                 galleryLayoutManager.setSpanCount(newHorizontalItemCount);
             }
@@ -297,8 +303,12 @@ public class MainActivity extends AppCompatActivity {
             if (isSearching) return;
 
             //Open search layout
-            Orion.showAnim(searchLayoutOpen);
-            Orion.hideAnim(searchLayoutClosed);
+            searchLayoutOpen.setVisibility(View.VISIBLE);
+            searchLayoutClosed.setVisibility(View.GONE);
+            //Orion.showAnim(searchLayoutOpen);
+            //Orion.hideAnim(searchLayoutClosed);
+
+            //Focus text & show keyboard
             searchText.requestFocus();
             searchText.selectAll();
             Orion.showKeyboard(MainActivity.this);
@@ -308,9 +318,14 @@ public class MainActivity extends AppCompatActivity {
         });
 
         searchClose.setOnClickListener(view -> {
-            Orion.hideAnim(searchLayoutOpen, () -> Orion.showAnim(searchLayoutClosed));
+            //Close keyboard
             Orion.hideKeyboard(MainActivity.this);
             Orion.clearFocus(MainActivity.this);
+
+            //Hide menu
+            searchLayoutOpen.setVisibility(View.GONE);
+            searchLayoutClosed.setVisibility(View.VISIBLE);
+            //Orion.hideAnim(searchLayoutOpen, () -> Orion.showAnim(searchLayoutClosed));
 
             //Back button
             backManager.unregister("searchMenu");
@@ -654,15 +669,24 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showAlbumList(boolean show) {
-        if (show) {
-            Orion.showAnim(searchLayoutClosed);
-            galleryList.setAdapter(galleryAdapter);
-            backManager.register("albums", () -> showAlbumList(false));
-        } else {
-            Orion.hideAnim(searchLayoutClosed);
-            galleryList.setAdapter(albumsAdapter);
-            backManager.unregister("albums");
-        }
+        galleryInHome = !show;
+        Orion.hideAnim(galleryList, 150, () -> {
+            //Change gallery
+            if (galleryInHome) {
+                Orion.hideAnim(searchLayoutClosed);
+                galleryLayoutManager.setSpanCount(Storage.getInt("Settings.galleryAlbumsPerRow", 2));
+                galleryList.setAdapter(albumsAdapter);
+                backManager.unregister("albums");
+            } else {
+                Orion.showAnim(searchLayoutClosed);
+                galleryLayoutManager.setSpanCount(Storage.getInt("Settings.galleryImagesPerRow", 3));
+                galleryList.setAdapter(galleryAdapter);
+                backManager.register("albums", () -> showAlbumList(false));
+            }
+
+            //Show list
+            Orion.showAnim(galleryList, 150);
+        });
     }
 
     private void selectAlbum(int albumIndex) {

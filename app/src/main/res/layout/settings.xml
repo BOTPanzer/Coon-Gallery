@@ -67,11 +67,38 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1.5"
                             android:fontFamily="@font/poppins"
-                            android:text="Gallery items per row"
+                            android:text="Gallery albums per row"
                             android:textColor="?attr/colorOnSurface" />
 
                         <com.google.android.material.slider.Slider
-                            android:id="@+id/galleryItemsPerRow"
+                            android:id="@+id/galleryAlbumsPerRow"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="-14dp"
+                            android:layout_weight="1"
+                            android:stepSize="1"
+                            android:value="3"
+                            android:valueFrom="2"
+                            android:valueTo="4" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1.5"
+                            android:fontFamily="@font/poppins"
+                            android:text="Gallery images per row"
+                            android:textColor="?attr/colorOnSurface" />
+
+                        <com.google.android.material.slider.Slider
+                            android:id="@+id/galleryImagesPerRow"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_marginEnd="-14dp"

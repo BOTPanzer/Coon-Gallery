@@ -30,7 +30,8 @@ import java.io.File;
 public class SettingsActivity extends AppCompatActivity {
 
     //App
-    private Slider galleryItemsPerRow;
+    private Slider galleryAlbumsPerRow;
+    private Slider galleryImagesPerRow;
 
     //Albums
     private AlbumAdapter albumsAdapter;
@@ -110,7 +111,8 @@ public class SettingsActivity extends AppCompatActivity {
     //App
     private void getViews() {
         //App
-        galleryItemsPerRow = findViewById(R.id.galleryItemsPerRow);
+        galleryAlbumsPerRow = findViewById(R.id.galleryAlbumsPerRow);
+        galleryImagesPerRow = findViewById(R.id.galleryImagesPerRow);
 
         //Albums
         albumsFoldersList = findViewById(R.id.albumsFoldersList);
@@ -119,7 +121,8 @@ public class SettingsActivity extends AppCompatActivity {
 
     private void loadSettings() {
         //App
-        galleryItemsPerRow.setValue(Storage.getInt("Settings.galleryItemsPerRow", 3));
+        galleryAlbumsPerRow.setValue(Storage.getInt("Settings.galleryAlbumsPerRow", 2));
+        galleryImagesPerRow.setValue(Storage.getInt("Settings.galleryImagesPerRow", 3));
     }
 
     private void initAlbumsList() {
@@ -190,8 +193,11 @@ public class SettingsActivity extends AppCompatActivity {
 
     private void addListeners() {
         //App
-        galleryItemsPerRow.addOnChangeListener((slider, value, fromUser) -> {
-            Storage.putInt("Settings.galleryItemsPerRow", (int) value);
+        galleryAlbumsPerRow.addOnChangeListener((slider, value, fromUser) -> {
+            Storage.putInt("Settings.galleryAlbumsPerRow", (int) value);
+        });
+        galleryImagesPerRow.addOnChangeListener((slider, value, fromUser) -> {
+            Storage.putInt("Settings.galleryImagesPerRow", (int) value);
         });
 
         //Albums
