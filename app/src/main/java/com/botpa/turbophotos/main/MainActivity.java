@@ -291,7 +291,7 @@ public class MainActivity extends AppCompatActivity {
 
         settings.setOnClickListener(view -> {
             //Close search
-            searchClose.performClick();
+            if (galleryInHome) searchClose.performClick();
 
             //Open settings
             startActivity(new Intent(MainActivity.this, SettingsActivity.class));
