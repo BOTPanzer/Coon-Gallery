@@ -116,6 +116,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView displayInfoCaptionText;
     private HorizontalScrollView displayInfoLabelsScroll;
     private TextView displayInfoLabelsText;
+    private HorizontalScrollView displayInfoTextScroll;
+    private TextView displayInfoTextText;
 
     private View displayOptionsLayout;
 
@@ -269,6 +271,8 @@ public class MainActivity extends AppCompatActivity {
         displayInfoCaptionText = findViewById(R.id.displayInfoCaptionText);
         displayInfoLabelsScroll = findViewById(R.id.displayInfoLabelsScroll);
         displayInfoLabelsText = findViewById(R.id.displayInfoLabelsText);
+        displayInfoTextScroll = findViewById(R.id.displayInfoTextScroll);
+        displayInfoTextText = findViewById(R.id.displayInfoTextText);
 
         displayEditLayout = findViewById(R.id.displayEditLayout);
         displayEditCaptionText = findViewById(R.id.displayEditCaptionText);
@@ -421,6 +425,7 @@ public class MainActivity extends AppCompatActivity {
                 displayInfoLayout.performClick();
             } else {
                 displayInfoLabelsScroll.scrollTo(0, 0);
+                displayInfoTextScroll.scrollTo(0, 0);
                 Orion.showAnim(displayInfoLayout);
                 backManager.register("displayInfo", () -> displayInfo.performClick());
             }
@@ -777,6 +782,7 @@ public class MainActivity extends AppCompatActivity {
         //Load image info (caption & labels)
         String caption = "";
         String labels = "";
+        String text = "";
         try {
             JsonNode metadata = displayCurrent.album.getMetadataKey(displayCurrent.file.getName());
             if (metadata == null) throw new Exception();
@@ -798,14 +804,29 @@ public class MainActivity extends AppCompatActivity {
                     if (i != arrayMax) info.append(", ");
                 }
             }
-
-            //Update info text
             labels = info.toString();
+
+            //Add text
+            info = new StringBuilder();
+            if (metadata.has("text")) {
+                //Get labels array
+                JsonNode array = metadata.path("text");
+
+                //Get array max & append all labels to info
+                int arrayMax = array.size() - 1;
+                if (arrayMax >= 0 && info.length() > 0) info.append("\n\n");
+                for (int i = 0; i <= arrayMax; i++) {
+                    info.append(array.get(i).asText());
+                    if (i != arrayMax) info.append(", ");
+                }
+            }
+            text = info.toString();
         } catch (Exception ignored) {
             //Error while parsing JSON
         }
         displayInfoCaptionText.setText(caption);
         displayInfoLabelsText.setText(labels);
+        displayInfoTextText.setText(text);
 
         //Close search & show display
         searchClose.performClick();

@@ -534,6 +534,33 @@
                         </LinearLayout>
                     </HorizontalScrollView>
 
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:fontFamily="@font/opificio_bold_rounded"
+                        android:text="Text"
+                        android:textColor="?attr/colorOnPrimary" />
+
+                    <HorizontalScrollView
+                        android:id="@+id/displayInfoTextScroll"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/displayInfoTextText"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:hint="No text"
+                                android:textColor="?attr/colorOnPrimary" />
+                        </LinearLayout>
+                    </HorizontalScrollView>
+
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
