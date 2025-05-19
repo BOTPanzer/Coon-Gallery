@@ -12,12 +12,13 @@ class Album(imagesPath: String, metadataPath: String) {
 
     //Getters
     val name: String get() = imagesFolder.name
+    val exists: Boolean get() = imagesFolder.exists() && metadataFile.exists()
     val absoluteImagesPath: String get() = imagesFolder.absolutePath
     val absoluteMetadataPath: String get() = metadataFile.absolutePath
 
+
     //Load & save metadata
     fun loadMetadata() {
-        val metadataFile = File(absoluteMetadataPath)
         metadata = Orion.loadJson(metadataFile)
     }
 
@@ -49,4 +50,5 @@ class Album(imagesPath: String, metadataPath: String) {
     override fun toString(): String {
         return "$absoluteImagesPath\n$absoluteMetadataPath"
     }
+
 }

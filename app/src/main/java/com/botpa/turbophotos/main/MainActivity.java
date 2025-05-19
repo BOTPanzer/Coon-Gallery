@@ -3,6 +3,7 @@ package com.botpa.turbophotos.main;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -219,10 +220,6 @@ public class MainActivity extends AppCompatActivity {
         getViews();
 
 
-        //Load settings
-        Library.loadAlbums();
-
-
         //Load gallery (images & metadata)
         loadGalleryImages();
 
@@ -299,6 +296,12 @@ public class MainActivity extends AppCompatActivity {
 
             //Open settings
             startActivity(new Intent(MainActivity.this, SettingsActivity.class));
+        });
+
+        settings.setOnLongClickListener(v -> {
+            //Reload gallery
+            recreate();
+            return true;
         });
 
         //Search
@@ -696,7 +699,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void selectAlbum(int albumIndex) {
         if (albumIndex < 0) {
-            galleryFilesUnfiltered = Library.files;
+            galleryFilesUnfiltered = Library.allFiles;
             loadGalleryMetadata(null);
         } else {
             Album album = Library.albums.get(albumIndex);
@@ -751,12 +754,20 @@ public class MainActivity extends AppCompatActivity {
 
             //Delete image
             Orion.deleteFile(displayCurrent.file);
-            Library.files.remove(displayCurrent);
-            galleryFiles.remove(index);
-            galleryAdapter.notifyItemRemoved(index);
-            displayClose.performClick();
 
-            //Close menu
+            //Remove image from lists
+            Library.allFiles.remove(displayCurrent);
+            displayCurrent.album.files.remove(index);
+            galleryFiles.remove(index);
+
+            //Notify adapters
+            galleryAdapter.notifyItemRemoved(index);
+
+            //Remake & save cache
+            Library.remakeCacheForAlbum(displayCurrent.album, true);
+
+            //Close menu & display list
+            displayClose.performClick();
             displayOptionsLayout.performClick();
         });
 

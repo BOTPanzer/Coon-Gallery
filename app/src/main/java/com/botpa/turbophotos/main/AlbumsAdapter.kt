@@ -10,7 +10,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.util.Album
 import com.botpa.turbophotos.util.Library
-import com.botpa.turbophotos.util.TurboImage
 import com.bumptech.glide.Glide
 
 class AlbumsAdapter(private val context: Context, private val albums: ArrayList<Album>) : RecyclerView.Adapter<AlbumsAdapter.AlbumHolder>() {
@@ -33,9 +32,9 @@ class AlbumsAdapter(private val context: Context, private val albums: ArrayList<
             //First album is all files
 
             //Load image in imageview
-            if (Library.files.isNotEmpty()) {
+            if (Library.allFiles.isNotEmpty()) {
                 val requestBuilder = Glide.with(holder.itemView.context).asBitmap().sizeMultiplier(0.3f)
-                Glide.with(context).asBitmap().load(Library.files[0].file.absolutePath).thumbnail(requestBuilder).into(holder.image)
+                Glide.with(context).asBitmap().load(Library.allFiles[0].file.absolutePath).thumbnail(requestBuilder).into(holder.image)
             }
 
             //Update album name

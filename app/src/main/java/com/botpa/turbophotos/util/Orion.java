@@ -11,6 +11,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.DocumentsContract;
@@ -467,29 +468,10 @@ public class Orion {
         return success;
     }
 
-    public static void deleteFile(File file) {
-        if (!file.exists()) return;
+    public static boolean deleteFile(File file) {
+        if (!file.exists() || !file.isFile()) return false;
 
-        if (file.isFile()) {
-            file.delete();
-            return;
-        }
-
-        File[] fileArr = file.listFiles();
-
-        if (fileArr != null) {
-            for (File subFile : fileArr) {
-                if (subFile.isDirectory()) {
-                    deleteFile(new File(subFile.getAbsolutePath()));
-                }
-
-                if (subFile.isFile()) {
-                    subFile.delete();
-                }
-            }
-        }
-
-        file.delete();
+        return file.delete();
     }
 
     public static boolean moveFile(File oldFile, File newFile) {
