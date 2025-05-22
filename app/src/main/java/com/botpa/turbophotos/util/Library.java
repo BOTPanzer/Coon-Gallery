@@ -132,11 +132,13 @@ public class Library {
 
                             //Get files
                             for (int i = 0; i < cachedFiles.size(); i++) {
-                                //Get file
-                                File file = new File(albumImagesPath + "/" + cachedFiles.get(i).asText());
+                                //Get file info
+                                JsonNode node = cachedFiles.get(i);
+                                String name = node.get("name").asText();
+                                long lastModified = node.get("lastModified").asLong();
 
                                 //Create image container
-                                TurboImage image = new TurboImage(file, album, file.lastModified());
+                                TurboImage image = new TurboImage(new File(albumImagesPath + "/" + name), album, lastModified);
 
                                 //Add image to list
                                 album.files.add(image);
@@ -151,8 +153,9 @@ public class Library {
                     Log.i("Library", "Skipping cache load for \"" + album.getName() + "\"");
                 }
             } catch(Exception e){
-                //Error loading cache
+                //Error loading cache -> Clear files & load from disk
                 Log.i("Library", "Couldn't load cache for \"" + album.getName() + "\". Reason: " + e.getMessage());
+                album.files.clear();
             }
 
             //Get folder files
@@ -160,7 +163,7 @@ public class Library {
             if (folder == null) continue;
             album.files.ensureCapacity(folder.length);
 
-            //Save images with a key in metadata
+            //Save images
             for (File file: folder) {
                 //Create image container
                 TurboImage image = new TurboImage(file, album, file.lastModified());
@@ -243,7 +246,12 @@ public class Library {
 
         //Set files list
         ArrayNode albumCacheFiles = Orion.getEmptyJsonArray();
-        for (TurboImage image: album.files) albumCacheFiles.add(image.file.getName());
+        for (TurboImage image: album.files) {
+            ObjectNode file = Orion.getEmptyJson();
+            file.put("name", image.file.getName());
+            file.put("lastModified", image.lastModified);
+            albumCacheFiles.add(file);
+        }
         albumCache.set("files", albumCacheFiles);
 
         //Update cache
