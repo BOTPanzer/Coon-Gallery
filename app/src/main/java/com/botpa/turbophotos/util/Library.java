@@ -110,6 +110,9 @@ public class Library {
 
             //Update load indicator & clear album files
             if (indicator != null) indicator.show(album.imagesFolder.getName(), "images");
+
+            //Remove album files from all files & clear album
+            for (TurboImage image: album.files) allFiles.remove(image);
             album.files.clear();
 
             //Try to load images from cache
@@ -155,6 +158,9 @@ public class Library {
             } catch(Exception e){
                 //Error loading cache -> Clear files & load from disk
                 Log.i("Library", "Couldn't load cache for \"" + album.getName() + "\". Reason: " + e.getMessage());
+
+                //Remove album files from all files & clear album
+                for (TurboImage image: album.files) allFiles.remove(image);
                 album.files.clear();
             }
 
