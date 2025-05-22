@@ -161,7 +161,10 @@ public class Library {
             //Get folder files
             File[] folder = album.imagesFolder.listFiles(imageFileFilter);
             if (folder == null) continue;
+
+            //Resize lists
             album.files.ensureCapacity(folder.length);
+            allFiles.ensureCapacity(allFiles.size() + folder.length);
 
             //Save images
             for (File file: folder) {
