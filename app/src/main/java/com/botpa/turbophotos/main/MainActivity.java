@@ -3,7 +3,6 @@ package com.botpa.turbophotos.main;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -59,7 +58,6 @@ public class MainActivity extends AppCompatActivity {
     private static boolean shouldRestart = false;
 
     //Files
-    private boolean hasLoadedImages = false;
     private boolean hasLoadedMetadata = false;
 
     //Settings
@@ -205,34 +203,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //App
-    public static void shouldRestart() {
-        //Enable restart on resume
-        shouldRestart = true;
-    }
-
     private void loadApp() {
         //App
         backManager = new BackManager(MainActivity.this, getOnBackPressedDispatcher());
         getWindow().setColorMode(ActivityInfo.COLOR_MODE_HDR);
 
-
-        //Get views
-        getViews();
-
+        //Load views
+        loadViews();
 
         //Load gallery (images & metadata)
         loadGalleryImages();
 
-
-        //Init gallery & display lists
+        //Init lists (gallery & display)
         initGalleryAdapters();
-
 
         //Add listeners
         addListeners();
     }
 
-    private void getViews() {
+    private void loadViews() {
         //Activities
         backup = findViewById(R.id.backup);
         settings = findViewById(R.id.settings);
@@ -284,7 +273,7 @@ public class MainActivity extends AppCompatActivity {
         //Activities
         backup.setOnClickListener(view -> {
             //Loading
-            if (!hasLoadedImages) return;
+            if (!Library.allFilesUpToDate) return;
 
             //Open backup
             startActivity(new Intent(MainActivity.this, BackupActivity.class));
@@ -454,13 +443,41 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    public static void shouldRestart() {
+        //Enable restart on resume
+        shouldRestart = true;
+    }
+
     //Gallery
-    public interface LoadingIndicator { void show(String folderName, String type); }
-    public LoadingIndicator loadingIndicator = (folderName, type) -> {
-        runOnUiThread(() -> {
-            searchIndicatorText.setText("Loading \"" + folderName + "\" " + type + "...");
+    public Library.LoadingIndicator loadingIndicator = new Library.LoadingIndicator() {
+        @Override
+        public void search() {
+            searchIndicatorText.setText("Searching...");
             searchIndicator.setVisibility(View.VISIBLE);
-        });
+        }
+
+        @Override
+        public void load(String content) {
+            runOnUiThread(() -> {
+                searchIndicatorText.setText("Loading " + content + "...");
+                searchIndicator.setVisibility(View.VISIBLE);
+            });
+        }
+
+        @Override
+        public void load(String folder, String type) {
+            runOnUiThread(() -> {
+                searchIndicatorText.setText("Loading \"" + folder + "\" " + type + "...");
+                searchIndicator.setVisibility(View.VISIBLE);
+            });
+        }
+
+        @Override
+        public void hide() {
+            runOnUiThread(() -> {
+                searchIndicator.setVisibility(View.GONE);
+            });
+        }
     };
 
     private void initGalleryAdapters() {
@@ -471,7 +488,8 @@ public class MainActivity extends AppCompatActivity {
         //Create gallery albums adapter
         albumsAdapter = new AlbumsAdapter(this, Library.albums);
         albumsAdapter.setOnItemClickListener((view, index) -> {
-            selectAlbum(index);
+            boolean success = selectAlbum(index);
+            if (!success) return;
             showAlbumList(true);
         });
         galleryList.setAdapter(albumsAdapter);
@@ -482,7 +500,6 @@ public class MainActivity extends AppCompatActivity {
             if (!hasLoadedMetadata) return;
             selectImage(index);
         });
-        //galleryList.setAdapter(galleryAdapter);
 
 
         //Create display list viewer
@@ -536,24 +553,29 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadGalleryImages() {
         //Start loading
-        hasLoadedImages = false;
         galleryList.setVisibility(View.GONE);
 
         //Load images
         new Thread(() -> {
-            //Load images
-            long loadGalleryDuration = Library.loadGallery(loadingIndicator);
+            //Load gallery from cache
+            Library.loadGalleryFromCache(loadingIndicator);
 
             //Show gallery
             runOnUiThread(() -> {
-                //Toast.makeText(MainActivity.this, "" + loadGalleryDuration, Toast.LENGTH_SHORT).show();
-
                 //Show gallery list (albums)
                 galleryList.setVisibility(View.VISIBLE);
+            });
 
-                //Finished loading images
-                searchIndicator.setVisibility(View.GONE);
-                hasLoadedImages = true;
+            //Check if all files are up to date
+            if (!Library.allFilesUpToDate) {
+                //Not all files up to date -> Reload non up to date albums from disk
+                long duration = Library.loadGalleryFromDisk(loadingIndicator);
+            }
+
+            //Finish
+            runOnUiThread(() -> {
+                //Hide indicator
+                loadingIndicator.hide();
             });
         }).start();
     }
@@ -577,7 +599,7 @@ public class MainActivity extends AppCompatActivity {
                 galleryAdapter.notifyDataSetChanged();
 
                 //Finish loading
-                searchIndicator.setVisibility(View.GONE);
+                loadingIndicator.hide();
                 hasLoadedMetadata = true;
             });
         }).start();
@@ -597,10 +619,7 @@ public class MainActivity extends AppCompatActivity {
         isSearching = true;
         searchFilterText.setText(isFiltering ? "Search: " + filter : "");
         searchFilterText.setVisibility(isFiltering ? View.VISIBLE : View.GONE);
-        if (isFiltering) {
-            searchIndicatorText.setText("Searching...");
-            searchIndicator.setVisibility(View.VISIBLE);
-        }
+        if (isFiltering) loadingIndicator.search();
         searchClose.performClick();
 
         //Clear files list
@@ -634,7 +653,7 @@ public class MainActivity extends AppCompatActivity {
                 galleryList.scrollToPosition(0);
 
                 //Finish searching
-                if (isFiltering) searchIndicator.setVisibility(View.GONE);
+                if (isFiltering) loadingIndicator.hide();
                 isSearching = false;
             });
         }).start();
@@ -697,17 +716,28 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void selectAlbum(int albumIndex) {
+    private boolean selectAlbum(int albumIndex) {
         if (albumIndex < 0) {
+            //Not up to date
+            if (!Library.allFilesUpToDate) return false;
+
+            //Load
             galleryFilesUnfiltered = Library.allFiles;
             loadGalleryMetadata(null);
         } else {
+            //Get album
             Album album = Library.albums.get(albumIndex);
+
+            //Not up to date
+            if (!album.isUpToDate) return false;
+
+            //Load
             galleryFilesUnfiltered = album.files;
             loadGalleryMetadata(album);
         }
         searchText.setText("");
         filterGallery();
+        return true;
     }
 
     //Display

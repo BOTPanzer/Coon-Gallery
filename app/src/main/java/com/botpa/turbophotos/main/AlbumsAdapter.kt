@@ -36,6 +36,7 @@ class AlbumsAdapter(private val context: Context, private val albums: ArrayList<
                 val requestBuilder = Glide.with(holder.itemView.context).asBitmap().sizeMultiplier(0.3f)
                 Glide.with(context).asBitmap().load(Library.allFiles[0].file.absolutePath).thumbnail(requestBuilder).into(holder.image)
             }
+            holder.image.alpha = if (Library.allFilesUpToDate) 1.0f else 0.5f
 
             //Update album name
             holder.name.text = "All"
@@ -47,6 +48,7 @@ class AlbumsAdapter(private val context: Context, private val albums: ArrayList<
                 val requestBuilder = Glide.with(holder.itemView.context).asBitmap().sizeMultiplier(0.3f)
                 Glide.with(context).asBitmap().load(album.files[0].file.absolutePath).thumbnail(requestBuilder).into(holder.image)
             }
+            holder.image.alpha = if (album.isUpToDate) 1.0f else 0.5f
 
             //Update album name
             holder.name.text = album.name

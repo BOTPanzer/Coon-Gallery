@@ -9,13 +9,24 @@ class Album(imagesPath: String, metadataPath: String) {
     @JvmField var metadataFile: File = File(metadataPath)
     @JvmField var metadata: ObjectNode? = null
     @JvmField var files: ArrayList<TurboImage> = ArrayList()
+    @JvmField var isUpToDate: Boolean = true
 
     //Getters
     val name: String get() = imagesFolder.name
-    val exists: Boolean get() = imagesFolder.exists() && metadataFile.exists()
     val absoluteImagesPath: String get() = imagesFolder.absolutePath
     val absoluteMetadataPath: String get() = metadataFile.absolutePath
 
+
+    //Util
+    fun exists(): Boolean {
+        return imagesFolder.exists() && metadataFile.exists()
+    }
+
+    fun clearFiles() {
+        //Remove album files from all files & clear album
+        for (image in files) Library.allFiles.remove(image)
+        files.clear()
+    }
 
     //Load & save metadata
     fun loadMetadata() {

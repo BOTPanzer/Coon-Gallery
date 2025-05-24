@@ -21,6 +21,7 @@ public class Library {
 
     //Files
     public static final ArrayList<TurboImage> allFiles = new ArrayList<>();
+    public static boolean allFilesUpToDate = false;
 
     //Cache
     private static ObjectNode cache;
@@ -64,56 +65,31 @@ public class Library {
     }
 
     //Files
-    public static long loadGallery(MainActivity.LoadingIndicator indicator) {
+    private static void sortFiles(ArrayList<TurboImage> files) {
+        files.sort((f1, f2) -> Long.compare(f2.lastModified, f1.lastModified));
+    }
+
+    public static void loadGalleryFromCache(LoadingIndicator indicator) {
+        //Update load indicator
+        indicator.load("gallery");
+
         //No albums
         if (albums.isEmpty()) loadAlbums();
-
-        //Duration for testing which part is the slowest
-        long startTimestamp = new Date().toInstant().toEpochMilli();
 
         //Clear previous files
         allFiles.clear();
 
         //Load cache
         loadCache();
-        boolean changedCache = false;
 
-        //Create images filter
-        FileFilter imageFileFilter = file -> {
-            //Skip directories
-            if (!file.isFile()) return false;
-
-            //Skip hidden files (like .trashed)
-            String fileName = file.getName().toLowerCase();
-            if (fileName.startsWith(".")) return false;
-
-            //Skip files without an extension
-            int lastDotIndex = fileName.lastIndexOf(".");
-            if (lastDotIndex == -1) return false;
-
-            //Check if file is an image
-            switch (fileName.substring(lastDotIndex + 1)) {
-                case "png":
-                case "jpg":
-                case "jpeg":
-                case "webp":
-                    return true;
-                default:
-                    return false;
-            }
-        };
-
-        //Load files from all albums
+        //Load albums files from cache
+        allFilesUpToDate = true;
         for (Album album: Library.albums) {
             //Check if images folder & metadata file exist
-            if (!album.getExists()) continue;
+            if (!album.exists()) continue;
 
-            //Update load indicator & clear album files
-            if (indicator != null) indicator.show(album.imagesFolder.getName(), "images");
-
-            //Remove album files from all files & clear album
-            for (TurboImage image: album.files) allFiles.remove(image);
-            album.files.clear();
+            //Clear album files
+            album.clearFiles();
 
             //Try to load images from cache
             String albumImagesPath = album.imagesFolder.getAbsolutePath();
@@ -148,7 +124,7 @@ public class Library {
                                 allFiles.add(image);
                             }
 
-                            //Loaded album from cache -> Skip to next
+                            //Successfully loaded album from cache -> Skip to next
                             Log.i("Library", "Loaded cache load for \"" + album.getName() + "\"");
                             continue;
                         }
@@ -158,22 +134,73 @@ public class Library {
             } catch(Exception e){
                 //Error loading cache -> Clear files & load from disk
                 Log.i("Library", "Couldn't load cache for \"" + album.getName() + "\". Reason: " + e.getMessage());
-
-                //Remove album files from all files & clear album
-                for (TurboImage image: album.files) allFiles.remove(image);
-                album.files.clear();
             }
 
-            //Get folder files
-            File[] folder = album.imagesFolder.listFiles(imageFileFilter);
-            if (folder == null) continue;
+            //Clear album files
+            album.clearFiles();
+
+            //Mark album & all files as not up to date
+            album.isUpToDate = false;
+            allFilesUpToDate = false;
+        }
+
+        //Sort all files
+        sortFiles(allFiles);
+    }
+
+    public static long loadGalleryFromDisk(LoadingIndicator indicator) {
+        //Duration for testing which part is the slowest
+        long startTimestamp = new Date().toInstant().toEpochMilli();
+
+        //Create images filter
+        FileFilter imageFileFilter = file -> {
+            //Skip directories
+            if (!file.isFile()) return false;
+
+            //Skip hidden files (like .trashed)
+            String fileName = file.getName().toLowerCase();
+            if (fileName.startsWith(".")) return false;
+
+            //Skip files without an extension
+            int lastDotIndex = fileName.lastIndexOf(".");
+            if (lastDotIndex == -1) return false;
+
+            //Check if file is an image
+            switch (fileName.substring(lastDotIndex + 1)) {
+                case "png":
+                case "jpg":
+                case "jpeg":
+                case "webp":
+                    return true;
+                default:
+                    return false;
+            }
+        };
+
+        //Load files from all albums
+        for (Album album: Library.albums) {
+            //Check if images folder & metadata file exist
+            if (!album.exists()) continue;
+
+            //Check if album is up to date
+            if (album.isUpToDate) continue;
+
+            //Clear album files
+            album.clearFiles();
+
+            //Update load indicator & clear album files
+            indicator.load(album.imagesFolder.getName(), "images");
+
+            //Get files from folder
+            File[] files = album.imagesFolder.listFiles(imageFileFilter);
+            if (files == null) continue;
 
             //Resize lists
-            album.files.ensureCapacity(folder.length);
-            allFiles.ensureCapacity(allFiles.size() + folder.length);
+            album.files.ensureCapacity(files.length);
+            allFiles.ensureCapacity(allFiles.size() + files.length);
 
             //Save images
-            for (File file: folder) {
+            for (File file: files) {
                 //Create image container
                 TurboImage image = new TurboImage(file, album, file.lastModified());
 
@@ -182,38 +209,43 @@ public class Library {
                 allFiles.add(image);
             }
 
-            //Sort images by last modified
-            album.files.sort((f1, f2) -> Long.compare(f2.lastModified, f1.lastModified));
+            //Sort album
+            sortFiles(album.files);
 
-            //Update cache for this album
+            //Mark album as up to date
+            album.isUpToDate = true;
+
+            //Remake cache for this album
             remakeCacheForAlbum(album, false);
-            changedCache = true;
         }
 
-        //Sort images by last modified
-        allFiles.sort((f1, f2) -> Long.compare(f2.lastModified, f1.lastModified));
+        //Sort all files
+        sortFiles(allFiles);
 
-        //Changed cache -> Save it
-        if (changedCache) saveCache();
+        //Mark all files as up to date
+        allFilesUpToDate = true;
+
+        //Save cache
+        saveCache();
 
         //Return the time it took to load gallery
         return new Date().toInstant().toEpochMilli() - startTimestamp;
     }
 
-    public static void loadMetadata(MainActivity.LoadingIndicator indicator) {
+    public static void loadMetadata(LoadingIndicator indicator) {
         //Load files from all albums
         for (Album album: Library.albums) loadMetadata(indicator, album);
     }
 
-    public static void loadMetadata(MainActivity.LoadingIndicator indicator, Album album) {
+    public static void loadMetadata(LoadingIndicator indicator, Album album) {
         //Already loaded
         if (album.hasMetadata()) return;
 
         //Check if images folder & metadata file exist
-        if (!album.getExists()) return;
+        if (!album.exists()) return;
 
         //Update load indicator
-        if (indicator != null) indicator.show(album.imagesFolder.getName(), "metadata");
+        if (indicator != null) indicator.load(album.imagesFolder.getName(), "metadata");
 
         //Load metadata
         album.loadMetadata();
@@ -266,6 +298,14 @@ public class Library {
         //Update cache
         cache.set(album.imagesFolder.getAbsolutePath(), albumCache);
         if (save) saveCache();
+    }
+
+    //Util
+    public interface LoadingIndicator {
+        void search();
+        void load(String content);
+        void load(String folder, String type);
+        void hide();
     }
 
 }
