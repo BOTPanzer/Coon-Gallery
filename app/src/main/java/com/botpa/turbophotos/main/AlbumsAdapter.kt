@@ -36,7 +36,15 @@ class AlbumsAdapter(private val context: Context, private val albums: ArrayList<
                 val requestBuilder = Glide.with(holder.itemView.context).asBitmap().sizeMultiplier(0.3f)
                 Glide.with(context).asBitmap().load(Library.allFiles[0].file.absolutePath).thumbnail(requestBuilder).into(holder.image)
             }
-            holder.image.alpha = if (Library.allFilesUpToDate) 1.0f else 0.2f;
+
+            //Check if loaded
+            if (Library.allFilesUpToDate) {
+                holder.image.alpha =  1.0f;
+                holder.loading.visibility = View.GONE;
+            } else {
+                holder.image.alpha =  0.2f;
+                holder.loading.visibility = View.VISIBLE;
+            }
 
             //Update album name
             holder.name.text = "All"
@@ -49,7 +57,15 @@ class AlbumsAdapter(private val context: Context, private val albums: ArrayList<
                 val requestBuilder = Glide.with(holder.itemView.context).asBitmap().sizeMultiplier(0.3f)
                 Glide.with(context).asBitmap().load(album.files[0].file.absolutePath).thumbnail(requestBuilder).into(holder.image)
             }
-            holder.image.alpha = if (album.isUpToDate) 1.0f else 0.2f;
+
+            //Check if loaded
+            if (album.isUpToDate) {
+                holder.image.alpha =  1.0f;
+                holder.loading.visibility = View.GONE;
+            } else {
+                holder.image.alpha =  0.2f;
+                holder.loading.visibility = View.VISIBLE;
+            }
 
             //Update album name
             holder.name.text = album.name
@@ -92,5 +108,6 @@ class AlbumsAdapter(private val context: Context, private val albums: ArrayList<
         var background: View = itemView.findViewById(R.id.background)
         var image: ImageView = itemView.findViewById(R.id.image)
         var name: TextView = itemView.findViewById(R.id.name)
+        var loading: View = itemView.findViewById(R.id.loading)
     }
 }
