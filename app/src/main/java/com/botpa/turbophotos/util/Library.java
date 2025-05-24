@@ -105,43 +105,44 @@ public class Library {
                         ArrayNode cachedFiles = (ArrayNode) albumCache.get("files");
 
                         //Check timestamps
-                        if (cachedLastModified == album.imagesFolder.lastModified()) {
-                            //Same timestamps -> Load images from cache
-                            album.files.ensureCapacity(cachedFiles.size());
+                        album.isUpToDate = cachedLastModified == album.imagesFolder.lastModified();
+                        if (!album.isUpToDate) allFilesUpToDate = false;
 
-                            //Get files
-                            for (int i = 0; i < cachedFiles.size(); i++) {
-                                //Get file info
-                                JsonNode node = cachedFiles.get(i);
-                                String name = node.get("name").asText();
-                                long lastModified = node.get("lastModified").asLong();
+                        //Load images from cache
+                        album.files.ensureCapacity(cachedFiles.size());
 
-                                //Create image container
-                                TurboImage image = new TurboImage(new File(albumImagesPath + "/" + name), album, lastModified);
+                        //Get files
+                        for (int i = 0; i < cachedFiles.size(); i++) {
+                            //Get file info
+                            JsonNode node = cachedFiles.get(i);
+                            String name = node.get("name").asText();
+                            long lastModified = node.get("lastModified").asLong();
 
-                                //Add image to list
-                                album.files.add(image);
-                                allFiles.add(image);
-                            }
+                            //Create image container
+                            TurboImage image = new TurboImage(new File(albumImagesPath + "/" + name), album, lastModified);
 
-                            //Successfully loaded album from cache -> Skip to next
-                            Log.i("Library", "Loaded cache load for \"" + album.getName() + "\"");
-                            continue;
+                            //Add image to list
+                            album.files.add(image);
+                            if (album.isUpToDate) allFiles.add(image); //Add to all files only if up to date
                         }
+
+                        //Successfully loaded album from cache -> Skip to next
+                        Log.i("Library", "Loaded cache load for \"" + album.getName() + "\"");
+                        continue;
                     }
                     Log.i("Library", "Skipping cache load for \"" + album.getName() + "\"");
                 }
-            } catch(Exception e){
+            } catch (Exception e){
                 //Error loading cache -> Clear files & load from disk
                 Log.i("Library", "Couldn't load cache for \"" + album.getName() + "\". Reason: " + e.getMessage());
+
+                //Clear album files
+                album.clearFiles();
+
+                //Mark album & all files as not up to date
+                album.isUpToDate = false;
+                allFilesUpToDate = false;
             }
-
-            //Clear album files
-            album.clearFiles();
-
-            //Mark album & all files as not up to date
-            album.isUpToDate = false;
-            allFilesUpToDate = false;
         }
 
         //Sort all files
@@ -185,8 +186,8 @@ public class Library {
             //Check if album is up to date
             if (album.isUpToDate) continue;
 
-            //Clear album files
-            album.clearFiles();
+            //Create new album files
+            ArrayList<TurboImage> newFiles = new ArrayList<>();
 
             //Update load indicator & clear album files
             indicator.load(album.imagesFolder.getName(), "images");
@@ -205,14 +206,13 @@ public class Library {
                 TurboImage image = new TurboImage(file, album, file.lastModified());
 
                 //Add image to lists
-                album.files.add(image);
+                newFiles.add(image);
                 allFiles.add(image);
             }
+            album.files = newFiles;
 
-            //Sort album
+            //Sort album & mark as up to date
             sortFiles(album.files);
-
-            //Mark album as up to date
             album.isUpToDate = true;
 
             //Remake cache for this album

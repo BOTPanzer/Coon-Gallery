@@ -574,6 +574,9 @@ public class MainActivity extends AppCompatActivity {
 
             //Finish
             runOnUiThread(() -> {
+                //Reload albums list
+                albumsAdapter.notifyDataSetChanged();
+
                 //Hide indicator
                 loadingIndicator.hide();
             });
