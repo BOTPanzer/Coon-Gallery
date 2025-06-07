@@ -682,8 +682,7 @@
         android:layout_height="match_parent"
         android:background="?attr/colorSurface"
         android:gravity="center"
-        android:orientation="vertical"
-        android:visibility="gone">
+        android:orientation="vertical">
 
         <TextView
             android:layout_width="wrap_content"
@@ -717,6 +716,34 @@
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/comfortaa_medium"
                     android:text="Write"
+                    android:textAlignment="center"
+                    android:textColor="?attr/colorOnPrimary" />
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/permissionMedia"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginHorizontal="50dp"
+            android:layout_marginTop="10dp"
+            app:cardBackgroundColor="?attr/colorPrimary"
+            app:cardCornerRadius="25dp"
+            app:cardElevation="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="?attr/selectableItemBackground"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/comfortaa_medium"
+                    android:text="Media"
                     android:textAlignment="center"
                     android:textColor="?attr/colorOnPrimary" />
             </LinearLayout>

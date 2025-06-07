@@ -3,6 +3,7 @@ package com.botpa.turbophotos.main;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -21,7 +22,9 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.PagerSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
@@ -48,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
     //Permissions
     private boolean permissionCheck = false;
     private boolean permissionWrite = false;
+    private boolean permissionMedia = false;
     private boolean permissionNotifications = false;
     private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
         permissionNotifications = isGranted;
@@ -174,13 +178,30 @@ public class MainActivity extends AppCompatActivity {
 
         //Button listeners
         findViewById(R.id.permissionWrite).setOnClickListener(v -> {
+            if (permissionWrite) return;
+            
+            //Ask for permission
             permissionCheck = true;
             Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
             intent.setData(Uri.fromParts("package", getPackageName(), null));
             startActivity(intent);
         });
 
+        findViewById(R.id.permissionMedia).setOnClickListener(v -> {
+            if (permissionMedia) return;
+
+            //Ask for permission
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                ActivityCompat.requestPermissions(this, new String[] { Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO }, 0);
+            } else {
+                ActivityCompat.requestPermissions(this, new String[] { Manifest.permission.READ_EXTERNAL_STORAGE }, 0);
+            }
+        });
+
         findViewById(R.id.permissionNotifications).setOnClickListener(v -> {
+            if (permissionNotifications) return;
+
+            //Ask for permission
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
             }
@@ -191,18 +212,29 @@ public class MainActivity extends AppCompatActivity {
             permissionWrite = true;
             findViewById(R.id.permissionWrite).setAlpha(0.5f);
         }
+        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED &&
+            ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_MEDIA_VIDEO) == PackageManager.PERMISSION_GRANTED) {
+            permissionMedia = true;
+            findViewById(R.id.permissionMedia).setAlpha(0.5f);
+        }
         if (NotificationManagerCompat.from(MainActivity.this).areNotificationsEnabled()) {
             permissionNotifications = true;
             findViewById(R.id.permissionNotifications).setAlpha(0.5f);
         }
 
         //Has permissions
-        if (permissionWrite && permissionNotifications) {
+        if (permissionWrite && permissionMedia && permissionNotifications) {
             findViewById(R.id.permissionLayout).setVisibility(View.GONE);
 
             //Start
             loadApp();
         }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        checkPermissions();
     }
 
     //App
