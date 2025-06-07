@@ -6,9 +6,6 @@ import android.content.SharedPreferences
 
 object Storage {
 
-    //App specific
-    //add albums n stuff here
-
     //Storage specific
     private lateinit var preferences: SharedPreferences
     private val isLoaded: Boolean get() = Storage::preferences.isInitialized
@@ -31,7 +28,7 @@ object Storage {
     }
 
     @JvmStatic fun putStringList(key: String, value: ArrayList<String>) {
-        if (isLoaded) preferences.edit().putString(key, value.joinToString(listSplit)).apply()
+        if (isLoaded) preferences.edit().putString(key, if (value.isEmpty()) null else value.joinToString(listSplit)).apply()
     }
 
     //String

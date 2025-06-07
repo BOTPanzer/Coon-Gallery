@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Parcelable;
 import android.provider.Settings;
 import android.view.KeyEvent;
 import android.view.View;
@@ -69,10 +70,12 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<TurboImage> galleryFilesUnfiltered = new ArrayList<>();
     private final ArrayList<TurboImage> galleryFiles = new ArrayList<>();
 
+    private Parcelable galleryListScroll;
     private GridLayoutManager galleryLayoutManager;
     private AlbumsAdapter albumsAdapter;
     private GalleryAdapter galleryAdapter;
     private RecyclerView galleryList;
+    private TextView galleryTitle;
 
     //Search
     private boolean isSearching = false;
@@ -228,6 +231,7 @@ public class MainActivity extends AppCompatActivity {
 
         //Gallery
         galleryList = findViewById(R.id.gallery);
+        galleryTitle = findViewById(R.id.galleryTitle);
 
         //Search
         searchFilterText = findViewById(R.id.searchFilterText);
@@ -272,16 +276,13 @@ public class MainActivity extends AppCompatActivity {
     private void addListeners() {
         //Activities
         backup.setOnClickListener(view -> {
-            //Loading
-            if (!Library.allFilesUpToDate) return;
-
             //Open backup
             startActivity(new Intent(MainActivity.this, BackupActivity.class));
         });
 
         settings.setOnClickListener(view -> {
             //Close search
-            if (galleryInHome) searchClose.performClick();
+            if (!galleryInHome) searchClose.performClick();
 
             //Open settings
             startActivity(new Intent(MainActivity.this, SettingsActivity.class));
@@ -333,7 +334,7 @@ public class MainActivity extends AppCompatActivity {
                 String search = searchText.getText().toString();
 
                 //Filter gallery with search
-                filterGallery(search);
+                filterGallery(search, true);
             }
             return false;
         });
@@ -388,7 +389,7 @@ public class MainActivity extends AppCompatActivity {
             displayInfoLabelsText.setText(labels);
 
             //Update metadata
-            String key = displayCurrent.file.getName();
+            String key = displayCurrent.getName();
             ObjectNode metadata = displayCurrent.album.getMetadataKey(key);
             if (metadata == null) {
                 metadata = Orion.getEmptyJson();
@@ -557,28 +558,16 @@ public class MainActivity extends AppCompatActivity {
 
         //Load images
         new Thread(() -> {
-            //Load gallery from cache
-            Library.loadGalleryFromCache(loadingIndicator);
+            //Load albums
+            Library.loadAlbums(MainActivity.this);
 
             //Show gallery
             runOnUiThread(() -> {
                 //Show gallery list (albums)
                 galleryList.setVisibility(View.VISIBLE);
-            });
 
-            //Check if all files are up to date
-            if (!Library.allFilesUpToDate) {
-                //Not all files up to date -> Reload non up to date albums from disk
-                long duration = Library.loadGalleryFromDisk(loadingIndicator);
-            }
-
-            //Finish
-            runOnUiThread(() -> {
                 //Reload albums list
                 albumsAdapter.notifyDataSetChanged();
-
-                //Hide indicator
-                loadingIndicator.hide();
             });
         }).start();
     }
@@ -608,9 +597,9 @@ public class MainActivity extends AppCompatActivity {
         }).start();
     }
 
-    private void filterGallery() { filterGallery(""); }
+    private void filterGallery() { filterGallery("", false); }
 
-    private void filterGallery(String _filter) {
+    private void filterGallery(String _filter, boolean scrollToTop) {
         //Ignore case
         String filter = _filter.toLowerCase();
         boolean isFiltering = !filter.isEmpty();
@@ -645,7 +634,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 //Check if json contains filter
-                if (filterImage(image.album.getMetadataKey(image.file.getName()), filter)) galleryFiles.add(image);
+                if (filterImage(image, filter)) galleryFiles.add(image);
             }
 
             //Show gallery
@@ -653,7 +642,7 @@ public class MainActivity extends AppCompatActivity {
                 //Show gallery
                 galleryAdapter.notifyDataSetChanged();
                 galleryList.stopScroll();
-                galleryList.scrollToPosition(0);
+                if (scrollToTop) galleryList.scrollToPosition(0);
 
                 //Finish searching
                 if (isFiltering) loadingIndicator.hide();
@@ -662,8 +651,12 @@ public class MainActivity extends AppCompatActivity {
         }).start();
     }
 
-    private boolean filterImage(ObjectNode metadata, String filter) {
-        //No metadata
+    private boolean filterImage(TurboImage image, String filter) {
+        //Check file name
+        if (image.getName().contains(filter)) return true;
+
+        //Get metadata
+        ObjectNode metadata = image.album.getMetadataKey(image.getName());
         if (metadata == null) return false;
 
         //Check caption
@@ -703,15 +696,29 @@ public class MainActivity extends AppCompatActivity {
         Orion.hideAnim(galleryList, 150, () -> {
             //Change gallery
             if (galleryInHome) {
+                //Show home
                 Orion.hideAnim(searchLayoutClosed);
                 galleryLayoutManager.setSpanCount(Storage.getInt("Settings.galleryAlbumsPerRow", 2));
                 galleryList.setAdapter(albumsAdapter);
                 backManager.unregister("albums");
+
+                //Scroll to saved scroll
+                if (galleryListScroll != null) galleryLayoutManager.onRestoreInstanceState(galleryListScroll);
+
+                //Reset gallery title
+                galleryTitle.setText("Coon Gallery");
             } else {
+                //Save scroll
+                galleryListScroll = galleryLayoutManager.onSaveInstanceState();
+
+                //Show album
                 Orion.showAnim(searchLayoutClosed);
                 galleryLayoutManager.setSpanCount(Storage.getInt("Settings.galleryImagesPerRow", 3));
                 galleryList.setAdapter(galleryAdapter);
                 backManager.register("albums", () -> showAlbumList(false));
+
+                //Scroll to top
+                galleryList.scrollToPosition(0);
             }
 
             //Show list
@@ -721,22 +728,22 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean selectAlbum(int albumIndex) {
         if (albumIndex < 0) {
-            //Not up to date
-            if (!Library.allFilesUpToDate) return false;
-
             //Load
             galleryFilesUnfiltered = Library.allFiles;
             loadGalleryMetadata(null);
+
+            //Change gallery title
+            galleryTitle.setText("All");
         } else {
             //Get album
             Album album = Library.albums.get(albumIndex);
 
-            //Not up to date
-            if (!album.isUpToDate) return false;
-
             //Load
             galleryFilesUnfiltered = album.files;
             loadGalleryMetadata(album);
+
+            //Change gallery title
+            galleryTitle.setText(album.getName());
         }
         searchText.setText("");
         filterGallery();
@@ -777,12 +784,12 @@ public class MainActivity extends AppCompatActivity {
         displayLayoutManager.setScrollEnabled(true);
 
         //Change image name
-        displayNameText.setText(displayCurrent.file.getName());
+        displayNameText.setText(displayCurrent.getName());
 
         //Prepare options menu
-        findViewById(R.id.displayOptionsDelete).setOnClickListener(view2 -> {
+        findViewById(R.id.displayOptionsDelete).setOnClickListener(view -> {
             //Delete metadata key
-            displayCurrent.album.removeMetadataKey(displayCurrent.file.getName());
+            displayCurrent.album.removeMetadataKey(displayCurrent.getName());
             displayCurrent.album.saveMetadata();
 
             //Delete image
@@ -797,14 +804,14 @@ public class MainActivity extends AppCompatActivity {
             galleryAdapter.notifyItemRemoved(index);
 
             //Remake & save cache
-            Library.remakeCacheForAlbum(displayCurrent.album, true);
+            //Library.remakeCacheForAlbum(displayCurrent.album, true);
 
             //Close menu & display list
             displayClose.performClick();
             displayOptionsLayout.performClick();
         });
 
-        findViewById(R.id.displayOptionsShare).setOnClickListener(view2 -> {
+        findViewById(R.id.displayOptionsShare).setOnClickListener(view -> {
             Intent intent = new Intent(Intent.ACTION_SEND);
             intent.putExtra(Intent.EXTRA_STREAM, Orion.getUriFromFile(MainActivity.this, displayCurrent.file));
             intent.setType("image/*");
@@ -814,9 +821,9 @@ public class MainActivity extends AppCompatActivity {
             displayOptionsLayout.performClick();
         });
 
-        findViewById(R.id.displayOptionsOpen).setOnClickListener(view2 -> {
+        findViewById(R.id.displayOptionsOpen).setOnClickListener(view -> {
             Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setDataAndType(Uri.parse(displayCurrent.file.getAbsolutePath()), "image/*");
+            intent.setDataAndType(Uri.parse(displayCurrent.file.getAbsolutePath()), displayCurrent.isVideo() ? "video/*" : "image/*");
             startActivity(intent);
 
             //Close menu
@@ -828,7 +835,7 @@ public class MainActivity extends AppCompatActivity {
         String labels = "";
         String text = "";
         try {
-            JsonNode metadata = displayCurrent.album.getMetadataKey(displayCurrent.file.getName());
+            JsonNode metadata = displayCurrent.album.getMetadataKey(displayCurrent.getName());
             if (metadata == null) throw new Exception();
 
             //Load caption

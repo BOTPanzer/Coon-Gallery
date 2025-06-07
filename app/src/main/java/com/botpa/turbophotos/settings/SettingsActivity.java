@@ -4,24 +4,19 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.botpa.turbophotos.util.Album;
 import com.botpa.turbophotos.R;
+import com.botpa.turbophotos.util.Link;
 import com.botpa.turbophotos.util.Library;
 import com.botpa.turbophotos.util.Orion;
 import com.botpa.turbophotos.util.Storage;
-import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.android.material.slider.Slider;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -49,14 +44,20 @@ public class SettingsActivity extends AppCompatActivity {
             File file = new File(path);
 
             //Update
-            Album album = Library.albums.get(albumsFilePickerIndex);
+            Link album = Library.links.get(albumsFilePickerIndex);
             switch (albumsFilePickerAction) {
-                case SelectFolder:
-                    album.imagesFolder = file;
+                case SelectFolder: {
+                    boolean updated = Library.updateLinkFolder(albumsFilePickerIndex, file);
+                    if (!updated) {
+                        Orion.snack(SettingsActivity.this, "Album already exists");
+                        return;
+                    }
                     break;
-                case SelectFile:
-                    album.metadataFile = file;
+                }
+                case SelectFile: {
+                    Library.updateLinkFile(albumsFilePickerIndex, file);
                     break;
+                }
                 case CreateFile:
                     File metadataFile;
                     String name;
@@ -73,7 +74,7 @@ public class SettingsActivity extends AppCompatActivity {
             albumsAdapter.notifyItemChanged(albumsFilePickerIndex);
 
             //Save albums
-            Library.saveAlbums();
+            Library.saveLinks();
         } catch (Exception e) {
             Toast.makeText(this, e.toString(), Toast.LENGTH_LONG).show();
         }
@@ -127,19 +128,18 @@ public class SettingsActivity extends AppCompatActivity {
 
     private void initAlbumsList() {
         //Create album folders adapter
-        albumsAdapter = new AlbumAdapter(this, Library.albums);
+        albumsAdapter = new AlbumAdapter(this, Library.links);
         albumsAdapter.setOnDeleteListener((view, index) -> {
-            if (Library.albums.size() <= 1) return;
-
             //Remove album
-            Library.albums.remove(index);
+            boolean removed = Library.removeLink(index);
+            if (!removed) return;
             albumsAdapter.notifyItemRemoved(index);
 
             //Notify all albums starting from the removed one (to update number)
-            if (index < Library.albums.size()) albumsAdapter.notifyItemRangeChanged(index, Library.albums.size() - index);
+            if (index < Library.links.size()) albumsAdapter.notifyItemRangeChanged(index, Library.links.size() - index);
 
             //Save
-            Library.saveAlbums();
+            Library.saveLinks();
         });
         albumsAdapter.setOnChooseFolderListener((view, index) -> {
             //Save album index
@@ -170,7 +170,7 @@ public class SettingsActivity extends AppCompatActivity {
                 albumsFilePickerLauncher.launch(intent);
             }, "Create", () -> {
                 //Album folder is needed to take the name
-                if (!Library.albums.get(index).imagesFolder.exists()) {
+                if (!Library.links.get(index).imagesFolder.exists()) {
                     Toast.makeText(SettingsActivity.this, "Please select an album folder first", Toast.LENGTH_LONG).show();
                     return;
                 }
@@ -202,10 +202,15 @@ public class SettingsActivity extends AppCompatActivity {
 
         //Albums
         albumsFoldersAdd.setOnClickListener(view -> {
-            Library.albums.add(new Album("", ""));
-            albumsAdapter.notifyItemInserted(Library.albums.size() - 1);
-            albumsFoldersList.scrollToPosition(Library.albums.size() - 1);
-            Library.saveAlbums();
+            boolean added = Library.addLink(new Link("", ""));
+            if (added) {
+                albumsAdapter.notifyItemInserted(Library.links.size() - 1);
+                albumsFoldersList.scrollToPosition(Library.links.size() - 1);
+                Library.saveLinks();
+            } else {
+                Orion.snack(SettingsActivity.this, "Can't have duplicate albums");
+            }
         });
     }
+
 }

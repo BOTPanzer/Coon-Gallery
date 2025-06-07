@@ -20,6 +20,7 @@ import com.botpa.turbophotos.R;
 import com.botpa.turbophotos.main.MainActivity;
 import com.botpa.turbophotos.util.Album;
 import com.botpa.turbophotos.util.Library;
+import com.botpa.turbophotos.util.Link;
 import com.botpa.turbophotos.util.Orion;
 import com.botpa.turbophotos.util.TurboImage;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -35,6 +36,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.time.Instant;
+import java.util.ArrayList;
 
 import dev.gustavoavila.websocketclient.WebSocketClient;
 
@@ -67,6 +69,9 @@ public class BackupService extends Service {
     private int metadataRequestIndex = 0;
     private MetadataInfo metadataRequest;
 
+    //Albums
+    private final ArrayList<ArrayList<TurboImage>> backupFiles = new ArrayList<>();
+
 
     @Nullable
     @Override
@@ -87,6 +92,27 @@ public class BackupService extends Service {
             buildForegroundNotification();
             notificationManager.notify(NOTIFICATION_ID, notification);
             startForeground(NOTIFICATION_ID, notification);
+
+            //Init backup files
+            backupFiles.clear();
+            for (Link link: Library.links) {
+                //Get album & create files list
+                Album album = link.album;
+                ArrayList<TurboImage> files = new ArrayList<>();
+
+                //Check if album exists
+                if (album != null) {
+                    //Add files to list (images only)
+                    files.ensureCapacity(album.files.size());
+                    for (TurboImage file: album.files) {
+                        if (file.isVideo()) continue;
+                        files.add(file);
+                    }
+                }
+
+                //Save list
+                backupFiles.add(files);
+            }
         }
 
         //Tell the activity to start
@@ -129,19 +155,19 @@ public class BackupService extends Service {
                 //Create albums object
                 ObjectNode obj = Orion.getEmptyJson();
                 obj.put("action", "albums");
-                ArrayNode albums = Orion.getEmptyJsonArray();
-                for (int i = 0; i < Library.albums.size(); i++) {
-                    //Get album
-                    Album album = Library.albums.get(i);
+                ArrayNode albumsJsonArray = Orion.getEmptyJsonArray();
+                for (int i = 0; i < backupFiles.size(); i++) {
+                    //Get files
+                    ArrayList<TurboImage> files = backupFiles.get(i);
 
                     //Create files list
-                    String[] files = new String[album.files.size()];
-                    for (int j = 0; j < album.files.size(); j++) files[j] = album.files.get(j).file.getName();
+                    String[] filesArray = new String[files.size()];
+                    for (int j = 0; j < files.size(); j++) filesArray[j] = files.get(j).getName();
 
                     //Add array with album files
-                    albums.add(Orion.arrayToJson(files));
+                    albumsJsonArray.add(Orion.arrayToJson(filesArray));
                 }
-                obj.set("albums", albums);
+                obj.set("albums", albumsJsonArray);
 
                 //Send albums
                 webSocketClient.send(obj.toString());
@@ -181,9 +207,6 @@ public class BackupService extends Service {
 
         //Connect client
         webSocketClient.setConnectTimeout(10000);
-        //webSocketClient.setReadTimeout(5000);
-        //webSocketClient.addHeader("Origin", "http://botpa.vercel.app/");
-        //webSocketClient.enableAutomaticReconnection(5000);
         webSocketClient.connect();
     }
 
@@ -217,13 +240,13 @@ public class BackupService extends Service {
 
                     //Get album
                     int albumIndex = message.get("albumIndex").asInt();
-                    Album album = Library.albums.get(albumIndex);
+                    ArrayList<TurboImage> album = backupFiles.get(albumIndex);
 
                     //Get image
                     int imageIndex = message.get("imageIndex").asInt();
 
                     //Send image info
-                    File file = album.files.get(imageIndex).file;
+                    File file = album.get(imageIndex).file;
 
                     //Log
                     send("log", "Sending image info for: " + file.getName());
@@ -244,11 +267,11 @@ public class BackupService extends Service {
                 case "requestImageData": {
                     //Get album
                     int albumIndex = message.get("albumIndex").asInt();
-                    Album album = Library.albums.get(albumIndex);
+                    ArrayList<TurboImage> album = backupFiles.get(albumIndex);
 
                     //Get image
                     int imageIndex = message.get("imageIndex").asInt();
-                    TurboImage image = album.files.get(imageIndex);
+                    TurboImage image = album.get(imageIndex);
 
                     //Send image data
                     File file = image.file;
@@ -280,10 +303,10 @@ public class BackupService extends Service {
                 case "requestMetadataInfo": {
                     //Get album
                     int albumIndex = message.get("albumIndex").asInt();
-                    Album album = Library.albums.get(albumIndex);
+                    Album album = Library.links.get(albumIndex).album;
 
                     //Send metadata info
-                    File file = album.metadataFile;
+                    File file = album.getMetadataFile();
 
                     //Log
                     send("log", "Sending metadata info for: " + file.getName());
@@ -303,10 +326,10 @@ public class BackupService extends Service {
                 case "requestMetadataData": {
                     //Get album
                     int albumIndex = message.get("albumIndex").asInt();
-                    Album album = Library.albums.get(albumIndex);
+                    Album album = Library.links.get(albumIndex).album;
 
                     //Send metadata data
-                    File file = album.metadataFile;
+                    File file = album.getMetadataFile();
                     byte[] bytes = new byte[(int) file.length()];
                     try {
                         //Log
@@ -378,7 +401,7 @@ public class BackupService extends Service {
         if (metadataRequest == null) return;
 
         //Save file
-        File file = Library.albums.get(metadataRequest.albumIndex).metadataFile;
+        File file = Library.links.get(metadataRequest.albumIndex).metadataFile;
         try {
             BufferedOutputStream buffer = new BufferedOutputStream(Files.newOutputStream(file.toPath()));
             buffer.write(data, 0, data.length);
@@ -461,13 +484,6 @@ public class BackupService extends Service {
             }
         };
 
-        /*//Register receiver
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(broadcastReceiver, new IntentFilter("musicNotificationBroadcast"), Context.RECEIVER_NOT_EXPORTED);
-        } else {
-            registerReceiver(broadcastReceiver, new IntentFilter("musicNotificationBroadcast"));
-        }*/
-
         //Register receiver filter
         LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, new IntentFilter(BackupService.BROADCAST_ID));
     }
@@ -508,7 +524,7 @@ public class BackupService extends Service {
             metadataRequestIndex++;
 
         //Finished
-        if (metadataRequestIndex >= Library.albums.size()) {
+        if (metadataRequestIndex >= Library.links.size()) {
             //Create message
             ObjectNode obj = Orion.getEmptyJson();
             obj.put("action", "endSync");
@@ -520,7 +536,7 @@ public class BackupService extends Service {
         }
 
         //Check if metadata file exists
-        File file = Library.albums.get(metadataRequestIndex).metadataFile;
+        File file = Library.links.get(metadataRequestIndex).metadataFile;
         if (!file.exists()) {
             Log.e("Metadata missing", "Metadata file " + metadataRequestIndex + " does not exist");
             requestNextMetadata(false);

@@ -130,7 +130,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/opificio_bold_rounded"
-                        android:text="Albums"
+                        android:text="Albums &amp; Metadata"
                         android:textAlignment="center"
                         android:textColor="?attr/colorOnSurface"
                         android:textSize="16sp" />
@@ -138,8 +138,29 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
                         android:fontFamily="@font/poppins"
-                        android:text="Click the &quot;images folder&quot; or &quot;metadata file&quot; icons to select where they are located"
+                        android:text="Adding albums allows you to backup them by using the backup service"
+                        android:textAlignment="center"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:fontFamily="@font/poppins"
+                        android:text="Linking metadata files to an album lets you use the search to find things in your images"
+                        android:textAlignment="center"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:fontFamily="@font/poppins"
+                        android:text="To add an album and its metadata, click the &quot;images folder&quot; or &quot;metadata file&quot; icons to select where they are located"
                         android:textAlignment="center"
                         android:textColor="?attr/colorOnSurface"
                         android:textSize="14sp" />

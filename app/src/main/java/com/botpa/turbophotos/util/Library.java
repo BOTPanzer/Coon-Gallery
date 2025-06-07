@@ -1,42 +1,39 @@
 package com.botpa.turbophotos.util;
 
-import android.os.Environment;
+import android.content.ContentResolver;
+import android.content.Context;
+import android.database.Cursor;
+import android.provider.MediaStore;
 import android.util.Log;
 
 import com.botpa.turbophotos.main.MainActivity;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
-/** @noinspection ResultOfMethodCallIgnored*/
 public class Library {
 
     //Albums
     public static final ArrayList<Album> albums = new ArrayList<>();
+    public static final ArrayList<Link> links = new ArrayList<>();
+    public static final HashMap<String, Link> linksMap = new HashMap<>();
 
     //Files
     public static final ArrayList<TurboImage> allFiles = new ArrayList<>();
-    public static boolean allFilesUpToDate = false;
-
-    //Cache
-    private static ObjectNode cache;
 
 
-    //Albums
-    public static void loadAlbums() {
-        //Clear previous albums
-        albums.clear();
+    //Links
+    private static void loadLinks() {
+        //Clear links
+        links.clear();
+        linksMap.clear();
 
-        //Get album pairs (strings)
+        //Get links from storage (as strings)
         ArrayList<String> albumPairs = Storage.getStringList("Settings.albums");
-        if (albumPairs.isEmpty()) albumPairs.add(Environment.getExternalStorageDirectory() + "/DCIM/Camera\n" + Environment.getExternalStorageDirectory() + "/DCIM/camera.metadata.json");
 
-        //Split album strings & create the albums
+        //Split album strings & create the links
         String imagesFolder, metadataFile;
         for (String albumString: albumPairs) {
             //Parse separator
@@ -49,189 +46,156 @@ public class Library {
                 metadataFile = "";
             }
 
-            //Join in pair
-            albums.add(new Album(imagesFolder, metadataFile));
+            //Join as link
+            addLink(new Link(imagesFolder, metadataFile));
         }
     }
 
-    public static void saveAlbums() {
-        //Save albums
+    public static void saveLinks() {
+        //Save links
         ArrayList<String> list = new ArrayList<>();
-        for (Album album: albums) list.add(album.toString());
+        for (Link link: links) list.add(link.toString());
         Storage.putStringList("Settings.albums", list);
 
         //Make main activity restart on resume
         MainActivity.shouldRestart();
     }
 
-    //Files
-    private static void sortFiles(ArrayList<TurboImage> files) {
-        files.sort((f1, f2) -> Long.compare(f2.lastModified, f1.lastModified));
+    public static boolean addLink(Link link) {
+        //Check if link exists
+        String key = link.getAbsoluteImagesPath();
+        if (linksMap.containsKey(key)) return false;
+
+        //Add link
+        links.add(link);
+        linksMap.put(key, link);
+        return true;
     }
 
-    public static void loadGalleryFromCache(LoadingIndicator indicator) {
-        //Update load indicator
-        indicator.load("gallery");
+    public static boolean removeLink(int index) {
+        //Check if link exists
+        if (index < 0 || index >= links.size()) return false;
 
-        //No albums
-        if (albums.isEmpty()) loadAlbums();
+        //Remove link
+        linksMap.remove(links.get(index).getAbsoluteImagesPath());
+        links.remove(index);
+        return true;
+    }
 
-        //Clear previous files
-        allFiles.clear();
+    public static boolean updateLinkFolder(int index, File newFolder) {
+        //Check if album is already in a link
+        String keyNew = newFolder.getAbsolutePath();
+        if (linksMap.containsKey(keyNew)) return false;
 
-        //Load cache
-        loadCache();
+        //Update
+        String keyOld = links.get(index).getAbsoluteImagesPath();
+        links.get(index).imagesFolder = newFolder;
+        linksMap.put(keyNew, linksMap.get(keyOld));
+        linksMap.remove(keyOld);
+        return true;
+    }
 
-        //Load albums files from cache
-        allFilesUpToDate = true;
-        for (Album album: Library.albums) {
-            //Check if images folder & metadata file exist
-            if (!album.exists()) continue;
+    public static void updateLinkFile(int index, File newFile) {
+        //Update
+        links.get(index).metadataFile = newFile;
+    }
 
-            //Clear album files
-            album.clearFiles();
+    //Albums
+    public static void loadAlbums(Context context) {
+        //Load links
+        loadLinks();
 
-            //Try to load images from cache
-            String albumImagesPath = album.imagesFolder.getAbsolutePath();
-            try {
-                if (cache.has(albumImagesPath)) {
-                    //Cache exists -> Get album cache
-                    JsonNode albumCache = cache.get(albumImagesPath);
+        //Get content resolver
+        ContentResolver contentResolver = context.getContentResolver();
 
-                    //Check if cache has last modified timestamp & files list
-                    if (albumCache.has("lastModified") && albumCache.has("files")) {
-                        //Get cached last modified timestamp & files list
-                        long cachedLastModified = albumCache.get("lastModified").asLong();
-                        ArrayNode cachedFiles = (ArrayNode) albumCache.get("files");
+        //Create temp albums map
+        Map<String, Album> albumMap = new HashMap<>();
 
-                        //Check timestamps
-                        album.isUpToDate = cachedLastModified == album.imagesFolder.lastModified();
-                        if (!album.isUpToDate) allFilesUpToDate = false;
+        //Get album files
+        try (Cursor cursor = contentResolver.query(
+                //Collection
+                MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL),
+                //Projection
+                new String[] {
+                        MediaStore.Files.FileColumns.BUCKET_ID,
+                        MediaStore.Files.FileColumns.BUCKET_DISPLAY_NAME,
+                        MediaStore.Files.FileColumns.DATE_MODIFIED,
+                        MediaStore.Files.FileColumns.MEDIA_TYPE,
+                        MediaStore.Files.FileColumns.DATA,
+                },
+                //Selection
+                MediaStore.Files.FileColumns.MEDIA_TYPE + "= ? OR " + MediaStore.Files.FileColumns.MEDIA_TYPE + "= ?",
+                //Selection args
+                new String[] {
+                        String.valueOf(MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE),
+                        String.valueOf(MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO),
+                },
+                //Sorting order
+                MediaStore.Files.FileColumns.DATE_MODIFIED + " DESC" //Sort by date (newest first)
+        )) {
+            if (cursor != null) {
+                //Get indexes for all variables
+                int idxBucketId = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.BUCKET_ID);
+                int idxBucketDisplayName = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.BUCKET_DISPLAY_NAME);
+                int idxLastModified = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATE_MODIFIED);
+                int idxMediaType = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.MEDIA_TYPE);
+                int idxData = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATA);
 
-                        //Load images from cache
-                        album.files.ensureCapacity(cachedFiles.size());
+                //Check files
+                while (cursor.moveToNext()) {
+                    //Get bucket ID & check if it is already saved
+                    String bucketId = cursor.getString(idxBucketId);
 
-                        //Get files
-                        for (int i = 0; i < cachedFiles.size(); i++) {
-                            //Get file info
-                            JsonNode node = cachedFiles.get(i);
-                            String name = node.get("name").asText();
-                            long lastModified = node.get("lastModified").asLong();
+                    //Get other info
+                    String bucketName = cursor.getString(idxBucketDisplayName);
+                    long lastModified = cursor.getLong(idxLastModified);
+                    String mediaType = cursor.getString(idxMediaType);
+                    File file = new File(cursor.getString(idxData));
 
-                            //Create image container
-                            TurboImage image = new TurboImage(new File(albumImagesPath + "/" + name), album, lastModified);
+                    //Get album
+                    Album album;
+                    if (!albumMap.containsKey(bucketId)) {
+                        //No album -> Create a new one
 
-                            //Add image to list
-                            album.files.add(image);
-                            if (album.isUpToDate) allFiles.add(image); //Add to all files only if up to date
-                        }
+                        //Get images folder, album link & metadata file
+                        File imagesFolder = file.getParentFile();
+                        Link link = linksMap.getOrDefault(imagesFolder.getAbsolutePath(), null);
+                        File metadataFile = link != null ? link.metadataFile : new File("");
 
-                        //Successfully loaded album from cache -> Skip to next
-                        Log.i("Library", "Loaded cache load for \"" + album.getName() + "\"");
-                        continue;
+                        //Create album
+                        album = new Album(
+                                imagesFolder,
+                                metadataFile,
+                                bucketId,
+                                bucketName,
+                                lastModified
+                        );
+
+                        //Save album & assign it to its metadata link
+                        albumMap.put(bucketId, album);
+                        if (link != null) link.album = album;
+                    } else {
+                        //Has album -> Get it
+                        album = albumMap.get(bucketId);
                     }
-                    Log.i("Library", "Skipping cache load for \"" + album.getName() + "\"");
+
+                    //Add file to album
+                    TurboImage image = new TurboImage(file, album, lastModified, mediaType);
+                    album.files.add(image);
+                    allFiles.add(image);
                 }
-            } catch (Exception e){
-                //Error loading cache -> Clear files & load from disk
-                Log.i("Library", "Couldn't load cache for \"" + album.getName() + "\". Reason: " + e.getMessage());
-
-                //Clear album files
-                album.clearFiles();
-
-                //Mark album & all files as not up to date
-                album.isUpToDate = false;
-                allFilesUpToDate = false;
             }
+        } catch (Exception e) {
+            Log.e("Library", "Error loading albums: " + e.getMessage());
         }
 
-        //Sort all files
-        sortFiles(allFiles);
+        //Add albums to list
+        albums.clear();
+        albums.addAll(albumMap.values());
+        albums.sort((f1, f2) -> Long.compare(f2.getLastModified(), f1.getLastModified()));
     }
 
-    public static long loadGalleryFromDisk(LoadingIndicator indicator) {
-        //Duration for testing which part is the slowest
-        long startTimestamp = new Date().toInstant().toEpochMilli();
-
-        //Create images filter
-        FileFilter imageFileFilter = file -> {
-            //Skip directories
-            if (!file.isFile()) return false;
-
-            //Skip hidden files (like .trashed)
-            String fileName = file.getName().toLowerCase();
-            if (fileName.startsWith(".")) return false;
-
-            //Skip files without an extension
-            int lastDotIndex = fileName.lastIndexOf(".");
-            if (lastDotIndex == -1) return false;
-
-            //Check if file is an image
-            switch (fileName.substring(lastDotIndex + 1)) {
-                case "png":
-                case "jpg":
-                case "jpeg":
-                case "webp":
-                    return true;
-                default:
-                    return false;
-            }
-        };
-
-        //Load files from all albums
-        for (Album album: Library.albums) {
-            //Check if images folder & metadata file exist
-            if (!album.exists()) continue;
-
-            //Check if album is up to date
-            if (album.isUpToDate) continue;
-
-            //Create new album files
-            ArrayList<TurboImage> newFiles = new ArrayList<>();
-
-            //Update load indicator & clear album files
-            indicator.load(album.imagesFolder.getName(), "images");
-
-            //Get files from folder
-            File[] files = album.imagesFolder.listFiles(imageFileFilter);
-            if (files == null) continue;
-
-            //Resize lists
-            album.files.ensureCapacity(files.length);
-            allFiles.ensureCapacity(allFiles.size() + files.length);
-
-            //Save images
-            for (File file: files) {
-                //Create image container
-                TurboImage image = new TurboImage(file, album, file.lastModified());
-
-                //Add image to lists
-                newFiles.add(image);
-                allFiles.add(image);
-            }
-            album.files = newFiles;
-
-            //Sort album & mark as up to date
-            sortFiles(album.files);
-            album.isUpToDate = true;
-
-            //Remake cache for this album
-            remakeCacheForAlbum(album, false);
-        }
-
-        //Sort all files
-        sortFiles(allFiles);
-
-        //Mark all files as up to date
-        allFilesUpToDate = true;
-
-        //Save cache
-        saveCache();
-
-        //Return the time it took to load gallery
-        return new Date().toInstant().toEpochMilli() - startTimestamp;
-    }
-
+    //Metadata
     public static void loadMetadata(LoadingIndicator indicator) {
         //Load files from all albums
         for (Album album: Library.albums) loadMetadata(indicator, album);
@@ -245,59 +209,10 @@ public class Library {
         if (!album.exists()) return;
 
         //Update load indicator
-        if (indicator != null) indicator.load(album.imagesFolder.getName(), "metadata");
+        if (indicator != null) indicator.load(album.getImagesFolder().getName(), "metadata");
 
         //Load metadata
         album.loadMetadata();
-    }
-
-    //Cache
-    private static void loadCache() {
-        //Already loaded
-        if (cache != null) return;
-
-        //Get cache file
-        File cacheFile = new File(Environment.getExternalStorageDirectory() + "/CoonGallery/cache.json");
-
-        //Load cache
-        cache = Orion.loadJson(cacheFile);
-    }
-
-    private static void saveCache() {
-        //No cache
-        if (cache == null) return;
-
-        //Get cache file
-        File cacheFile = new File(Environment.getExternalStorageDirectory() + "/CoonGallery/cache.json");
-
-        //Crate parent folder in case it does not exist
-        String parentPath = cacheFile.getParent();
-        if (parentPath != null) new File(parentPath).mkdir();
-
-        //Save cache file
-        Orion.writeJson(cacheFile, cache);
-    }
-
-    public static void remakeCacheForAlbum(Album album, boolean save) {
-        //Update cache for this album
-        ObjectNode albumCache = Orion.getEmptyJson();
-
-        //Set last modified date
-        albumCache.put("lastModified", album.imagesFolder.lastModified());
-
-        //Set files list
-        ArrayNode albumCacheFiles = Orion.getEmptyJsonArray();
-        for (TurboImage image: album.files) {
-            ObjectNode file = Orion.getEmptyJson();
-            file.put("name", image.file.getName());
-            file.put("lastModified", image.lastModified);
-            albumCacheFiles.add(file);
-        }
-        albumCache.set("files", albumCacheFiles);
-
-        //Update cache
-        cache.set(album.imagesFolder.getAbsolutePath(), albumCache);
-        if (save) saveCache();
     }
 
     //Util

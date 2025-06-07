@@ -31,19 +31,10 @@ class AlbumsAdapter(private val context: Context, private val albums: ArrayList<
         if (position < 0) {
             //First album is all files
 
-            //Load image in imageview
+            //Load cover
             if (Library.allFiles.isNotEmpty()) {
                 val requestBuilder = Glide.with(holder.itemView.context).asBitmap().sizeMultiplier(0.3f)
-                Glide.with(context).asBitmap().load(Library.allFiles[0].file.absolutePath).thumbnail(requestBuilder).into(holder.image)
-            }
-
-            //Check if loaded
-            if (Library.allFilesUpToDate) {
-                holder.image.alpha =  1.0f;
-                holder.loading.visibility = View.GONE;
-            } else {
-                holder.image.alpha =  0.2f;
-                holder.loading.visibility = View.VISIBLE;
+                Glide.with(context).asBitmap().load(Library.allFiles[0].file).thumbnail(requestBuilder).into(holder.image)
             }
 
             //Update album name
@@ -52,19 +43,10 @@ class AlbumsAdapter(private val context: Context, private val albums: ArrayList<
             //Get album
             val album = albums[position]
 
-            //Load image in imageview
+            //Load cover
             if (album.files.isNotEmpty()) {
                 val requestBuilder = Glide.with(holder.itemView.context).asBitmap().sizeMultiplier(0.3f)
-                Glide.with(context).asBitmap().load(album.files[0].file.absolutePath).thumbnail(requestBuilder).into(holder.image)
-            }
-
-            //Check if loaded
-            if (album.isUpToDate) {
-                holder.image.alpha =  1.0f;
-                holder.loading.visibility = View.GONE;
-            } else {
-                holder.image.alpha =  0.2f;
-                holder.loading.visibility = View.VISIBLE;
+                Glide.with(context).asBitmap().load(album.files[0].file).thumbnail(requestBuilder).into(holder.image)
             }
 
             //Update album name
@@ -108,6 +90,5 @@ class AlbumsAdapter(private val context: Context, private val albums: ArrayList<
         var background: View = itemView.findViewById(R.id.background)
         var image: ImageView = itemView.findViewById(R.id.image)
         var name: TextView = itemView.findViewById(R.id.name)
-        var loading: View = itemView.findViewById(R.id.loading)
     }
 }

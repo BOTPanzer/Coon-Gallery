@@ -7,10 +7,10 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
-import com.botpa.turbophotos.util.Album
 import com.botpa.turbophotos.R
+import com.botpa.turbophotos.util.Link
 
-class AlbumAdapter(private val context: Context, private val albums: ArrayList<Album>) : RecyclerView.Adapter<AlbumAdapter.AlbumHolder>() {
+class AlbumAdapter(private val context: Context, private val links: ArrayList<Link>) : RecyclerView.Adapter<AlbumAdapter.AlbumHolder>() {
 
     private var onChooseFolderListener: OnChooseFolderListener? = null
     private var onChooseFileListener: OnChooseFileListener? = null
@@ -26,13 +26,13 @@ class AlbumAdapter(private val context: Context, private val albums: ArrayList<A
         //Get holder position
         val position = holder.bindingAdapterPosition
 
-        //Get album from albums
-        val album = albums[position]
+        //Get album images
+        val link = links[position]
 
         //Load album folder & metadata file names
         holder.name.text = "Album ${position}"
-        holder.imagesFolder.text = album.imagesFolder.name
-        holder.metadataFile.text = album.metadataFile.name
+        holder.imagesFolder.text = link.imagesFolder.name
+        holder.metadataFile.text = link.metadataFile.name
 
         //Add listeners
         holder.imagesOpen.setOnClickListener { view: View ->
@@ -49,7 +49,7 @@ class AlbumAdapter(private val context: Context, private val albums: ArrayList<A
     }
 
     override fun getItemCount(): Int {
-        return albums.size
+        return links.size
     }
 
     //Listeners
@@ -91,4 +91,5 @@ class AlbumAdapter(private val context: Context, private val albums: ArrayList<A
             itemView.findViewById(R.id.metadataFile)
         var delete: CardView = itemView.findViewById(R.id.delete)
     }
+
 }

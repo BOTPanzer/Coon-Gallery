@@ -7,19 +7,14 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.botpa.turbophotos.R;
-import com.botpa.turbophotos.settings.SettingsActivity;
 import com.botpa.turbophotos.util.Orion;
 import com.botpa.turbophotos.util.Storage;
 
