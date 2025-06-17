@@ -13,6 +13,7 @@ class DisplayAdapter(private val context: Context, private val images: ArrayList
 
     private var onClickListener: OnClickListener? = null
     private var onZoomListener: OnClickListener? = null
+    private var onPlayListener: OnClickListener? = null
 
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): DisplayHolder {
@@ -30,6 +31,9 @@ class DisplayAdapter(private val context: Context, private val images: ArrayList
         //Load image in imageview
         Glide.with(context).asBitmap().load(image.file.absolutePath).into(holder.image)
 
+        //Toggle play video button
+        holder.play.visibility = if (image.isVideo) View.VISIBLE else View.GONE
+
         //Click listener
         holder.image.setOnClick {
             onClickListener?.onItemClick(holder.image, holder.bindingAdapterPosition)
@@ -37,6 +41,10 @@ class DisplayAdapter(private val context: Context, private val images: ArrayList
 
         holder.image.setOnZoomChange {
             onZoomListener?.onItemClick(holder.image, holder.bindingAdapterPosition)
+        }
+
+        holder.play.setOnClickListener {
+            onPlayListener?.onItemClick(holder.image, holder.bindingAdapterPosition)
         }
     }
 
@@ -57,9 +65,14 @@ class DisplayAdapter(private val context: Context, private val images: ArrayList
         this.onZoomListener = onZoomListener
     }
 
+    fun setOnPlayListener(onClickListener: OnClickListener?) {
+        this.onPlayListener = onClickListener
+    }
+
     //Holder
     class DisplayHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var background: View = itemView.findViewById(R.id.background)
         var image: ZoomableImageView = itemView.findViewById(R.id.image)
+        var play: View = itemView.findViewById(R.id.play)
     }
 }

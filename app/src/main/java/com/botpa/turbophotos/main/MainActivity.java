@@ -282,9 +282,9 @@ public class MainActivity extends AppCompatActivity {
         displayLayout = findViewById(R.id.displayLayout);
         displayNameText = findViewById(R.id.displayNameText);
         displayClose = findViewById(R.id.displayClose);
-        displayOptions = findViewById(R.id.displayOptions);
         displayInfo = findViewById(R.id.displayInfo);
         displayEdit = findViewById(R.id.displayEdit);
+        displayOptions = findViewById(R.id.displayOptions);
         displayList = findViewById(R.id.displayList);
 
         displayOverlayLayout = findViewById(R.id.displayOverlayLayout);
@@ -523,7 +523,7 @@ public class MainActivity extends AppCompatActivity {
         albumsAdapter.setOnItemClickListener((view, index) -> {
             boolean success = selectAlbum(index);
             if (!success) return;
-            showAlbumList(true);
+            showAlbumsList(false);
         });
         galleryList.setAdapter(albumsAdapter);
 
@@ -555,6 +555,10 @@ public class MainActivity extends AppCompatActivity {
         displayAdapter.setOnZoomListener((view, index) -> {
             //Enable scrolling only if not zoomed and one finger is over
             displayLayoutManager.setScrollEnabled(view.getZoom() <= 1 && view.getPointers() <= 1);
+        });
+        displayAdapter.setOnPlayListener((view, index) -> {
+            //Play video outside
+            findViewById(R.id.displayOptionsOpen).performClick();
         });
         displayList.setAdapter(displayAdapter);
 
@@ -723,8 +727,8 @@ public class MainActivity extends AppCompatActivity {
         return false;
     }
 
-    private void showAlbumList(boolean show) {
-        galleryInHome = !show;
+    private void showAlbumsList(boolean show) {
+        galleryInHome = show;
         Orion.hideAnim(galleryList, 150, () -> {
             //Change gallery
             if (galleryInHome) {
@@ -747,7 +751,7 @@ public class MainActivity extends AppCompatActivity {
                 Orion.showAnim(searchLayoutClosed);
                 galleryLayoutManager.setSpanCount(Storage.getInt("Settings.galleryImagesPerRow", 3));
                 galleryList.setAdapter(galleryAdapter);
-                backManager.register("albums", () -> showAlbumList(false));
+                backManager.register("albums", () -> showAlbumsList(true));
 
                 //Scroll to top
                 galleryList.scrollToPosition(0);
@@ -820,27 +824,48 @@ public class MainActivity extends AppCompatActivity {
 
         //Prepare options menu
         findViewById(R.id.displayOptionsDelete).setOnClickListener(view -> {
+            //Get album
+            Album album = displayCurrent.album;
+
             //Delete metadata key
-            displayCurrent.album.removeMetadataKey(displayCurrent.getName());
-            displayCurrent.album.saveMetadata();
+            album.removeMetadataKey(displayCurrent.getName());
+            album.saveMetadata();
 
             //Delete image
             Orion.deleteFile(displayCurrent.file);
 
             //Remove image from lists
             Library.allFiles.remove(displayCurrent);
-            displayCurrent.album.files.remove(index);
+            album.files.remove(index);
             galleryFiles.remove(index);
 
-            //Notify adapters
+            //Notify gallery adapter that a file was deleted
             galleryAdapter.notifyItemRemoved(index);
 
-            //Remake & save cache
-            //Library.remakeCacheForAlbum(displayCurrent.album, true);
+            //Check if image album is empty
+            if (album.files.isEmpty()) {
+                //Album is empty -> Remove it from albums list
+                albumsAdapter.notifyItemRemoved(Library.albums.indexOf(album));
+                Library.albums.remove(album);
+            }
 
-            //Close menu & display list
-            displayClose.performClick();
+            //Check if another image is available
+            if (displayCurrentRelativeIndex != displayFiles.size() - 1) {
+                //An image is available next
+                selectImage(displayCurrentIndex);   //Next image would be the same index since this image was deleted
+            } else if (displayCurrentRelativeIndex != 0) {
+                //An image is available before
+                selectImage(displayCurrentIndex - 1);
+            } else {
+                //No images available -> Close display list & delete album
+                displayClose.performClick();
+            }
+
+            //Close options menu
             displayOptionsLayout.performClick();
+
+            //Gallery is empty -> Go to albums
+            if (galleryFiles.isEmpty()) showAlbumsList(true);
         });
 
         findViewById(R.id.displayOptionsShare).setOnClickListener(view -> {

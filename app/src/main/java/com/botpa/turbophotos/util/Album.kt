@@ -29,7 +29,10 @@ class Album(var imagesFolder: File, var metadataFile: File, val id: String, val 
     }
 
     fun saveMetadata(): Boolean {
-        return Orion.writeJson(metadataFile, metadata)
+        if (hasMetadata())
+            return Orion.writeJson(metadataFile, metadata)
+        else
+            return false
     }
 
     //Metadata actions
@@ -38,21 +41,21 @@ class Album(var imagesFolder: File, var metadataFile: File, val id: String, val 
     }
 
     fun hasMetadataKey(key: String): Boolean {
-        return if (metadata != null)
+        return if (hasMetadata())
             metadata!!.has(key)
         else
             false
     }
 
     fun getMetadataKey(key: String): ObjectNode? {
-        return if (metadata != null)
+        return if (hasMetadata())
             metadata!!.get(key) as ObjectNode?
         else
             null
     }
 
     fun removeMetadataKey(key: String) {
-        if (metadata != null)
+        if (hasMetadata())
             metadata!!.remove(key)
     }
 
