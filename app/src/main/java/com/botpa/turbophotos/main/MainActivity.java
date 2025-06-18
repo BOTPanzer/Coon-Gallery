@@ -108,22 +108,23 @@ public class MainActivity extends AppCompatActivity {
     private TextView displayNameText;
     private View displayClose;
     private View displayInfo;
-    private View displayEdit;
     private View displayOptions;
     private RecyclerView displayList;
     private View displayOverlayLayout;
 
-    private View displayEditLayout;
-    private TextView displayEditCaptionText;
-    private TextView displayEditLabelsText;
-    private View displayEditSave;
-
     private View displayInfoLayout;
+    private TextView displayInfoNameText;
     private TextView displayInfoCaptionText;
     private HorizontalScrollView displayInfoLabelsScroll;
     private TextView displayInfoLabelsText;
     private HorizontalScrollView displayInfoTextScroll;
     private TextView displayInfoTextText;
+    private View displayInfoEdit;
+
+    private View displayEditLayout;
+    private TextView displayEditCaptionText;
+    private TextView displayEditLabelsText;
+    private View displayEditSave;
 
     private View displayOptionsLayout;
 
@@ -144,6 +145,17 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
+
+        //Check albums for updates
+        if (!shouldRestart) {
+            for (Album album: Library.albums) {
+                long newLastModified = album.getImagesFolder().lastModified();
+                if (album.getLastModified() != newLastModified) {
+                    album.setLastModified(newLastModified);
+                    shouldRestart = true;
+                }
+            }
+        }
 
         //Restart
         if (shouldRestart) {
@@ -283,13 +295,14 @@ public class MainActivity extends AppCompatActivity {
         displayNameText = findViewById(R.id.displayNameText);
         displayClose = findViewById(R.id.displayClose);
         displayInfo = findViewById(R.id.displayInfo);
-        displayEdit = findViewById(R.id.displayEdit);
+        displayInfoEdit = findViewById(R.id.displayInfoEdit);
         displayOptions = findViewById(R.id.displayOptions);
         displayList = findViewById(R.id.displayList);
 
         displayOverlayLayout = findViewById(R.id.displayOverlayLayout);
 
         displayInfoLayout = findViewById(R.id.displayInfoLayout);
+        displayInfoNameText = findViewById(R.id.displayInfoNameText);
         displayInfoCaptionText = findViewById(R.id.displayInfoCaptionText);
         displayInfoLabelsScroll = findViewById(R.id.displayInfoLabelsScroll);
         displayInfoLabelsText = findViewById(R.id.displayInfoLabelsText);
@@ -334,8 +347,6 @@ public class MainActivity extends AppCompatActivity {
             //Open search layout
             searchLayoutOpen.setVisibility(View.VISIBLE);
             searchLayoutClosed.setVisibility(View.GONE);
-            //Orion.showAnim(searchLayoutOpen);
-            //Orion.hideAnim(searchLayoutClosed);
 
             //Focus text & show keyboard
             searchText.requestFocus();
@@ -372,6 +383,23 @@ public class MainActivity extends AppCompatActivity {
         });
 
         //Display
+        displayInfo.setOnClickListener(view -> {
+            //Toggle
+            if (displayInfoLayout.getVisibility() == View.VISIBLE) {
+                displayInfoLayout.performClick();
+            } else {
+                displayInfoLabelsScroll.scrollTo(0, 0);
+                displayInfoTextScroll.scrollTo(0, 0);
+                Orion.showAnim(displayInfoLayout);
+                backManager.register("displayInfo", () -> displayInfo.performClick());
+            }
+        });
+
+        displayInfoLayout.setOnClickListener(view -> {
+            Orion.hideAnim(displayInfoLayout);
+            backManager.unregister("displayInfo");
+        });
+
         displayClose.setOnClickListener(view -> {
             //Reset display current
             selectImage(-1);
@@ -384,21 +412,30 @@ public class MainActivity extends AppCompatActivity {
             backManager.unregister("display");
         });
 
-        displayEdit.setOnClickListener(view -> {
-            //No metadata
-            if (!displayCurrent.hasMetadata()) {
-                Toast.makeText(this, "This file does not contain metadata", Toast.LENGTH_SHORT).show();
+        displayInfoEdit.setOnClickListener(view -> {
+            //No metadata file
+            if (!displayCurrent.album.hasMetadata()) {
+                Toast.makeText(this, "This file does not have metadata file linked to its album", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            //Toggle
+            //No metadata
+            if (!displayCurrent.hasMetadata()) {
+                Toast.makeText(this, "This file does not have a key in its album metadata", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            //Hide display info
+            displayInfoLayout.performClick();
+
+            //Toggle display edit
             if (displayEditLayout.getVisibility() == View.VISIBLE) {
                 displayEditLayout.performClick();
             } else {
                 displayEditCaptionText.setText(displayInfoCaptionText.getText());
                 displayEditLabelsText.setText(displayInfoLabelsText.getText());
                 Orion.showAnim(displayEditLayout);
-                backManager.register("displayEdit", () -> displayEdit.performClick());
+                backManager.register("displayEdit", () -> displayInfoEdit.performClick());
             }
         });
 
@@ -438,29 +475,6 @@ public class MainActivity extends AppCompatActivity {
             displayEditLayout.performClick();
         });
 
-        displayInfo.setOnClickListener(view -> {
-            //No metadata
-            if (!displayCurrent.hasMetadata()) {
-                Toast.makeText(this, "This file does not contain metadata", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            //Toggle
-            if (displayInfoLayout.getVisibility() == View.VISIBLE) {
-                displayInfoLayout.performClick();
-            } else {
-                displayInfoLabelsScroll.scrollTo(0, 0);
-                displayInfoTextScroll.scrollTo(0, 0);
-                Orion.showAnim(displayInfoLayout);
-                backManager.register("displayInfo", () -> displayInfo.performClick());
-            }
-        });
-
-        displayInfoLayout.setOnClickListener(view -> {
-            Orion.hideAnim(displayInfoLayout);
-            backManager.unregister("displayInfo");
-        });
-
         displayOptions.setOnClickListener(view -> {
             if (displayOptionsLayout.getVisibility() == View.VISIBLE) {
                 displayOptionsLayout.performClick();
@@ -474,6 +488,60 @@ public class MainActivity extends AppCompatActivity {
             Orion.hideAnim(displayOptionsLayout);
             backManager.unregister("displayOptions");
         });
+    }
+
+    private void deleteImage(TurboImage image) {
+        //Get album
+        Album album = image.album;
+
+        //Get indexes
+        int allIndex = Library.allFiles.indexOf(image);
+        int albumIndex = album.files.indexOf(image);
+        int galleryIndex = galleryFiles.indexOf(image);
+
+        //Delete image
+        Orion.deleteFile(displayCurrent.file);
+
+        //Delete image metadata from album
+        album.removeMetadataKey(image.getName());
+        album.saveMetadata();
+
+        //Remove image from all files
+        if (allIndex != -1) {
+            Library.allFiles.remove(allIndex);
+        }
+
+        //Remove image from album
+        if (albumIndex != -1) {
+            album.files.remove(albumIndex);
+
+            //Album is empty -> Remove it from albums list
+            if (album.files.isEmpty()) {
+                albumsAdapter.notifyItemRemoved(Library.albums.indexOf(album));
+                Library.albums.remove(album);
+            }
+        }
+
+        //Remove image from gallery list
+        if (galleryIndex != -1) {
+            galleryFiles.remove(galleryIndex);
+            galleryAdapter.notifyItemRemoved(galleryIndex);
+
+            //Gallery is empty -> Close display list & return to albums
+            if (galleryFiles.isEmpty()) {
+                showAlbumsList(true);
+                displayClose.performClick();
+            } else if (displayLayout.getVisibility() == View.VISIBLE && displayCurrent == image) {
+                //Display list is visible -> Check if a new image can be selected
+                if (displayCurrentRelativeIndex != displayFiles.size() - 1) {
+                    //An image is available next -> Select it
+                    selectImage(galleryIndex);   //Next image would be the same index since this image was deleted
+                } else if (displayCurrentRelativeIndex != 0) {
+                    //An image is available before -> Select it
+                    selectImage(galleryIndex - 1);
+                }
+            }
+        }
     }
 
     public static void shouldRestart() {
@@ -635,9 +703,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void filterGallery() { filterGallery("", false); }
 
-    private void filterGallery(String _filter, boolean scrollToTop) {
+    private void filterGallery(String filterText, boolean scrollToTop) {
         //Ignore case
-        String filter = _filter.toLowerCase();
+        String filter = filterText.toLowerCase();
         boolean isFiltering = !filter.isEmpty();
 
         //Loading or searching
@@ -801,7 +869,7 @@ public class MainActivity extends AppCompatActivity {
         displayCurrentIndex = index;
         displayCurrentRelativeIndex = 0;
 
-        //Add files to list
+        //Add files to display list
         if (index > 0) {
             //Has file before
             displayFiles.add(galleryFiles.get(index - 1));
@@ -824,48 +892,11 @@ public class MainActivity extends AppCompatActivity {
 
         //Prepare options menu
         findViewById(R.id.displayOptionsDelete).setOnClickListener(view -> {
-            //Get album
-            Album album = displayCurrent.album;
-
-            //Delete metadata key
-            album.removeMetadataKey(displayCurrent.getName());
-            album.saveMetadata();
-
-            //Delete image
-            Orion.deleteFile(displayCurrent.file);
-
-            //Remove image from lists
-            Library.allFiles.remove(displayCurrent);
-            album.files.remove(index);
-            galleryFiles.remove(index);
-
-            //Notify gallery adapter that a file was deleted
-            galleryAdapter.notifyItemRemoved(index);
-
-            //Check if image album is empty
-            if (album.files.isEmpty()) {
-                //Album is empty -> Remove it from albums list
-                albumsAdapter.notifyItemRemoved(Library.albums.indexOf(album));
-                Library.albums.remove(album);
-            }
-
-            //Check if another image is available
-            if (displayCurrentRelativeIndex != displayFiles.size() - 1) {
-                //An image is available next
-                selectImage(displayCurrentIndex);   //Next image would be the same index since this image was deleted
-            } else if (displayCurrentRelativeIndex != 0) {
-                //An image is available before
-                selectImage(displayCurrentIndex - 1);
-            } else {
-                //No images available -> Close display list & delete album
-                displayClose.performClick();
-            }
-
             //Close options menu
             displayOptionsLayout.performClick();
 
-            //Gallery is empty -> Go to albums
-            if (galleryFiles.isEmpty()) showAlbumsList(true);
+            //Get album
+            deleteImage(displayCurrent);
         });
 
         findViewById(R.id.displayOptionsShare).setOnClickListener(view -> {
@@ -879,12 +910,13 @@ public class MainActivity extends AppCompatActivity {
         });
 
         findViewById(R.id.displayOptionsOpen).setOnClickListener(view -> {
+            //Close options menu
+            displayOptionsLayout.performClick();
+
+            //Show open with menu
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setDataAndType(Uri.parse(displayCurrent.file.getAbsolutePath()), displayCurrent.isVideo() ? "video/*" : "image/*");
             startActivity(intent);
-
-            //Close menu
-            displayOptionsLayout.performClick();
         });
 
         //Load image info (caption & labels)
@@ -932,6 +964,7 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception ignored) {
             //Error while parsing JSON
         }
+        displayInfoNameText.setText(displayCurrent.getName());
         displayInfoCaptionText.setText(caption);
         displayInfoLabelsText.setText(labels);
         displayInfoTextText.setText(text);
