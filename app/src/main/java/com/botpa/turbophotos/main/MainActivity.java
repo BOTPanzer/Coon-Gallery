@@ -151,6 +151,7 @@ public class MainActivity extends AppCompatActivity {
             for (Album album: Library.albums) {
                 long newLastModified = album.getImagesFolder().lastModified();
                 if (album.getLastModified() != newLastModified) {
+                    Toast.makeText(MainActivity.this, album.getName() + "\n" + album.getLastModified() + " - " + newLastModified, Toast.LENGTH_SHORT).show();
                     album.setLastModified(newLastModified);
                     shouldRestart = true;
                 }
@@ -495,9 +496,9 @@ public class MainActivity extends AppCompatActivity {
         Album album = image.album;
 
         //Get indexes
-        int allIndex = Library.allFiles.indexOf(image);
-        int albumIndex = album.files.indexOf(image);
-        int galleryIndex = galleryFiles.indexOf(image);
+        int indexInAll = Library.allFiles.indexOf(image);
+        int indexInAlbum = album.files.indexOf(image);
+        int indexInGallery = galleryFiles.indexOf(image);
 
         //Delete image
         Orion.deleteFile(displayCurrent.file);
@@ -507,25 +508,29 @@ public class MainActivity extends AppCompatActivity {
         album.saveMetadata();
 
         //Remove image from all files
-        if (allIndex != -1) {
-            Library.allFiles.remove(allIndex);
+        if (indexInAll != -1) {
+            Library.allFiles.remove(indexInAll);
         }
 
         //Remove image from album
-        if (albumIndex != -1) {
-            album.files.remove(albumIndex);
+        if (indexInAlbum != -1) {
+            album.files.remove(indexInAlbum);
 
-            //Album is empty -> Remove it from albums list
+            int albumIndex = Library.albums.indexOf(album);
             if (album.files.isEmpty()) {
-                albumsAdapter.notifyItemRemoved(Library.albums.indexOf(album));
+                //Album is empty -> Remove it from albums list
+                albumsAdapter.notifyItemRemoved(albumIndex);
                 Library.albums.remove(album);
+            } else {
+                //Album isn't empty -> Update its cover
+                albumsAdapter.notifyItemChanged(albumIndex);
             }
         }
 
         //Remove image from gallery list
-        if (galleryIndex != -1) {
-            galleryFiles.remove(galleryIndex);
-            galleryAdapter.notifyItemRemoved(galleryIndex);
+        if (indexInGallery != -1) {
+            galleryFiles.remove(indexInGallery);
+            galleryAdapter.notifyItemRemoved(indexInGallery);
 
             //Gallery is empty -> Close display list & return to albums
             if (galleryFiles.isEmpty()) {
@@ -535,10 +540,10 @@ public class MainActivity extends AppCompatActivity {
                 //Display list is visible -> Check if a new image can be selected
                 if (displayCurrentRelativeIndex != displayFiles.size() - 1) {
                     //An image is available next -> Select it
-                    selectImage(galleryIndex);   //Next image would be the same index since this image was deleted
+                    selectImage(indexInGallery);   //Next image would be the same index since this image was deleted
                 } else if (displayCurrentRelativeIndex != 0) {
                     //An image is available before -> Select it
-                    selectImage(galleryIndex - 1);
+                    selectImage(indexInGallery - 1);
                 }
             }
         }

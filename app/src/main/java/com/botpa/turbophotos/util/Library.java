@@ -168,7 +168,7 @@ public class Library {
                                 metadataFile,
                                 bucketId,
                                 bucketName,
-                                lastModified
+                                imagesFolder.lastModified()
                         );
 
                         //Save album & assign it to its metadata link

@@ -50,7 +50,7 @@ class AlbumsAdapter(private val context: Context, private val albums: ArrayList<
             }
 
             //Update album name
-            holder.name.text = album.name
+            holder.name.text = album.name + " (" + album.files.size + ")"
         }
 
         //Add click listeners
