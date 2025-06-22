@@ -151,7 +151,6 @@ public class MainActivity extends AppCompatActivity {
             for (Album album: Library.albums) {
                 long newLastModified = album.getImagesFolder().lastModified();
                 if (album.getLastModified() != newLastModified) {
-                    Toast.makeText(MainActivity.this, album.getName() + "\n" + album.getLastModified() + " - " + newLastModified, Toast.LENGTH_SHORT).show();
                     album.setLastModified(newLastModified);
                     shouldRestart = true;
                 }

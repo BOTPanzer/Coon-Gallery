@@ -46,16 +46,58 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:gravity="bottom|end"
-                        android:orientation="vertical">
+                        android:layout_margin="4dp"
+                        android:divider="@drawable/display_item_info_divider"
+                        android:gravity="start|top"
+                        android:orientation="horizontal"
+                        android:showDividers="middle">
 
-                        <ImageView
+                        <androidx.cardview.widget.CardView
+                            android:id="@+id/isVideo"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            app:cardBackgroundColor="#80070707"
+                            app:cardCornerRadius="10dp"
+                            app:cardElevation="0dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:gravity="center"
+                                android:orientation="vertical">
+
+                                <ImageView
+                                    android:layout_width="14dp"
+                                    android:layout_height="14dp"
+                                    app:srcCompat="@drawable/play" />
+                            </LinearLayout>
+
+                        </androidx.cardview.widget.CardView>
+
+                        <androidx.cardview.widget.CardView
                             android:id="@+id/missingInfo"
-                            android:layout_width="14dp"
-                            android:layout_height="14dp"
-                            android:layout_margin="4dp"
-                            app:srcCompat="@drawable/no_info" />
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            app:cardBackgroundColor="#80070707"
+                            app:cardCornerRadius="10dp"
+                            app:cardElevation="0dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:gravity="center"
+                                android:orientation="vertical">
+
+                                <ImageView
+                                    android:layout_width="14dp"
+                                    android:layout_height="14dp"
+                                    app:srcCompat="@drawable/no_info" />
+                            </LinearLayout>
+
+                        </androidx.cardview.widget.CardView>
+
                     </LinearLayout>
+
                 </RelativeLayout>
 
             </androidx.cardview.widget.CardView>

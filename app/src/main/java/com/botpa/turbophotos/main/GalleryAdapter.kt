@@ -32,7 +32,8 @@ class GalleryAdapter(private val context: Context, private val images: ArrayList
         val requestBuilder = Glide.with(holder.itemView.context).asBitmap().sizeMultiplier(0.3f)
         Glide.with(context).asBitmap().load(image.file.absolutePath).thumbnail(requestBuilder).into(holder.image)
 
-        //Toggle missing info icon
+        //Toggle is video & missing info icons
+        holder.isVideo.visibility = if (image.isVideo) View.VISIBLE else View.GONE
         holder.missingInfo.visibility = if (image.album.hasMetadataKey(image.name)) View.GONE else View.VISIBLE
 
         //Add click listeners
@@ -71,6 +72,7 @@ class GalleryAdapter(private val context: Context, private val images: ArrayList
     class GalleryHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var background: View = itemView.findViewById(R.id.background)
         var image: ImageView = itemView.findViewById(R.id.image)
+        var isVideo: View = itemView.findViewById(R.id.isVideo)
         var missingInfo: View = itemView.findViewById(R.id.missingInfo)
     }
 }
