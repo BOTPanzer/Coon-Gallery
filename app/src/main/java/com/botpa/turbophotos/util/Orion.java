@@ -742,4 +742,5 @@ public class Orion {
         View focus = activity.getCurrentFocus();
         if (focus != null) focus.clearFocus();
     }
+
 }

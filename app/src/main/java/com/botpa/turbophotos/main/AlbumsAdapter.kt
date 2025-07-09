@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.util.Album
 import com.botpa.turbophotos.util.Library
-import com.bumptech.glide.Glide
+import com.botpa.turbophotos.util.TurboImage
 
 class AlbumsAdapter(private val context: Context, private val albums: ArrayList<Album>) : RecyclerView.Adapter<AlbumsAdapter.AlbumHolder>() {
 
@@ -32,10 +32,7 @@ class AlbumsAdapter(private val context: Context, private val albums: ArrayList<
             //First album is all files
 
             //Load cover
-            if (Library.allFiles.isNotEmpty()) {
-                val requestBuilder = Glide.with(holder.itemView.context).asBitmap().sizeMultiplier(0.3f)
-                Glide.with(context).asBitmap().load(Library.allFiles[0].file).thumbnail(requestBuilder).into(holder.image)
-            }
+            if (Library.allFiles.isNotEmpty()) TurboImage.load(context, holder.image, Library.allFiles[0])
 
             //Update album name
             holder.name.text = "All"
@@ -44,10 +41,7 @@ class AlbumsAdapter(private val context: Context, private val albums: ArrayList<
             val album = albums[position]
 
             //Load cover
-            if (album.files.isNotEmpty()) {
-                val requestBuilder = Glide.with(holder.itemView.context).asBitmap().sizeMultiplier(0.3f)
-                Glide.with(context).asBitmap().load(album.files[0].file).thumbnail(requestBuilder).into(holder.image)
-            }
+            if (album.files.isNotEmpty()) TurboImage.load(context, holder.image, album.files[0])
 
             //Update album name
             holder.name.text = album.name + " (" + album.files.size + ")"

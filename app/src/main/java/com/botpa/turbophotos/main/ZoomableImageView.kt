@@ -71,7 +71,7 @@ class ZoomableImageView(context: Context, attr: AttributeSet?) : AppCompatImageV
         fit()
 
         //Add on click listener
-        setOnClickListener { v: View? ->
+        setOnClickListener { view: View? ->
             val currentTimestamp = System.currentTimeMillis()
             if (currentTimestamp - lastClickTimestamp < 500) {
                 //Double click
@@ -231,6 +231,7 @@ class ZoomableImageView(context: Context, attr: AttributeSet?) : AppCompatImageV
     }
 
     private inner class ScaleListener : SimpleOnScaleGestureListener() {
+
         override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
             mode = ZOOM
             return true
@@ -280,6 +281,7 @@ class ZoomableImageView(context: Context, attr: AttributeSet?) : AppCompatImageV
             onZoomChange?.run()
             return true
         }
+
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -288,4 +290,5 @@ class ZoomableImageView(context: Context, attr: AttributeSet?) : AppCompatImageV
         height = MeasureSpec.getSize(heightMeasureSpec).toFloat()
         fit()
     }
+
 }

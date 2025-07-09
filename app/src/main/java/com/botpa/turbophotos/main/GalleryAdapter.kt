@@ -8,7 +8,6 @@ import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.util.TurboImage
-import com.bumptech.glide.Glide
 
 class GalleryAdapter(private val context: Context, private val images: ArrayList<TurboImage>) : RecyclerView.Adapter<GalleryAdapter.GalleryHolder>() {
 
@@ -29,8 +28,7 @@ class GalleryAdapter(private val context: Context, private val images: ArrayList
         val image = images[position]
 
         //Load image in imageview
-        val requestBuilder = Glide.with(holder.itemView.context).asBitmap().sizeMultiplier(0.3f)
-        Glide.with(context).asBitmap().load(image.file.absolutePath).thumbnail(requestBuilder).into(holder.image)
+        TurboImage.load(context, holder.image, image)
 
         //Toggle is video & missing info icons
         holder.isVideo.visibility = if (image.isVideo) View.VISIBLE else View.GONE

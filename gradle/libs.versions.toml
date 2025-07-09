@@ -1,10 +1,12 @@
 [versions]
-agp = "8.8.0"
+agp = "8.8.2"
+jacksonCore = "2.18.3"
+jacksonModuleKotlin = "2.18.3"
 javaAndroidWebsocketClient = "2.0.2"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
-appcompat = "1.7.0"
+appcompat = "1.7.1"
 material = "1.12.0"
 activity = "1.10.1"
 constraintlayout = "2.2.1"
@@ -15,6 +17,10 @@ kotlin = "1.9.24"
 coreKtx = "1.16.0"
 
 [libraries]
+jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jacksonCore" }
+jackson-core = { module = "com.fasterxml.jackson.core:jackson-core", version.ref = "jacksonCore" }
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jacksonCore" }
+jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jacksonModuleKotlin" }
 java-android-websocket-client = { module = "dev.gustavoavila:java-android-websocket-client", version.ref = "javaAndroidWebsocketClient" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
