@@ -170,16 +170,19 @@ public class MainActivity extends AppCompatActivity {
         //Gallery not loaded -> Skip next
         if (!gallerLoaded) return;
 
-        //Update gallery horizontal item count
+        //Update settings
         if (galleryList != null && galleryLayoutManager != null) {
-            //Get horizontal item count
+            //Get horizontal item count & update it
             int newHorizontalItemCount = Storage.getInt(
                     galleryInHome ? "Settings.galleryAlbumsPerRow" : "Settings.galleryImagesPerRow",
                     galleryInHome ? 2 : 3);
+            if (galleryLayoutManager.getSpanCount() != newHorizontalItemCount) galleryLayoutManager.setSpanCount(newHorizontalItemCount);
 
-            //Check if it changed
-            if (galleryLayoutManager.getSpanCount() != newHorizontalItemCount) {
-                galleryLayoutManager.setSpanCount(newHorizontalItemCount);
+            //Get show missing metadata icon & update it
+            boolean showMissingMetadataIcon = Storage.getBool("Settings.showMissingMetadataIcon", false);
+            if (showMissingMetadataIcon != galleryAdapter.getShowMissingMetadataIcon()) {
+                galleryAdapter.setShowMissingMetadataIcon(showMissingMetadataIcon);
+                galleryAdapter.notifyDataSetChanged();
             }
         }
 
@@ -614,7 +617,7 @@ public class MainActivity extends AppCompatActivity {
         galleryList.setAdapter(albumsAdapter);
 
         //Create gallery selected album adapter
-        galleryAdapter = new GalleryAdapter(this, galleryFiles);
+        galleryAdapter = new GalleryAdapter(this, galleryFiles, Storage.getBool("Settings.showMissingMetadataIcon", false));
         galleryAdapter.setOnItemClickListener((view, index) -> {
             if (!hasLoadedMetadata) return;
             selectImage(index);

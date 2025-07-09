@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.util.TurboImage
 
-class GalleryAdapter(private val context: Context, private val images: ArrayList<TurboImage>) : RecyclerView.Adapter<GalleryAdapter.GalleryHolder>() {
+class GalleryAdapter(private val context: Context, private val images: ArrayList<TurboImage>, var showMissingMetadataIcon: Boolean) : RecyclerView.Adapter<GalleryAdapter.GalleryHolder>() {
 
     private var onItemClickListener: OnItemClickListener? = null
     private var onItemLongClickListener: OnItemLongClickListener? = null
@@ -32,7 +32,7 @@ class GalleryAdapter(private val context: Context, private val images: ArrayList
 
         //Toggle is video & missing info icons
         holder.isVideo.visibility = if (image.isVideo) View.VISIBLE else View.GONE
-        holder.missingInfo.visibility = if (image.album.hasMetadataKey(image.name)) View.GONE else View.VISIBLE
+        holder.missingInfo.visibility = if (!showMissingMetadataIcon || image.album.hasMetadataKey(image.name)) View.GONE else View.VISIBLE
 
         //Add click listeners
         holder.background.setOnClickListener { view: View ->

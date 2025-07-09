@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -17,6 +19,7 @@ import com.botpa.turbophotos.util.Link;
 import com.botpa.turbophotos.util.Library;
 import com.botpa.turbophotos.util.Orion;
 import com.botpa.turbophotos.util.Storage;
+import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.android.material.slider.Slider;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -27,6 +30,7 @@ public class SettingsActivity extends AppCompatActivity {
     //App
     private Slider galleryAlbumsPerRow;
     private Slider galleryImagesPerRow;
+    private MaterialSwitch galleryMissingMetadataIcon;
 
     //Albums
     private AlbumAdapter albumsAdapter;
@@ -114,6 +118,7 @@ public class SettingsActivity extends AppCompatActivity {
         //App
         galleryAlbumsPerRow = findViewById(R.id.galleryAlbumsPerRow);
         galleryImagesPerRow = findViewById(R.id.galleryImagesPerRow);
+        galleryMissingMetadataIcon = findViewById(R.id.galleryMissingMetadataIcon);
 
         //Albums
         albumsFoldersList = findViewById(R.id.albumsFoldersList);
@@ -124,6 +129,7 @@ public class SettingsActivity extends AppCompatActivity {
         //App
         galleryAlbumsPerRow.setValue(Storage.getInt("Settings.galleryAlbumsPerRow", 2));
         galleryImagesPerRow.setValue(Storage.getInt("Settings.galleryImagesPerRow", 3));
+        galleryMissingMetadataIcon.setChecked(Storage.getBool("Settings.showMissingMetadataIcon", false));
     }
 
     private void initAlbumsList() {
@@ -198,6 +204,9 @@ public class SettingsActivity extends AppCompatActivity {
         });
         galleryImagesPerRow.addOnChangeListener((slider, value, fromUser) -> {
             Storage.putInt("Settings.galleryImagesPerRow", (int) value);
+        });
+        galleryMissingMetadataIcon.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            Storage.putBool("Settings.showMissingMetadataIcon", isChecked);
         });
 
         //Albums
