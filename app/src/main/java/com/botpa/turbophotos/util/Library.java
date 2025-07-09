@@ -11,21 +11,31 @@ import com.botpa.turbophotos.main.MainActivity;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
 public class Library {
 
-    //Albums
-    public static final ArrayList<Album> albums = new ArrayList<>();
+    //Album/Metadata links
+    private static boolean linksLoaded = false;
+
     public static final ArrayList<Link> links = new ArrayList<>();
     public static final HashMap<String, Link> linksMap = new HashMap<>();
+
+    //Albums
+    private static long lastUpdate = 0;
+
+    public static final ArrayList<Album> albums = new ArrayList<>();
+    public static final HashMap<String, Album> albumsMap = new HashMap<>();
 
     //Files
     public static final ArrayList<TurboImage> allFiles = new ArrayList<>();
 
 
-    //Links
-    private static void loadLinks() {
+    //Album/Metadata links
+    private static void loadLinks(boolean reset) {
+        //Already loaded
+        if (!reset && linksLoaded) return;
+        linksLoaded = true;
+
         //Clear links
         links.clear();
         linksMap.clear();
@@ -58,7 +68,7 @@ public class Library {
         Storage.putStringList("Settings.albums", list);
 
         //Make main activity restart on resume
-        MainActivity.shouldRestart();
+        MainActivity.shouldReload();
     }
 
     public static boolean addLink(Link link) {
@@ -100,99 +110,190 @@ public class Library {
         links.get(index).metadataFile = newFile;
     }
 
-    //Albums
-    public static void loadAlbums(Context context) {
-        //Load links
-        loadLinks();
 
+    //Albums
+    private static Cursor getMediaCursor(Context context) {
         //Get content resolver
         ContentResolver contentResolver = context.getContentResolver();
 
-        //Create temp albums map
-        Map<String, Album> albumMap = new HashMap<>();
+        //Get cursor resolver
+        return contentResolver.query(
+            //Collection
+            MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL),
+            //Projection
+            new String[] {
+                MediaStore.Files.FileColumns.BUCKET_ID,
+                MediaStore.Files.FileColumns.BUCKET_DISPLAY_NAME,
+                MediaStore.Files.FileColumns.DATE_MODIFIED,
+                MediaStore.Files.FileColumns.MEDIA_TYPE,
+                MediaStore.Files.FileColumns.DATA,
+            },
+            //Selection
+            MediaStore.Files.FileColumns.DATE_MODIFIED + " > ? AND (" + MediaStore.Files.FileColumns.MEDIA_TYPE + "= ? OR " + MediaStore.Files.FileColumns.MEDIA_TYPE + "= ?)",
+            //Selection args
+            new String[] {
+                    String.valueOf(lastUpdate / 1000),
+                String.valueOf(MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE),
+                String.valueOf(MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO),
+            },
+            //Sorting order
+            MediaStore.Files.FileColumns.DATE_MODIFIED + " DESC" //Sort by date (newest first)
+        );
+    }
+
+    public static void sortAlbums() {
+        albums.sort((a1, a2) -> Long.compare(a2.files.get(0).lastModified, a1.files.get(0).lastModified));
+    }
+
+    public static boolean loadAlbums(Context context, boolean reset) {
+        //Load links
+        loadLinks(reset);
+
+        //Clean all
+        if (reset) {
+            lastUpdate = 0;
+            albums.clear();
+            albumsMap.clear();
+            allFiles.clear();
+        }
 
         //Get album files
-        try (Cursor cursor = contentResolver.query(
-                //Collection
-                MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL),
-                //Projection
-                new String[] {
-                        MediaStore.Files.FileColumns.BUCKET_ID,
-                        MediaStore.Files.FileColumns.BUCKET_DISPLAY_NAME,
-                        MediaStore.Files.FileColumns.DATE_MODIFIED,
-                        MediaStore.Files.FileColumns.MEDIA_TYPE,
-                        MediaStore.Files.FileColumns.DATA,
-                },
-                //Selection
-                MediaStore.Files.FileColumns.MEDIA_TYPE + "= ? OR " + MediaStore.Files.FileColumns.MEDIA_TYPE + "= ?",
-                //Selection args
-                new String[] {
-                        String.valueOf(MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE),
-                        String.valueOf(MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO),
-                },
-                //Sorting order
-                MediaStore.Files.FileColumns.DATE_MODIFIED + " DESC" //Sort by date (newest first)
-        )) {
-            if (cursor != null) {
-                //Get indexes for all variables
-                int idxBucketId = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.BUCKET_ID);
-                int idxBucketDisplayName = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.BUCKET_DISPLAY_NAME);
-                int idxLastModified = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATE_MODIFIED);
-                int idxMediaType = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.MEDIA_TYPE);
-                int idxData = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATA);
+        boolean updated = false;
+        try (Cursor cursor = getMediaCursor(context)) {
+            //Get indexes for all variables
+            int idxBucketId = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.BUCKET_ID);
+            int idxBucketDisplayName = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.BUCKET_DISPLAY_NAME);
+            int idxLastModified = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATE_MODIFIED);
+            int idxMediaType = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.MEDIA_TYPE);
+            int idxData = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATA);
 
-                //Check files
-                while (cursor.moveToNext()) {
-                    //Get bucket ID & check if it is already saved
-                    String bucketId = cursor.getString(idxBucketId);
+            //Check files
+            while (cursor.moveToNext()) {
+                //Get bucket ID & check if it is already saved
+                String bucketId = cursor.getString(idxBucketId);
 
-                    //Get other info
-                    String bucketName = cursor.getString(idxBucketDisplayName);
-                    long lastModified = cursor.getLong(idxLastModified);
-                    String mediaType = cursor.getString(idxMediaType);
-                    File file = new File(cursor.getString(idxData));
+                //Get other info
+                String bucketName = cursor.getString(idxBucketDisplayName);
+                long lastModified = cursor.getLong(idxLastModified);
+                String mediaType = cursor.getString(idxMediaType);
+                File file = new File(cursor.getString(idxData));
 
-                    //Get album
-                    Album album;
-                    if (!albumMap.containsKey(bucketId)) {
-                        //No album -> Create a new one
+                //Get album
+                Album album;
+                if (!albumsMap.containsKey(bucketId)) {
+                    //No album -> Create a new one
 
-                        //Get images folder, album link & metadata file
-                        File imagesFolder = file.getParentFile();
-                        Link link = linksMap.getOrDefault(imagesFolder.getAbsolutePath(), null);
-                        File metadataFile = link != null ? link.metadataFile : new File("");
+                    //Get images folder, album link & metadata file
+                    File imagesFolder = file.getParentFile();
+                    Link link = linksMap.getOrDefault(imagesFolder.getAbsolutePath(), null);
+                    File metadataFile = link != null ? link.metadataFile : new File("");
 
-                        //Create album
-                        album = new Album(
-                                imagesFolder,
-                                metadataFile,
-                                bucketId,
-                                bucketName,
-                                imagesFolder.lastModified()
-                        );
+                    //Create album
+                    album = new Album(
+                            bucketId,
+                            imagesFolder,
+                            metadataFile,
+                            bucketName,
+                            imagesFolder.lastModified()
+                    );
 
-                        //Save album & assign it to its metadata link
-                        albumMap.put(bucketId, album);
-                        if (link != null) link.album = album;
-                    } else {
-                        //Has album -> Get it
-                        album = albumMap.get(bucketId);
-                    }
-
-                    //Add file to album
-                    TurboImage image = new TurboImage(file, album, lastModified, mediaType);
-                    album.files.add(image);
-                    allFiles.add(image);
+                    //Save album & assign it to its metadata link
+                    albumsMap.put(bucketId, album);
+                    if (link != null) link.album = album;
+                } else {
+                    //Has album -> Get it
+                    album = albumsMap.get(bucketId);
                 }
+
+                //Add file to album
+                TurboImage image = new TurboImage(file, album, lastModified, mediaType);
+                album.files.add(image);
+                allFiles.add(image);
+                updated = true;
             }
         } catch (Exception e) {
             Log.e("Library", "Error loading albums: " + e.getMessage());
         }
 
-        //Add albums to list
+        //Update albums list with albums from map
         albums.clear();
-        albums.addAll(albumMap.values());
-        albums.sort((f1, f2) -> Long.compare(f2.getLastModified(), f1.getLastModified()));
+        albums.addAll(albumsMap.values());
+        sortAlbums();
+
+        //Sort albums & all files
+        for (Album album: albums) album.sort();
+        allFiles.sort((f1, f2) -> Long.compare(f2.lastModified, f1.lastModified));
+
+        //Save last update timestamp
+        lastUpdate = System.currentTimeMillis();
+
+        return updated;
+    }
+
+    public static void removeAlbum(int index) {
+        Album album = albums.remove(index);
+        albumsMap.remove(album.getId());
+    }
+
+    public static DeleteImageInfo deleteImage(TurboImage image) {
+        //Create info
+        DeleteImageInfo info = new DeleteImageInfo();
+
+        //Get album
+        Album album = image.album;
+
+        //Get indexes
+        info.indexInAll = Library.allFiles.indexOf(image);
+        info.indexInAlbum = album.files.indexOf(image);
+        info.indexOfAlbum = Library.albums.indexOf(album);
+
+        //Delete image
+        Orion.deleteFile(image.file);
+
+        //Delete image metadata from album
+        album.removeMetadataKey(image.getName());
+        album.saveMetadata();
+
+        //Check if image is in all files
+        if (info.indexInAll != -1) {
+            //Is present -> Remove it
+            Library.allFiles.remove(info.indexInAll);
+        }
+
+        //Check if image is in album
+        if (info.indexInAlbum != -1) {
+            //Is present -> Remove it
+            album.files.remove(info.indexInAlbum);
+
+            //Check if album needs to be deleted or sorted
+            if (album.files.isEmpty()) {
+                //Album is empty -> Remove it from albums list
+                Library.removeAlbum(info.indexOfAlbum);
+                info.deletedAlbum = true;
+            } else if (info.indexInAlbum == 0) {
+                //Album isn't empty & deleted tge first image -> Sort albums in case the order changed
+                Library.sortAlbums();
+                info.sortedAlbums = true;
+            }
+        }
+
+        //Return image deletion info
+        return info;
+    }
+
+    public static class DeleteImageInfo {
+
+        //All files
+        public int indexInAll = -1;
+
+        //Album files
+        public int indexInAlbum = -1;
+
+        //Albums
+        public int indexOfAlbum = -1;
+        public boolean deletedAlbum = false;
+        public boolean sortedAlbums = false;
+
     }
 
     //Metadata

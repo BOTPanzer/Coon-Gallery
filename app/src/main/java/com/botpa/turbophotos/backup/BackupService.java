@@ -409,7 +409,7 @@ public class BackupService extends Service {
             Files.setLastModifiedTime(Paths.get(file.getAbsolutePath()), FileTime.from(Instant.ofEpochMilli(metadataRequest.lastModified)));
 
             //File modified -> Should restart
-            MainActivity.shouldRestart();
+            MainActivity.shouldReload();
         } catch (IOException e) {
             //Error sending message
             String errorMessage = e.getMessage();

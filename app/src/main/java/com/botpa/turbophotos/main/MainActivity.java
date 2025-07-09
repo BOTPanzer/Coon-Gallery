@@ -60,7 +60,9 @@ public class MainActivity extends AppCompatActivity {
 
     //App
     private BackManager backManager;
-    private static boolean shouldRestart = false;
+    private boolean firstResume = true;
+    private boolean gallerLoaded = false;
+    private static boolean shouldReload = false;
 
     //Files
     private boolean hasLoadedMetadata = false;
@@ -146,20 +148,15 @@ public class MainActivity extends AppCompatActivity {
     public void onResume() {
         super.onResume();
 
-        //Check albums for updates
-        if (!shouldRestart) {
-            for (Album album: Library.albums) {
-                long newLastModified = album.getImagesFolder().lastModified();
-                if (album.getLastModified() != newLastModified) {
-                    album.setLastModified(newLastModified);
-                    shouldRestart = true;
-                }
-            }
+        //Skip first resume (called after onCreate)
+        if (firstResume) {
+            firstResume = false;
+            return;
         }
 
-        //Restart
-        if (shouldRestart) {
-            shouldRestart = false;
+        //Reload
+        if (shouldReload) {
+            shouldReload = false;
             recreate();
             return;
         }
@@ -169,6 +166,9 @@ public class MainActivity extends AppCompatActivity {
             permissionCheck = false;
             checkPermissions();
         }
+
+        //Gallery not loaded -> Skip next
+        if (!gallerLoaded) return;
 
         //Update gallery horizontal item count
         if (galleryList != null && galleryLayoutManager != null) {
@@ -182,6 +182,9 @@ public class MainActivity extends AppCompatActivity {
                 galleryLayoutManager.setSpanCount(newHorizontalItemCount);
             }
         }
+
+        //Check albums for updates (only works when in home, aka albums list)
+        refreshAlbums();
     }
 
     private void checkPermissions() {
@@ -491,50 +494,35 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void deleteImage(TurboImage image) {
-        //Get album
-        Album album = image.album;
-
-        //Get indexes
-        int indexInAll = Library.allFiles.indexOf(image);
-        int indexInAlbum = album.files.indexOf(image);
+        //Get gallery index
         int indexInGallery = galleryFiles.indexOf(image);
 
         //Delete image
-        Orion.deleteFile(displayCurrent.file);
+        Library.DeleteImageInfo info = Library.deleteImage(image);
 
-        //Delete image metadata from album
-        album.removeMetadataKey(image.getName());
-        album.saveMetadata();
-
-        //Remove image from all files
-        if (indexInAll != -1) {
-            Library.allFiles.remove(indexInAll);
+        //Check if album was deleted
+        if (info.deletedAlbum) {
+            //Deleted -> Notify adapter
+            albumsAdapter.notifyItemRemoved(info.indexOfAlbum);
         }
 
-        //Remove image from album
-        if (indexInAlbum != -1) {
-            album.files.remove(indexInAlbum);
-
-            int albumIndex = Library.albums.indexOf(album);
-            if (album.files.isEmpty()) {
-                //Album is empty -> Remove it from albums list
-                albumsAdapter.notifyItemRemoved(albumIndex);
-                Library.albums.remove(album);
-            } else {
-                //Album isn't empty -> Update its cover
-                albumsAdapter.notifyItemChanged(albumIndex);
-            }
+        //Check if albums were sorted
+        if (info.sortedAlbums) {
+            //Sorted -> Notify adapter
+            albumsAdapter.notifyDataSetChanged();
         }
 
-        //Remove image from gallery list
+        //Check if image is in gallery list
         if (indexInGallery != -1) {
+            //Is present -> Remove it & update adapter
             galleryFiles.remove(indexInGallery);
             galleryAdapter.notifyItemRemoved(indexInGallery);
 
-            //Gallery is empty -> Close display list & return to albums
+            //Check gallery needs to be closed or select a new image
             if (galleryFiles.isEmpty()) {
+                //Gallery is empty -> Close display list & return to albums
+                hideDisplay();
                 showAlbumsList(true);
-                displayClose.performClick();
             } else if (displayLayout.getVisibility() == View.VISIBLE && displayCurrent == image) {
                 //Display list is visible -> Check if a new image can be selected
                 if (displayCurrentRelativeIndex != displayFiles.size() - 1) {
@@ -548,9 +536,35 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public static void shouldRestart() {
-        //Enable restart on resume
-        shouldRestart = true;
+    private void refreshAlbums() {
+        //Not in home
+        if (!galleryInHome) return;
+
+        //Check albums for updates
+        if (Library.loadAlbums(MainActivity.this, false)) {
+            //Don't reload on resume
+            shouldReload = false;
+
+            //Albums updated -> Refresh lists
+            albumsAdapter.notifyDataSetChanged();
+
+            //Close display menu
+            hideDisplay();
+        } else {
+            //No new images -> Check current albums for updates
+            for (Album album : Library.albums) {
+                if (album.getImagesFolder().lastModified() == album.getLastModified()) continue;
+
+                //An album was modified -> Reload activity
+                recreate();
+                return;
+            }
+        }
+    }
+
+    public static void shouldReload() {
+        //Reload on resume
+        shouldReload = true;
     }
 
     //Gallery
@@ -587,7 +601,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void initGalleryAdapters() {
         //Create gallery list viewer
-        galleryLayoutManager = new GridLayoutManager(this, Storage.getInt("Settings.galleryItemsPerRow", 3));
+        galleryLayoutManager = new GridLayoutManager(this, Storage.getInt("Settings.galleryAlbumsPerRow", 3));
         galleryList.setLayoutManager(galleryLayoutManager);
 
         //Create gallery albums adapter
@@ -667,7 +681,7 @@ public class MainActivity extends AppCompatActivity {
         //Load images
         new Thread(() -> {
             //Load albums
-            Library.loadAlbums(MainActivity.this);
+            Library.loadAlbums(MainActivity.this, true);
 
             //Show gallery
             runOnUiThread(() -> {
@@ -677,6 +691,9 @@ public class MainActivity extends AppCompatActivity {
                 //Reload albums list
                 albumsAdapter.notifyDataSetChanged();
             });
+
+            //Gallery loaded
+            gallerLoaded = true;
         }).start();
     }
 
@@ -815,6 +832,9 @@ public class MainActivity extends AppCompatActivity {
 
                 //Reset gallery title
                 galleryTitle.setText("Coon Gallery");
+
+                //Check albums for updates
+                refreshAlbums();
             } else {
                 //Save scroll
                 galleryListScroll = galleryLayoutManager.onSaveInstanceState();
@@ -979,6 +999,12 @@ public class MainActivity extends AppCompatActivity {
 
         //Back button
         backManager.register("display", () -> displayClose.performClick());
+    }
+
+    private void hideDisplay() {
+        displayOptionsLayout.performClick();
+        displayEditLayout.performClick();
+        displayClose.performClick();
     }
 
 }

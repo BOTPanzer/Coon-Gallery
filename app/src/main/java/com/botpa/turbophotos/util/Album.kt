@@ -3,7 +3,7 @@ package com.botpa.turbophotos.util
 import com.fasterxml.jackson.databind.node.ObjectNode
 import java.io.File
 
-class Album(var imagesFolder: File, var metadataFile: File, val id: String, val name: String, var lastModified: Long) {
+class Album(val id: String, var imagesFolder: File, var metadataFile: File, val name: String, var lastModified: Long) {
 
     @JvmField var metadata: ObjectNode? = null
     @JvmField var files: ArrayList<TurboImage> = ArrayList()
@@ -17,10 +17,8 @@ class Album(var imagesFolder: File, var metadataFile: File, val id: String, val 
         return imagesFolder.exists() && metadataFile.exists()
     }
 
-    fun clearFiles() {
-        //Remove album files from all files & clear album
-        for (image in files) Library.allFiles.remove(image)
-        files.clear()
+    fun sort() {
+        files.sortByDescending { it.lastModified }
     }
 
     //Load & save metadata
