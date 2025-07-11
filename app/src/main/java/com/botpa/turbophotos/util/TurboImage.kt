@@ -15,6 +15,7 @@ class TurboImage(@JvmField var file: File, @JvmField var album: Album, @JvmField
 
     var name: String = file.name
     var isVideo: Boolean = (mediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO.toString())
+    var mimeType: String = if (isVideo) "video/*" else "image/*"
 
     fun hasMetadata(): Boolean {
         return album.hasMetadataKey(name)

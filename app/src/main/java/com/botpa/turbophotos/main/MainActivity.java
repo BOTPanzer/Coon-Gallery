@@ -927,9 +927,25 @@ public class MainActivity extends AppCompatActivity {
         });
 
         findViewById(R.id.displayOptionsShare).setOnClickListener(view -> {
+            //Share
             Intent intent = new Intent(Intent.ACTION_SEND);
             intent.putExtra(Intent.EXTRA_STREAM, Orion.getUriFromFile(MainActivity.this, displayCurrent.file));
-            intent.setType("image/*");
+            intent.setType(displayCurrent.getMimeType());
+            startActivity(Intent.createChooser(intent, null));
+
+            //Close menu
+            displayOptionsLayout.performClick();
+        });
+
+        findViewById(R.id.displayOptionsEdit).setOnClickListener(view -> {
+            //Get mime type and URI
+            String mimeType = displayCurrent.getMimeType();
+            Uri uri = Orion.getMediaStoreUriFromFile(MainActivity.this, displayCurrent.file, mimeType);
+
+            //Edit
+            Intent intent = new Intent(Intent.ACTION_EDIT);
+            intent.setDataAndType(uri, mimeType);
+            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             startActivity(Intent.createChooser(intent, null));
 
             //Close menu
@@ -942,7 +958,7 @@ public class MainActivity extends AppCompatActivity {
 
             //Show open with menu
             Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setDataAndType(Uri.parse(displayCurrent.file.getAbsolutePath()), displayCurrent.isVideo() ? "video/*" : "image/*");
+            intent.setDataAndType(Uri.parse(displayCurrent.file.getAbsolutePath()), displayCurrent.getMimeType());
             startActivity(intent);
         });
 

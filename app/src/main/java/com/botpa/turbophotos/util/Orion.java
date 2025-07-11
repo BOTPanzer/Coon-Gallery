@@ -6,12 +6,12 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.ContentResolver;
 import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.DocumentsContract;
@@ -47,7 +47,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
@@ -309,7 +311,7 @@ public class Orion {
         ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
         ClipData clip = ClipData.newPlainText("", str);
         clipboard.setPrimaryClip(clip);
-        Orion.snack(activity, "Copied to Clipboard");
+        //Orion.snack(activity, "Copied to Clipboard");
     }
 
     //Colors
@@ -384,6 +386,12 @@ public class Orion {
         }*/
 
         return StandardCharsets.UTF_8; //default if unable to detect.
+    }
+
+    public static String getExtension(File file) {
+        String name = file.getName();
+        int dotIndex = name.lastIndexOf(".");
+        return dotIndex == -1 ? "" : name.substring(dotIndex);
     }
 
     public static String readFile(File file) {
@@ -478,9 +486,20 @@ public class Orion {
         return oldFile.renameTo(newFile);
     }
 
-    public static boolean existsFile(String path) {
-        File file = new File(path);
-        return file.exists();
+    public static boolean copyFile(File srcFile, File dstFile) {
+        if (!srcFile.exists()) return false;
+
+        try (InputStream inputStream = Files.newInputStream(srcFile.toPath()); OutputStream outputStream = Files.newOutputStream(dstFile.toPath())) {
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = inputStream.read(buffer)) > 0) {
+                outputStream.write(buffer, 0, length);
+            }
+        } catch (Exception e) {
+            return false;
+        }
+
+        return true;
     }
 
     //Files: JSON
@@ -634,6 +653,42 @@ public class Orion {
 
     public static Uri getUriFromFile(final Context context, final File file) {
         return FileProvider.getUriForFile(context, "com.botpa.turbophotos.FileProvider", file);
+    }
+
+    public static Uri getMediaStoreUriFromFile(final Context context, final File file, final String mimeType) {
+        //Get content resolver & the URI for all the files in MediaStore
+        ContentResolver resolver = context.getContentResolver();
+        Uri externalUri = MediaStore.Files.getContentUri("external");
+
+        //Find our file in the MediaStore using its absolute path
+        String[] projection = {MediaStore.Files.FileColumns._ID};
+        String selection = MediaStore.Files.FileColumns.DATA + "=?";
+        String[] selectionArgs = new String[]{ file.getAbsolutePath() };
+
+        Uri uri = null;
+
+        try (Cursor cursor = resolver.query(
+                externalUri,
+                projection,
+                selection,
+                selectionArgs,
+                null)) {
+
+            if (cursor != null && cursor.moveToFirst()) {
+                long id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns._ID));
+                uri = Uri.withAppendedPath(externalUri, "" + id);
+            }
+        }
+
+        if (uri == null) {
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Files.FileColumns.DATA, file.getAbsolutePath());
+            values.put(MediaStore.Files.FileColumns.MIME_TYPE, mimeType);
+
+            uri = resolver.insert(externalUri, values);
+        }
+
+        return uri;
     }
 
     private static String getDataColumn(Context context, Uri uri, String selection, String[] selectionArgs) {
