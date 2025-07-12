@@ -1,6 +1,8 @@
 package com.botpa.turbophotos.main;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
@@ -42,6 +44,7 @@ import com.botpa.turbophotos.util.TurboImage;
 import com.botpa.turbophotos.settings.SettingsActivity;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
 
@@ -922,8 +925,15 @@ public class MainActivity extends AppCompatActivity {
             //Close options menu
             displayOptionsLayout.performClick();
 
-            //Get album
-            deleteImage(displayCurrent);
+            //Show delete confirmation dialog
+            new MaterialAlertDialogBuilder(this)
+                .setMessage("Are you sure you want to permanently delete \"" + displayCurrent.getName() + "\"?")
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("Delete", (dialog, whichButton) -> {
+                    deleteImage(displayCurrent);
+                })
+                .show();
         });
 
         findViewById(R.id.displayOptionsShare).setOnClickListener(view -> {
