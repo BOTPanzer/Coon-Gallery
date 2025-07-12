@@ -190,8 +190,8 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        //Check albums for updates (only works when in home, aka albums list)
-        refreshGallery(false);
+        //Check albums for updates
+        refreshGallery();
     }
 
     private void checkPermissions() {
@@ -358,7 +358,7 @@ public class MainActivity extends AppCompatActivity {
         //Gallery
         galleryRefreshLayout.setOnRefreshListener(() -> {
             //Refresh gallery
-            refreshGallery(true);
+            refreshGallery();
 
             //Stop refreshing
             galleryRefreshLayout.setRefreshing(false);
@@ -781,7 +781,7 @@ public class MainActivity extends AppCompatActivity {
                 galleryTitle.setText("Coon Gallery");
 
                 //Check albums for updates
-                refreshGallery(false);
+                refreshGallery();
             } else {
                 //Save scroll
                 galleryListScroll = galleryLayoutManager.onSaveInstanceState();
@@ -829,12 +829,22 @@ public class MainActivity extends AppCompatActivity {
         filterGallery();
     }
 
-    private void refreshGallery(boolean softRefresh) {
-        //Check albums for updates
-        if (Library.loadAlbums(MainActivity.this, false)) {
-            //Don't reload on resume
-            shouldReload = false;
+    private void refreshGallery() {
+        //Check folders for updates (could have new or deleted files)
+        boolean albumsUpdated = false;
+        for (Album album : Library.albums) {
+            if (album.getImagesFolder().lastModified() == album.getLastModified()) continue;
 
+            //An album was modified -> Reload activity
+            albumsUpdated = true;
+            break;
+        }
+
+        //Reload albums (reset if albums were updated)
+        albumsUpdated = Library.loadAlbums(MainActivity.this, albumsUpdated);
+
+        //Refresh lists
+        if (albumsUpdated) {
             //Update albums list
             albumsAdapter.notifyDataSetChanged();
 
@@ -843,19 +853,6 @@ public class MainActivity extends AppCompatActivity {
 
             //Close display menu
             hideDisplay();
-            return;
-        }
-
-        //Soft refresh -> Stop here
-        if (softRefresh) return;
-
-        //No new images -> Check current albums for updates
-        for (Album album : Library.albums) {
-            if (album.getImagesFolder().lastModified() == album.getLastModified()) continue;
-
-            //An album was modified -> Reload activity
-            recreate();
-            return;
         }
     }
 

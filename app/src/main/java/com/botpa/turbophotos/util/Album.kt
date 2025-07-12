@@ -3,10 +3,11 @@ package com.botpa.turbophotos.util
 import com.fasterxml.jackson.databind.node.ObjectNode
 import java.io.File
 
-class Album(val id: String, var imagesFolder: File, var metadataFile: File, val name: String, var lastModified: Long) {
+class Album(val id: String, var imagesFolder: File, var metadataFile: File, val name: String) {
 
     @JvmField var metadata: ObjectNode? = null
     @JvmField var files: ArrayList<TurboImage> = ArrayList()
+    var lastModified: Long = imagesFolder.lastModified()
 
     val absoluteImagesPath: String get() = imagesFolder.absolutePath
     val absoluteMetadataPath: String get() = metadataFile.absolutePath
@@ -19,6 +20,11 @@ class Album(val id: String, var imagesFolder: File, var metadataFile: File, val 
 
     fun sort() {
         files.sortByDescending { it.lastModified }
+    }
+
+    fun reset() {
+        files.clear()
+        lastModified = imagesFolder.lastModified()
     }
 
     //Load & save metadata

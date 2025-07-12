@@ -149,12 +149,14 @@ public class Library {
         //Load links
         loadLinks(reset);
 
-        //Clean all
+        //Reset
         if (reset) {
+            //Reset last update timestamp
             lastUpdate = 0;
-            albums.clear();
-            albumsMap.clear();
+
+            //Clear files from all files & albums
             allFiles.clear();
+            for (Album album: albums) album.reset();
         }
 
         //Get album files
@@ -190,11 +192,10 @@ public class Library {
 
                     //Create album
                     album = new Album(
-                            bucketId,
-                            imagesFolder,
-                            metadataFile,
-                            bucketName,
-                            imagesFolder.lastModified()
+                        bucketId,
+                        imagesFolder,
+                        metadataFile,
+                        bucketName
                     );
 
                     //Save album & assign it to its metadata link
