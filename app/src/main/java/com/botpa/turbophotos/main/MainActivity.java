@@ -1,8 +1,6 @@
 package com.botpa.turbophotos.main;
 
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
@@ -77,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
 
     //Gallery
     private boolean galleryInHome = true;
+    private Album galleryAlbum = null;
     private ArrayList<TurboImage> galleryFilesUnfiltered = new ArrayList<>();
     private final ArrayList<TurboImage> galleryFiles = new ArrayList<>();
 
@@ -192,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         //Check albums for updates (only works when in home, aka albums list)
-        refreshAlbums();
+        refreshGallery(false);
     }
 
     private void checkPermissions() {
@@ -261,6 +260,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //App
+    public static void shouldReload() {
+        //Reload on resume
+        shouldReload = true;
+    }
+
     private void loadApp() {
         //App
         backManager = new BackManager(MainActivity.this, getOnBackPressedDispatcher());
@@ -351,6 +355,15 @@ public class MainActivity extends AppCompatActivity {
             return true;
         });
 
+        //Gallery
+        galleryRefreshLayout.setOnRefreshListener(() -> {
+            //Refresh gallery
+            refreshGallery(true);
+
+            //Stop refreshing
+            galleryRefreshLayout.setRefreshing(false);
+        });
+
         //Search
         searchOpen.setOnClickListener(view -> {
             //Loading or searching
@@ -392,18 +405,6 @@ public class MainActivity extends AppCompatActivity {
                 filterGallery(search, true);
             }
             return false;
-        });
-
-        //Gallery
-        galleryRefreshLayout.setOnRefreshListener(() -> {
-            //Refresh albums
-            boolean updated = Library.loadAlbums(MainActivity.this, false);
-
-            //Refresh albums
-            if (updated) albumsAdapter.notifyDataSetChanged();
-
-            //Stop refreshing
-            galleryRefreshLayout.setRefreshing(false);
         });
 
         //Display
@@ -514,80 +515,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void deleteImage(TurboImage image) {
-        //Get gallery index
-        int indexInGallery = galleryFiles.indexOf(image);
-
-        //Delete image
-        Library.DeleteImageInfo info = Library.deleteImage(image);
-
-        //Check if album was deleted
-        if (info.deletedAlbum) {
-            //Deleted -> Notify adapter
-            albumsAdapter.notifyItemRemoved(info.indexOfAlbum);
-        }
-
-        //Check if albums were sorted
-        if (info.sortedAlbums) {
-            //Sorted -> Notify adapter
-            albumsAdapter.notifyDataSetChanged();
-        }
-
-        //Check if image is in gallery list
-        if (indexInGallery != -1) {
-            //Is present -> Remove it & update adapter
-            galleryFiles.remove(indexInGallery);
-            galleryAdapter.notifyItemRemoved(indexInGallery);
-
-            //Check gallery needs to be closed or select a new image
-            if (galleryFiles.isEmpty()) {
-                //Gallery is empty -> Close display list & return to albums
-                hideDisplay();
-                showAlbumsList(true);
-            } else if (displayLayout.getVisibility() == View.VISIBLE && displayCurrent == image) {
-                //Display list is visible -> Check if a new image can be selected
-                if (displayCurrentRelativeIndex != displayFiles.size() - 1) {
-                    //An image is available next -> Select it
-                    selectImage(indexInGallery);   //Next image would be the same index since this image was deleted
-                } else if (displayCurrentRelativeIndex != 0) {
-                    //An image is available before -> Select it
-                    selectImage(indexInGallery - 1);
-                }
-            }
-        }
-    }
-
-    private void refreshAlbums() {
-        //Not in home
-        if (!galleryInHome) return;
-
-        //Check albums for updates
-        if (Library.loadAlbums(MainActivity.this, false)) {
-            //Don't reload on resume
-            shouldReload = false;
-
-            //Albums updated -> Refresh lists
-            albumsAdapter.notifyDataSetChanged();
-
-            //Close display menu
-            hideDisplay();
-        } else {
-            //No new images -> Check current albums for updates
-            for (Album album : Library.albums) {
-                if (album.getImagesFolder().lastModified() == album.getLastModified()) continue;
-
-                //An album was modified -> Reload activity
-                recreate();
-                return;
-            }
-        }
-    }
-
-    public static void shouldReload() {
-        //Reload on resume
-        shouldReload = true;
-    }
-
     //Gallery
     public Library.LoadingIndicator loadingIndicator = new Library.LoadingIndicator() {
         @Override
@@ -628,8 +555,7 @@ public class MainActivity extends AppCompatActivity {
         //Create gallery albums adapter
         albumsAdapter = new AlbumsAdapter(this, Library.albums);
         albumsAdapter.setOnItemClickListener((view, index) -> {
-            boolean success = selectAlbum(index);
-            if (!success) return;
+            selectAlbum(index);
             showAlbumsList(false);
         });
         galleryList.setAdapter(albumsAdapter);
@@ -848,9 +774,6 @@ public class MainActivity extends AppCompatActivity {
                 galleryList.setAdapter(albumsAdapter);
                 backManager.unregister("albums");
 
-                //Enable swipe to refresh
-                galleryRefreshLayout.setEnabled(true);
-
                 //Scroll to saved scroll
                 if (galleryListScroll != null) galleryLayoutManager.onRestoreInstanceState(galleryListScroll);
 
@@ -858,7 +781,7 @@ public class MainActivity extends AppCompatActivity {
                 galleryTitle.setText("Coon Gallery");
 
                 //Check albums for updates
-                refreshAlbums();
+                refreshGallery(false);
             } else {
                 //Save scroll
                 galleryListScroll = galleryLayoutManager.onSaveInstanceState();
@@ -869,9 +792,6 @@ public class MainActivity extends AppCompatActivity {
                 galleryList.setAdapter(galleryAdapter);
                 backManager.register("albums", () -> showAlbumsList(true));
 
-                //Disable swipe to refresh
-                galleryRefreshLayout.setEnabled(false);
-
                 //Scroll to top
                 galleryList.scrollToPosition(0);
             }
@@ -881,8 +801,16 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private boolean selectAlbum(int albumIndex) {
-        if (albumIndex < 0) {
+    private void selectAlbum(int albumIndex) {
+        selectAlbum(albumIndex < 0 || albumIndex >= Library.albums.size() ? null : Library.albums.get(albumIndex));
+    }
+
+    private void selectAlbum(Album album) {
+        //Save album
+        galleryAlbum = album;
+
+        //Select album
+        if (album == null) {
             //Load
             galleryFilesUnfiltered = Library.allFiles;
             loadGalleryMetadata(null);
@@ -890,9 +818,6 @@ public class MainActivity extends AppCompatActivity {
             //Change gallery title
             galleryTitle.setText("All");
         } else {
-            //Get album
-            Album album = Library.albums.get(albumIndex);
-
             //Load
             galleryFilesUnfiltered = album.files;
             loadGalleryMetadata(album);
@@ -902,7 +827,79 @@ public class MainActivity extends AppCompatActivity {
         }
         searchText.setText("");
         filterGallery();
-        return true;
+    }
+
+    private void refreshGallery(boolean softRefresh) {
+        //Check albums for updates
+        if (Library.loadAlbums(MainActivity.this, false)) {
+            //Don't reload on resume
+            shouldReload = false;
+
+            //Update albums list
+            albumsAdapter.notifyDataSetChanged();
+
+            //Update gallery list
+            if (!galleryInHome) selectAlbum(galleryAlbum);
+
+            //Close display menu
+            hideDisplay();
+            return;
+        }
+
+        //Soft refresh -> Stop here
+        if (softRefresh) return;
+
+        //No new images -> Check current albums for updates
+        for (Album album : Library.albums) {
+            if (album.getImagesFolder().lastModified() == album.getLastModified()) continue;
+
+            //An album was modified -> Reload activity
+            recreate();
+            return;
+        }
+    }
+
+    private void deleteImage(TurboImage image) {
+        //Get gallery index
+        int indexInGallery = galleryFiles.indexOf(image);
+
+        //Delete image
+        Library.DeleteImageInfo info = Library.deleteImage(image);
+
+        //Check if album was deleted
+        if (info.deletedAlbum) {
+            //Deleted -> Notify adapter
+            albumsAdapter.notifyItemRemoved(info.indexOfAlbum);
+        }
+
+        //Check if albums were sorted
+        if (info.sortedAlbums) {
+            //Sorted -> Notify adapter
+            albumsAdapter.notifyDataSetChanged();
+        }
+
+        //Check if image is in gallery list
+        if (indexInGallery != -1) {
+            //Is present -> Remove it & update adapter
+            galleryFiles.remove(indexInGallery);
+            galleryAdapter.notifyItemRemoved(indexInGallery);
+
+            //Check gallery needs to be closed or select a new image
+            if (galleryFiles.isEmpty()) {
+                //Gallery is empty -> Close display list & return to albums
+                hideDisplay();
+                showAlbumsList(true);
+            } else if (displayLayout.getVisibility() == View.VISIBLE && displayCurrent == image) {
+                //Display list is visible -> Check if a new image can be selected
+                if (displayCurrentRelativeIndex != displayFiles.size() - 1) {
+                    //An image is available next -> Select it
+                    selectImage(indexInGallery);   //Next image would be the same index since this image was deleted
+                } else if (displayCurrentRelativeIndex != 0) {
+                    //An image is available before -> Select it
+                    selectImage(indexInGallery - 1);
+                }
+            }
+        }
     }
 
     //Display
