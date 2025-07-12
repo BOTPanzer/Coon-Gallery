@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.util.Link
 
-class AlbumAdapter(private val context: Context, private val links: ArrayList<Link>) : RecyclerView.Adapter<AlbumAdapter.AlbumHolder>() {
+class LinksAdapter(private val context: Context, private val links: ArrayList<Link>) : RecyclerView.Adapter<LinksAdapter.AlbumHolder>() {
 
     private var onChooseFolderListener: OnChooseFolderListener? = null
     private var onChooseFileListener: OnChooseFileListener? = null

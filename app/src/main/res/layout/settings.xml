@@ -143,7 +143,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/opificio_bold_rounded"
-                        android:text="Albums &amp; Metadata"
+                        android:text="Albums &amp; Metadata Links"
                         android:textAlignment="center"
                         android:textColor="?attr/colorOnSurface"
                         android:textSize="16sp" />
@@ -153,7 +153,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="5dp"
                         android:fontFamily="@font/poppins"
-                        android:text="Adding albums allows you to backup them by using the backup service"
+                        android:text="Add albums to enable backing them up in the backup service"
                         android:textAlignment="center"
                         android:textColor="?attr/colorOnSurface"
                         android:textSize="14sp" />
@@ -163,7 +163,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="5dp"
                         android:fontFamily="@font/poppins"
-                        android:text="Linking metadata files to an album lets you use the search to find things in your images"
+                        android:text="Add metadata files to improve search and find things in your images"
                         android:textAlignment="center"
                         android:textColor="?attr/colorOnSurface"
                         android:textSize="14sp" />
@@ -173,20 +173,20 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="5dp"
                         android:fontFamily="@font/poppins"
-                        android:text="To add an album and its metadata, click the &quot;images folder&quot; or &quot;metadata file&quot; icons to select where they are located"
+                        android:text="To change where an album and its metadata are located, click the &quot;images folder&quot; or &quot;metadata file&quot; icons"
                         android:textAlignment="center"
                         android:textColor="?attr/colorOnSurface"
                         android:textSize="14sp" />
 
                     <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/albumsFoldersList"
+                        android:id="@+id/linksList"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:overScrollMode="never"
                         app:layout_constrainedHeight="true" />
 
                     <androidx.cardview.widget.CardView
-                        android:id="@+id/albumsFoldersAdd"
+                        android:id="@+id/linksAdd"
                         android:layout_width="match_parent"
                         android:layout_height="40dp"
                         android:layout_marginTop="10dp"
@@ -205,7 +205,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:fontFamily="@font/comfortaa_medium"
-                                android:text="Add album"
+                                android:text="Add link"
                                 android:textAlignment="center"
                                 android:textColor="?attr/colorOnSecondary" />
                         </LinearLayout>

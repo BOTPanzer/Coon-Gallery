@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
     //App
     private BackManager backManager;
     private boolean firstResume = true;
-    private boolean gallerLoaded = false;
+    private boolean galleryLoaded = false;
     private static boolean shouldReload = false;
 
     //Files
@@ -168,7 +168,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         //Gallery not loaded -> Skip next
-        if (!gallerLoaded) return;
+        if (!galleryLoaded) return;
 
         //Update settings
         if (galleryList != null && galleryLayoutManager != null) {
@@ -696,7 +696,7 @@ public class MainActivity extends AppCompatActivity {
             });
 
             //Gallery loaded
-            gallerLoaded = true;
+            galleryLoaded = true;
         }).start();
     }
 
