@@ -95,15 +95,23 @@
                 android:layout_height="match_parent"
                 android:orientation="vertical">
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/gallery"
+                <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                    android:id="@+id/galleryRefreshLayout"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:clipToPadding="false"
-                    android:paddingBottom="20dp">
+                    android:layout_weight="1">
 
-                </androidx.recyclerview.widget.RecyclerView>
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/gallery"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:clipToPadding="false"
+                        android:paddingBottom="20dp">
+
+                    </androidx.recyclerview.widget.RecyclerView>
+
+                </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
 
                 <androidx.cardview.widget.CardView
                     android:id="@+id/searchLayoutOpen"

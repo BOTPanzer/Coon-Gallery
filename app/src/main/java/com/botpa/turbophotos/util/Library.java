@@ -218,11 +218,11 @@ public class Library {
         //Update albums list with albums from map
         albums.clear();
         albums.addAll(albumsMap.values());
-        sortAlbums();
 
-        //Sort albums & all files
-        for (Album album: albums) album.sort();
+        //Sort all files & albums
         allFiles.sort((f1, f2) -> Long.compare(f2.lastModified, f1.lastModified));
+        for (Album album: albums) album.sort();
+        sortAlbums();
 
         //Save last update timestamp
         lastUpdate = System.currentTimeMillis();

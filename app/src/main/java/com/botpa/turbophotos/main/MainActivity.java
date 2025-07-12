@@ -31,6 +31,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.PagerSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SnapHelper;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.Manifest;
 import com.botpa.turbophotos.backup.BackupActivity;
@@ -83,6 +84,7 @@ public class MainActivity extends AppCompatActivity {
     private GridLayoutManager galleryLayoutManager;
     private AlbumsAdapter albumsAdapter;
     private GalleryAdapter galleryAdapter;
+    private SwipeRefreshLayout galleryRefreshLayout;
     private RecyclerView galleryList;
     private TextView galleryTitle;
 
@@ -283,6 +285,7 @@ public class MainActivity extends AppCompatActivity {
         settings = findViewById(R.id.settings);
 
         //Gallery
+        galleryRefreshLayout = findViewById(R.id.galleryRefreshLayout);
         galleryList = findViewById(R.id.gallery);
         galleryTitle = findViewById(R.id.galleryTitle);
 
@@ -389,6 +392,18 @@ public class MainActivity extends AppCompatActivity {
                 filterGallery(search, true);
             }
             return false;
+        });
+
+        //Gallery
+        galleryRefreshLayout.setOnRefreshListener(() -> {
+            //Refresh albums
+            boolean updated = Library.loadAlbums(MainActivity.this, false);
+
+            //Refresh albums
+            if (updated) albumsAdapter.notifyDataSetChanged();
+
+            //Stop refreshing
+            galleryRefreshLayout.setRefreshing(false);
         });
 
         //Display
@@ -833,6 +848,9 @@ public class MainActivity extends AppCompatActivity {
                 galleryList.setAdapter(albumsAdapter);
                 backManager.unregister("albums");
 
+                //Enable swipe to refresh
+                galleryRefreshLayout.setEnabled(true);
+
                 //Scroll to saved scroll
                 if (galleryListScroll != null) galleryLayoutManager.onRestoreInstanceState(galleryListScroll);
 
@@ -850,6 +868,9 @@ public class MainActivity extends AppCompatActivity {
                 galleryLayoutManager.setSpanCount(Storage.getInt("Settings.galleryImagesPerRow", 3));
                 galleryList.setAdapter(galleryAdapter);
                 backManager.register("albums", () -> showAlbumsList(true));
+
+                //Disable swipe to refresh
+                galleryRefreshLayout.setEnabled(false);
 
                 //Scroll to top
                 galleryList.scrollToPosition(0);
