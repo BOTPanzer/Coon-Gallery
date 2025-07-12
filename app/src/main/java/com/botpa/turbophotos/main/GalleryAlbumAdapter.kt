@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.util.TurboImage
 
-class GalleryAdapter(private val context: Context, private val images: ArrayList<TurboImage>, var showMissingMetadataIcon: Boolean) : RecyclerView.Adapter<GalleryAdapter.GalleryHolder>() {
+class GalleryAlbumAdapter(private val context: Context, private val images: ArrayList<TurboImage>, var showMissingMetadataIcon: Boolean) : RecyclerView.Adapter<GalleryAlbumAdapter.GalleryHolder>() {
 
     private var onItemClickListener: OnItemClickListener? = null
     private var onItemLongClickListener: OnItemLongClickListener? = null
@@ -73,4 +73,5 @@ class GalleryAdapter(private val context: Context, private val images: ArrayList
         var isVideo: View = itemView.findViewById(R.id.isVideo)
         var missingInfo: View = itemView.findViewById(R.id.missingInfo)
     }
+
 }

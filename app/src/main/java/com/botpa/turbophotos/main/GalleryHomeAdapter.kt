@@ -12,7 +12,7 @@ import com.botpa.turbophotos.util.Album
 import com.botpa.turbophotos.util.Library
 import com.botpa.turbophotos.util.TurboImage
 
-class AlbumsAdapter(private val context: Context, private val albums: ArrayList<Album>) : RecyclerView.Adapter<AlbumsAdapter.AlbumHolder>() {
+class GalleryHomeAdapter(private val context: Context, private val albums: ArrayList<Album>) : RecyclerView.Adapter<GalleryHomeAdapter.AlbumHolder>() {
 
     private var onItemClickListener: OnItemClickListener? = null
     private var onItemLongClickListener: OnItemLongClickListener? = null
@@ -85,4 +85,5 @@ class AlbumsAdapter(private val context: Context, private val albums: ArrayList<
         var image: ImageView = itemView.findViewById(R.id.image)
         var name: TextView = itemView.findViewById(R.id.name)
     }
+
 }
