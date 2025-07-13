@@ -19,6 +19,7 @@ import com.botpa.turbophotos.util.Storage;
 import com.botpa.turbophotos.util.TurboImage;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView;
 
 import java.util.ArrayList;
 
@@ -48,8 +49,9 @@ public class GalleryHelper {
     //Views
     private TextView title;
     private TextView subtitle;
+
     private SwipeRefreshLayout refreshLayout;
-    private RecyclerView list;
+    private FastScrollRecyclerView list;
 
     private View searchClosedLayout;
     private View searchOpenButton;
