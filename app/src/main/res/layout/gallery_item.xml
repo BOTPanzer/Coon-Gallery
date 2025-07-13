@@ -4,13 +4,13 @@
     android:id="@+id/background"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="5dp">
+    android:layout_margin="4dp">
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:cardBackgroundColor="#00FFFFFF"
-        app:cardCornerRadius="10dp"
+        app:cardCornerRadius="0dp"
         app:cardElevation="0dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -40,7 +40,7 @@
                         android:id="@+id/image"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:foreground="?attr/selectableItemBackground"/>
+                        android:foreground="?attr/selectableItemBackground" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -53,10 +53,10 @@
 
                         <androidx.cardview.widget.CardView
                             android:id="@+id/isVideo"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
                             app:cardBackgroundColor="#80070707"
-                            app:cardCornerRadius="10dp"
+                            app:cardCornerRadius="12dp"
                             app:cardElevation="0dp">
 
                             <LinearLayout
@@ -75,10 +75,10 @@
 
                         <androidx.cardview.widget.CardView
                             android:id="@+id/missingInfo"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
                             app:cardBackgroundColor="#80070707"
-                            app:cardCornerRadius="10dp"
+                            app:cardCornerRadius="12dp"
                             app:cardElevation="0dp">
 
                             <LinearLayout

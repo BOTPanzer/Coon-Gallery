@@ -19,7 +19,7 @@ class GalleryHomeAdapter(private val context: Context, private val albums: Array
 
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): AlbumHolder {
-        val myView = LayoutInflater.from(context).inflate(R.layout.gallery_album_item, viewGroup, false)
+        val myView = LayoutInflater.from(context).inflate(R.layout.gallery_album, viewGroup, false)
         return AlbumHolder(myView)
     }
 
@@ -36,6 +36,7 @@ class GalleryHomeAdapter(private val context: Context, private val albums: Array
 
             //Update album name
             holder.name.text = "All"
+            holder.info.text = Library.allFiles.size.toString() + " items"
         } else {
             //Get album
             val album = albums[position]
@@ -44,7 +45,8 @@ class GalleryHomeAdapter(private val context: Context, private val albums: Array
             if (album.files.isNotEmpty()) TurboImage.load(context, holder.image, album.files[0])
 
             //Update album name
-            holder.name.text = album.name + " (" + album.files.size + ")"
+            holder.name.text = album.name
+            holder.info.text = album.files.size.toString() + " items"
         }
 
         //Add click listeners
@@ -84,6 +86,7 @@ class GalleryHomeAdapter(private val context: Context, private val albums: Array
         var background: View = itemView.findViewById(R.id.background)
         var image: ImageView = itemView.findViewById(R.id.image)
         var name: TextView = itemView.findViewById(R.id.name)
+        var info: TextView = itemView.findViewById(R.id.info)
     }
 
 }

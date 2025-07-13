@@ -11,7 +11,7 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import java.io.File
 
-class TurboImage(@JvmField var file: File, @JvmField var album: Album, @JvmField var lastModified: Long, @JvmField var mediaType: String) {
+class TurboImage(@JvmField var file: File, @JvmField var album: Album, @JvmField var lastModified: Long, @JvmField var size: Float, @JvmField var mediaType: String) {
 
     var name: String = file.name
     var isVideo: Boolean = (mediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO.toString())
@@ -28,12 +28,12 @@ class TurboImage(@JvmField var file: File, @JvmField var album: Album, @JvmField
             imageView.setScaleType(ImageView.ScaleType.CENTER)
 
             //Load image
-            val requestBuilder = Glide.with(context).asBitmap().sizeMultiplier(0.3f)
+            val requestBuilder = Glide.with(context).asBitmap().sizeMultiplier(0.2f)
             Glide.with(context)
                 .asBitmap()
                 .load(turboImage.file.absolutePath)
                 .thumbnail(requestBuilder)
-                .listener(object : RequestListener<Bitmap> { // Use RequestListener<Bitmap> because we used .asBitmap()
+                .listener(object : RequestListener<Bitmap> {
                     override fun onLoadFailed(
                         e: GlideException?,
                         model: Any?,
@@ -50,7 +50,6 @@ class TurboImage(@JvmField var file: File, @JvmField var album: Album, @JvmField
                         dataSource: DataSource,
                         isFirstResource: Boolean
                     ): Boolean {
-                        //Update image scale type (if i don't do it here HDR does not work lol)
                         imageView.setScaleType(ImageView.ScaleType.CENTER_CROP)
                         return false
                     }

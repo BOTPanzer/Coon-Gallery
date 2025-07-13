@@ -110,7 +110,6 @@ public class Library {
         links.get(index).metadataFile = newFile;
     }
 
-
     //Albums
     private static Cursor getMediaCursor(Context context) {
         //Get content resolver
@@ -126,6 +125,7 @@ public class Library {
                 MediaStore.Files.FileColumns.BUCKET_DISPLAY_NAME,
                 MediaStore.Files.FileColumns.DATE_MODIFIED,
                 MediaStore.Files.FileColumns.MEDIA_TYPE,
+                MediaStore.Files.FileColumns.SIZE,
                 MediaStore.Files.FileColumns.DATA,
             },
             //Selection
@@ -166,6 +166,7 @@ public class Library {
             int idxBucketId = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.BUCKET_ID);
             int idxBucketDisplayName = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.BUCKET_DISPLAY_NAME);
             int idxLastModified = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATE_MODIFIED);
+            int idxSize = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.SIZE);
             int idxMediaType = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.MEDIA_TYPE);
             int idxData = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATA);
 
@@ -177,6 +178,7 @@ public class Library {
                 //Get other info
                 String bucketName = cursor.getString(idxBucketDisplayName);
                 long lastModified = cursor.getLong(idxLastModified);
+                long size = cursor.getLong(idxSize);
                 String mediaType = cursor.getString(idxMediaType);
                 File file = new File(cursor.getString(idxData));
 
@@ -207,7 +209,7 @@ public class Library {
                 }
 
                 //Add file to album
-                TurboImage image = new TurboImage(file, album, lastModified, mediaType);
+                TurboImage image = new TurboImage(file, album, lastModified, size, mediaType);
                 album.files.add(image);
                 allFiles.add(image);
                 updated = true;
