@@ -13,7 +13,8 @@ class DisplayAdapter(private val context: Context, private val images: ArrayList
 
     //Listeners
     private var onClickListener: Listener? = null
-    private var onZoomListener: Listener? = null
+    private var onZoomChangedListener: Listener? = null
+    private var onPointersChangedListener: Listener? = null
     private var onPlayListener: Listener? = null
 
 
@@ -41,8 +42,12 @@ class DisplayAdapter(private val context: Context, private val images: ArrayList
             onClickListener?.onItemClick(holder.image, holder.bindingAdapterPosition)
         }
 
-        holder.image.setOnZoomChange {
-            onZoomListener?.onItemClick(holder.image, holder.bindingAdapterPosition)
+        holder.image.setOnZoomChanged {
+            onZoomChangedListener?.onItemClick(holder.image, holder.bindingAdapterPosition)
+        }
+
+        holder.image.setOnPointersChanged {
+            onPointersChangedListener?.onItemClick(holder.image, holder.bindingAdapterPosition)
         }
 
         holder.play.setOnClickListener {
@@ -63,8 +68,12 @@ class DisplayAdapter(private val context: Context, private val images: ArrayList
         this.onClickListener = onClickListener
     }
 
-    fun setOnZoomListener(onZoomListener: Listener?) {
-        this.onZoomListener = onZoomListener
+    fun setOnZoomChangedListener(onZoomListener: Listener?) {
+        this.onZoomChangedListener = onZoomListener
+    }
+
+    fun setOnPointersChangedListener(onZoomListener: Listener?) {
+        this.onPointersChangedListener = onZoomListener
     }
 
     fun setOnPlayListener(onClickListener: Listener?) {
@@ -77,4 +86,5 @@ class DisplayAdapter(private val context: Context, private val images: ArrayList
         var image: ZoomableImageView = itemView.findViewById(R.id.image)
         var play: View = itemView.findViewById(R.id.play)
     }
+
 }

@@ -66,7 +66,7 @@ public class DisplayHelper {
     private View optionsDelete;
     private View optionsShare;
     private View optionsEdit;
-    private View optionsOpen;
+    private View optionsOpenOutside;
 
 
     //Constructor
@@ -104,7 +104,7 @@ public class DisplayHelper {
         optionsDelete = activity.findViewById(R.id.displayOptionsDelete);
         optionsShare = activity.findViewById(R.id.displayOptionsShare);
         optionsEdit = activity.findViewById(R.id.displayOptionsEdit);
-        optionsOpen = activity.findViewById(R.id.displayOptionsOpen);
+        optionsOpenOutside = activity.findViewById(R.id.displayOptionsOpen);
     }
 
     public void addListeners() {
@@ -239,13 +239,17 @@ public class DisplayHelper {
             else
                 Orion.showAnim(overlayLayout);
         });
-        adapter.setOnZoomListener((view, index) -> {
+        adapter.setOnZoomChangedListener((view, index) -> {
+            //Enable scrolling only if not zoomed and one finger is over
+            layoutManager.setScrollEnabled(view.getZoom() <= 1 && view.getPointers() <= 1);
+        });
+        adapter.setOnPointersChangedListener((view, index) -> {
             //Enable scrolling only if not zoomed and one finger is over
             layoutManager.setScrollEnabled(view.getZoom() <= 1 && view.getPointers() <= 1);
         });
         adapter.setOnPlayListener((view, index) -> {
             //Play video outside
-            optionsOpen.performClick();
+            optionsOpenOutside.performClick();
         });
         list.setAdapter(adapter);
 
@@ -352,7 +356,7 @@ public class DisplayHelper {
             activity.startActivity(Intent.createChooser(intent, null));
         });
 
-        optionsOpen.setOnClickListener(view -> {
+        optionsOpenOutside.setOnClickListener(view -> {
             //Close options menu
             showOptions(false);
 

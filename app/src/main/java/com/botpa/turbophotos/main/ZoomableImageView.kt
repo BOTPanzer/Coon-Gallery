@@ -1,5 +1,6 @@
 package com.botpa.turbophotos.main
 
+import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Matrix
@@ -12,9 +13,11 @@ import android.view.ScaleGestureDetector
 import android.view.ScaleGestureDetector.SimpleOnScaleGestureListener
 import android.view.View
 import androidx.appcompat.widget.AppCompatImageView
+import com.botpa.turbophotos.util.Orion
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
+
 
 class ZoomableImageView(context: Context, attr: AttributeSet?) : AppCompatImageView(context, attr) {
 
@@ -35,6 +38,7 @@ class ZoomableImageView(context: Context, attr: AttributeSet?) : AppCompatImageV
     //Touch
     private var last: PointF = PointF()
     private var start: PointF = PointF()
+    private var onPointersChanged: Runnable? = null
 
     var pointers: Int = 0
         private set
@@ -56,11 +60,11 @@ class ZoomableImageView(context: Context, attr: AttributeSet?) : AppCompatImageV
         private set
 
     //Click
-    private val doubleClickDelay: Long = 250
-    private var lastClickTimestamp: Long = 0
-    private var onClick: Runnable? = null
-    private var onZoomChange: Runnable? = null
     private var handler: Handler = Handler(Looper.getMainLooper())
+    private var lastClickTimestamp: Long = 0
+    private val doubleClickDelay: Long = 200
+    private var onClick: Runnable? = null
+    private var onZoomChanged: Runnable? = null
 
 
     //Constructor
@@ -81,8 +85,8 @@ class ZoomableImageView(context: Context, attr: AttributeSet?) : AppCompatImageV
                 //Stop click runnable
                 if (onClick != null) handler.removeCallbacks(onClick!!)
 
-                //Zoom
-                resize(if (zoom > 1) fitScale else coverScale)
+                //Animate scale
+                animateResize(if (zoom > 1) fitScale else coverScale)
             } else {
                 lastClickTimestamp = System.currentTimeMillis()
 
@@ -101,8 +105,11 @@ class ZoomableImageView(context: Context, attr: AttributeSet?) : AppCompatImageV
             val x = m[Matrix.MTRANS_X]
             val y = m[Matrix.MTRANS_Y]
 
-            //Get fingers count & current position
+            //Update pointers
             if (pointers != event.pointerCount) pointers = event.pointerCount
+            onPointersChanged?.run()
+
+            //Get current position
             val curr = PointF(scaleDetector.focusX, scaleDetector.focusY)
 
             //Check action
@@ -114,9 +121,6 @@ class ZoomableImageView(context: Context, attr: AttributeSet?) : AppCompatImageV
                     //Save position
                     last[curr.x] = curr.y
                     start.set(last)
-
-                    //Finger down -> Zoom changed
-                    onZoomChange?.run()
                 }
 
                 MotionEvent.ACTION_POINTER_UP -> {
@@ -126,9 +130,9 @@ class ZoomableImageView(context: Context, attr: AttributeSet?) : AppCompatImageV
                     //Save position
                     last[curr.x] = curr.y
 
-                    //Finger up -> Zoom changed
+                    //Pointer up
                     pointers--
-                    onZoomChange?.run()
+                    onPointersChanged?.run()
                 }
 
                 MotionEvent.ACTION_UP -> {
@@ -140,9 +144,9 @@ class ZoomableImageView(context: Context, attr: AttributeSet?) : AppCompatImageV
                     val yDiff = abs((curr.y - start.y).toDouble()).toInt()
                     if (xDiff < CLICK && yDiff < CLICK) performClick()
 
-                    //Finger up -> Zoom changed
+                    //Pointer up
                     pointers--
-                    onZoomChange?.run()
+                    onPointersChanged?.run()
                 }
 
                 MotionEvent.ACTION_MOVE -> {
@@ -193,15 +197,6 @@ class ZoomableImageView(context: Context, attr: AttributeSet?) : AppCompatImageV
     }
 
     //Zoom
-    private inner class Size(var x: Float = 0f, var y: Float = 0f) {
-
-        fun set(x: Float, y: Float) {
-            this.x = x
-            this.y = y
-        }
-
-    }
-
     private fun onSizeChanged() {
         //Get X & Y scales
         val scaleX = viewSize.x / bitmapSize.x
@@ -223,7 +218,7 @@ class ZoomableImageView(context: Context, attr: AttributeSet?) : AppCompatImageV
         resize(fitScale)
     }
 
-    private fun resize(scale: Float) {
+    private fun resize(scale: Float, center: Boolean = true) {
         //Either view size or bitmap size is not init yet
         if (scale.isInfinite() || scale.isNaN()) return
 
@@ -235,15 +230,49 @@ class ZoomableImageView(context: Context, attr: AttributeSet?) : AppCompatImageV
         imageMatrix = matrix
 
         //Center the image
-        matrix.postTranslate(
-            (viewSize.x - (scale * bitmapSize.x)) / 2,
-            (viewSize.y - (scale * bitmapSize.y)) / 2
-        )
-        imageMatrix = matrix
+        if (center) {
+            matrix.postTranslate(
+                (viewSize.x - (scale * bitmapSize.x)) / 2,
+                (viewSize.y - (scale * bitmapSize.y)) / 2
+            )
+            imageMatrix = matrix
+        }
 
         //Update margins
         margin.x = viewSize.x * zoom - viewSize.x - (2 * originalSpace.x * zoom)
         margin.y = viewSize.y * zoom - viewSize.y - (2 * originalSpace.y * zoom)
+
+        //Zoom changed
+        onZoomChanged?.run()
+    }
+
+    private fun animateResize(scaleEnd: Float) {
+        //Get start scale
+        val scaleStart = zoom * fitScale
+
+        //Get start & end position
+        val posStart = Size(m[Matrix.MTRANS_X], m[Matrix.MTRANS_Y])
+        val posEnd = Size((viewSize.x - (scaleEnd * bitmapSize.x)) / 2, (viewSize.y - (scaleEnd * bitmapSize.y)) / 2)
+
+        //Create zoom animator (current scale = zoom * fitScale)
+        val animator = ValueAnimator.ofFloat(0f, 1f)
+        animator.setDuration(500L)
+        animator.addUpdateListener { animation ->
+            val t = animation.animatedValue as Float
+
+            //Zoom
+            resize(Orion.lerp(scaleStart, scaleEnd, t), false)
+
+            //Position
+            matrix.postTranslate(
+                Orion.lerp(posStart.x, posEnd.x, t),
+                Orion.lerp(posStart.y, posEnd.y, t)
+            )
+            imageMatrix = matrix
+        }
+
+        //Start animation
+        animator.start()
     }
 
     //Listeners
@@ -251,8 +280,12 @@ class ZoomableImageView(context: Context, attr: AttributeSet?) : AppCompatImageV
         onClick = runnable
     }
 
-    fun setOnZoomChange(runnable: Runnable) {
-        onZoomChange = runnable
+    fun setOnZoomChanged(runnable: Runnable) {
+        onZoomChanged = runnable
+    }
+
+    fun setOnPointersChanged(runnable: Runnable) {
+        onPointersChanged = runnable
     }
 
     //Other
@@ -268,7 +301,7 @@ class ZoomableImageView(context: Context, attr: AttributeSet?) : AppCompatImageV
         //Update bitmap size
         bitmapSize.set(bitmap.width.toFloat(), bitmap.height.toFloat())
 
-        //Update scale & refit image in view
+        //Notify size changed
         onSizeChanged()
     }
 
@@ -285,7 +318,7 @@ class ZoomableImageView(context: Context, attr: AttributeSet?) : AppCompatImageV
         //Update size
         viewSize.set(newWidth, newHeight)
 
-        //Update scale & refit image in view
+        //Notify size changed
         onSizeChanged()
     }
 
@@ -337,8 +370,17 @@ class ZoomableImageView(context: Context, attr: AttributeSet?) : AppCompatImageV
             }
 
             //Zoom changed
-            onZoomChange?.run()
+            onZoomChanged?.run()
             return true
+        }
+
+    }
+
+    private inner class Size(var x: Float = 0f, var y: Float = 0f) {
+
+        fun set(x: Float, y: Float) {
+            this.x = x
+            this.y = y
         }
 
     }

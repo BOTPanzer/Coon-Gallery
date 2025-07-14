@@ -65,6 +65,11 @@ public class Orion {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
 
+    //Math
+    public static float lerp(float a, float b, float t) {
+        return a * (1 - t) + b * t;
+    }
+
     //Get attribute color
     public static int getColor(Context context, int attr) {
         TypedValue typedValue = new TypedValue();
