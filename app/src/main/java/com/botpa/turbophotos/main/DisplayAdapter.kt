@@ -11,11 +11,13 @@ import com.bumptech.glide.Glide
 
 class DisplayAdapter(private val context: Context, private val images: ArrayList<TurboImage>) : RecyclerView.Adapter<DisplayAdapter.DisplayHolder>() {
 
-    private var onClickListener: OnClickListener? = null
-    private var onZoomListener: OnClickListener? = null
-    private var onPlayListener: OnClickListener? = null
+    //Listeners
+    private var onClickListener: Listener? = null
+    private var onZoomListener: Listener? = null
+    private var onPlayListener: Listener? = null
 
 
+    //Adapter
     override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): DisplayHolder {
         val myView = LayoutInflater.from(context).inflate(R.layout.display_item, viewGroup, false)
         return DisplayHolder(myView)
@@ -53,19 +55,19 @@ class DisplayAdapter(private val context: Context, private val images: ArrayList
     }
 
     //Listeners
-    fun interface OnClickListener {
+    fun interface Listener {
         fun onItemClick(view: ZoomableImageView, index: Int)
     }
 
-    fun setOnClickListener(onClickListener: OnClickListener?) {
+    fun setOnClickListener(onClickListener: Listener?) {
         this.onClickListener = onClickListener
     }
 
-    fun setOnZoomListener(onZoomListener: OnClickListener?) {
+    fun setOnZoomListener(onZoomListener: Listener?) {
         this.onZoomListener = onZoomListener
     }
 
-    fun setOnPlayListener(onClickListener: OnClickListener?) {
+    fun setOnPlayListener(onClickListener: Listener?) {
         this.onPlayListener = onClickListener
     }
 
