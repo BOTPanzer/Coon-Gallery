@@ -22,7 +22,7 @@ import com.botpa.turbophotos.util.Album;
 import com.botpa.turbophotos.util.Library;
 import com.botpa.turbophotos.util.Link;
 import com.botpa.turbophotos.util.Orion;
-import com.botpa.turbophotos.util.TurboImage;
+import com.botpa.turbophotos.util.TurboFile;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -70,7 +70,7 @@ public class BackupService extends Service {
     private MetadataInfo metadataRequest;
 
     //Albums
-    private final ArrayList<ArrayList<TurboImage>> backupFiles = new ArrayList<>();
+    private final ArrayList<ArrayList<TurboFile>> backupFiles = new ArrayList<>();
 
 
     @Nullable
@@ -98,14 +98,14 @@ public class BackupService extends Service {
             for (Link link: Library.links) {
                 //Get album & create files list
                 Album album = link.album;
-                ArrayList<TurboImage> files = new ArrayList<>();
+                ArrayList<TurboFile> files = new ArrayList<>();
 
                 //Check if album exists
                 if (album != null) {
                     //Add files to list (images only)
                     files.ensureCapacity(album.files.size());
-                    for (TurboImage file: album.files) {
-                        if (file.isVideo()) continue;
+                    for (TurboFile file: album.files) {
+                        if (file.isVideo) continue;
                         files.add(file);
                     }
                 }
@@ -158,7 +158,7 @@ public class BackupService extends Service {
                 ArrayNode albumsJsonArray = Orion.getEmptyJsonArray();
                 for (int i = 0; i < backupFiles.size(); i++) {
                     //Get files
-                    ArrayList<TurboImage> files = backupFiles.get(i);
+                    ArrayList<TurboFile> files = backupFiles.get(i);
 
                     //Create files list
                     String[] filesArray = new String[files.size()];
@@ -240,7 +240,7 @@ public class BackupService extends Service {
 
                     //Get album
                     int albumIndex = message.get("albumIndex").asInt();
-                    ArrayList<TurboImage> album = backupFiles.get(albumIndex);
+                    ArrayList<TurboFile> album = backupFiles.get(albumIndex);
 
                     //Get image
                     int imageIndex = message.get("imageIndex").asInt();
@@ -267,11 +267,11 @@ public class BackupService extends Service {
                 case "requestImageData": {
                     //Get album
                     int albumIndex = message.get("albumIndex").asInt();
-                    ArrayList<TurboImage> album = backupFiles.get(albumIndex);
+                    ArrayList<TurboFile> album = backupFiles.get(albumIndex);
 
                     //Get image
                     int imageIndex = message.get("imageIndex").asInt();
-                    TurboImage image = album.get(imageIndex);
+                    TurboFile image = album.get(imageIndex);
 
                     //Send image data
                     File file = image.file;

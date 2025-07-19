@@ -56,6 +56,7 @@
                 android:paddingTop="6dp"
                 android:singleLine="true"
                 android:text="Album Name"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="14sp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/imageCard" />
@@ -69,6 +70,7 @@
                 android:paddingHorizontal="5dp"
                 android:singleLine="true"
                 android:text="1000 items"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="12sp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/name" />

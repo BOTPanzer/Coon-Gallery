@@ -18,7 +18,6 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
-
 class ZoomableImageView(context: Context, attr: AttributeSet?) : AppCompatImageView(context, attr) {
 
     private var scaleDetector: ScaleGestureDetector

@@ -58,6 +58,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 /** @noinspection CallToPrintStackTrace*/
 public class Orion {
@@ -505,6 +506,28 @@ public class Orion {
         }
 
         return true;
+    }
+
+    public static boolean cloneFile(File sourceFile, File destFile) {
+        try {
+            //Get parent
+            File parent = destFile.getParentFile();
+            if (parent == null) return false;
+
+            //Create parent folder
+            if (!parent.mkdirs()) {
+                Log.i("ORION", parent.getAbsolutePath());
+                Log.i("ORION", "FOLDER");
+                return false;
+            }
+
+            //Copy file
+            Files.copy(sourceFile.toPath(), destFile.toPath(), StandardCopyOption.COPY_ATTRIBUTES);
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     //Files: JSON

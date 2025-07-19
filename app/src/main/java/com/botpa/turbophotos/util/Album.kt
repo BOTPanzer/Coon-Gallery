@@ -3,14 +3,14 @@ package com.botpa.turbophotos.util
 import com.fasterxml.jackson.databind.node.ObjectNode
 import java.io.File
 
-class Album(val id: String, var imagesFolder: File, var metadataFile: File, val name: String) {
+class Album(var id: String, var imagesFolder: File, var metadataFile: File, val name: String) {
 
+    //Album info
     @JvmField var metadata: ObjectNode? = null
-    @JvmField var files: ArrayList<TurboImage> = ArrayList()
+    @JvmField var files: ArrayList<TurboFile> = ArrayList()
     var lastModified: Long = imagesFolder.lastModified()
-
-    val absoluteImagesPath: String get() = imagesFolder.absolutePath
-    val absoluteMetadataPath: String get() = metadataFile.absolutePath
+    val absoluteImagesPath: String = imagesFolder.absolutePath
+    val absoluteMetadataPath: String = metadataFile.absolutePath
 
 
     //Util
@@ -19,7 +19,7 @@ class Album(val id: String, var imagesFolder: File, var metadataFile: File, val 
     }
 
     fun sort() {
-        files.sortByDescending { it.lastModified }
+        Library.sort(files)
     }
 
     fun reset() {
@@ -66,6 +66,13 @@ class Album(val id: String, var imagesFolder: File, var metadataFile: File, val 
     //Override toString to be able to save albums in a string
     override fun toString(): String {
         return "$absoluteImagesPath\n$absoluteMetadataPath"
+    }
+
+    //Static
+    companion object {
+
+        const val TRASH_ID: String = "TRASH"
+
     }
 
 }

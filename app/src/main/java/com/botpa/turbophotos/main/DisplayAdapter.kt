@@ -6,10 +6,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
-import com.botpa.turbophotos.util.TurboImage
+import com.botpa.turbophotos.util.TurboFile
 import com.bumptech.glide.Glide
 
-class DisplayAdapter(private val context: Context, private val images: ArrayList<TurboImage>) : RecyclerView.Adapter<DisplayAdapter.DisplayHolder>() {
+class DisplayAdapter(private val context: Context, private val images: ArrayList<TurboFile>) : RecyclerView.Adapter<DisplayAdapter.DisplayHolder>() {
 
     //Listeners
     private var onClickListener: Listener? = null

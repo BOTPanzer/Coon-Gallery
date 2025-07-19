@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.util.Album
 import com.botpa.turbophotos.util.Library
-import com.botpa.turbophotos.util.TurboImage
+import com.botpa.turbophotos.util.TurboFile
 
 class GalleryHomeAdapter(private val context: Context, private val albums: ArrayList<Album>) : RecyclerView.Adapter<GalleryHomeAdapter.AlbumHolder>() {
 
@@ -27,22 +27,22 @@ class GalleryHomeAdapter(private val context: Context, private val albums: Array
         //Get holder position
         val position = holder.bindingAdapterPosition - 1
 
+        //Get album
+        val album = getAlbumFromIndex(position)
+
         //Get album from albums
-        if (position < 0) {
-            //First album is all files
+        if (album == null) {
+            //No album -> Is all files
 
             //Load cover
-            if (Library.allFiles.isNotEmpty()) TurboImage.load(context, holder.image, Library.allFiles[0])
+            if (Library.allFiles.isNotEmpty()) TurboFile.load(context, holder.image, Library.allFiles[0])
 
             //Update album name
             holder.name.text = "All"
             holder.info.text = Library.allFiles.size.toString() + " items"
         } else {
-            //Get album
-            val album = albums[position]
-
             //Load cover
-            if (album.files.isNotEmpty()) TurboImage.load(context, holder.image, album.files[0])
+            if (album.files.isNotEmpty()) TurboFile.load(context, holder.image, album.files[0])
 
             //Update album name
             holder.name.text = album.name
@@ -51,7 +51,7 @@ class GalleryHomeAdapter(private val context: Context, private val albums: Array
 
         //Add click listeners
         holder.background.setOnClickListener { view: View ->
-            onItemClickListener?.onItemClick(view, holder.bindingAdapterPosition - 1)
+            onItemClickListener?.onItemClick(view, album)
         }
 
         holder.background.setOnLongClickListener { view: View ->
@@ -61,12 +61,22 @@ class GalleryHomeAdapter(private val context: Context, private val albums: Array
     }
 
     override fun getItemCount(): Int {
-        return albums.size + 1
+        return albums.size + if (Library.trash.files.isEmpty()) 1 else 2
+    }
+
+    //Helpers
+    fun getAlbumFromIndex(index: Int): Album? {
+        return if (index < 0)
+            null
+        else if (index >= albums.size)
+            Library.trash
+        else
+            albums[index]
     }
 
     //Listeners
     fun interface OnItemClickListener {
-        fun onItemClick(view: View, index: Int)
+        fun onItemClick(view: View, album: Album?)
     }
 
     fun interface OnItemLongClickListener {

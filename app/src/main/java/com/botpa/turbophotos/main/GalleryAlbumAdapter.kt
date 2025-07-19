@@ -7,9 +7,9 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
-import com.botpa.turbophotos.util.TurboImage
+import com.botpa.turbophotos.util.TurboFile
 
-class GalleryAlbumAdapter(private val context: Context, private val images: ArrayList<TurboImage>, var showMissingMetadataIcon: Boolean) : RecyclerView.Adapter<GalleryAlbumAdapter.GalleryHolder>() {
+class GalleryAlbumAdapter(private val context: Context, private val files: ArrayList<TurboFile>, var showMissingMetadataIcon: Boolean) : RecyclerView.Adapter<GalleryAlbumAdapter.GalleryHolder>() {
 
     private var onItemClickListener: OnItemClickListener? = null
     private var onItemLongClickListener: OnItemLongClickListener? = null
@@ -24,15 +24,15 @@ class GalleryAlbumAdapter(private val context: Context, private val images: Arra
         //Get holder position
         val position = holder.bindingAdapterPosition
 
-        //Get image from images
-        val image = images[position]
+        //Get file
+        val files = files[position]
 
         //Load image in imageview
-        TurboImage.load(context, holder.image, image)
+        TurboFile.load(context, holder.image, files)
 
         //Toggle is video & missing info icons
-        holder.isVideo.visibility = if (image.isVideo) View.VISIBLE else View.GONE
-        holder.missingInfo.visibility = if (!showMissingMetadataIcon || image.album.hasMetadataKey(image.name)) View.GONE else View.VISIBLE
+        holder.isVideo.visibility = if (files.isVideo) View.VISIBLE else View.GONE
+        holder.missingInfo.visibility = if (!showMissingMetadataIcon || files.album.hasMetadataKey(files.name)) View.GONE else View.VISIBLE
 
         //Add click listeners
         holder.background.setOnClickListener { view: View ->
@@ -46,7 +46,7 @@ class GalleryAlbumAdapter(private val context: Context, private val images: Arra
     }
 
     override fun getItemCount(): Int {
-        return images.size
+        return files.size
     }
 
     //Listeners

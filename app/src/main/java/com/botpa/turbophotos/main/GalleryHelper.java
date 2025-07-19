@@ -8,7 +8,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.botpa.turbophotos.R;
@@ -16,7 +15,7 @@ import com.botpa.turbophotos.util.Album;
 import com.botpa.turbophotos.util.Library;
 import com.botpa.turbophotos.util.Orion;
 import com.botpa.turbophotos.util.Storage;
-import com.botpa.turbophotos.util.TurboImage;
+import com.botpa.turbophotos.util.TurboFile;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView;
@@ -35,9 +34,9 @@ public class GalleryHelper {
 
     //Loaded album
     private Album album = null;
-    private ArrayList<TurboImage> filesUnfiltered = new ArrayList<>();
+    private ArrayList<TurboFile> filesUnfiltered = new ArrayList<>();
 
-    public final ArrayList<TurboImage> files = new ArrayList<>();
+    public final ArrayList<TurboFile> files = new ArrayList<>();
 
     //Adapters
     private Parcelable listScroll;
@@ -181,8 +180,8 @@ public class GalleryHelper {
 
         //Init home adapter
         homeAdapter = new GalleryHomeAdapter(activity, Library.albums);
-        homeAdapter.setOnItemClickListener((view, index) -> {
-            selectAlbum(index);
+        homeAdapter.setOnItemClickListener((view, album) -> {
+            selectAlbum(album);
             showAlbumsList(false);
         });
         list.setAdapter(homeAdapter);
@@ -207,7 +206,7 @@ public class GalleryHelper {
         }
 
         //Reload albums (reset if albums were updated)
-        albumsUpdated = Library.loadAlbums(activity, albumsUpdated);
+        albumsUpdated = Library.loadLibrary(activity, albumsUpdated);
 
         //Refresh lists
         if (albumsUpdated) {
@@ -265,10 +264,6 @@ public class GalleryHelper {
         });
     }
 
-    public void selectAlbum(int albumIndex) {
-        selectAlbum(albumIndex < 0 || albumIndex >= Library.albums.size() ? null : Library.albums.get(albumIndex));
-    }
-
     public void selectAlbum(Album album) {
         //Save album
         this.album = album;
@@ -296,7 +291,7 @@ public class GalleryHelper {
     }
 
     //Filter files
-    private boolean filterImage(TurboImage image, String filter) {
+    private boolean filterImage(TurboFile image, String filter) {
         //Check file name
         if (image.getName().contains(filter)) return true;
 
@@ -367,7 +362,7 @@ public class GalleryHelper {
         //Search in metadata files
         new Thread(() -> {
             //Look for files that contain filter
-            for (TurboImage image: filesUnfiltered) {
+            for (TurboFile image: filesUnfiltered) {
                 //No filter -> Skip check
                 if (!isFiltering) {
                     files.add(image);

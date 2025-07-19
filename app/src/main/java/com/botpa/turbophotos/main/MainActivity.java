@@ -26,7 +26,7 @@ import com.botpa.turbophotos.util.BackManager;
 import com.botpa.turbophotos.util.Library;
 import com.botpa.turbophotos.R;
 import com.botpa.turbophotos.util.Storage;
-import com.botpa.turbophotos.util.TurboImage;
+import com.botpa.turbophotos.util.TurboFile;
 import com.botpa.turbophotos.settings.SettingsActivity;
 
 @SuppressLint({"SetTextI18n", "NotifyDataSetChanged"})
@@ -126,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
         //Load albums
         new Thread(() -> {
             //Load albums
-            Library.loadAlbums(MainActivity.this, true);
+            Library.loadLibrary(MainActivity.this, true);
 
             //Show gallery
             runOnUiThread(() -> {
@@ -302,12 +302,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //Gallery
-    public void deleteImage(TurboImage image) {
-        //Get gallery index
-        int indexInGallery = gallery.files.indexOf(image);
+    public void deleteFile(TurboFile file) {
+        //Delete file & consume action info
+        manageFileActionInfo(file, Library.deleteFile(file));
+    }
 
-        //Delete image
-        Library.DeleteImageInfo info = Library.deleteImage(image);
+    public void trashFile(TurboFile file) {
+        //Trash file & consume action info
+        manageFileActionInfo(file, Library.trashFile(file));
+    }
+
+    private void manageFileActionInfo(TurboFile file, Library.FileActionInfo info) {
+        //Get gallery index
+        int indexInGallery = gallery.files.indexOf(file);
 
         //Check if album was deleted
         if (info.deletedAlbum) {
@@ -316,7 +323,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         //Check if albums were sorted
-        if (info.sortedAlbums) {
+        if (info.sortedAlbums || info.modifiedTrash) {
             //Sorted -> Notify adapter
             gallery.homeAdapter.notifyDataSetChanged();
         }
@@ -332,7 +339,7 @@ public class MainActivity extends AppCompatActivity {
                 //Gallery is empty -> Close display list & return to albums
                 display.close();
                 gallery.showAlbumsList(true);
-            } else if (display.isOpen && display.current == image) {
+            } else if (display.isOpen && display.current == file) {
                 //Display list is visible -> Check if a new image can be selected
                 if (display.currentRelativeIndex != display.files.size() - 1) {
                     //An image is available next -> Select it

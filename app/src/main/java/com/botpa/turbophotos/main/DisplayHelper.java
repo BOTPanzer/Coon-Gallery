@@ -15,7 +15,7 @@ import androidx.recyclerview.widget.SnapHelper;
 
 import com.botpa.turbophotos.R;
 import com.botpa.turbophotos.util.Orion;
-import com.botpa.turbophotos.util.TurboImage;
+import com.botpa.turbophotos.util.TurboFile;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -34,8 +34,8 @@ public class DisplayHelper {
     private DisplayLayoutManager layoutManager;
     private DisplayAdapter adapter;
 
-    public final ArrayList<TurboImage> files = new ArrayList<>();
-    public TurboImage current = null;
+    public final ArrayList<TurboFile> files = new ArrayList<>();
+    public TurboFile current = null;
     public int currentIndex = -1;
     public int currentRelativeIndex = -1;
 
@@ -63,6 +63,7 @@ public class DisplayHelper {
     private View editSave;
 
     private View optionsLayout;
+    private View optionsTrash;
     private View optionsDelete;
     private View optionsShare;
     private View optionsEdit;
@@ -101,6 +102,7 @@ public class DisplayHelper {
 
         //Options
         optionsLayout = activity.findViewById(R.id.displayOptionsLayout);
+        optionsTrash = activity.findViewById(R.id.displayOptionsTrash);
         optionsDelete = activity.findViewById(R.id.displayOptionsDelete);
         optionsShare = activity.findViewById(R.id.displayOptionsShare);
         optionsEdit = activity.findViewById(R.id.displayOptionsEdit);
@@ -179,7 +181,13 @@ public class DisplayHelper {
         });
 
         //Options
-        optionsButton.setOnClickListener(view -> showOptions(optionsLayout.getVisibility() != View.VISIBLE));
+        optionsButton.setOnClickListener(view -> {
+            //File is trashed -> Do not allow options yet
+            if (current.isTrashed()) return;
+
+            //Show options menu
+            showOptions(optionsLayout.getVisibility() != View.VISIBLE);
+        });
 
         optionsLayout.setOnClickListener(view -> showOptions(false));
     }
@@ -315,6 +323,14 @@ public class DisplayHelper {
         nameText.setText(current.getName());
 
         //Prepare options menu
+        optionsTrash.setOnClickListener(view -> {
+            //Close options menu
+            showOptions(false);
+
+            //Move to trash
+            activity.trashFile(current);
+        });
+
         optionsDelete.setOnClickListener(view -> {
             //Close options menu
             showOptions(false);
@@ -325,7 +341,7 @@ public class DisplayHelper {
                     .setIcon(android.R.drawable.ic_dialog_alert)
                     .setNegativeButton("Cancel", null)
                     .setPositiveButton("Delete", (dialog, whichButton) -> {
-                        activity.deleteImage(current);
+                        activity.deleteFile(current);
                     })
                     .show();
         });
