@@ -21,10 +21,15 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.widget.Toast;
+
 import com.botpa.turbophotos.backup.BackupActivity;
+import com.botpa.turbophotos.util.Album;
 import com.botpa.turbophotos.util.BackManager;
+import com.botpa.turbophotos.util.FileActionResult;
 import com.botpa.turbophotos.util.Library;
 import com.botpa.turbophotos.R;
+import com.botpa.turbophotos.util.Orion;
 import com.botpa.turbophotos.util.Storage;
 import com.botpa.turbophotos.util.TurboFile;
 import com.botpa.turbophotos.settings.SettingsActivity;
@@ -303,51 +308,60 @@ public class MainActivity extends AppCompatActivity {
 
     //Gallery
     public void deleteFile(TurboFile file) {
-        //Delete file & consume action info
-        manageFileActionInfo(file, Library.deleteFile(file));
+        //Delete file & consume action result
+        manageActionResult(file, Library.deleteFile(file));
     }
 
     public void trashFile(TurboFile file) {
-        //Trash file & consume action info
-        manageFileActionInfo(file, Library.trashFile(file));
+        //Trash file & consume action result
+        manageActionResult(file, Library.trashFile(MainActivity.this, file));
     }
 
-    private void manageFileActionInfo(TurboFile file, Library.FileActionInfo info) {
-        //Get gallery index
-        int indexInGallery = gallery.files.indexOf(file);
+    public void restoreFile(TurboFile file) {
+        //Restore file & manage action result
+        manageActionResult(file, Library.restoreFile(MainActivity.this, file));
+    }
 
-        //Check if album was deleted
-        if (info.deletedAlbum) {
-            //Deleted -> Notify adapter
-            gallery.homeAdapter.notifyItemRemoved(info.indexOfAlbum);
+    private void manageActionResult(TurboFile file, FileActionResult result) {
+        //Action was not performed
+        if (result.action.equals(FileActionResult.ACTION_NONE)) {
+            Orion.snack(MainActivity.this, result.info);
+            return;
         }
 
-        //Check if albums were sorted
-        if (info.sortedAlbums || info.modifiedTrash) {
-            //Sorted -> Notify adapter
+        //Check if albums list was changed
+        if (result.sortedAlbumsList) {
+            //Sorted albums list -> Notify all
             gallery.homeAdapter.notifyDataSetChanged();
+        } else if (!result.deletedAlbum) {
+            //Deleted album -> Notify item removed
+            gallery.homeAdapter.notifyItemRemoved(result.indexOfAlbum);
+        } else if (result.acted(FileActionResult.ACTION_TRASH) || result.acted(FileActionResult.ACTION_RESTORE)) {
+            //Trashed/restored file -> Notify all
+            gallery.homeAdapter.notifyDataSetChanged(); //Should update this to change only trash index instead of all
         }
 
         //Check if image is in gallery list
-        if (indexInGallery != -1) {
-            //Is present -> Remove it & update adapter
-            gallery.files.remove(indexInGallery);
-            gallery.albumAdapter.notifyItemRemoved(indexInGallery);
+        int indexInGallery = gallery.files.indexOf(file);
+        if (indexInGallery == -1) return;
 
-            //Check gallery needs to be closed or select a new image
-            if (gallery.files.isEmpty()) {
-                //Gallery is empty -> Close display list & return to albums
-                display.close();
-                gallery.showAlbumsList(true);
-            } else if (display.isOpen && display.current == file) {
-                //Display list is visible -> Check if a new image can be selected
-                if (display.currentRelativeIndex != display.files.size() - 1) {
-                    //An image is available next -> Select it
-                    display.open(indexInGallery);   //Next image would be the same index since this image was deleted
-                } else if (display.currentRelativeIndex != 0) {
-                    //An image is available before -> Select it
-                    display.open(indexInGallery - 1);
-                }
+        //Is present -> Remove it & update adapter
+        gallery.files.remove(indexInGallery);
+        gallery.albumAdapter.notifyItemRemoved(indexInGallery);
+
+        //Check gallery needs to be closed or select a new image
+        if (gallery.files.isEmpty()) {
+            //Gallery is empty -> Close display list & return to albums
+            display.close();
+            gallery.showAlbumsList(true);
+        } else if (display.isOpen && display.current == file) {
+            //Display list is visible -> Check if a new image can be selected
+            if (display.currentRelativeIndex != display.files.size() - 1) {
+                //An image is available next -> Select it
+                display.open(indexInGallery);   //Next image would be the same index since this image was deleted
+            } else if (display.currentRelativeIndex != 0) {
+                //An image is available before -> Select it
+                display.open(indexInGallery - 1);
             }
         }
     }

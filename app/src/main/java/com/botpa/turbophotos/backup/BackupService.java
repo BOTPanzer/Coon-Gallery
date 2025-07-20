@@ -103,7 +103,7 @@ public class BackupService extends Service {
                 //Check if album exists
                 if (album != null) {
                     //Add files to list (images only)
-                    files.ensureCapacity(album.files.size());
+                    files.ensureCapacity(album.size());
                     for (TurboFile file: album.files) {
                         if (file.isVideo) continue;
                         files.add(file);

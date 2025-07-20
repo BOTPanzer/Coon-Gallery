@@ -12,6 +12,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.DocumentsContract;
@@ -313,9 +314,9 @@ public class Orion {
     }
 
     //Clipboard
-    public static void copyToClip(String str, Activity activity) {
+    public static void copyToClip(Activity activity, String string) {
         ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
-        ClipData clip = ClipData.newPlainText("", str);
+        ClipData clip = ClipData.newPlainText("", string);
         clipboard.setPrimaryClip(clip);
         //Orion.snack(activity, "Copied to Clipboard");
     }
@@ -508,14 +509,14 @@ public class Orion {
         return true;
     }
 
-    public static boolean cloneFile(File sourceFile, File destFile) {
+    public static boolean cloneFile(Context context, File sourceFile, File destFile) {
         try {
             //Get parent
             File parent = destFile.getParentFile();
             if (parent == null) return false;
 
             //Create parent folder
-            if (!parent.mkdirs()) {
+            if (!parent.exists() && !parent.mkdirs()) {
                 Log.i("ORION", parent.getAbsolutePath());
                 Log.i("ORION", "FOLDER");
                 return false;
@@ -523,11 +524,16 @@ public class Orion {
 
             //Copy file
             Files.copy(sourceFile.toPath(), destFile.toPath(), StandardCopyOption.COPY_ATTRIBUTES);
+            scanFile(context, destFile);
             return true;
         } catch (IOException e) {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public static void scanFile(Context context, File file) {
+        MediaScannerConnection.scanFile(context, new String[] { file.getAbsolutePath() }, null, null);
     }
 
     //Files: JSON

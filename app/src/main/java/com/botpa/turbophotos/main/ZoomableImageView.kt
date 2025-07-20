@@ -255,7 +255,7 @@ class ZoomableImageView(context: Context, attr: AttributeSet?) : AppCompatImageV
 
         //Create zoom animator (current scale = zoom * fitScale)
         val animator = ValueAnimator.ofFloat(0f, 1f)
-        animator.setDuration(500L)
+        animator.setDuration(350L)
         animator.addUpdateListener { animation ->
             val t = animation.animatedValue as Float
 

@@ -180,7 +180,7 @@ public class GalleryHelper {
 
         //Init home adapter
         homeAdapter = new GalleryHomeAdapter(activity, Library.albums);
-        homeAdapter.setOnItemClickListener((view, album) -> {
+        homeAdapter.setOnClickListener((view, album) -> {
             selectAlbum(album);
             showAlbumsList(false);
         });

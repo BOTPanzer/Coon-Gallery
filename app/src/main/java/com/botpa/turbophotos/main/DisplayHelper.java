@@ -63,6 +63,7 @@ public class DisplayHelper {
     private View editSave;
 
     private View optionsLayout;
+    private View optionsRestore;
     private View optionsTrash;
     private View optionsDelete;
     private View optionsShare;
@@ -102,6 +103,7 @@ public class DisplayHelper {
 
         //Options
         optionsLayout = activity.findViewById(R.id.displayOptionsLayout);
+        optionsRestore = activity.findViewById(R.id.displayOptionsRestore);
         optionsTrash = activity.findViewById(R.id.displayOptionsTrash);
         optionsDelete = activity.findViewById(R.id.displayOptionsDelete);
         optionsShare = activity.findViewById(R.id.displayOptionsShare);
@@ -182,14 +184,77 @@ public class DisplayHelper {
 
         //Options
         optionsButton.setOnClickListener(view -> {
-            //File is trashed -> Do not allow options yet
-            if (current.isTrashed()) return;
-
-            //Show options menu
             showOptions(optionsLayout.getVisibility() != View.VISIBLE);
         });
 
         optionsLayout.setOnClickListener(view -> showOptions(false));
+
+        optionsRestore.setOnClickListener(view -> {
+            //Close options menu
+            showOptions(false);
+
+            //Move to trash
+            activity.restoreFile(current);
+        });
+
+        optionsTrash.setOnClickListener(view -> {
+            //Close options menu
+            showOptions(false);
+
+            //Move to trash
+            activity.trashFile(current);
+        });
+
+        optionsDelete.setOnClickListener(view -> {
+            //Close options menu
+            showOptions(false);
+
+            //Show delete confirmation dialog
+            new MaterialAlertDialogBuilder(activity)
+                    .setMessage("Are you sure you want to permanently delete \"" + current.getName() + "\"?")
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .setNegativeButton("Cancel", null)
+                    .setPositiveButton("Delete", (dialog, whichButton) -> {
+                        activity.deleteFile(current);
+                    })
+                    .show();
+        });
+
+        optionsShare.setOnClickListener(view -> {
+            //Close options menu
+            showOptions(false);
+
+            //Share
+            Intent intent = new Intent(Intent.ACTION_SEND);
+            intent.putExtra(Intent.EXTRA_STREAM, Orion.getUriFromFile(activity, current.file));
+            intent.setType(current.getMimeType());
+            activity.startActivity(Intent.createChooser(intent, null));
+        });
+
+        optionsEdit.setOnClickListener(view -> {
+            //Close options menu
+            showOptions(false);
+
+            //Get mime type and URI
+            String mimeType = current.getMimeType();
+            Uri uri = Orion.getMediaStoreUriFromFile(activity, current.file, mimeType);
+
+            //Edit
+            Intent intent = new Intent(Intent.ACTION_EDIT);
+            intent.setDataAndType(uri, mimeType);
+            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            activity.startActivity(Intent.createChooser(intent, null));
+        });
+
+        optionsOpenOutside.setOnClickListener(view -> {
+            //Close options menu
+            showOptions(false);
+
+            //Show open with menu
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setDataAndType(Uri.parse(current.file.getAbsolutePath()), current.getMimeType());
+            activity.startActivity(intent);
+        });
     }
 
     //Display
@@ -323,64 +388,12 @@ public class DisplayHelper {
         nameText.setText(current.getName());
 
         //Prepare options menu
-        optionsTrash.setOnClickListener(view -> {
-            //Close options menu
-            showOptions(false);
-
-            //Move to trash
-            activity.trashFile(current);
-        });
-
-        optionsDelete.setOnClickListener(view -> {
-            //Close options menu
-            showOptions(false);
-
-            //Show delete confirmation dialog
-            new MaterialAlertDialogBuilder(activity)
-                    .setMessage("Are you sure you want to permanently delete \"" + current.getName() + "\"?")
-                    .setIcon(android.R.drawable.ic_dialog_alert)
-                    .setNegativeButton("Cancel", null)
-                    .setPositiveButton("Delete", (dialog, whichButton) -> {
-                        activity.deleteFile(current);
-                    })
-                    .show();
-        });
-
-        optionsShare.setOnClickListener(view -> {
-            //Close options menu
-            showOptions(false);
-
-            //Share
-            Intent intent = new Intent(Intent.ACTION_SEND);
-            intent.putExtra(Intent.EXTRA_STREAM, Orion.getUriFromFile(activity, current.file));
-            intent.setType(current.getMimeType());
-            activity.startActivity(Intent.createChooser(intent, null));
-        });
-
-        optionsEdit.setOnClickListener(view -> {
-            //Close options menu
-            showOptions(false);
-
-            //Get mime type and URI
-            String mimeType = current.getMimeType();
-            Uri uri = Orion.getMediaStoreUriFromFile(activity, current.file, mimeType);
-
-            //Edit
-            Intent intent = new Intent(Intent.ACTION_EDIT);
-            intent.setDataAndType(uri, mimeType);
-            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-            activity.startActivity(Intent.createChooser(intent, null));
-        });
-
-        optionsOpenOutside.setOnClickListener(view -> {
-            //Close options menu
-            showOptions(false);
-
-            //Show open with menu
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setDataAndType(Uri.parse(current.file.getAbsolutePath()), current.getMimeType());
-            activity.startActivity(intent);
-        });
+        optionsRestore.setVisibility(current.isTrashed() ? View.VISIBLE : View.GONE);
+        optionsTrash.setVisibility(current.isTrashed() ? View.GONE : View.VISIBLE);
+        //optionsDelete.setVisibility(current.isTrashed() ? View.GONE : View.VISIBLE);
+        optionsShare.setVisibility(current.isTrashed() ? View.GONE : View.VISIBLE);
+        optionsEdit.setVisibility(current.isTrashed() ? View.GONE : View.VISIBLE);
+        optionsOpenOutside.setVisibility(current.isTrashed() ? View.GONE : View.VISIBLE);
 
         //Load image info (caption & labels)
         String caption = "";

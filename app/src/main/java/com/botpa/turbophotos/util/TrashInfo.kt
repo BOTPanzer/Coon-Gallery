@@ -1,6 +1,13 @@
 package com.botpa.turbophotos.util
 
-class TrashInfo(val originalPath: String, val trashPath: String, val isVideo: Boolean) {
+import java.io.File
+
+class TrashInfo(private val originalPath: String, private val trashPath: String, val isVideo: Boolean) {
+
+    //Files
+    @JvmField var originalFile: File = File(originalPath)
+    @JvmField var trashFile: File = File(trashPath)
+
 
     //Override toString to be able to save trash info in a string
     override fun toString(): String {

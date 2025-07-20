@@ -1,5 +1,6 @@
 package com.botpa.turbophotos.main
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -12,11 +13,8 @@ import com.botpa.turbophotos.util.Album
 import com.botpa.turbophotos.util.Library
 import com.botpa.turbophotos.util.TurboFile
 
+@SuppressLint("SetTextI18n")
 class GalleryHomeAdapter(private val context: Context, private val albums: ArrayList<Album>) : RecyclerView.Adapter<GalleryHomeAdapter.AlbumHolder>() {
-
-    private var onItemClickListener: OnItemClickListener? = null
-    private var onItemLongClickListener: OnItemLongClickListener? = null
-
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): AlbumHolder {
         val myView = LayoutInflater.from(context).inflate(R.layout.gallery_album, viewGroup, false)
@@ -25,7 +23,7 @@ class GalleryHomeAdapter(private val context: Context, private val albums: Array
 
     override fun onBindViewHolder(holder: AlbumHolder, i: Int) {
         //Get holder position
-        val position = holder.bindingAdapterPosition - 1
+        val position = holder.bindingAdapterPosition - getIndexOffset()
 
         //Get album
         val album = getAlbumFromIndex(position)
@@ -42,53 +40,45 @@ class GalleryHomeAdapter(private val context: Context, private val albums: Array
             holder.info.text = Library.allFiles.size.toString() + " items"
         } else {
             //Load cover
-            if (album.files.isNotEmpty()) TurboFile.load(context, holder.image, album.files[0])
+            if (album.isNotEmpty()) TurboFile.load(context, holder.image, album.get(0))
 
             //Update album name
             holder.name.text = album.name
-            holder.info.text = album.files.size.toString() + " items"
+            holder.info.text = album.size().toString() + " items"
         }
 
         //Add click listeners
         holder.background.setOnClickListener { view: View ->
-            onItemClickListener?.onItemClick(view, album)
-        }
-
-        holder.background.setOnLongClickListener { view: View ->
-            if (onItemLongClickListener == null) return@setOnLongClickListener true
-            else onItemLongClickListener!!.onItemLongClick(view, holder.bindingAdapterPosition - 1)
+            onClickListener?.onItemClick(view, album)
         }
     }
 
     override fun getItemCount(): Int {
-        return albums.size + if (Library.trash.files.isEmpty()) 1 else 2
+        return albums.size + getIndexOffset()
     }
 
     //Helpers
-    fun getAlbumFromIndex(index: Int): Album? {
-        return if (index < 0)
-            null
-        else if (index >= albums.size)
-            Library.trash
-        else
-            albums[index]
+    private fun getIndexOffset(): Int {
+        return if (Library.trash.isEmpty()) 1 else 2
+    }
+
+    private fun getAlbumFromIndex(index: Int): Album? {
+        return when (index) {
+            -2 -> Library.trash
+            -1 -> null
+            else -> albums[index]
+        }
     }
 
     //Listeners
-    fun interface OnItemClickListener {
+    private var onClickListener: ClickListener? = null
+
+    fun interface ClickListener {
         fun onItemClick(view: View, album: Album?)
     }
 
-    fun interface OnItemLongClickListener {
-        fun onItemLongClick(view: View, index: Int): Boolean
-    }
-
-    fun setOnItemClickListener(onItemClickListener: OnItemClickListener?) {
-        this.onItemClickListener = onItemClickListener
-    }
-
-    fun setOnItemLongClickListener(onItemLongClickListener: OnItemLongClickListener?) {
-        this.onItemLongClickListener = onItemLongClickListener
+    fun setOnClickListener(onItemClickListener: ClickListener?) {
+        this.onClickListener = onItemClickListener
     }
 
     //Holder
