@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView;
 
+import java.io.File;
 import java.util.ArrayList;
 
 @SuppressLint({"SetTextI18n", "NotifyDataSetChanged"})
@@ -155,11 +156,7 @@ public class GalleryHelper {
         //Load metadata
         new Thread(() -> {
             //Load metadata
-            if (album == null) {
-                Library.loadMetadata(activity.loadingIndicator);
-            } else {
-                Library.loadMetadata(activity.loadingIndicator, album);
-            }
+            Library.loadMetadata(activity.loadingIndicator, album);
 
             //Update gallery
             activity.runOnUiThread(() -> {
@@ -196,20 +193,22 @@ public class GalleryHelper {
 
     public void refresh() {
         //Check folders for updates (could have new or deleted files)
-        boolean albumsUpdated = false;
+        boolean albumsWereModified = false;
         for (Album album : Library.albums) {
-            if (album.getImagesFolder().lastModified() == album.getLastModified()) continue;
+            //Check if last modified date changed
+            File imagesFolder = album.getImagesFolder();
+            if (imagesFolder == null || imagesFolder.lastModified() == album.getLastModified()) continue;
 
             //An album was modified -> Reload activity
-            albumsUpdated = true;
+            albumsWereModified = true;
             break;
         }
 
-        //Reload albums (reset if albums were updated)
-        albumsUpdated = Library.loadLibrary(activity, albumsUpdated);
+        //Reload albums (reset if albums were modified)
+        boolean albumsWereUpdated = Library.loadLibrary(activity, albumsWereModified);
 
         //Refresh lists
-        if (albumsUpdated) {
+        if (albumsWereUpdated) {
             //Update albums list
             homeAdapter.notifyDataSetChanged();
 
@@ -265,28 +264,18 @@ public class GalleryHelper {
     }
 
     public void selectAlbum(Album album) {
-        //Save album
+        //Select album
         this.album = album;
 
-        //Select album
-        if (album == null) {
-            //Load
-            filesUnfiltered = Library.allFiles;
-            loadMetadata(null);
+        //Change gallery title
+        title.setText(album.getName());
 
-            //Change gallery title
-            title.setText("All");
-        } else {
-            //Load
-            filesUnfiltered = album.files;
-            loadMetadata(album);
-
-            //Change gallery title
-            title.setText(album.getName());
-        }
-
-        //Reset search
+        //Reset search input
         searchInput.setText("");
+
+        //Load album
+        filesUnfiltered = album.files;
+        loadMetadata(album);
         filterGallery();
     }
 
@@ -330,8 +319,6 @@ public class GalleryHelper {
         //Not found
         return false;
     }
-
-    public void filterGallery() { filterGallery("", false); }
 
     public void filterGallery(String filterText, boolean scrollToTop) {
         //Ignore case
@@ -386,5 +373,7 @@ public class GalleryHelper {
             });
         }).start();
     }
+
+    public void filterGallery() { filterGallery("", false); }
 
 }

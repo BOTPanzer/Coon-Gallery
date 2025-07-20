@@ -42,6 +42,61 @@
                         android:layout_height="match_parent"
                         android:foreground="?attr/selectableItemBackground" />
 
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="10dp"
+                        android:divider="@drawable/display_item_info_divider"
+                        android:gravity="start|top"
+                        android:orientation="horizontal"
+                        android:showDividers="middle">
+
+                        <androidx.cardview.widget.CardView
+                            android:id="@+id/isTrash"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            app:cardBackgroundColor="#80070707"
+                            app:cardCornerRadius="12dp"
+                            app:cardElevation="0dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:gravity="center"
+                                android:orientation="vertical">
+
+                                <ImageView
+                                    android:layout_width="14dp"
+                                    android:layout_height="14dp"
+                                    app:srcCompat="@drawable/delete" />
+                            </LinearLayout>
+
+                        </androidx.cardview.widget.CardView>
+
+                        <androidx.cardview.widget.CardView
+                            android:id="@+id/isAll"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            app:cardBackgroundColor="#80070707"
+                            app:cardCornerRadius="12dp"
+                            app:cardElevation="0dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:gravity="center"
+                                android:orientation="vertical">
+
+                                <ImageView
+                                    android:layout_width="14dp"
+                                    android:layout_height="14dp"
+                                    app:srcCompat="@drawable/gallery" />
+                            </LinearLayout>
+
+                        </androidx.cardview.widget.CardView>
+
+                    </LinearLayout>
+
                 </RelativeLayout>
 
             </androidx.cardview.widget.CardView>

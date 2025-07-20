@@ -21,10 +21,8 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
-import android.widget.Toast;
 
 import com.botpa.turbophotos.backup.BackupActivity;
-import com.botpa.turbophotos.util.Album;
 import com.botpa.turbophotos.util.BackManager;
 import com.botpa.turbophotos.util.FileActionResult;
 import com.botpa.turbophotos.util.Library;
@@ -87,9 +85,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void hide() {
-            runOnUiThread(() -> {
-                loadIndicator.setVisibility(View.GONE);
-            });
+            runOnUiThread(() -> loadIndicator.setVisibility(View.GONE));
         }
     };
 

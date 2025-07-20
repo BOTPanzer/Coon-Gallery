@@ -11,11 +11,13 @@ import com.botpa.turbophotos.main.MainActivity;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Objects;
 
 public class Library {
 
-    //Album/Metadata links
+    //Links
     private static boolean linksLoaded = false;
 
     public static final ArrayList<Link> links = new ArrayList<>();
@@ -24,18 +26,16 @@ public class Library {
     //Trash
     private static boolean trashLoaded = false;
 
-    public static final Album trash = new Album(new File(""), new File(""), "Trash");
-    public static final HashMap<Album, ArrayList<TurboFile>> trashAlbumsMap = new HashMap<>();   //Albums of files in trash
+    public static final Album trash = new Album("Trash");
+    public static final HashMap<Album, ArrayList<TurboFile>> trashAlbumsMap = new HashMap<>(); //Albums of files in trash
     public static File trashFolder;
 
     //Albums
     private static long lastUpdate = 0;
 
+    public static final Album all = new Album("All");
     public static final ArrayList<Album> albums = new ArrayList<>();
-    public static final HashMap<String, Album> albumsMapPath = new HashMap<>(); //Uses absolute path as key
-
-    //Files
-    public static final ArrayList<TurboFile> allFiles = new ArrayList<>();
+    public static final HashMap<String, Album> albumsMap = new HashMap<>(); //Uses album path as key
 
 
     //Library
@@ -70,23 +70,29 @@ public class Library {
     }
 
     public static boolean loadLibrary(Context context, boolean reset) {
-        //Load links
+        //Load links & trash
         loadLinks(reset);
+        loadTrash(context, reset);
 
         //Reset
         if (reset) {
             //Reset last update timestamp
             lastUpdate = 0;
 
-            //Clear files from all files & albums
-            allFiles.clear();
+            //Clear files from albums
+            all.reset();
             for (Album album: albums) album.reset();
+
+            //Albums map doesn't get cleared so that the gallery can stay on the selected album on reload :D
         }
 
         //Get album files
         boolean updated = false;
         try (Cursor cursor = getMediaCursor(context)) {
-            //Get indexes for all variables
+            //Save last update timestamp
+            lastUpdate = System.currentTimeMillis();
+
+            //Get indexes for all columns
             int idxBucketDisplayName = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.BUCKET_DISPLAY_NAME);
             int idxLastModified = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATE_MODIFIED);
             int idxSize = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.SIZE);
@@ -106,17 +112,18 @@ public class Library {
                 Album album;
                 File parent = file.getParentFile();
                 String parentPath = parent != null ? parent.getAbsolutePath() : null;
-                if (albumsMapPath.containsKey(parentPath)) {
+                if (albumsMap.containsKey(parentPath)) {
                     //Has album -> Get it
-                    album = albumsMapPath.get(parentPath);
+                    album = albumsMap.get(parentPath);
                 } else {
                     //No album -> Create a new one
                     album = createAlbum(parent, bucketName);
                 }
+                assert album != null;
 
                 //Create file
                 TurboFile turboFile = new TurboFile(file, album, lastModified, size, isVideo, null);
-                Library.allFiles.add(turboFile);
+                all.add(turboFile);
                 album.add(turboFile);
 
                 //Mark library as updated
@@ -126,29 +133,37 @@ public class Library {
             Log.e("Library", "Error loading albums: " + e.getMessage());
         }
 
-        //Load trash
-        loadTrash(context, reset);
-
-        //Update albums list with non empty albums from map
+        //Remove unused albums & fill albums list
         albums.clear();
-        for (Album album: albumsMapPath.values()) {
-            if (album.isEmpty()) continue;
-            albums.add(album);
+        Iterator<Map.Entry<String, Album>> iterator = albumsMap.entrySet().iterator();
+        while (iterator.hasNext()) {
+            //Get album
+            Album album = iterator.next().getValue();
+
+            //Check if album is empty
+            if (album.isNotEmpty()) {
+                //Not empty -> Add it to albums list
+                albums.add(album);
+                continue;
+            }
+
+            //Check if album is used by trash files
+            if (trashAlbumsMap.containsKey(album)) continue;
+
+            //Empty album & not used in trash -> Delete
+            iterator.remove();
         }
 
-        //Sort all files & albums
-        sort(allFiles);
-        trash.sort();
+        //Sort albums & albums list
+        all.sort();
         for (Album album: albums) album.sort();
         sortAlbumsList();
 
-        //Save last update timestamp
-        lastUpdate = System.currentTimeMillis();
-
+        //Return true if the albums were updated
         return updated;
     }
 
-    //Album/Metadata links
+    //Links
     private static void loadLinks(boolean reset) {
         //Already loaded
         if (!reset && linksLoaded) return;
@@ -177,7 +192,7 @@ public class Library {
 
     public static boolean addLink(Link link) {
         //Check if link exists
-        String key = link.getAbsoluteImagesPath();
+        String key = link.getImagesPath();
         if (linksMap.containsKey(key)) return false;
 
         //Add link
@@ -191,8 +206,8 @@ public class Library {
         if (index < 0 || index >= links.size()) return false;
 
         //Remove link
-        linksMap.remove(links.get(index).getAbsoluteImagesPath());
-        links.remove(index);
+        Link link = links.remove(index);
+        linksMap.remove(link.getImagesPath());
         return true;
     }
 
@@ -202,7 +217,7 @@ public class Library {
         if (linksMap.containsKey(keyNew)) return false;
 
         //Update
-        String keyOld = links.get(index).getAbsoluteImagesPath();
+        String keyOld = links.get(index).getImagesPath();
         links.get(index).imagesFolder = newFolder;
         linksMap.put(keyNew, linksMap.get(keyOld));
         linksMap.remove(keyOld);
@@ -222,7 +237,7 @@ public class Library {
 
         //Init trash folder
         trashFolder = new File(context.getFilesDir().getAbsolutePath() + "/trash/");
-        boolean trashFolderCreated = trashFolder.mkdirs();
+        if (!trashFolder.exists() && trashFolder.mkdirs()) Log.e("TRASH", "Could not create trash folder");
 
         //Clear trash
         trash.reset();
@@ -249,40 +264,24 @@ public class Library {
             //Get album
             Album album;
             File originalFileParent = info.originalFile.getParentFile();
+            assert originalFileParent != null;
             String originalFileParentPath = originalFileParent.getAbsolutePath();
-            if (albumsMapPath.containsKey(originalFileParentPath)) {
+            if (albumsMap.containsKey(originalFileParentPath)) {
                 //Album exists -> Take it
-                album = albumsMapPath.get(originalFileParentPath);
+                album = albumsMap.get(originalFileParentPath);
             } else {
                 //Album does not exist -> Create it
                 album = createAlbum(originalFileParent, originalFileParent.getName());
             }
+            assert album != null;
 
             //Create file & add it to trash album
             addTrashFile(new TurboFile(info.trashFile, album, info.trashFile.lastModified(), info.trashFile.length(), info.isVideo(), info));
         }
+        trash.sort();
 
         //Trash was updated while loading -> Save it
         if (updated) Storage.putStringList("Settings.trash", trashUnparsed);
-    }
-
-    private static void addTrashFile(TurboFile file) {
-        //Add file to trash album
-        Library.trash.add(file);
-
-        //Add file to trash albums map
-        ArrayList<TurboFile> list = trashAlbumsMap.computeIfAbsent(file.album, key -> new ArrayList<>());   //Get list of files, create and save a new one if missing
-        list.add(file);
-    }
-
-    private static void removeTrashFile(int fileIndex) {
-        //Remove file from trash album
-        TurboFile file = Library.trash.remove(fileIndex);
-
-        //Remove file to trash albums map
-        ArrayList<TurboFile> list = trashAlbumsMap.computeIfAbsent(file.album, key -> new ArrayList<>());   //Get list of files, create and save a new one if missing
-        list.remove(file);
-        if (list.isEmpty()) trashAlbumsMap.remove(file.album);
     }
 
     private static void saveTrash() {
@@ -304,51 +303,100 @@ public class Library {
         Storage.putStringList("Settings.trash", list);
     }
 
-    //Albums
-    public static void sortAlbumsList() {
-        albums.sort((a1, a2) -> Long.compare(a2.get(0).lastModified, a1.get(0).lastModified));
+    private static void addTrashFile(TurboFile file) {
+        //Add file to trash album
+        trash.add(file);
+
+        //Add file to trash albums map
+        ArrayList<TurboFile> list = trashAlbumsMap.computeIfAbsent(file.album, key -> new ArrayList<>());   //Get list of files, create and save a new one if missing
+        list.add(file);
     }
 
-    public static Album createAlbum(File folder, String name) {
-        //Get folder path
-        String folderPath = folder != null ? folder.getAbsolutePath() : null;
+    private static void removeTrashFile(int fileIndex) {
+        //Remove file from trash album
+        TurboFile file = trash.remove(fileIndex);
 
-        //Get album link & metadata file
+        //Remove file to trash albums map
+        ArrayList<TurboFile> list = trashAlbumsMap.computeIfAbsent(file.album, key -> new ArrayList<>());   //Get list of files, create and save a new one if missing
+        list.remove(file);
+        if (list.isEmpty()) trashAlbumsMap.remove(file.album);
+    }
+
+    //Albums
+    private static Album createAlbum(File imagesFolder, String name) {
+        //Get folder path
+        String folderPath = imagesFolder != null ? imagesFolder.getAbsolutePath() : null;
+
+        //Get album link
         Link link = linksMap.getOrDefault(folderPath, null);
-        File metadataFile = link != null ? link.metadataFile : new File("");
+        boolean hasLink = link != null;
+
+        //Get metadata file
+        File metadataFile = hasLink ? link.metadataFile : null;
 
         //Create new album
-        Album album = new Album(folder, metadataFile, name);
+        Album album = new Album(name, imagesFolder, metadataFile);
 
         //Save album & assign it to its link
-        albumsMapPath.put(album.getAbsoluteImagesPath(), album);
-        if (link != null) link.album = album;
+        albumsMap.put(album.getImagesPath(), album);
+        if (hasLink) link.album = album;
 
         //Return album
         return album;
     }
 
-    public static void addAlbum(Album album) {
+    private static void addAlbum(Album album) {
         //Album is already in list
         if (albums.contains(album)) return;
 
         //Add album to list
         albums.add(album);
-        albumsMapPath.put(album.getAbsoluteImagesPath(), album);
+        albumsMap.put(album.getImagesPath(), album);
         sortAlbumsList();
     }
 
-    public static void removeAlbum(int index) {
+    private static void removeAlbum(int index) {
         //Remove album from list
         Album album = albums.remove(index);
 
         //Remove from maps if no files in trash are from this album
         if (!trashAlbumsMap.containsKey(album)) {
             //Album isn't in trash albums -> Remove it completely
-            albumsMapPath.remove(album.getAbsoluteImagesPath());
+            albumsMap.remove(album.getImagesPath());
         }
     }
 
+    private static void sortAlbumsList() {
+        albums.sort((a1, a2) -> Long.compare(a2.get(0).lastModified, a1.get(0).lastModified));
+    }
+
+    //Metadata
+    private static void loadMetadataHelper(LoadingIndicator indicator, Album album) {
+        //Already loaded
+        if (album.hasMetadata()) return;
+
+        //Check if images folder & metadata file exist
+        if (!album.exists()) return;
+
+        //Update load indicator
+        if (indicator != null) indicator.load(album.getName(), "metadata");
+
+        //Load metadata
+        album.loadMetadata();
+    }
+
+    public static void loadMetadata(LoadingIndicator indicator, Album album) {
+        //Check album
+        if (album == all) {
+            //All files album -> Load metadata from all albums
+            for (Album _album: albums) loadMetadataHelper(indicator, _album);
+        } else {
+            //Normal album -> Load album metadata
+            loadMetadataHelper(indicator, album);
+        }
+    }
+
+    //Actions
     public static FileActionResult deleteFile(TurboFile file) {
         //Create action result
         FileActionResult result = new FileActionResult(file);
@@ -369,14 +417,14 @@ public class Library {
             //Check if album was only used in trash and is now empty
             if (result.indexOfAlbum == -1 && !trashAlbumsMap.containsKey(file.album)) {
                 //Album is empty and no trash files are part of it -> Finish removing it it completely
-                albumsMapPath.remove(file.album.getAbsoluteImagesPath());
+                albumsMap.remove(file.album.getImagesPath());
             }
         }
 
         //Check if file is in all files
         if (result.indexInAll != -1) {
             //Is present -> Remove it
-            Library.allFiles.remove(result.indexInAll);
+            all.remove(result.indexInAll);
         }
 
         //Check if file is in album
@@ -387,11 +435,11 @@ public class Library {
             //Check if album needs to be deleted or sorted
             if (file.album.isEmpty()) {
                 //Album is empty -> Remove it from albums list
-                Library.removeAlbum(result.indexOfAlbum);
+                removeAlbum(result.indexOfAlbum);
                 result.deletedAlbum = true;
             } else if (result.indexInAlbum == 0) {
                 //Album isn't empty & deleted the first image -> Sort albums in case the order changed
-                Library.sortAlbumsList();
+                sortAlbumsList();
                 result.sortedAlbumsList = true;
             }
         }
@@ -433,7 +481,7 @@ public class Library {
         //Check if file is in all files
         if (result.indexInAll != -1) {
             //Is present -> Remove it
-            allFiles.remove(result.indexInAll);
+            all.remove(result.indexInAll);
         }
 
         //Check if file is in album
@@ -494,9 +542,9 @@ public class Library {
         }
 
         //Add file to all files
-        allFiles.add(file);
-        sort(Library.allFiles);
-        result.indexInAll = Library.allFiles.indexOf(file);
+        all.add(file);
+        all.sort();
+        result.indexInAll = all.indexOf(file);
 
         //Add file to album
         file.album.add(file);
@@ -521,36 +569,12 @@ public class Library {
         return result;
     }
 
-    //Metadata
-    public static void loadMetadata(LoadingIndicator indicator) {
-        //Load files from all albums
-        for (Album album: Library.albums) loadMetadata(indicator, album);
-    }
-
-    public static void loadMetadata(LoadingIndicator indicator, Album album) {
-        //Already loaded
-        if (album.hasMetadata()) return;
-
-        //Check if images folder & metadata file exist
-        if (!album.exists()) return;
-
-        //Update load indicator
-        if (indicator != null) indicator.load(album.getImagesFolder().getName(), "metadata");
-
-        //Load metadata
-        album.loadMetadata();
-    }
-
     //Util
     public interface LoadingIndicator {
         void search();
         void load(String content);
         void load(String folder, String type);
         void hide();
-    }
-
-    public static void sort(ArrayList<TurboFile> files) {
-        files.sort((f1, f2) -> Long.compare(f2.lastModified, f1.lastModified));
     }
 
 }

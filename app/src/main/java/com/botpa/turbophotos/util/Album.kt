@@ -3,28 +3,31 @@ package com.botpa.turbophotos.util
 import com.fasterxml.jackson.databind.node.ObjectNode
 import java.io.File
 
-class Album(var imagesFolder: File, var metadataFile: File, val name: String) {
+class Album(val name: String, val imagesFolder: File?, val metadataFile: File?) {
+
+    constructor(name: String) : this(name, null, null)
 
     //Album info
     @JvmField var metadata: ObjectNode? = null
-    @JvmField var files: ArrayList<TurboFile> = ArrayList()
-    var lastModified: Long = imagesFolder.lastModified()
-    val absoluteImagesPath: String = imagesFolder.absolutePath
-    val absoluteMetadataPath: String = metadataFile.absolutePath
+    @JvmField val files: ArrayList<TurboFile> = ArrayList()
+    var lastModified: Long = if (imagesFolder == null) 0 else imagesFolder.lastModified()
+    val imagesPath: String = if (imagesFolder == null) "" else imagesFolder.absolutePath
+    val metadataPath: String = if (metadataFile == null) "" else metadataFile.absolutePath
 
 
     //Util
     fun exists(): Boolean {
-        return imagesFolder.exists() && metadataFile.exists()
+        return imagesFolder != null && metadataFile != null && imagesFolder.exists() && metadataFile.exists()
     }
 
+    //Files
     fun sort() {
-        Library.sort(files)
+        files.sortByDescending { lastModified }
     }
 
     fun reset() {
         files.clear()
-        lastModified = imagesFolder.lastModified()
+        lastModified = if (imagesFolder != null) imagesFolder.lastModified() else 0
     }
 
     fun size(): Int {
@@ -45,10 +48,6 @@ class Album(var imagesFolder: File, var metadataFile: File, val name: String) {
 
     fun add(file: TurboFile) {
         files.add(file)
-    }
-
-    fun remove(file: TurboFile) {
-        files.remove(file)
     }
 
     fun remove(index: Int): TurboFile {
@@ -97,7 +96,7 @@ class Album(var imagesFolder: File, var metadataFile: File, val name: String) {
 
     //Override toString to be able to save albums in a string
     override fun toString(): String {
-        return "$absoluteImagesPath\n$absoluteMetadataPath"
+        return "$imagesPath\n$metadataPath"
     }
 
 }

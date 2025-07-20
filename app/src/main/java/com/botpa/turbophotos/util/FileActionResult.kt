@@ -22,7 +22,7 @@ class FileActionResult(file: TurboFile) {
 
     //Indexes
     @JvmField var indexInTrash: Int = Library.trash.indexOf(file)
-    @JvmField var indexInAll: Int = Library.allFiles.indexOf(file)
+    @JvmField var indexInAll: Int = Library.all.indexOf(file)
     @JvmField var indexInAlbum: Int = file.album.indexOf(file)
     @JvmField var indexOfAlbum: Int = Library.albums.indexOf(file.album)
 

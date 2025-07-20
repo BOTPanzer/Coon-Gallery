@@ -9,13 +9,13 @@ class Link(imagesPath: String, metadataPath: String) {
     @JvmField var album: Album? = null
 
     //Getters
-    val absoluteImagesPath: String get() = imagesFolder.absolutePath
-    val absoluteMetadataPath: String get() = metadataFile.absolutePath
+    val imagesPath: String get() = imagesFolder.absolutePath
+    val metadataPath: String get() = metadataFile.absolutePath
 
 
     //Override toString to be able to save albums in a string
     override fun toString(): String {
-        return "$absoluteImagesPath\n$absoluteMetadataPath"
+        return "$imagesPath\n$metadataPath"
     }
 
     //Static
