@@ -207,15 +207,8 @@ public class DisplayHelper {
             //Close options menu
             showOptions(false);
 
-            //Show delete confirmation dialog
-            new MaterialAlertDialogBuilder(activity)
-                    .setMessage("Are you sure you want to permanently delete \"" + current.getName() + "\"?")
-                    .setIcon(android.R.drawable.ic_dialog_alert)
-                    .setNegativeButton("Cancel", null)
-                    .setPositiveButton("Delete", (dialog, whichButton) -> {
-                        activity.deleteFile(current);
-                    })
-                    .show();
+            //Delete files
+            activity.deleteFiles(new TurboFile[] { current });
         });
 
         optionsShare.setOnClickListener(view -> {

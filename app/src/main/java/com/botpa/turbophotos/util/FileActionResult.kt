@@ -31,7 +31,7 @@ class FileActionResult(file: TurboFile) {
     @JvmField var indexOfAlbum: Int = Library.albums.indexOf(file.album)
 
     //Results
-    @JvmField var deletedAlbum: Boolean = false
+    @JvmField var albumDeleted: Boolean = false
     @JvmField var sortedAlbumsList: Boolean = false
     @JvmField var trashState: String = TRASH_NONE
 

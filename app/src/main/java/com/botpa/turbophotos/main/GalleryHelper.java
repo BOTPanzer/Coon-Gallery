@@ -114,6 +114,12 @@ public class GalleryHelper {
         //Options
         optionsButton.setOnClickListener(view -> showOptions(true));
 
+        optionsButton.setOnLongClickListener(v -> {
+            //Reload gallery
+            activity.recreate();
+            return true;
+        });
+
         optionsLayout.setOnClickListener(view -> showOptions(false));
 
         optionsSettings.setOnClickListener(view -> {
@@ -125,12 +131,6 @@ public class GalleryHelper {
 
             //Open settings
             activity.startActivity(new Intent(activity, SettingsActivity.class));
-        });
-
-        optionsSettings.setOnLongClickListener(v -> {
-            //Reload gallery
-            activity.recreate();
-            return true;
         });
 
         optionsBackup.setOnClickListener(view -> {
@@ -154,6 +154,11 @@ public class GalleryHelper {
         optionsDelete.setOnClickListener(view -> {
             //Close options menu
             showOptions(false);
+
+            //Delete files
+            ArrayList<TurboFile> deleteFiles = new ArrayList<>(selected.size());
+            for (int index: selected) deleteFiles.add(files.get(index));
+            activity.deleteFiles(deleteFiles.toArray(new TurboFile[0]));
         });
 
         optionsShare.setOnClickListener(view -> {
@@ -238,7 +243,7 @@ public class GalleryHelper {
             boolean inTrash = album == Library.trash;
             optionsRestore.setVisibility(View.GONE); //optionsRestore.setVisibility(isSelecting && inTrash ? View.VISIBLE : View.GONE);
             optionsTrash.setVisibility(View.GONE); //optionsTrash.setVisibility(isSelecting && !inTrash ? View.VISIBLE : View.GONE);
-            optionsDelete.setVisibility(View.GONE); //optionsDelete.setVisibility(isSelecting ? View.VISIBLE : View.GONE);
+            optionsDelete.setVisibility(isSelecting ? View.VISIBLE : View.GONE);
             optionsShare.setVisibility(isSelecting && !inTrash ? View.VISIBLE : View.GONE);
 
             //Show
@@ -293,14 +298,16 @@ public class GalleryHelper {
         title.setText(album.getName() + (selected.isEmpty() ? "" : " (" + selected.size() + " selected)"));
     }
 
-    private void unselectAll() {
+    public void unselectAll() {
         //Remove back event
         activity.backManager.unregister("selected");
 
         //Unselect all
-        HashSet<Integer> tmp = new HashSet<>(selected);
-        selected.clear();
-        for (Integer index: tmp) albumAdapter.notifyItemChanged(index);
+        if (!selected.isEmpty()) {
+            HashSet<Integer> tmp = new HashSet<>(selected);
+            selected.clear();
+            for (Integer index: tmp) albumAdapter.notifyItemChanged(index);
+        }
 
         //Update gallery title
         title.setText(album.getName());

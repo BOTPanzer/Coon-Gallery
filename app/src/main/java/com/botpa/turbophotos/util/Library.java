@@ -397,110 +397,72 @@ public class Library {
     }
 
     //Actions
-    /*public static FileActionResult deleteFiles(TurboFile[] files) {
+    public static Action deleteFiles(TurboFile[] files) {
+        //Create action
+        Action action = new Action(Action.TYPE_DELETE, files);
 
+        //Delete files
+        for (TurboFile file : files) {
+            //Delete file
+            boolean deleted = Orion.deleteFile(file.file);
+            if (!deleted) {
+                //Failed to delete file
+                action.failed.put(file, "Error while deleting the file");
+                continue;
+            }
 
-        //Create action result
-        FileActionResult result = new FileActionResult(file);
+            //Get album & action helper
+            Album album = file.album;
+            ActionHelper helper = action.getHelper(file);
 
-        //Delete file
-        Orion.deleteFile(file.file);
+            //Delete file metadata from album
+            album.removeMetadataKey(file.getName());
+            album.saveMetadata();
 
-        //Delete file metadata from album
-        file.album.removeMetadataKey(file.getName());
-        file.album.saveMetadata();
+            //Check if file is in trash
+            if (helper.indexInTrash != -1) {
+                //Is present -> Remove it
+                removeTrashFile(helper.indexInTrash);
+                action.trashChanged = trash.isEmpty() ? Action.TRASH_REMOVED : Action.TRASH_UPDATED;
 
-        //Check if file is in trash
-        if (result.indexInTrash != -1) {
-            //Is present -> Remove it
-            removeTrashFile(result.indexInTrash);
-            saveTrash();
+                //Check to finish removing album
+                if (helper.indexOfAlbum == -1 && !trashAlbumsMap.containsKey(file.album)) {
+                    //Album not used in albums list nor in trash files -> Finish removing it completely
+                    albumsMap.remove(album.getImagesPath());
+                }
+            }
 
-            //Check if album was only used in trash and is now empty
-            if (result.indexOfAlbum == -1 && !trashAlbumsMap.containsKey(file.album)) {
-                //Album is empty and no trash files are part of it -> Finish removing it it completely
-                albumsMap.remove(file.album.getImagesPath());
+            //Check if file is in all files
+            if (helper.indexInAll != -1) {
+                //Is present -> Remove it
+                all.remove(helper.indexInAll);
+            }
+
+            //Check if file is in album
+            if (helper.indexInAlbum != -1) {
+                //Is present -> Remove it
+                album.remove(helper.indexInAlbum);
+
+                //Check if album needs to be deleted or sorted
+                if (album.isEmpty()) {
+                    //Album is empty -> Remove it & mark it as deleted
+                    removeAlbum(helper.indexOfAlbum);
+                    action.deletedAlbums.add(helper.indexOfAlbum);
+                } else if (helper.indexInAlbum == 0) {
+                    //Album isn't empty & first image was deleted -> Sort albums list in case the order changed
+                    action.sortedAlbumsList = true;
+                }
             }
         }
 
-        //Check if file is in all files
-        if (result.indexInAll != -1) {
-            //Is present -> Remove it
-            all.remove(result.indexInAll);
-        }
+        //Save trash
+        if (action.trashChanged != Action.TRASH_NONE) saveTrash();
 
-        //Check if file is in album
-        if (result.indexInAlbum != -1) {
-            //Is present -> Remove it
-            file.album.remove(result.indexInAlbum);
+        //Sort albums list
+        if (action.sortedAlbumsList) sortAlbumsList();
 
-            //Check if album needs to be deleted or sorted
-            if (file.album.isEmpty()) {
-                //Album is empty -> Remove it from albums list
-                removeAlbum(result.indexOfAlbum);
-                result.deletedAlbum = true;
-            } else if (result.indexInAlbum == 0) {
-                //Album isn't empty & deleted the first image -> Sort albums in case the order changed
-                sortAlbumsList();
-                result.sortedAlbumsList = true;
-            }
-        }
-
-        //Return action result
-        result.type = FileActionResult.ACTION_DELETE;
-        return result;
-    }*/
-
-    public static FileActionResult deleteFile(TurboFile file) {
-        //Create action result
-        FileActionResult result = new FileActionResult(file);
-
-        //Delete file
-        Orion.deleteFile(file.file);
-
-        //Delete file metadata from album
-        file.album.removeMetadataKey(file.getName());
-        file.album.saveMetadata();
-
-        //Check if file is in trash
-        if (result.indexInTrash != -1) {
-            //Is present -> Remove it
-            removeTrashFile(result.indexInTrash);
-            saveTrash();
-
-            //Check if album was only used in trash and is now empty
-            if (result.indexOfAlbum == -1 && !trashAlbumsMap.containsKey(file.album)) {
-                //Album is empty and no trash files are part of it -> Finish removing it it completely
-                albumsMap.remove(file.album.getImagesPath());
-            }
-        }
-
-        //Check if file is in all files
-        if (result.indexInAll != -1) {
-            //Is present -> Remove it
-            all.remove(result.indexInAll);
-        }
-
-        //Check if file is in album
-        if (result.indexInAlbum != -1) {
-            //Is present -> Remove it
-            file.album.remove(result.indexInAlbum);
-
-            //Check if album needs to be deleted or sorted
-            if (file.album.isEmpty()) {
-                //Album is empty -> Remove it from albums list
-                removeAlbum(result.indexOfAlbum);
-                result.deletedAlbum = true;
-            } else if (result.indexInAlbum == 0) {
-                //Album isn't empty & deleted the first image -> Sort albums in case the order changed
-                sortAlbumsList();
-                result.sortedAlbumsList = true;
-            }
-        }
-
-        //Return action result
-        result.type = FileActionResult.ACTION_DELETE;
-        return result;
+        //Return action
+        return action;
     }
 
     public static FileActionResult trashFile(Context context, TurboFile file) {
@@ -547,7 +509,7 @@ public class Library {
             if (file.album.isEmpty()) {
                 //Album is empty -> Remove it from albums list
                 removeAlbum(result.indexOfAlbum);
-                result.deletedAlbum = true;
+                result.albumDeleted = true;
             } else if (result.indexInAlbum == 0) {
                 //Album isn't empty & deleted the first image -> Sort albums in case the order changed
                 sortAlbumsList();
@@ -627,10 +589,12 @@ public class Library {
 
     //Util
     public interface LoadingIndicator {
+
         void search();
         void load(String content);
         void load(String folder, String type);
         void hide();
+
     }
 
 }

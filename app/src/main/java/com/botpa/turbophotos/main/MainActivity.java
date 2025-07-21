@@ -22,6 +22,7 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 
+import com.botpa.turbophotos.util.Action;
 import com.botpa.turbophotos.util.BackManager;
 import com.botpa.turbophotos.util.FileActionResult;
 import com.botpa.turbophotos.util.Library;
@@ -29,6 +30,7 @@ import com.botpa.turbophotos.R;
 import com.botpa.turbophotos.util.Orion;
 import com.botpa.turbophotos.util.Storage;
 import com.botpa.turbophotos.util.TurboFile;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
 
@@ -279,6 +281,103 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //Actions
+    private void manageAction(Action result) {
+        //No action
+        if (result.isOfType(Action.TYPE_NONE)) return;
+
+        //Failed actions
+        if (!result.failed.isEmpty()) {
+            if (result.failed.size() == 1) {
+                //Only 1 failed -> Show error
+                Orion.snack(MainActivity.this, result.failed.entrySet().iterator().next().getValue());
+            } else if (!result.allFailed()) {
+                //More than 1 failed -> Show general error
+                Orion.snack(MainActivity.this, "Failed to perform " + result.failed.size() + " actions");
+            } else {
+                //All failed -> Show general error
+                Orion.snack(MainActivity.this, "Failed to perform all actions");
+                return;
+            }
+        }
+
+        //Check if albums list was changed
+        if (result.sortedAlbumsList) {
+            //Sorted albums list -> Notify all
+            gallery.homeAdapter.notifyDataSetChanged();
+        } else {
+            //Check if trash was added, removed or updated
+            switch (result.trashChanged) {
+                case Action.TRASH_ADDED:
+                    gallery.homeAdapter.notifyItemInserted(0);
+                    break;
+                case Action.TRASH_REMOVED:
+                    gallery.homeAdapter.notifyItemRemoved(0);
+                    break;
+                case Action.TRASH_UPDATED:
+                    gallery.homeAdapter.notifyItemChanged(0);
+                    break;
+            }
+
+            //Check if albums were deleted
+            if (!result.deletedAlbums.isEmpty()) {
+                //Deleted albums -> Notify items removed
+                for (int index : result.deletedAlbums) {
+                    gallery.homeAdapter.notifyItemRemoved(index + gallery.homeAdapter.getIndexOffset());
+                }
+            }
+        }
+
+        //Check if files are in gallery list
+        for (TurboFile file : result.files) {
+            //Check if image is in gallery list
+            int indexInGallery = gallery.files.indexOf(file);
+            if (indexInGallery == -1) continue;
+
+            //Is present -> Remove it & update adapter
+            gallery.files.remove(indexInGallery);
+            gallery.selected.remove(indexInGallery);
+            gallery.albumAdapter.notifyItemRemoved(indexInGallery);
+
+            //Check if gallery is empty
+            if (gallery.files.isEmpty()) {
+                //Is empty -> Close display list & return to albums
+                display.close();
+                gallery.showAlbumsList(true);
+                break;
+            }
+
+            //Check if file is open in display
+            if (display.isOpen && display.files.contains(file)) {
+                //Display list is visible -> Check if a new image can be selected
+                if (display.current != file) {
+                    //File is in display list but is not selected -> Reselect image to reset list
+                    display.open(indexInGallery);
+                } else if (display.currentRelativeIndex != display.files.size() - 1) {
+                    //An image is available next -> Select it
+                    display.open(indexInGallery);   //Next image would be the same index since this image was deleted
+                } else if (display.currentRelativeIndex != 0) {
+                    //An image is available before -> Select it
+                    display.open(indexInGallery - 1);
+                }
+            }
+        }
+
+        //Remove select back callback if no more files are selected
+        if (gallery.selected.isEmpty()) gallery.unselectAll();
+    }
+
+    public void deleteFiles(TurboFile[] files) {
+        //Delete file & consume action result
+        new MaterialAlertDialogBuilder(MainActivity.this)
+                .setMessage("Are you sure you want to permanently delete " + (files.length == 1 ? "\"" + files[0].getName() + "\"" : files.length + " files") + "?")
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("Delete", (dialog, whichButton) -> {
+                    manageAction(Library.deleteFiles(files));
+                })
+                .show();
+    }
+
     public void shareFiles(TurboFile[] files) {
         //No files
         if (files.length == 0) return;
@@ -301,21 +400,6 @@ public class MainActivity extends AppCompatActivity {
         startActivity(Intent.createChooser(intent, null));
     }
 
-    public void deleteFile(TurboFile file) {
-        //Delete file & consume action result
-        manageActionResult(file, Library.deleteFile(file));
-    }
-
-    public void trashFile(TurboFile file) {
-        //Trash file & consume action result
-        manageActionResult(file, Library.trashFile(MainActivity.this, file));
-    }
-
-    public void restoreFile(TurboFile file) {
-        //Restore file & manage action result
-        manageActionResult(file, Library.restoreFile(MainActivity.this, file));
-    }
-
     private void manageActionResult(TurboFile file, FileActionResult result) {
         //Action was not performed
         if (result.type.equals(FileActionResult.ACTION_NONE)) {
@@ -327,8 +411,8 @@ public class MainActivity extends AppCompatActivity {
         if (result.sortedAlbumsList) {
             //Sorted albums list -> Notify all
             gallery.homeAdapter.notifyDataSetChanged();
-        } else if (!result.deletedAlbum) {
-            //Deleted album -> Notify item removed
+        } else if (!result.albumDeleted) {
+            //Album deleted -> Notify item removed
             gallery.homeAdapter.notifyItemRemoved(result.indexOfAlbum);
         } else if (result.isType(FileActionResult.ACTION_TRASH) || result.isType(FileActionResult.ACTION_RESTORE)) {
             //Notify if trash was added, removed or updated
@@ -369,6 +453,16 @@ public class MainActivity extends AppCompatActivity {
                 display.open(indexInGallery - 1);
             }
         }
+    }
+
+    public void trashFile(TurboFile file) {
+        //Trash file & consume action result
+        manageActionResult(file, Library.trashFile(MainActivity.this, file));
+    }
+
+    public void restoreFile(TurboFile file) {
+        //Restore file & manage action result
+        manageActionResult(file, Library.restoreFile(MainActivity.this, file));
     }
 
 }

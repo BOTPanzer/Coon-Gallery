@@ -45,11 +45,11 @@ class GalleryHomeAdapter(private val context: Context, private val albums: Array
     }
 
     //Helpers
-    private fun getIndexOffset(): Int {
+    fun getIndexOffset(): Int {
         return if (Library.trash.isEmpty()) 1 else 2
     }
 
-    private fun getAlbumFromIndex(index: Int): Album {
+    fun getAlbumFromIndex(index: Int): Album {
         return when (index) {
             -2 -> Library.trash
             -1 -> Library.all
