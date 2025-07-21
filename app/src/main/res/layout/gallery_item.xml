@@ -19,7 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <androidx.cardview.widget.CardView
+            <com.google.android.material.card.MaterialCardView
                 android:id="@+id/imageCard"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
@@ -30,7 +30,9 @@
                 app:layout_constraintDimensionRatio="1:1"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
+                app:layout_constraintTop_toTopOf="parent"
+                app:strokeColor="#00000000"
+                app:strokeWidth="4dp">
 
                 <RelativeLayout
                     android:layout_width="match_parent"
@@ -99,7 +101,7 @@
 
                 </RelativeLayout>
 
-            </androidx.cardview.widget.CardView>
+            </com.google.android.material.card.MaterialCardView>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

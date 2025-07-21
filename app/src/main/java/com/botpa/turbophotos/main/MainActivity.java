@@ -32,6 +32,8 @@ import com.botpa.turbophotos.util.Storage;
 import com.botpa.turbophotos.util.TurboFile;
 import com.botpa.turbophotos.settings.SettingsActivity;
 
+import java.util.ArrayList;
+
 @SuppressLint({"SetTextI18n", "NotifyDataSetChanged"})
 public class MainActivity extends AppCompatActivity {
 
@@ -144,10 +146,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadViews() {
-        //Navbar
-        backup = findViewById(R.id.backup);
-        settings = findViewById(R.id.settings);
-
         //Load indicator
         loadIndicator = findViewById(R.id.loadIndicator);
         loadIndicatorText = findViewById(R.id.loadIndicatorText);
@@ -160,26 +158,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void addListeners() {
-        //Navbar
-        backup.setOnClickListener(view -> {
-            //Open backup
-            startActivity(new Intent(MainActivity.this, BackupActivity.class));
-        });
-
-        settings.setOnClickListener(view -> {
-            //Close search
-            if (!gallery.inHome) gallery.showSearchLayout(false);
-
-            //Open settings
-            startActivity(new Intent(MainActivity.this, SettingsActivity.class));
-        });
-
-        settings.setOnLongClickListener(v -> {
-            //Reload gallery
-            recreate();
-            return true;
-        });
-
         //Gallery & Search
         gallery.addListeners();
 
@@ -302,7 +280,29 @@ public class MainActivity extends AppCompatActivity {
         checkPermissions();
     }
 
-    //Gallery
+    //Actions
+    public void shareFiles(TurboFile[] files) {
+        //No files
+        if (files.length == 0) return;
+
+        //Share files
+        Intent intent;
+        if (files.length == 1) {
+            //Share 1 file
+            intent = new Intent(Intent.ACTION_SEND);
+            intent.putExtra(Intent.EXTRA_STREAM, Orion.getUriFromFile(MainActivity.this, files[0].file));
+            intent.setType(files[0].getMimeType());
+        } else {
+            //Share multiple files
+            intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
+            ArrayList<Uri> URIs = new ArrayList<>();
+            for (TurboFile file : files) URIs.add(Orion.getUriFromFile(MainActivity.this, file.file));
+            intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, URIs);
+            intent.setType("*/*");
+        }
+        startActivity(Intent.createChooser(intent, null));
+    }
+
     public void deleteFile(TurboFile file) {
         //Delete file & consume action result
         manageActionResult(file, Library.deleteFile(file));
@@ -343,6 +343,7 @@ public class MainActivity extends AppCompatActivity {
 
         //Is present -> Remove it & update adapter
         gallery.files.remove(indexInGallery);
+        gallery.selected.remove(indexInGallery);
         gallery.albumAdapter.notifyItemRemoved(indexInGallery);
 
         //Check gallery needs to be closed or select a new image

@@ -37,7 +37,7 @@ class GalleryHomeAdapter(private val context: Context, private val albums: Array
         holder.info.text = album.size().toString() + " items"
 
         //Add listeners
-        holder.background.setOnClickListener { view: View -> onClickListener?.onItemClick(view, album) }
+        holder.background.setOnClickListener { view: View -> onClickListener?.onClick(view, album) }
     }
 
     override fun getItemCount(): Int {
@@ -58,14 +58,14 @@ class GalleryHomeAdapter(private val context: Context, private val albums: Array
     }
 
     //Listeners
-    private var onClickListener: ClickListener? = null
+    private var onClickListener: OnClickListener? = null
 
-    fun interface ClickListener {
-        fun onItemClick(view: View, album: Album)
+    fun interface OnClickListener {
+        fun onClick(view: View, album: Album)
     }
 
-    fun setOnClickListener(onItemClickListener: ClickListener?) {
-        this.onClickListener = onItemClickListener
+    fun setOnClickListener(onClickListener: OnClickListener?) {
+        this.onClickListener = onClickListener
     }
 
     //Holder

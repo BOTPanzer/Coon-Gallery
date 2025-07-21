@@ -127,7 +127,7 @@ public class DisplayHelper {
         });
 
         //Info & edit
-        infoButton.setOnClickListener(view -> showInfo(infoLayout.getVisibility() != View.VISIBLE));
+        infoButton.setOnClickListener(view -> showInfo(true));
 
         infoLayout.setOnClickListener(view -> showInfo(false));
 
@@ -183,9 +183,7 @@ public class DisplayHelper {
         });
 
         //Options
-        optionsButton.setOnClickListener(view -> {
-            showOptions(optionsLayout.getVisibility() != View.VISIBLE);
-        });
+        optionsButton.setOnClickListener(view -> showOptions(true));
 
         optionsLayout.setOnClickListener(view -> showOptions(false));
 
@@ -225,10 +223,7 @@ public class DisplayHelper {
             showOptions(false);
 
             //Share
-            Intent intent = new Intent(Intent.ACTION_SEND);
-            intent.putExtra(Intent.EXTRA_STREAM, Orion.getUriFromFile(activity, current.file));
-            intent.setType(current.getMimeType());
-            activity.startActivity(Intent.createChooser(intent, null));
+            activity.shareFiles(new TurboFile[]{ current });
         });
 
         optionsEdit.setOnClickListener(view -> {
@@ -287,7 +282,7 @@ public class DisplayHelper {
     private void showOptions(boolean show) {
         if (show) {
             Orion.showAnim(optionsLayout);
-            activity.backManager.register("displayOptions", () -> optionsButton.performClick());
+            activity.backManager.register("displayOptions", () -> showOptions(false));
         } else {
             Orion.hideAnim(optionsLayout);
             activity.backManager.unregister("displayOptions");

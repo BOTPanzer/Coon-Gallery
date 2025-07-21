@@ -42,6 +42,6 @@ class BackManager(owner: LifecycleOwner, dispatcher: OnBackPressedDispatcher) {
         onBackPressedOrder.remove(name)
 
         //Toggle back button
-        onBackPressed.isEnabled = !onBackPressedOrder.isEmpty()
+        onBackPressed.isEnabled = onBackPressedOrder.isNotEmpty()
     }
 }

@@ -1,6 +1,7 @@
 package com.botpa.turbophotos.main;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Parcelable;
 import android.view.KeyEvent;
 import android.view.View;
@@ -11,6 +12,8 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.botpa.turbophotos.R;
+import com.botpa.turbophotos.backup.BackupActivity;
+import com.botpa.turbophotos.settings.SettingsActivity;
 import com.botpa.turbophotos.util.Album;
 import com.botpa.turbophotos.util.Library;
 import com.botpa.turbophotos.util.Orion;
@@ -22,6 +25,7 @@ import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 @SuppressLint({"SetTextI18n", "NotifyDataSetChanged"})
 public class GalleryHelper {
@@ -38,6 +42,7 @@ public class GalleryHelper {
     private ArrayList<TurboFile> filesUnfiltered = new ArrayList<>();
 
     public final ArrayList<TurboFile> files = new ArrayList<>();
+    public final HashSet<Integer> selected = new HashSet<>();
 
     //Adapters
     private Parcelable listScroll;
@@ -49,6 +54,16 @@ public class GalleryHelper {
     //Views
     private TextView title;
     private TextView subtitle;
+
+    private View optionsButton;
+
+    private View optionsLayout;
+    private View optionsSettings;
+    private View optionsBackup;
+    private View optionsRestore;
+    private View optionsTrash;
+    private View optionsDelete;
+    private View optionsShare;
 
     private SwipeRefreshLayout refreshLayout;
     private FastScrollRecyclerView list;
@@ -68,9 +83,21 @@ public class GalleryHelper {
 
     //Views
     public void loadViews() {
-        //Gallery
+        //Navbar
         title = activity.findViewById(R.id.galleryTitle);
         subtitle = activity.findViewById(R.id.gallerySubtitle);
+        optionsButton = activity.findViewById(R.id.galleryOptions);
+
+        //Options
+        optionsLayout = activity.findViewById(R.id.galleryOptionsLayout);
+        optionsSettings = activity.findViewById(R.id.galleryOptionsSettings);
+        optionsBackup = activity.findViewById(R.id.galleryOptionsBackup);
+        optionsRestore = activity.findViewById(R.id.galleryOptionsRestore);
+        optionsTrash = activity.findViewById(R.id.galleryOptionsTrash);
+        optionsDelete = activity.findViewById(R.id.galleryOptionsDelete);
+        optionsShare = activity.findViewById(R.id.galleryOptionsShare);
+
+        //Gallery
         refreshLayout = activity.findViewById(R.id.galleryRefreshLayout);
         list = activity.findViewById(R.id.gallery);
 
@@ -84,6 +111,61 @@ public class GalleryHelper {
     }
 
     public void addListeners() {
+        //Options
+        optionsButton.setOnClickListener(view -> showOptions(true));
+
+        optionsLayout.setOnClickListener(view -> showOptions(false));
+
+        optionsSettings.setOnClickListener(view -> {
+            //Close options menu
+            showOptions(false);
+
+            //Close search
+            if (!inHome) showSearchLayout(false);
+
+            //Open settings
+            activity.startActivity(new Intent(activity, SettingsActivity.class));
+        });
+
+        optionsSettings.setOnLongClickListener(v -> {
+            //Reload gallery
+            activity.recreate();
+            return true;
+        });
+
+        optionsBackup.setOnClickListener(view -> {
+            //Close options menu
+            showOptions(false);
+
+            //Open backup
+            activity.startActivity(new Intent(activity, BackupActivity.class));
+        });
+
+        optionsRestore.setOnClickListener(view -> {
+            //Close options menu
+            showOptions(false);
+        });
+
+        optionsTrash.setOnClickListener(view -> {
+            //Close options menu
+            showOptions(false);
+        });
+
+        optionsDelete.setOnClickListener(view -> {
+            //Close options menu
+            showOptions(false);
+        });
+
+        optionsShare.setOnClickListener(view -> {
+            //Close options menu
+            showOptions(false);
+
+            //Share
+            ArrayList<TurboFile> shareFiles = new ArrayList<>(selected.size());
+            for (int index: selected) shareFiles.add(files.get(index));
+            activity.shareFiles(shareFiles.toArray(new TurboFile[0]));
+        });
+
         //Gallery
         refreshLayout.setOnRefreshListener(() -> {
             //Refresh gallery
@@ -148,6 +230,26 @@ public class GalleryHelper {
         }
     }
 
+    //Options
+    private void showOptions(boolean show) {
+        if (show) {
+            //Toggle buttons
+            boolean isSelecting = !selected.isEmpty();
+            boolean inTrash = album == Library.trash;
+            optionsRestore.setVisibility(View.GONE); //optionsRestore.setVisibility(isSelecting && inTrash ? View.VISIBLE : View.GONE);
+            optionsTrash.setVisibility(View.GONE); //optionsTrash.setVisibility(isSelecting && !inTrash ? View.VISIBLE : View.GONE);
+            optionsDelete.setVisibility(View.GONE); //optionsDelete.setVisibility(isSelecting ? View.VISIBLE : View.GONE);
+            optionsShare.setVisibility(isSelecting && !inTrash ? View.VISIBLE : View.GONE);
+
+            //Show
+            Orion.showAnim(optionsLayout);
+            activity.backManager.register("galleryOptions", () -> showOptions(false));
+        } else {
+            Orion.hideAnim(optionsLayout);
+            activity.backManager.unregister("galleryOptions");
+        }
+    }
+
     //Gallery
     private void loadMetadata(Album album) {
         //Start loading
@@ -170,6 +272,40 @@ public class GalleryHelper {
         }).start();
     }
 
+    private void toggleSelected(int index) {
+        //Check if item is selected
+        if (selected.contains(index)) {
+            //Remove item
+            selected.remove(index);
+
+            //No more selected items -> Remove back event
+            if (selected.isEmpty()) activity.backManager.unregister("selected");
+        } else {
+            //First item to be selected -> Add back event
+            if (selected.isEmpty()) activity.backManager.register("selected", this::unselectAll);
+
+            //Add item
+            selected.add(index);
+        }
+        albumAdapter.notifyItemChanged(index);
+
+        //Update gallery title
+        title.setText(album.getName() + (selected.isEmpty() ? "" : " (" + selected.size() + " selected)"));
+    }
+
+    private void unselectAll() {
+        //Remove back event
+        activity.backManager.unregister("selected");
+
+        //Unselect all
+        HashSet<Integer> tmp = new HashSet<>(selected);
+        selected.clear();
+        for (Integer index: tmp) albumAdapter.notifyItemChanged(index);
+
+        //Update gallery title
+        title.setText(album.getName());
+    }
+
     public void initAdapters() {
         //Create gallery list viewer
         layoutManager = new GridLayoutManager(activity, Storage.getInt("Settings.galleryAlbumsPerRow", 3));
@@ -184,10 +320,26 @@ public class GalleryHelper {
         list.setAdapter(homeAdapter);
 
         //Init album adapter
-        albumAdapter = new GalleryAlbumAdapter(activity, files, Storage.getBool("Settings.showMissingMetadataIcon", false));
-        albumAdapter.setOnItemClickListener((view, index) -> {
+        albumAdapter = new GalleryAlbumAdapter(activity, files, selected, Storage.getBool("Settings.showMissingMetadataIcon", false));
+        albumAdapter.setOnClickListener((view, index) -> {
+            //Loading metadata -> Return
             if (!hasLoadedMetadata) return;
-            activity.display.open(index);
+
+            //Check if selecting
+            if (!selected.isEmpty()) {
+                //Selecting -> Toggle selected
+                toggleSelected(index);
+            } else {
+                //Not selecting -> Open image
+                activity.display.open(index);
+            }
+        });
+        albumAdapter.setOnLongClickListener((view, index) -> {
+            //Toggle item selected
+            toggleSelected(index);
+
+            //Consume click
+            return true;
         });
     }
 
@@ -270,9 +422,6 @@ public class GalleryHelper {
         //Change gallery title
         title.setText(album.getName());
 
-        //Reset search input
-        searchInput.setText("");
-
         //Load album
         filesUnfiltered = album.files;
         loadMetadata(album);
@@ -329,16 +478,18 @@ public class GalleryHelper {
         if (isSearching || (!hasLoadedMetadata && isFiltering)) return;
 
         //Update subtitle
-        subtitle.setText(isFiltering ? "Search: " + filter : "");
+        subtitle.setText(isFiltering ? "Search: " + filterText : "");
         subtitle.setVisibility(isFiltering ? View.VISIBLE : View.GONE);
 
         //Start search
         isSearching = true;
+        searchInput.setText(filterText);
         if (isFiltering) activity.loadingIndicator.search();
         showSearchLayout(false);
 
         //Clear files list
         files.clear();
+        selected.clear();
 
         //Back button
         if (isFiltering)

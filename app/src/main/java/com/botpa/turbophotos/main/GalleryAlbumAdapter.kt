@@ -7,17 +7,14 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
+import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.TurboFile
+import com.google.android.material.card.MaterialCardView
 
-class GalleryAlbumAdapter(private val context: Context, private val files: ArrayList<TurboFile>, var showMissingMetadataIcon: Boolean) : RecyclerView.Adapter<GalleryAlbumAdapter.GalleryHolder>() {
-
-    private var onItemClickListener: OnItemClickListener? = null
-    private var onItemLongClickListener: OnItemLongClickListener? = null
-
+class GalleryAlbumAdapter(private val context: Context, private val files: ArrayList<TurboFile>, private val selected: HashSet<Int>, var showMissingMetadataIcon: Boolean) : RecyclerView.Adapter<GalleryAlbumAdapter.GalleryHolder>() {
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): GalleryHolder {
-        val myView = LayoutInflater.from(context).inflate(R.layout.gallery_item, viewGroup, false)
-        return GalleryHolder(myView)
+        return GalleryHolder(LayoutInflater.from(context).inflate(R.layout.gallery_item, viewGroup, false))
     }
 
     override fun onBindViewHolder(holder: GalleryHolder, i: Int) {
@@ -34,14 +31,16 @@ class GalleryAlbumAdapter(private val context: Context, private val files: Array
         holder.isVideo.visibility = if (files.isVideo) View.VISIBLE else View.GONE
         holder.missingInfo.visibility = if (!showMissingMetadataIcon || files.album.hasMetadataKey(files.name)) View.GONE else View.VISIBLE
 
+        //Toggle selected border
+        holder.imageCard.strokeColor = if (selected.contains(position)) Orion.getColor(context, com.google.android.material.R.attr.colorOnSurface) else 0x00000000
+
         //Add click listeners
         holder.background.setOnClickListener { view: View ->
-            onItemClickListener?.onItemClick(view, holder.bindingAdapterPosition)
+            onClickListener?.onClick(view, holder.bindingAdapterPosition)
         }
 
         holder.background.setOnLongClickListener { view: View ->
-            if (onItemLongClickListener == null) return@setOnLongClickListener true
-            else onItemLongClickListener!!.onItemLongClick(view, holder.bindingAdapterPosition)
+            onLongClickListener?.onLongClick(view, holder.bindingAdapterPosition) ?: true   //Return true when no long click listener
         }
     }
 
@@ -50,28 +49,34 @@ class GalleryAlbumAdapter(private val context: Context, private val files: Array
     }
 
     //Listeners
-    fun interface OnItemClickListener {
-        fun onItemClick(view: View, index: Int)
+    private var onClickListener: OnClickListener? = null
+    private var onLongClickListener: OnLongClickListener? = null
+
+    fun interface OnClickListener {
+        fun onClick(view: View, index: Int)
     }
 
-    fun interface OnItemLongClickListener {
-        fun onItemLongClick(view: View, index: Int): Boolean
+    fun interface OnLongClickListener {
+        fun onLongClick(view: View, index: Int): Boolean
     }
 
-    fun setOnItemClickListener(onItemClickListener: OnItemClickListener?) {
-        this.onItemClickListener = onItemClickListener
+    fun setOnClickListener(onClickListener: OnClickListener?) {
+        this.onClickListener = onClickListener
     }
 
-    fun setOnItemLongClickListener(onItemLongClickListener: OnItemLongClickListener?) {
-        this.onItemLongClickListener = onItemLongClickListener
+    fun setOnLongClickListener(onLongClickListener: OnLongClickListener?) {
+        this.onLongClickListener = onLongClickListener
     }
 
     //Holder
-    class GalleryHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        var background: View = itemView.findViewById(R.id.background)
-        var image: ImageView = itemView.findViewById(R.id.image)
-        var isVideo: View = itemView.findViewById(R.id.isVideo)
-        var missingInfo: View = itemView.findViewById(R.id.missingInfo)
+    class GalleryHolder(view: View) : RecyclerView.ViewHolder(view) {
+
+        var background: View = view.findViewById(R.id.background)
+        var imageCard: MaterialCardView = view.findViewById(R.id.imageCard)
+        var image: ImageView = view.findViewById(R.id.image)
+        var isVideo: View = view.findViewById(R.id.isVideo)
+        var missingInfo: View = view.findViewById(R.id.missingInfo)
+
     }
 
 }
