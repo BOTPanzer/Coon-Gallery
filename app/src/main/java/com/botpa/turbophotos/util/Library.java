@@ -397,6 +397,60 @@ public class Library {
     }
 
     //Actions
+    /*public static FileActionResult deleteFiles(TurboFile[] files) {
+
+
+        //Create action result
+        FileActionResult result = new FileActionResult(file);
+
+        //Delete file
+        Orion.deleteFile(file.file);
+
+        //Delete file metadata from album
+        file.album.removeMetadataKey(file.getName());
+        file.album.saveMetadata();
+
+        //Check if file is in trash
+        if (result.indexInTrash != -1) {
+            //Is present -> Remove it
+            removeTrashFile(result.indexInTrash);
+            saveTrash();
+
+            //Check if album was only used in trash and is now empty
+            if (result.indexOfAlbum == -1 && !trashAlbumsMap.containsKey(file.album)) {
+                //Album is empty and no trash files are part of it -> Finish removing it it completely
+                albumsMap.remove(file.album.getImagesPath());
+            }
+        }
+
+        //Check if file is in all files
+        if (result.indexInAll != -1) {
+            //Is present -> Remove it
+            all.remove(result.indexInAll);
+        }
+
+        //Check if file is in album
+        if (result.indexInAlbum != -1) {
+            //Is present -> Remove it
+            file.album.remove(result.indexInAlbum);
+
+            //Check if album needs to be deleted or sorted
+            if (file.album.isEmpty()) {
+                //Album is empty -> Remove it from albums list
+                removeAlbum(result.indexOfAlbum);
+                result.deletedAlbum = true;
+            } else if (result.indexInAlbum == 0) {
+                //Album isn't empty & deleted the first image -> Sort albums in case the order changed
+                sortAlbumsList();
+                result.sortedAlbumsList = true;
+            }
+        }
+
+        //Return action result
+        result.type = FileActionResult.ACTION_DELETE;
+        return result;
+    }*/
+
     public static FileActionResult deleteFile(TurboFile file) {
         //Create action result
         FileActionResult result = new FileActionResult(file);
@@ -445,7 +499,7 @@ public class Library {
         }
 
         //Return action result
-        result.action = FileActionResult.ACTION_DELETE;
+        result.type = FileActionResult.ACTION_DELETE;
         return result;
     }
 
@@ -455,7 +509,7 @@ public class Library {
 
         //File already in trash -> Return
         if (file.isTrashed()) {
-            result.info = "File is already trashed";
+            result.fail = "File is already trashed";
             return result;
         }
 
@@ -464,7 +518,7 @@ public class Library {
 
         //Move file to trash folder
         if (!Orion.cloneFile(context, file.file, trashInfo.trashFile)) {
-            result.info = "Could not clone original file to trash path";
+            result.fail = "Could not clone original file to trash path";
             return result;
         }
         Orion.deleteFile(file.file);
@@ -502,7 +556,8 @@ public class Library {
         }
 
         //Return action result
-        result.action = FileActionResult.ACTION_TRASH;
+        result.type = FileActionResult.ACTION_TRASH;
+        result.trashState = (trash.size() == 1 ? FileActionResult.TRASH_ADDED : FileActionResult.TRASH_UPDATED);
         return result;
     }
 
@@ -512,20 +567,20 @@ public class Library {
 
         //File not in trash -> Return
         if (!file.isTrashed()) {
-            result.info = "File is not trashed";
+            result.fail = "File is not trashed";
             return result;
         }
 
         //Get trash info
         TrashInfo trashInfo = file.trashInfo;
         if (trashInfo == null) {
-            result.info = "Invalid trash info";
+            result.fail = "Invalid trash info";
             return result;
         }
 
         //Move file to original folder
         if (!Orion.cloneFile(context, file.file, trashInfo.originalFile)) {
-            result.info = "Could not clone trash file to original path";
+            result.fail = "Could not clone trash file to original path";
             return result;
         }
         Orion.deleteFile(file.file);
@@ -565,7 +620,8 @@ public class Library {
         }
 
         //Return action result
-        result.action = FileActionResult.ACTION_RESTORE;
+        result.type = FileActionResult.ACTION_RESTORE;
+        if (trash.isEmpty()) result.trashState = FileActionResult.TRASH_REMOVED;
         return result;
     }
 

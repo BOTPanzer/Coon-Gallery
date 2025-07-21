@@ -22,7 +22,7 @@ class Album(val name: String, val imagesFolder: File?, val metadataFile: File?) 
 
     //Files
     fun sort() {
-        files.sortByDescending { lastModified }
+        files.sortByDescending { it.lastModified }
     }
 
     fun reset() {

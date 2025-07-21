@@ -22,7 +22,6 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 
-import com.botpa.turbophotos.backup.BackupActivity;
 import com.botpa.turbophotos.util.BackManager;
 import com.botpa.turbophotos.util.FileActionResult;
 import com.botpa.turbophotos.util.Library;
@@ -30,7 +29,6 @@ import com.botpa.turbophotos.R;
 import com.botpa.turbophotos.util.Orion;
 import com.botpa.turbophotos.util.Storage;
 import com.botpa.turbophotos.util.TurboFile;
-import com.botpa.turbophotos.settings.SettingsActivity;
 
 import java.util.ArrayList;
 
@@ -320,8 +318,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void manageActionResult(TurboFile file, FileActionResult result) {
         //Action was not performed
-        if (result.action.equals(FileActionResult.ACTION_NONE)) {
-            Orion.snack(MainActivity.this, result.info);
+        if (result.type.equals(FileActionResult.ACTION_NONE)) {
+            Orion.snack(MainActivity.this, result.fail);
             return;
         }
 
@@ -332,9 +330,19 @@ public class MainActivity extends AppCompatActivity {
         } else if (!result.deletedAlbum) {
             //Deleted album -> Notify item removed
             gallery.homeAdapter.notifyItemRemoved(result.indexOfAlbum);
-        } else if (result.acted(FileActionResult.ACTION_TRASH) || result.acted(FileActionResult.ACTION_RESTORE)) {
-            //Trashed/restored file -> Notify all
-            gallery.homeAdapter.notifyDataSetChanged(); //Should update this to change only trash index instead of all
+        } else if (result.isType(FileActionResult.ACTION_TRASH) || result.isType(FileActionResult.ACTION_RESTORE)) {
+            //Notify if trash was added, removed or updated
+            switch (result.trashState) {
+                case FileActionResult.TRASH_ADDED:
+                    gallery.homeAdapter.notifyItemInserted(0);
+                    break;
+                case FileActionResult.TRASH_REMOVED:
+                    gallery.homeAdapter.notifyItemRemoved(0);
+                    break;
+                case FileActionResult.TRASH_UPDATED:
+                    gallery.homeAdapter.notifyItemChanged(0);
+                    break;
+            }
         }
 
         //Check if image is in gallery list

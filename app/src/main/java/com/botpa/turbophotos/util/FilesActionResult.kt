@@ -1,10 +1,11 @@
 package com.botpa.turbophotos.util
 
-class FileActionResult(file: TurboFile) {
+class FilesActionResult(files: Array<TurboFile>) {
 
-    //Actions
+    //Static
     companion object {
 
+        //Actions
         const val ACTION_NONE: String = "NONE"
         const val ACTION_DELETE: String = "DELETE"
         const val ACTION_TRASH: String = "TRASH"
@@ -12,28 +13,26 @@ class FileActionResult(file: TurboFile) {
 
         //Trash
         const val TRASH_NONE: String = "NONE"
-        const val TRASH_ADDED: String = "ADDED"
-        const val TRASH_REMOVED: String = "REMOVED"
         const val TRASH_UPDATED: String = "UPDATED"
+        const val TRASH_CLEARED: String = "CLEARED"
 
     }
 
     //Action
     @JvmField var type: String = ACTION_NONE
 
-    //Fail message
-    @JvmField var fail: String = ""
+    //Fail messages
+    @JvmField var fails: HashMap<TurboFile, String> = HashMap()
 
     //Indexes
-    @JvmField var indexInTrash: Int = Library.trash.indexOf(file)
-    @JvmField var indexInAll: Int = Library.all.indexOf(file)
-    @JvmField var indexInAlbum: Int = file.album.indexOf(file)
-    @JvmField var indexOfAlbum: Int = Library.albums.indexOf(file.album)
+    @JvmField var indexInTrash: HashMap<TurboFile, Int> = HashMap()
+    @JvmField var indexInAll: HashMap<TurboFile, Int> = HashMap()
+    @JvmField var indexInAlbum: HashMap<TurboFile, Int> = HashMap()
+    @JvmField var indexOfAlbum: HashMap<TurboFile, Int> = HashMap()
 
     //Results
-    @JvmField var deletedAlbum: Boolean = false
+    @JvmField var deletedAlbums: HashSet<Album> = HashSet()
     @JvmField var sortedAlbumsList: Boolean = false
-    @JvmField var trashState: String = TRASH_NONE
 
 
     //Action
