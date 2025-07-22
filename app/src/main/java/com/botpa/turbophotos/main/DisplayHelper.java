@@ -200,7 +200,7 @@ public class DisplayHelper {
             showOptions(false);
 
             //Move to trash
-            activity.trashFile(current);
+            activity.trashFiles(new TurboFile[] { current });
         });
 
         optionsDelete.setOnClickListener(view -> {

@@ -33,6 +33,7 @@ import com.botpa.turbophotos.util.TurboFile;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 
 @SuppressLint({"SetTextI18n", "NotifyDataSetChanged"})
 public class MainActivity extends AppCompatActivity {
@@ -281,18 +282,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //Actions
-    private void manageAction(Action result) {
+    private void manageAction(Action action) {
         //No action
-        if (result.isOfType(Action.TYPE_NONE)) return;
+        if (action.isOfType(Action.TYPE_NONE)) return;
 
         //Failed actions
-        if (!result.failed.isEmpty()) {
-            if (result.failed.size() == 1) {
+        if (!action.failed.isEmpty()) {
+            if (action.failed.size() == 1) {
                 //Only 1 failed -> Show error
-                Orion.snack(MainActivity.this, result.failed.entrySet().iterator().next().getValue());
-            } else if (!result.allFailed()) {
+                Orion.snack(MainActivity.this, action.failed.entrySet().iterator().next().getValue());
+            } else if (!action.allFailed()) {
                 //More than 1 failed -> Show general error
-                Orion.snack(MainActivity.this, "Failed to perform " + result.failed.size() + " actions");
+                Orion.snack(MainActivity.this, "Failed to perform " + action.failed.size() + " actions");
             } else {
                 //All failed -> Show general error
                 Orion.snack(MainActivity.this, "Failed to perform all actions");
@@ -301,12 +302,12 @@ public class MainActivity extends AppCompatActivity {
         }
 
         //Check if albums list was changed
-        if (result.sortedAlbumsList) {
+        if (action.sortedAlbumsList) {
             //Sorted albums list -> Notify all
             gallery.homeAdapter.notifyDataSetChanged();
         } else {
             //Check if trash was added, removed or updated
-            switch (result.trashChanged) {
+            switch (action.trashChanged) {
                 case Action.TRASH_ADDED:
                     gallery.homeAdapter.notifyItemInserted(0);
                     break;
@@ -319,21 +320,28 @@ public class MainActivity extends AppCompatActivity {
             }
 
             //Check if albums were deleted
-            if (!result.deletedAlbums.isEmpty()) {
+            if (!action.deletedAlbums.isEmpty()) {
                 //Deleted albums -> Notify items removed
-                for (int index : result.deletedAlbums) {
+                for (int index : action.deletedAlbums) {
                     gallery.homeAdapter.notifyItemRemoved(index + gallery.homeAdapter.getIndexOffset());
                 }
             }
         }
 
-        //Check if files are in gallery list
-        for (TurboFile file : result.files) {
-            //Check if image is in gallery list
+        //Get indexes of files in gallery list & sort them
+        ArrayList<Integer> indexesInGallery = new ArrayList<>(action.files.length);
+        for (TurboFile file : action.files) {
             int indexInGallery = gallery.files.indexOf(file);
-            if (indexInGallery == -1) continue;
+            if (indexInGallery != -1) indexesInGallery.add(indexInGallery);
+        }
+        indexesInGallery.sort(Comparator.reverseOrder()); //Sort from last to first so that selected files can be removed correctly
 
-            //Is present -> Remove it & update adapter
+        //Remove gallery files
+        for (int indexInGallery : indexesInGallery) {
+            //Get file
+            TurboFile file = action.files[indexInGallery];
+
+            //Remove it & update adapter
             gallery.files.remove(indexInGallery);
             gallery.selected.remove(indexInGallery);
             gallery.albumAdapter.notifyItemRemoved(indexInGallery);
@@ -366,8 +374,13 @@ public class MainActivity extends AppCompatActivity {
         if (gallery.selected.isEmpty()) gallery.unselectAll();
     }
 
+    public void trashFiles(TurboFile[] files) {
+        //Trash file & manage action
+        manageAction(Library.trashFiles(MainActivity.this, files));
+    }
+
     public void deleteFiles(TurboFile[] files) {
-        //Delete file & consume action result
+        //Delete file & manage action
         new MaterialAlertDialogBuilder(MainActivity.this)
                 .setMessage("Are you sure you want to permanently delete " + (files.length == 1 ? "\"" + files[0].getName() + "\"" : files.length + " files") + "?")
                 .setIcon(android.R.drawable.ic_dialog_alert)
@@ -453,11 +466,6 @@ public class MainActivity extends AppCompatActivity {
                 display.open(indexInGallery - 1);
             }
         }
-    }
-
-    public void trashFile(TurboFile file) {
-        //Trash file & consume action result
-        manageActionResult(file, Library.trashFile(MainActivity.this, file));
     }
 
     public void restoreFile(TurboFile file) {

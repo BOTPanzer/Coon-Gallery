@@ -149,6 +149,9 @@ public class GalleryHelper {
         optionsTrash.setOnClickListener(view -> {
             //Close options menu
             showOptions(false);
+
+            //Trash files
+            activity.trashFiles(getSelectedFiles());
         });
 
         optionsDelete.setOnClickListener(view -> {
@@ -156,9 +159,7 @@ public class GalleryHelper {
             showOptions(false);
 
             //Delete files
-            ArrayList<TurboFile> deleteFiles = new ArrayList<>(selected.size());
-            for (int index: selected) deleteFiles.add(files.get(index));
-            activity.deleteFiles(deleteFiles.toArray(new TurboFile[0]));
+            activity.deleteFiles(getSelectedFiles());
         });
 
         optionsShare.setOnClickListener(view -> {
@@ -166,9 +167,7 @@ public class GalleryHelper {
             showOptions(false);
 
             //Share
-            ArrayList<TurboFile> shareFiles = new ArrayList<>(selected.size());
-            for (int index: selected) shareFiles.add(files.get(index));
-            activity.shareFiles(shareFiles.toArray(new TurboFile[0]));
+            activity.shareFiles(getSelectedFiles());
         });
 
         //Gallery
@@ -236,13 +235,19 @@ public class GalleryHelper {
     }
 
     //Options
+    private TurboFile[] getSelectedFiles() {
+        ArrayList<TurboFile> selectedFiles = new ArrayList<>(selected.size());
+        for (int index: selected) selectedFiles.add(files.get(index));
+        return selectedFiles.toArray(new TurboFile[0]);
+    }
+
     private void showOptions(boolean show) {
         if (show) {
             //Toggle buttons
             boolean isSelecting = !selected.isEmpty();
             boolean inTrash = album == Library.trash;
             optionsRestore.setVisibility(View.GONE); //optionsRestore.setVisibility(isSelecting && inTrash ? View.VISIBLE : View.GONE);
-            optionsTrash.setVisibility(View.GONE); //optionsTrash.setVisibility(isSelecting && !inTrash ? View.VISIBLE : View.GONE);
+            optionsTrash.setVisibility(isSelecting && !inTrash ? View.VISIBLE : View.GONE);
             optionsDelete.setVisibility(isSelecting ? View.VISIBLE : View.GONE);
             optionsShare.setVisibility(isSelecting && !inTrash ? View.VISIBLE : View.GONE);
 

@@ -445,7 +445,7 @@ public class Library {
 
                 //Check if album needs to be deleted or sorted
                 if (album.isEmpty()) {
-                    //Album is empty -> Remove it & mark it as deleted
+                    //Album is empty -> Remove it from list & mark it as deleted
                     removeAlbum(helper.indexOfAlbum);
                     action.deletedAlbums.add(helper.indexOfAlbum);
                 } else if (helper.indexInAlbum == 0) {
@@ -465,62 +465,77 @@ public class Library {
         return action;
     }
 
-    public static FileActionResult trashFile(Context context, TurboFile file) {
-        //Create action result
-        FileActionResult result = new FileActionResult(file);
+    public static Action trashFiles(Context context, TurboFile[] files) {
+        //Create action
+        Action action = new Action(Action.TYPE_TRASH, files);
 
-        //File already in trash -> Return
-        if (file.isTrashed()) {
-            result.fail = "File is already trashed";
-            return result;
-        }
+        //Delete files
+        for (TurboFile file : files) {
+            //Already in trash
+            if (file.isTrashed()) {
+                action.failed.put(file, "File is already trashed");
+                continue;
+            }
 
-        //Create trash info
-        TrashInfo trashInfo = new TrashInfo(file.file.getAbsolutePath(), trashFolder.getAbsolutePath() + file.file.getPath(), file.isVideo);
+            //Create trash info
+            TrashInfo trashInfo = new TrashInfo(file.file.getAbsolutePath(), trashFolder.getAbsolutePath() + file.file.getPath(), file.isVideo);
 
-        //Move file to trash folder
-        if (!Orion.cloneFile(context, file.file, trashInfo.trashFile)) {
-            result.fail = "Could not clone original file to trash path";
-            return result;
-        }
-        Orion.deleteFile(file.file);
+            //Move file to trash folder
+            if (!Orion.cloneFile(context, file.file, trashInfo.trashFile)) {
+                action.failed.put(file, "Could not clone original file to trash path");
+                continue;
+            }
+            Orion.deleteFile(file.file);
 
-        //Update file
-        file.file = trashInfo.trashFile;
-        file.trashInfo = trashInfo;
+            //Update file
+            file.file = trashInfo.trashFile;
+            file.trashInfo = trashInfo;
 
-        //Add file to trash album
-        addTrashFile(file);
-        trash.sort();
-        saveTrash();
+            //Add file to trash album
+            addTrashFile(file);
+            if (action.trashChanged == Action.TRASH_NONE) {
+                //First change to trash this action -> Check if trash was added to list or just updated
+                action.trashChanged = trash.size() == 1 ? Action.TRASH_ADDED : Action.TRASH_UPDATED;
+            }
 
-        //Check if file is in all files
-        if (result.indexInAll != -1) {
-            //Is present -> Remove it
-            all.remove(result.indexInAll);
-        }
+            //Get album & action helper
+            Album album = file.album;
+            ActionHelper helper = action.getHelper(file);
 
-        //Check if file is in album
-        if (result.indexInAlbum != -1) {
-            //Is present -> Remove it
-            file.album.remove(result.indexInAlbum);
+            //Check if file is in all files
+            if (helper.indexInAll != -1) {
+                //Is present -> Remove it
+                all.remove(helper.indexInAll);
+            }
 
-            //Check if album needs to be deleted or sorted
-            if (file.album.isEmpty()) {
-                //Album is empty -> Remove it from albums list
-                removeAlbum(result.indexOfAlbum);
-                result.albumDeleted = true;
-            } else if (result.indexInAlbum == 0) {
-                //Album isn't empty & deleted the first image -> Sort albums in case the order changed
-                sortAlbumsList();
-                result.sortedAlbumsList = true;
+            //Check if file is in album
+            if (helper.indexInAlbum != -1) {
+                //Is present -> Remove it
+                album.remove(helper.indexInAlbum);
+
+                //Check if album needs to be deleted or sorted
+                if (album.isEmpty()) {
+                    //Album is empty -> Remove it from list & mark it as deleted
+                    removeAlbum(helper.indexOfAlbum);
+                    action.deletedAlbums.add(helper.indexOfAlbum);
+                } else if (helper.indexInAlbum == 0) {
+                    //Album isn't empty & first image was deleted -> Sort albums list in case the order changed
+                    action.sortedAlbumsList = true;
+                }
             }
         }
 
-        //Return action result
-        result.type = FileActionResult.ACTION_TRASH;
-        result.trashState = (trash.size() == 1 ? FileActionResult.TRASH_ADDED : FileActionResult.TRASH_UPDATED);
-        return result;
+        //Save trash
+        if (action.trashChanged != Action.TRASH_NONE) {
+            trash.sort();
+            saveTrash();
+        }
+
+        //Sort albums list
+        if (action.sortedAlbumsList) sortAlbumsList();
+
+        //Return action
+        return action;
     }
 
     public static FileActionResult restoreFile(Context context, TurboFile file) {
