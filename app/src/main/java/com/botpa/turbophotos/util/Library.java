@@ -15,7 +15,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 public class Library {
 
@@ -59,10 +58,10 @@ public class Library {
                         MediaStore.Files.FileColumns.IS_TRASHED,
                 },
                 //Selection
-                MediaStore.Files.FileColumns.DATE_MODIFIED + " > ? AND (" + MediaStore.Files.FileColumns.MEDIA_TYPE + "= ? OR " + MediaStore.Files.FileColumns.MEDIA_TYPE + "= ?)",
+                MediaStore.Files.FileColumns.DATE_ADDED + " > ? AND (" + MediaStore.Files.FileColumns.MEDIA_TYPE + "= ? OR " + MediaStore.Files.FileColumns.MEDIA_TYPE + "= ?)",
                 //Selection args
                 new String[] {
-                        String.valueOf(lastUpdate / 1000),
+                        String.valueOf(lastUpdate),
                         String.valueOf(MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE),
                         String.valueOf(MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO),
                 },
@@ -92,7 +91,7 @@ public class Library {
         boolean updated = false;
         try (Cursor cursor = getMediaCursor(context)) {
             //Save last update timestamp
-            lastUpdate = System.currentTimeMillis();
+            lastUpdate = System.currentTimeMillis() / 1000L;
 
             //Get indexes for all columns
             int idxBucketDisplayName = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.BUCKET_DISPLAY_NAME);
@@ -132,7 +131,7 @@ public class Library {
                 updated = true;
             }
         } catch (Exception e) {
-            Log.e("Library", "Error loading albums: " + e.getMessage());
+            Log.e("LIBRARY", "Error loading albums: " + e.getMessage());
         }
 
         //Remove unused albums & fill albums list
