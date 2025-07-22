@@ -23,9 +23,10 @@ class Action(private val type: Int, @JvmField val files: Array<TurboFile>) {
     @JvmField var failed: HashMap<TurboFile, String> = HashMap()
 
     //Results
-    @JvmField var sortedAlbumsList: Boolean = false
     @JvmField var trashChanged: Int = TRASH_NONE
-    @JvmField var deletedAlbums: ArrayList<Int> = ArrayList()
+    @JvmField var deletedAlbums: HashSet<Album> = HashSet()
+    @JvmField var sortedAlbums: HashSet<Album> = HashSet()
+    @JvmField var sortedAlbumsList: Boolean = false
 
 
     //Action

@@ -23,8 +23,8 @@ import androidx.core.content.ContextCompat;
 import android.Manifest;
 
 import com.botpa.turbophotos.util.Action;
+import com.botpa.turbophotos.util.Album;
 import com.botpa.turbophotos.util.BackManager;
-import com.botpa.turbophotos.util.FileActionResult;
 import com.botpa.turbophotos.util.Library;
 import com.botpa.turbophotos.R;
 import com.botpa.turbophotos.util.Orion;
@@ -319,11 +319,21 @@ public class MainActivity extends AppCompatActivity {
                     break;
             }
 
-            //Check if albums were deleted
+            //Check if albums were deleted or sorted
             if (!action.deletedAlbums.isEmpty()) {
                 //Deleted albums -> Notify items removed
-                for (int index : action.deletedAlbums) {
-                    gallery.homeAdapter.notifyItemRemoved(index + gallery.homeAdapter.getIndexOffset());
+                for (Album album : action.deletedAlbums) {
+                    //position = albumIndex + adapterIndexOffset
+                    gallery.homeAdapter.notifyItemRemoved(gallery.homeAdapter.getIndexFromAlbum(album) + gallery.homeAdapter.getIndexOffset());
+                }
+            }
+
+            //Check if albums were sorted
+            if (!action.sortedAlbums.isEmpty()) {
+                //Sorted albums -> Notify items removed
+                for (Album album : action.sortedAlbums) {
+                    //position = albumIndex + adapterIndexOffset
+                    gallery.homeAdapter.notifyItemChanged(gallery.homeAdapter.getIndexFromAlbum(album) + gallery.homeAdapter.getIndexOffset());
                 }
             }
         }
@@ -339,7 +349,7 @@ public class MainActivity extends AppCompatActivity {
         //Remove gallery files
         for (int indexInGallery : indexesInGallery) {
             //Get file
-            TurboFile file = action.files[indexInGallery];
+            TurboFile file = gallery.files.get(indexInGallery);
 
             //Remove it & update adapter
             gallery.files.remove(indexInGallery);
@@ -372,6 +382,11 @@ public class MainActivity extends AppCompatActivity {
 
         //Remove select back callback if no more files are selected
         if (gallery.selected.isEmpty()) gallery.unselectAll();
+    }
+
+    public void restoreFiles(TurboFile[] files) {
+        //Restore file & manage action result
+        manageAction(Library.restoreFiles(MainActivity.this, files));
     }
 
     public void trashFiles(TurboFile[] files) {
@@ -411,66 +426,6 @@ public class MainActivity extends AppCompatActivity {
             intent.setType("*/*");
         }
         startActivity(Intent.createChooser(intent, null));
-    }
-
-    private void manageActionResult(TurboFile file, FileActionResult result) {
-        //Action was not performed
-        if (result.type.equals(FileActionResult.ACTION_NONE)) {
-            Orion.snack(MainActivity.this, result.fail);
-            return;
-        }
-
-        //Check if albums list was changed
-        if (result.sortedAlbumsList) {
-            //Sorted albums list -> Notify all
-            gallery.homeAdapter.notifyDataSetChanged();
-        } else if (!result.albumDeleted) {
-            //Album deleted -> Notify item removed
-            gallery.homeAdapter.notifyItemRemoved(result.indexOfAlbum);
-        } else if (result.isType(FileActionResult.ACTION_TRASH) || result.isType(FileActionResult.ACTION_RESTORE)) {
-            //Notify if trash was added, removed or updated
-            switch (result.trashState) {
-                case FileActionResult.TRASH_ADDED:
-                    gallery.homeAdapter.notifyItemInserted(0);
-                    break;
-                case FileActionResult.TRASH_REMOVED:
-                    gallery.homeAdapter.notifyItemRemoved(0);
-                    break;
-                case FileActionResult.TRASH_UPDATED:
-                    gallery.homeAdapter.notifyItemChanged(0);
-                    break;
-            }
-        }
-
-        //Check if image is in gallery list
-        int indexInGallery = gallery.files.indexOf(file);
-        if (indexInGallery == -1) return;
-
-        //Is present -> Remove it & update adapter
-        gallery.files.remove(indexInGallery);
-        gallery.selected.remove(indexInGallery);
-        gallery.albumAdapter.notifyItemRemoved(indexInGallery);
-
-        //Check gallery needs to be closed or select a new image
-        if (gallery.files.isEmpty()) {
-            //Gallery is empty -> Close display list & return to albums
-            display.close();
-            gallery.showAlbumsList(true);
-        } else if (display.isOpen && display.current == file) {
-            //Display list is visible -> Check if a new image can be selected
-            if (display.currentRelativeIndex != display.files.size() - 1) {
-                //An image is available next -> Select it
-                display.open(indexInGallery);   //Next image would be the same index since this image was deleted
-            } else if (display.currentRelativeIndex != 0) {
-                //An image is available before -> Select it
-                display.open(indexInGallery - 1);
-            }
-        }
-    }
-
-    public void restoreFile(TurboFile file) {
-        //Restore file & manage action result
-        manageActionResult(file, Library.restoreFile(MainActivity.this, file));
     }
 
 }

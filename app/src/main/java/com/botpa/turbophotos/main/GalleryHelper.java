@@ -144,13 +144,16 @@ public class GalleryHelper {
         optionsRestore.setOnClickListener(view -> {
             //Close options menu
             showOptions(false);
+
+            //Restore files from trash
+            activity.restoreFiles(getSelectedFiles());
         });
 
         optionsTrash.setOnClickListener(view -> {
             //Close options menu
             showOptions(false);
 
-            //Trash files
+            //Move files to trash
             activity.trashFiles(getSelectedFiles());
         });
 
@@ -246,7 +249,7 @@ public class GalleryHelper {
             //Toggle buttons
             boolean isSelecting = !selected.isEmpty();
             boolean inTrash = album == Library.trash;
-            optionsRestore.setVisibility(View.GONE); //optionsRestore.setVisibility(isSelecting && inTrash ? View.VISIBLE : View.GONE);
+            optionsRestore.setVisibility(isSelecting && inTrash ? View.VISIBLE : View.GONE);
             optionsTrash.setVisibility(isSelecting && !inTrash ? View.VISIBLE : View.GONE);
             optionsDelete.setVisibility(isSelecting ? View.VISIBLE : View.GONE);
             optionsShare.setVisibility(isSelecting && !inTrash ? View.VISIBLE : View.GONE);

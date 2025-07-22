@@ -489,6 +489,33 @@ public class Orion {
         return file.delete();
     }
 
+    public static boolean emptyFolder(File directory, boolean deleteSelf) {
+        //Invalid folder
+        if (!directory.exists() || !directory.isDirectory()) return false;
+
+        //List folder files
+        File[] files = directory.listFiles();
+        if (files == null || files.length == 0) return true;
+
+        //Empty folder
+        boolean allDeleted = true;
+        for (File file : files) {
+            if (file.isDirectory()) {
+                //Delete folder
+                if (!emptyFolder(file, true)) allDeleted = false;
+            } else {
+                //Delete file
+                if (!file.delete()) allDeleted = false;
+            }
+        }
+
+        //Delete self
+        if (deleteSelf && !directory.delete()) allDeleted = false;
+
+        //Return success
+        return allDeleted;
+    }
+
     public static boolean moveFile(File oldFile, File newFile) {
         return oldFile.renameTo(newFile);
     }

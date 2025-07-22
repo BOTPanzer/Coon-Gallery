@@ -2,6 +2,7 @@ package com.botpa.turbophotos.util
 
 import com.fasterxml.jackson.databind.node.ObjectNode
 import java.io.File
+import java.util.Collections
 
 class Album(val name: String, val imagesFolder: File?, val metadataFile: File?) {
 
@@ -22,7 +23,7 @@ class Album(val name: String, val imagesFolder: File?, val metadataFile: File?) 
 
     //Files
     fun sort() {
-        files.sortByDescending { it.lastModified }
+        files.sortByDescending { it }
     }
 
     fun reset() {
@@ -48,6 +49,12 @@ class Album(val name: String, val imagesFolder: File?, val metadataFile: File?) 
 
     fun add(file: TurboFile) {
         files.add(file)
+    }
+
+    fun addSorted(file: TurboFile) {
+        val index = Collections.binarySearch(files, file)
+        val insertionPoint = if (index < 0) -(index + 1) else index
+        files.add(insertionPoint, file)
     }
 
     fun remove(index: Int): TurboFile {

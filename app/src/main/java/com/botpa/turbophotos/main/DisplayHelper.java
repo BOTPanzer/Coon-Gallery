@@ -191,8 +191,8 @@ public class DisplayHelper {
             //Close options menu
             showOptions(false);
 
-            //Move to trash
-            activity.restoreFile(current);
+            //Restore from trash
+            activity.restoreFiles(new TurboFile[] { current });
         });
 
         optionsTrash.setOnClickListener(view -> {

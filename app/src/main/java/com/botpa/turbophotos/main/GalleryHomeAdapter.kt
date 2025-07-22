@@ -57,6 +57,14 @@ class GalleryHomeAdapter(private val context: Context, private val albums: Array
         }
     }
 
+    fun getIndexFromAlbum(album: Album): Int {
+        return when (album) {
+            Library.trash -> -2
+            Library.all -> -1
+            else -> albums.indexOf(album)
+        }
+    }
+
     //Listeners
     private var onClickListener: OnClickListener? = null
 

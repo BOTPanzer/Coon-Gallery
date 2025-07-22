@@ -17,7 +17,7 @@ class TurboFile(
     @JvmField var size: Float,              //The size of the file in bytes
     @JvmField var isVideo: Boolean,         //If the file is a video
     @JvmField var trashInfo: TrashInfo?,    //Info about the file in the trash
-) {
+) : Comparable<TurboFile> {
 
     //File info
     var name: String = file.name
@@ -31,6 +31,10 @@ class TurboFile(
 
     fun isTrashed(): Boolean {
         return trashInfo != null
+    }
+
+    override fun compareTo(other: TurboFile): Int {
+        return lastModified.compareTo(other.lastModified)
     }
 
     //Static helpers
