@@ -399,7 +399,7 @@ public class Library {
     }
 
     //Actions
-    public static Action performAction(int actionType, TurboFile[] files, BiConsumer<Action, TurboFile> onPerformAction) {
+    private static Action performAction(int actionType, TurboFile[] files, BiConsumer<Action, TurboFile> onPerformAction) {
         //Create action
         Action action = new Action(actionType, files);
 
@@ -485,7 +485,7 @@ public class Library {
     }
 
     public static Action trashFiles(Context context, TurboFile[] files) {
-        return performAction(Action.TYPE_RESTORE, files, (action, file) -> {
+        return performAction(Action.TYPE_TRASH, files, (action, file) -> {
             //Already in trash
             if (file.isTrashed()) {
                 action.failed.put(file, "File is already trashed");
@@ -542,7 +542,7 @@ public class Library {
     }
 
     public static Action deleteFiles(TurboFile[] files) {
-        return performAction(Action.TYPE_RESTORE, files, (action, file) -> {
+        return performAction(Action.TYPE_DELETE, files, (action, file) -> {
             //Delete file
             boolean deleted = Orion.deleteFile(file.file);
             if (!deleted) {
