@@ -2,7 +2,9 @@ package com.botpa.turbophotos.main;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Parcelable;
+import android.util.DisplayMetrics;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
@@ -264,6 +266,18 @@ public class GalleryHelper {
     }
 
     //Gallery
+    private int getHorizontalItemCount() {
+        boolean isHorizontal = activity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
+        DisplayMetrics metrics = activity.getResources().getDisplayMetrics();
+        float ratio = ((float) metrics.widthPixels / (float) metrics.heightPixels);
+
+        //Get size for portrait
+        int size = Storage.getInt(inHome ? "Settings.galleryAlbumsPerRow" : "Settings.galleryImagesPerRow", inHome ? 2 : 3);
+
+        //Return size for current orientation
+        return isHorizontal ? (int) (size * ratio) : size;
+    }
+
     private void loadMetadata(Album album) {
         //Start loading
         hasLoadedMetadata = false;
@@ -323,7 +337,7 @@ public class GalleryHelper {
 
     public void initAdapters() {
         //Create gallery list viewer
-        layoutManager = new GridLayoutManager(activity, Storage.getInt("Settings.galleryAlbumsPerRow", 3));
+        layoutManager = new GridLayoutManager(activity, getHorizontalItemCount());
         list.setLayoutManager(layoutManager);
 
         //Init home adapter
@@ -391,6 +405,11 @@ public class GalleryHelper {
         list.setVisibility(show ? View.VISIBLE : View.GONE);
     }
 
+    public void updateHorizontalItemCount() {
+        int newHorizontalItemCount = getHorizontalItemCount();
+        if (layoutManager.getSpanCount() != newHorizontalItemCount) layoutManager.setSpanCount(newHorizontalItemCount);
+    }
+
     //Toggle home & album list
     public void showAlbumsList(boolean show) {
         inHome = show;
@@ -399,7 +418,7 @@ public class GalleryHelper {
             if (inHome) {
                 //Show home
                 showSearchOpenButton(false);
-                layoutManager.setSpanCount(Storage.getInt("Settings.galleryAlbumsPerRow", 2));
+                layoutManager.setSpanCount(getHorizontalItemCount());
                 list.setAdapter(homeAdapter);
                 activity.backManager.unregister("albums");
 
@@ -417,7 +436,7 @@ public class GalleryHelper {
 
                 //Show album
                 showSearchOpenButton(true);
-                layoutManager.setSpanCount(Storage.getInt("Settings.galleryImagesPerRow", 3));
+                layoutManager.setSpanCount(getHorizontalItemCount());
                 list.setAdapter(albumAdapter);
                 activity.backManager.register("albums", () -> showAlbumsList(true));
 

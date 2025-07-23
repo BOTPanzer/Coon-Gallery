@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -32,6 +33,8 @@ import com.botpa.turbophotos.util.Storage;
 import com.botpa.turbophotos.util.TurboFile;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 
@@ -54,10 +57,6 @@ public class MainActivity extends AppCompatActivity {
     private boolean skipResume = true;
 
     public BackManager backManager;
-
-    //Navbar
-    private View backup;
-    private View settings;
 
     //Loading indicator
     private View loadIndicator;
@@ -171,7 +170,7 @@ public class MainActivity extends AppCompatActivity {
         shouldReload = true;
     }
 
-    //Permission
+    //Permission & Settings
     private void checkPermissions() {
         //Show permission layout
         findViewById(R.id.permissionLayout).setVisibility(View.VISIBLE);
@@ -258,11 +257,8 @@ public class MainActivity extends AppCompatActivity {
         //Gallery not loaded -> Skip next
         if (!isLoaded) return;
 
-        //Update horizontal item count
-        int newHorizontalItemCount = Storage.getInt(
-                gallery.inHome ? "Settings.galleryAlbumsPerRow" : "Settings.galleryImagesPerRow",
-                gallery.inHome ? 2 : 3);
-        if (gallery.layoutManager.getSpanCount() != newHorizontalItemCount) gallery.layoutManager.setSpanCount(newHorizontalItemCount);
+        //Update gallery horizontal item count
+        gallery.updateHorizontalItemCount();
 
         //Update show missing metadata icon
         boolean showMissingMetadataIcon = Storage.getBool("Settings.showMissingMetadataIcon", false);
@@ -279,6 +275,14 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         checkPermissions();
+    }
+
+    @Override
+    public void onConfigurationChanged(@NotNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        //Update gallery horizontal item count
+        gallery.updateHorizontalItemCount();
     }
 
     //Actions
