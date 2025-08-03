@@ -463,12 +463,12 @@ public class GalleryHelper {
     }
 
     //Filter files
-    private boolean filterImage(TurboFile image, String filter) {
+    private boolean filterFile(TurboFile file, String filter) {
         //Check file name
-        if (image.getName().contains(filter)) return true;
+        if (file.getName().toLowerCase().contains(filter)) return true;
 
         //Get metadata
-        ObjectNode metadata = image.album.getMetadataKey(image.getName());
+        ObjectNode metadata = file.album.getMetadataKey(file.getName());
         if (metadata == null) return false;
 
         //Check caption
@@ -534,15 +534,15 @@ public class GalleryHelper {
         //Search in metadata files
         new Thread(() -> {
             //Look for files that contain filter
-            for (TurboFile image: filesUnfiltered) {
+            for (TurboFile file: filesUnfiltered) {
                 //No filter -> Skip check
                 if (!isFiltering) {
-                    files.add(image);
+                    files.add(file);
                     continue;
                 }
 
                 //Check if json contains filter
-                if (filterImage(image, filter)) files.add(image);
+                if (filterFile(file, filter)) files.add(file);
             }
 
             //Show gallery

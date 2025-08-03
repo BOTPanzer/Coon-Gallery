@@ -62,6 +62,9 @@ public class BackupService extends Service {
     public static WebSocketClient webSocketClient;
     private static int connectStatus = STATUS_OFFLINE;
 
+    //Files
+    private static final int MAX_PART_SIZE = 10000000;
+
     //Service
     private boolean init = false;
 
@@ -100,15 +103,8 @@ public class BackupService extends Service {
                 Album album = link.album;
                 ArrayList<TurboFile> files = new ArrayList<>();
 
-                //Check if album exists
-                if (album != null) {
-                    //Add files to list (images only)
-                    files.ensureCapacity(album.size());
-                    for (TurboFile file: album.files) {
-                        if (file.isVideo) continue;
-                        files.add(file);
-                    }
-                }
+                //Add files if album exists
+                if (album != null) files.addAll(album.files);
 
                 //Save list
                 backupFiles.add(files);
@@ -222,12 +218,15 @@ public class BackupService extends Service {
         //Check message
         try {
             ObjectNode message = Orion.loadJson(messageString);
-            if (!message.has("action")) throw new Exception("Message has no action key");
-            String action = message.get("action").asText();
-            switch (action) {
 
-                //Send image info
-                case "requestImageInfo": {
+            //No action
+            if (!message.has("action")) throw new Exception("Message has no action key");
+
+            //Parse action
+            switch (message.get("action").asText()) {
+
+                //Send file info
+                case "requestFileInfo": {
                     //Request index & count
                     if (message.has("requestIndex") && message.has("requestCount")) {
                         //Get request index & count
@@ -242,46 +241,55 @@ public class BackupService extends Service {
                     int albumIndex = message.get("albumIndex").asInt();
                     ArrayList<TurboFile> album = backupFiles.get(albumIndex);
 
-                    //Get image
-                    int imageIndex = message.get("imageIndex").asInt();
-
-                    //Send image info
-                    File file = album.get(imageIndex).file;
+                    //Get file
+                    int fileIndex = message.get("fileIndex").asInt();
+                    TurboFile turboFile = album.get(fileIndex);
+                    File file = turboFile.file;
 
                     //Log
-                    send("log", "Sending image info for: " + file.getName());
+                    send("log", "Sending file info for: " + turboFile.getName());
 
                     //Create message
                     ObjectNode obj = Orion.getEmptyJson();
-                    obj.put("action", "imageInfo");
+                    obj.put("action", "fileInfo");
                     obj.put("albumIndex", albumIndex);
-                    obj.put("imageIndex", imageIndex);
-                    if (file.exists()) obj.put("lastModified", file.lastModified());
+                    obj.put("fileIndex", fileIndex);
+                    if (file.exists()) {
+                        obj.put("lastModified", turboFile.lastModified);
+                        obj.put("size", turboFile.size);
+                        obj.put("parts", (turboFile.size / MAX_PART_SIZE) + 1);
+                        obj.put("maxPartSize", MAX_PART_SIZE);
+                    }
 
                     //Send message
                     webSocketClient.send(obj.toString());
                     break;
                 }
 
-                //Send image data
-                case "requestImageData": {
+                //Send file data
+                case "requestFileData": {
                     //Get album
                     int albumIndex = message.get("albumIndex").asInt();
                     ArrayList<TurboFile> album = backupFiles.get(albumIndex);
 
-                    //Get image
-                    int imageIndex = message.get("imageIndex").asInt();
-                    TurboFile image = album.get(imageIndex);
+                    //Get file
+                    int fileIndex = message.get("fileIndex").asInt();
+                    TurboFile turboFile = album.get(fileIndex);
+                    File file = turboFile.file;
 
-                    //Send image data
-                    File file = image.file;
-                    byte[] bytes = new byte[(int) file.length()];
+                    //Get offset & length
+                    int offset = message.get("part").asInt() * MAX_PART_SIZE;
+                    int length = Math.min((int) turboFile.size - offset, MAX_PART_SIZE);
+
+                    //Send file data
                     try {
                         //Log
-                        send("log", "Sending image data for: " + file.getName());
+                        send("log", "Sending file data for: " + file.getName());
 
-                        //Read file bytes
+                        //Read file
+                        byte[] bytes = new byte[length];
                         BufferedInputStream buffer = new BufferedInputStream(Files.newInputStream(file.toPath()));
+                        long skipped = buffer.skip(offset);
                         int read = buffer.read(bytes, 0, bytes.length);
                         buffer.close();
 
@@ -290,8 +298,8 @@ public class BackupService extends Service {
                     } catch (IOException e) {
                         //Error sending message
                         String errorMessage = e.getMessage();
-                        if (errorMessage != null) Log.e("Send image data", errorMessage);
-                        send("log", "Error sending image data");
+                        if (errorMessage != null) Log.e("Send file data", errorMessage);
+                        send("log", "Error sending file data");
 
                         //Send empty blob
                         webSocketClient.send(new byte[0]);
@@ -386,6 +394,7 @@ public class BackupService extends Service {
                     webSocketClient.send(obj.toString());
                     break;
                 }
+
             }
         } catch (Exception e) {
             String errorMessage = e.getMessage();
@@ -553,6 +562,7 @@ public class BackupService extends Service {
     }
 
     private static class MetadataInfo {
+
         public int albumIndex;
         public long lastModified;
 
@@ -560,6 +570,7 @@ public class BackupService extends Service {
             this.albumIndex = albumIndex;
             this.lastModified = lastModified;
         }
+
     }
 
 }

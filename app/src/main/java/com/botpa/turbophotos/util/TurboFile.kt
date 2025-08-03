@@ -14,7 +14,7 @@ class TurboFile(
     @JvmField var file: File,               //The file in storage of this file
     @JvmField var album: Album,             //The album of the file
     @JvmField var lastModified: Long,       //Timestamp of the last time the file was modified
-    @JvmField var size: Float,              //The size of the file in bytes
+    @JvmField var size: Long,               //The size of the file in bytes
     @JvmField var isVideo: Boolean,         //If the file is a video
     @JvmField var trashInfo: TrashInfo?,    //Info about the file in the trash
 ) : Comparable<TurboFile> {
