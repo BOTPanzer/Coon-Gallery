@@ -1,6 +1,6 @@
 package com.botpa.turbophotos.util
 
-class Action(private val type: Int, @JvmField val files: Array<TurboFile>) {
+class Action(private val type: Int, @JvmField val items: Array<TurboItem>) {
 
     //Static
     companion object {
@@ -20,7 +20,7 @@ class Action(private val type: Int, @JvmField val files: Array<TurboFile>) {
     }
 
     //Failed messages
-    @JvmField var failed: HashMap<TurboFile, String> = HashMap()
+    @JvmField var failed: HashMap<TurboItem, String> = HashMap()
 
     //Results
     @JvmField var trashChanged: Int = TRASH_NONE
@@ -30,7 +30,7 @@ class Action(private val type: Int, @JvmField val files: Array<TurboFile>) {
 
 
     //Action
-    fun getHelper(file: TurboFile): ActionHelper {
+    fun getHelper(file: TurboItem): ActionHelper {
         return ActionHelper(file)
     }
 
@@ -39,7 +39,7 @@ class Action(private val type: Int, @JvmField val files: Array<TurboFile>) {
     }
 
     fun allFailed(): Boolean {
-        return failed.size == files.size
+        return failed.size == items.size
     }
 
 }

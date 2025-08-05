@@ -12,11 +12,7 @@ import com.botpa.turbophotos.util.Link
 
 class LinksAdapter(private val context: Context, private val links: ArrayList<Link>) : RecyclerView.Adapter<LinksAdapter.AlbumHolder>() {
 
-    private var onChooseFolderListener: OnChooseFolderListener? = null
-    private var onChooseFileListener: OnChooseFileListener? = null
-    private var onDeleteListener: OnDeleteListener? = null
-
-
+    //Adapter
     override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): AlbumHolder {
         val myView = LayoutInflater.from(context).inflate(R.layout.album_item, viewGroup, false)
         return AlbumHolder(myView)
@@ -53,6 +49,10 @@ class LinksAdapter(private val context: Context, private val links: ArrayList<Li
     }
 
     //Listeners
+    private var onChooseFolderListener: OnChooseFolderListener? = null
+    private var onChooseFileListener: OnChooseFileListener? = null
+    private var onDeleteListener: OnDeleteListener? = null
+
     fun interface OnChooseFolderListener {
         fun onChoose(view: TextView, index: Int)
     }
@@ -78,18 +78,15 @@ class LinksAdapter(private val context: Context, private val links: ArrayList<Li
     }
 
     //Holder
-    class AlbumHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        var name: TextView =
-            itemView.findViewById(R.id.name)
-        var imagesOpen: View =
-            itemView.findViewById(R.id.imagesOpen)
-        var imagesFolder: TextView =
-            itemView.findViewById(R.id.imagesFolder)
-        var metadataOpen: View =
-            itemView.findViewById(R.id.metadataOpen)
-        var metadataFile: TextView =
-            itemView.findViewById(R.id.metadataFile)
-        var delete: CardView = itemView.findViewById(R.id.delete)
+    class AlbumHolder(view: View) : RecyclerView.ViewHolder(view) {
+
+        var name: TextView = view.findViewById(R.id.name)
+        var imagesOpen: View = view.findViewById(R.id.imagesOpen)
+        var imagesFolder: TextView = view.findViewById(R.id.imagesFolder)
+        var metadataOpen: View = view.findViewById(R.id.metadataOpen)
+        var metadataFile: TextView = view.findViewById(R.id.metadataFile)
+        var delete: CardView = view.findViewById(R.id.delete)
+
     }
 
 }

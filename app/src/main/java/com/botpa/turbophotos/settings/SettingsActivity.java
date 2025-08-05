@@ -39,7 +39,7 @@ public class SettingsActivity extends AppCompatActivity {
         //Bad result
         if (result.getResultCode() != Activity.RESULT_OK || result.getData() == null) return;
 
-        //parse file path from URI
+        //Parse file path from URI
         try {
             String path = Orion.convertUriToFilePath(SettingsActivity.this, result.getData().getData());
             if (path == null) throw new Exception("Path was null");
@@ -176,7 +176,7 @@ public class SettingsActivity extends AppCompatActivity {
                 }
 
                 //Feedback toast
-                Toast.makeText(SettingsActivity.this, "Select a folder to create the album metadata", Toast.LENGTH_LONG).show();
+                Toast.makeText(SettingsActivity.this, "Select a folder to create the album metadata file", Toast.LENGTH_LONG).show();
 
                 //Ask for a folder & create file inside
                 linksFilePickerAction = PickerAction.CreateFile;

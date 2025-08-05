@@ -8,11 +8,12 @@ import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.util.Orion
-import com.botpa.turbophotos.util.TurboFile
+import com.botpa.turbophotos.util.TurboItem
 import com.google.android.material.card.MaterialCardView
 
-class GalleryAlbumAdapter(private val context: Context, private val files: ArrayList<TurboFile>, private val selected: HashSet<Int>, var showMissingMetadataIcon: Boolean) : RecyclerView.Adapter<GalleryAlbumAdapter.GalleryHolder>() {
+class GalleryAlbumAdapter(private val context: Context, private val items: ArrayList<TurboItem>, private val selected: HashSet<Int>, var showMissingMetadataIcon: Boolean) : RecyclerView.Adapter<GalleryAlbumAdapter.GalleryHolder>() {
 
+    //Adapter
     override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): GalleryHolder {
         return GalleryHolder(LayoutInflater.from(context).inflate(R.layout.gallery_item, viewGroup, false))
     }
@@ -21,15 +22,15 @@ class GalleryAlbumAdapter(private val context: Context, private val files: Array
         //Get holder position
         val position = holder.bindingAdapterPosition
 
-        //Get file
-        val files = files[position]
+        //Get item
+        val item = items[position]
 
-        //Load image in imageview
-        TurboFile.load(context, holder.image, files)
+        //Load item preview
+        TurboItem.load(context, holder.image, item)
 
         //Toggle is video & missing info icons
-        holder.isVideo.visibility = if (files.isVideo) View.VISIBLE else View.GONE
-        holder.missingInfo.visibility = if (!showMissingMetadataIcon || files.album.hasMetadataKey(files.name)) View.GONE else View.VISIBLE
+        holder.isVideo.visibility = if (item.isVideo) View.VISIBLE else View.GONE
+        holder.missingInfo.visibility = if (!showMissingMetadataIcon || item.album.hasMetadataKey(item.name)) View.GONE else View.VISIBLE
 
         //Toggle selected border
         holder.imageCard.strokeColor = if (selected.contains(position)) Orion.getColor(context, com.google.android.material.R.attr.colorOnSurface) else 0x00000000
@@ -45,7 +46,7 @@ class GalleryAlbumAdapter(private val context: Context, private val files: Array
     }
 
     override fun getItemCount(): Int {
-        return files.size
+        return items.size
     }
 
     //Listeners

@@ -15,10 +15,9 @@ import androidx.recyclerview.widget.SnapHelper;
 
 import com.botpa.turbophotos.R;
 import com.botpa.turbophotos.util.Orion;
-import com.botpa.turbophotos.util.TurboFile;
+import com.botpa.turbophotos.util.TurboItem;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
 
@@ -34,8 +33,8 @@ public class DisplayHelper {
     private DisplayLayoutManager layoutManager;
     private DisplayAdapter adapter;
 
-    public final ArrayList<TurboFile> files = new ArrayList<>();
-    public TurboFile current = null;
+    public final ArrayList<TurboItem> items = new ArrayList<>();
+    public TurboItem currentItem = null;
     public int currentIndex = -1;
     public int currentRelativeIndex = -1;
 
@@ -133,14 +132,14 @@ public class DisplayHelper {
 
         infoEdit.setOnClickListener(view -> {
             //No metadata file
-            if (!current.album.hasMetadata()) {
-                Toast.makeText(activity, "This file does not have metadata file linked to its album", Toast.LENGTH_SHORT).show();
+            if (!currentItem.album.hasMetadata()) {
+                Toast.makeText(activity, "This item's album does not have a metadata file linked to it", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             //No metadata
-            if (!current.hasMetadata()) {
-                Toast.makeText(activity, "This file does not have a key in its album metadata", Toast.LENGTH_SHORT).show();
+            if (!currentItem.hasMetadata()) {
+                Toast.makeText(activity, "This item does not have a key in its album metadata", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -165,17 +164,17 @@ public class DisplayHelper {
             infoLabelsText.setText(labels);
 
             //Update metadata
-            String key = current.getName();
-            ObjectNode metadata = current.album.getMetadataKey(key);
+            String key = currentItem.getName();
+            ObjectNode metadata = currentItem.album.getMetadataKey(key);
             if (metadata == null) {
                 metadata = Orion.getEmptyJson();
-                current.album.metadata.set(key, metadata);
+                currentItem.album.metadata.set(key, metadata);
             }
             metadata.put("caption", caption);
             metadata.set("labels", Orion.arrayToJson(labelsArray));
 
             //Save
-            boolean saved = current.album.saveMetadata();
+            boolean saved = currentItem.album.saveMetadata();
             Toast.makeText(activity, saved ? "Saved successfully" : "An error occurred while saving", Toast.LENGTH_SHORT).show();
 
             //Close menu
@@ -192,7 +191,7 @@ public class DisplayHelper {
             showOptions(false);
 
             //Restore from trash
-            activity.restoreFiles(new TurboFile[] { current });
+            activity.restoreFiles(new TurboItem[] {currentItem});
         });
 
         optionsTrash.setOnClickListener(view -> {
@@ -200,15 +199,15 @@ public class DisplayHelper {
             showOptions(false);
 
             //Move to trash
-            activity.trashFiles(new TurboFile[] { current });
+            activity.trashFiles(new TurboItem[] {currentItem});
         });
 
         optionsDelete.setOnClickListener(view -> {
             //Close options menu
             showOptions(false);
 
-            //Delete files
-            activity.deleteFiles(new TurboFile[] { current });
+            //Delete items
+            activity.deleteFiles(new TurboItem[] {currentItem});
         });
 
         optionsShare.setOnClickListener(view -> {
@@ -216,7 +215,7 @@ public class DisplayHelper {
             showOptions(false);
 
             //Share
-            activity.shareFiles(new TurboFile[]{ current });
+            activity.shareFiles(new TurboItem[]{currentItem});
         });
 
         optionsEdit.setOnClickListener(view -> {
@@ -224,8 +223,8 @@ public class DisplayHelper {
             showOptions(false);
 
             //Get mime type and URI
-            String mimeType = current.getMimeType();
-            Uri uri = Orion.getMediaStoreUriFromFile(activity, current.file, mimeType);
+            String mimeType = currentItem.getMimeType();
+            Uri uri = Orion.getMediaStoreUriFromFile(activity, currentItem.file, mimeType);
 
             //Edit
             Intent intent = new Intent(Intent.ACTION_EDIT);
@@ -240,7 +239,7 @@ public class DisplayHelper {
 
             //Show open with menu
             Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setDataAndType(Uri.parse(current.file.getAbsolutePath()), current.getMimeType());
+            intent.setDataAndType(Uri.parse(currentItem.file.getAbsolutePath()), currentItem.getMimeType());
             activity.startActivity(intent);
         });
     }
@@ -293,7 +292,7 @@ public class DisplayHelper {
         snapHelper.attachToRecyclerView(list);
 
         //Create display adapter
-        adapter = new DisplayAdapter(activity, files);
+        adapter = new DisplayAdapter(activity, items);
         adapter.setOnClickListener((view, index) -> {
             if (overlayLayout.getVisibility() == View.VISIBLE)
                 Orion.hideAnim(overlayLayout);
@@ -345,50 +344,49 @@ public class DisplayHelper {
         if (index == -1) {
             currentRelativeIndex = -1;
             currentIndex = -1;
-            current = null;
+            currentItem = null;
             return;
         }
 
-        //Fill display files
-        files.clear();
+        //Reset display items
+        items.clear();
         currentIndex = index;
         currentRelativeIndex = 0;
 
-        //Add files to display list
+        //Add items to display list
         if (index > 0) {
-            //Has file before
-            files.add(activity.gallery.files.get(index - 1));
+            //Has item before -> Add it
+            items.add(activity.gallery.items.get(index - 1));
             currentRelativeIndex++;
         }
-        files.add(activity.gallery.files.get(index));
-        if (index < activity.gallery.files.size() - 1) {
-            //Has file after
-            files.add(activity.gallery.files.get(index + 1));
+        items.add(activity.gallery.items.get(index));
+        if (index < activity.gallery.items.size() - 1) {
+            //Has item after -> Add it
+            items.add(activity.gallery.items.get(index + 1));
         }
 
         //Get current image, update adapter & select it
-        current = files.get(currentRelativeIndex);
+        currentItem = items.get(currentRelativeIndex);
         adapter.notifyDataSetChanged();
         list.scrollToPosition(currentRelativeIndex);
         layoutManager.setScrollEnabled(true);
 
         //Change image name
-        nameText.setText(current.getName());
+        nameText.setText(currentItem.getName());
 
         //Prepare options menu
-        optionsRestore.setVisibility(current.isTrashed() ? View.VISIBLE : View.GONE);
-        optionsTrash.setVisibility(current.isTrashed() ? View.GONE : View.VISIBLE);
-        //optionsDelete.setVisibility(current.isTrashed() ? View.GONE : View.VISIBLE);
-        optionsShare.setVisibility(current.isTrashed() ? View.GONE : View.VISIBLE);
-        optionsEdit.setVisibility(current.isTrashed() ? View.GONE : View.VISIBLE);
-        optionsOpenOutside.setVisibility(current.isTrashed() ? View.GONE : View.VISIBLE);
+        optionsRestore.setVisibility(currentItem.isTrashed() ? View.VISIBLE : View.GONE);
+        optionsTrash.setVisibility(currentItem.isTrashed() ? View.GONE : View.VISIBLE);
+        optionsShare.setVisibility(currentItem.isTrashed() ? View.GONE : View.VISIBLE);
+        optionsEdit.setVisibility(currentItem.isTrashed() ? View.GONE : View.VISIBLE);
+        optionsOpenOutside.setVisibility(currentItem.isTrashed() ? View.GONE : View.VISIBLE);
 
         //Load image info (caption & labels)
         String caption = "";
         String labels = "";
         String text = "";
         try {
-            JsonNode metadata = current.album.getMetadataKey(current.getName());
+            JsonNode metadata = currentItem.album.getMetadataKey(currentItem.getName());
             if (metadata == null) throw new Exception();
 
             //Load caption
@@ -428,7 +426,7 @@ public class DisplayHelper {
         } catch (Exception ignored) {
             //Error while parsing JSON
         }
-        infoNameText.setText(current.getName());
+        infoNameText.setText(currentItem.getName());
         infoCaptionText.setText(caption);
         infoLabelsText.setText(labels);
         infoTextText.setText(text);

@@ -11,11 +11,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.util.Album
 import com.botpa.turbophotos.util.Library
-import com.botpa.turbophotos.util.TurboFile
+import com.botpa.turbophotos.util.TurboItem
 
 @SuppressLint("SetTextI18n")
 class GalleryHomeAdapter(private val context: Context, private val albums: ArrayList<Album>) : RecyclerView.Adapter<GalleryHomeAdapter.AlbumHolder>() {
 
+    //Adapter
     override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): AlbumHolder {
         return AlbumHolder(LayoutInflater.from(context).inflate(R.layout.gallery_album, viewGroup, false))
     }
@@ -25,8 +26,8 @@ class GalleryHomeAdapter(private val context: Context, private val albums: Array
         val position = holder.bindingAdapterPosition - getIndexOffset()
         val album = getAlbumFromIndex(position)
 
-        //Load cover
-        if (album.isNotEmpty()) TurboFile.load(context, holder.image, album.get(0))
+        //Load album cover
+        if (album.isNotEmpty()) TurboItem.load(context, holder.image, album.get(0))
 
         //Update icons
         holder.isTrash.visibility = if (album == Library.trash) View.VISIBLE else View.GONE

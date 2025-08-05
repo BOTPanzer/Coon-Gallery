@@ -20,7 +20,7 @@ import com.botpa.turbophotos.util.Album;
 import com.botpa.turbophotos.util.Library;
 import com.botpa.turbophotos.util.Orion;
 import com.botpa.turbophotos.util.Storage;
-import com.botpa.turbophotos.util.TurboFile;
+import com.botpa.turbophotos.util.TurboItem;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView;
@@ -41,9 +41,9 @@ public class GalleryHelper {
 
     //Loaded album
     private Album album = null;
-    private ArrayList<TurboFile> filesUnfiltered = new ArrayList<>();
+    private ArrayList<TurboItem> itemsUnfiltered = new ArrayList<>();
 
-    public final ArrayList<TurboFile> files = new ArrayList<>();
+    public final ArrayList<TurboItem> items = new ArrayList<>();
     public final HashSet<Integer> selected = new HashSet<>();
 
     //Adapters
@@ -147,7 +147,7 @@ public class GalleryHelper {
             //Close options menu
             showOptions(false);
 
-            //Restore files from trash
+            //Restore items from trash
             activity.restoreFiles(getSelectedFiles());
         });
 
@@ -155,7 +155,7 @@ public class GalleryHelper {
             //Close options menu
             showOptions(false);
 
-            //Move files to trash
+            //Move items to trash
             activity.trashFiles(getSelectedFiles());
         });
 
@@ -163,7 +163,7 @@ public class GalleryHelper {
             //Close options menu
             showOptions(false);
 
-            //Delete files
+            //Delete items
             activity.deleteFiles(getSelectedFiles());
         });
 
@@ -240,10 +240,10 @@ public class GalleryHelper {
     }
 
     //Options
-    private TurboFile[] getSelectedFiles() {
-        ArrayList<TurboFile> selectedFiles = new ArrayList<>(selected.size());
-        for (int index: selected) selectedFiles.add(files.get(index));
-        return selectedFiles.toArray(new TurboFile[0]);
+    private TurboItem[] getSelectedFiles() {
+        ArrayList<TurboItem> selectedFiles = new ArrayList<>(selected.size());
+        for (int index: selected) selectedFiles.add(items.get(index));
+        return selectedFiles.toArray(new TurboItem[0]);
     }
 
     private void showOptions(boolean show) {
@@ -349,7 +349,7 @@ public class GalleryHelper {
         list.setAdapter(homeAdapter);
 
         //Init album adapter
-        albumAdapter = new GalleryAlbumAdapter(activity, files, selected, Storage.getBool("Settings.showMissingMetadataIcon", false));
+        albumAdapter = new GalleryAlbumAdapter(activity, items, selected, Storage.getBool("Settings.showMissingMetadataIcon", false));
         albumAdapter.setOnClickListener((view, index) -> {
             //Loading metadata -> Return
             if (!hasLoadedMetadata) return;
@@ -373,7 +373,7 @@ public class GalleryHelper {
     }
 
     public void refresh() {
-        //Check folders for updates (could have new or deleted files)
+        //Check folders for updates (could have new or deleted items)
         boolean albumsWereModified = false;
         for (Album album : Library.albums) {
             //Check if last modified date changed
@@ -457,18 +457,18 @@ public class GalleryHelper {
         title.setText(album.getName());
 
         //Load album
-        filesUnfiltered = album.files;
+        itemsUnfiltered = album.items;
         loadMetadata(album);
         filterGallery();
     }
 
-    //Filter files
-    private boolean filterFile(TurboFile file, String filter) {
-        //Check file name
-        if (file.getName().toLowerCase().contains(filter)) return true;
+    //Filter items
+    private boolean filterFile(TurboItem item, String filter) {
+        //Check item name
+        if (item.getName().toLowerCase().contains(filter)) return true;
 
         //Get metadata
-        ObjectNode metadata = file.album.getMetadataKey(file.getName());
+        ObjectNode metadata = item.album.getMetadataKey(item.getName());
         if (metadata == null) return false;
 
         //Check caption
@@ -521,8 +521,8 @@ public class GalleryHelper {
         if (isFiltering) activity.loadingIndicator.search();
         showSearchLayout(false);
 
-        //Clear files list
-        files.clear();
+        //Clear items list
+        items.clear();
         selected.clear();
 
         //Back button
@@ -531,18 +531,18 @@ public class GalleryHelper {
         else
             activity.backManager.unregister("search");
 
-        //Search in metadata files
+        //Filter items
         new Thread(() -> {
-            //Look for files that contain filter
-            for (TurboFile file: filesUnfiltered) {
+            //Look for items that contain the filter
+            for (TurboItem item: itemsUnfiltered) {
                 //No filter -> Skip check
                 if (!isFiltering) {
-                    files.add(file);
+                    items.add(item);
                     continue;
                 }
 
                 //Check if json contains filter
-                if (filterFile(file, filter)) files.add(file);
+                if (filterFile(item, filter)) items.add(item);
             }
 
             //Show gallery

@@ -10,6 +10,7 @@ import com.botpa.turbophotos.R
 
 class LogAdapter(private val context: Context, private val logs: List<String>) : RecyclerView.Adapter<LogAdapter.LogHolder>() {
 
+    //Adapter
     override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): LogHolder {
         val view = LayoutInflater.from(context).inflate(R.layout.log_item, viewGroup, false)
         return LogHolder(view)
@@ -29,7 +30,9 @@ class LogAdapter(private val context: Context, private val logs: List<String>) :
 
     //Holder
     class LogHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+
         var log: TextView = itemView.findViewById(R.id.log)
+
     }
 
 }

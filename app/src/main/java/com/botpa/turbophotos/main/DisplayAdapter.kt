@@ -6,17 +6,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
-import com.botpa.turbophotos.util.TurboFile
+import com.botpa.turbophotos.util.TurboItem
 import com.bumptech.glide.Glide
 
-class DisplayAdapter(private val context: Context, private val images: ArrayList<TurboFile>) : RecyclerView.Adapter<DisplayAdapter.DisplayHolder>() {
-
-    //Listeners
-    private var onClickListener: Listener? = null
-    private var onZoomChangedListener: Listener? = null
-    private var onPointersChangedListener: Listener? = null
-    private var onPlayListener: Listener? = null
-
+class DisplayAdapter(private val context: Context, private val images: ArrayList<TurboItem>) : RecyclerView.Adapter<DisplayAdapter.DisplayHolder>() {
 
     //Adapter
     override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): DisplayHolder {
@@ -60,6 +53,11 @@ class DisplayAdapter(private val context: Context, private val images: ArrayList
     }
 
     //Listeners
+    private var onClickListener: Listener? = null
+    private var onZoomChangedListener: Listener? = null
+    private var onPointersChangedListener: Listener? = null
+    private var onPlayListener: Listener? = null
+
     fun interface Listener {
         fun onItemClick(view: ZoomableImageView, index: Int)
     }
@@ -82,9 +80,11 @@ class DisplayAdapter(private val context: Context, private val images: ArrayList
 
     //Holder
     class DisplayHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+
         var background: View = itemView.findViewById(R.id.background)
         var image: ZoomableImageView = itemView.findViewById(R.id.image)
         var play: View = itemView.findViewById(R.id.play)
+
     }
 
 }

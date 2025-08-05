@@ -3,13 +3,14 @@ package com.botpa.turbophotos.util
 import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.core.content.edit
 
 object Storage {
 
     //Storage specific
     private lateinit var preferences: SharedPreferences
     private val isLoaded: Boolean get() = Storage::preferences.isInitialized
-    private const val listSplit: String = "‚‗‚"
+    private const val LIST_SPLIT: String = "‚‗‚"
 
 
     //Load storage preferences
@@ -22,13 +23,13 @@ object Storage {
         val list = ArrayList<String>()
         if (isLoaded) {
             val listString = preferences.getString(key, null)
-            if (listString != null) list.addAll(listString.split(listSplit))
+            if (listString != null) list.addAll(listString.split(LIST_SPLIT))
         }
         return list
     }
 
     @JvmStatic fun putStringList(key: String, value: ArrayList<String>) {
-        if (isLoaded) preferences.edit().putString(key, if (value.isEmpty()) null else value.joinToString(listSplit)).apply()
+        if (isLoaded) preferences.edit { putString(key, if (value.isEmpty()) null else value.joinToString(LIST_SPLIT)) }
     }
 
     //String
@@ -37,7 +38,7 @@ object Storage {
     }
 
     @JvmStatic fun putString(key: String, value: String) {
-        if (isLoaded) preferences.edit().putString(key, value).apply()
+        if (isLoaded) preferences.edit { putString(key, value) }
     }
 
     //Boolean
@@ -46,7 +47,7 @@ object Storage {
     }
 
     @JvmStatic fun putBool(key: String, value: Boolean) {
-        if (isLoaded) preferences.edit().putBoolean(key, value).apply()
+        if (isLoaded) preferences.edit { putBoolean(key, value) }
     }
 
     //Int
@@ -55,7 +56,7 @@ object Storage {
     }
 
     @JvmStatic fun putInt(key: String, value: Int) {
-        if (isLoaded) preferences.edit().putInt(key, value).apply()
+        if (isLoaded) preferences.edit { putInt(key, value) }
     }
 
     //Float
@@ -64,7 +65,7 @@ object Storage {
     }
 
     @JvmStatic fun putFloat(key: String, value: Float) {
-        if (isLoaded) preferences.edit().putFloat(key, value).apply()
+        if (isLoaded) preferences.edit { putFloat(key, value) }
     }
 
     //Long
@@ -73,6 +74,6 @@ object Storage {
     }
 
     @JvmStatic fun putLong(key: String, value: Long) {
-        if (isLoaded) preferences.edit().putLong(key, value).apply()
+        if (isLoaded) preferences.edit { putLong(key, value) }
     }
 }

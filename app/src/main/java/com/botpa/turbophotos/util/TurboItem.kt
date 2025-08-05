@@ -10,16 +10,16 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import java.io.File
 
-class TurboFile(
-    @JvmField var file: File,               //The file in storage of this file
-    @JvmField var album: Album,             //The album of the file
+class TurboItem(
+    @JvmField var file: File,               //The file in storage
+    @JvmField var album: Album,             //The album of the item
     @JvmField var lastModified: Long,       //Timestamp of the last time the file was modified
     @JvmField var size: Long,               //The size of the file in bytes
-    @JvmField var isVideo: Boolean,         //If the file is a video
-    @JvmField var trashInfo: TrashInfo?,    //Info about the file in the trash
-) : Comparable<TurboFile> {
+    @JvmField var isVideo: Boolean,         //If the item is a video
+    @JvmField var trashInfo: TrashInfo?,    //Info about the item in the trash
+) : Comparable<TurboItem> {
 
-    //File info
+    //Item info
     var name: String = file.name
     var mimeType: String = if (isVideo) "video/*" else "image/*"
 
@@ -33,23 +33,23 @@ class TurboFile(
         return trashInfo != null
     }
 
-    override fun compareTo(other: TurboFile): Int {
+    override fun compareTo(other: TurboItem): Int {
         return lastModified.compareTo(other.lastModified)
     }
 
     //Static helpers
     companion object {
 
-        //Load file into ImageView
-        fun load(context: Context, imageView: ImageView, turboFile: TurboFile) {
-            //Reset image scale type (due to a bug HDR does not load, but changing scale type fixes it idk why)
+        //Load item preview into ImageView
+        fun load(context: Context, imageView: ImageView, item: TurboItem) {
+            //Reset image scale type (due to a bug HDR does not load, but idk why changing scale type fixes it)
             imageView.setScaleType(ImageView.ScaleType.CENTER)
 
-            //Load image
+            //Load item preview
             val requestBuilder = Glide.with(context).asBitmap().sizeMultiplier(0.2f)
             Glide.with(context)
                 .asBitmap()
-                .load(turboFile.file.absolutePath)
+                .load(item.file.absolutePath)
                 .thumbnail(requestBuilder)
                 .listener(object : RequestListener<Bitmap> {
                     override fun onLoadFailed(

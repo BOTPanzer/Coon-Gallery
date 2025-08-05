@@ -8,10 +8,13 @@ public class DisplayLayoutManager extends LinearLayoutManager {
 
     private boolean isScrollEnabled = true;
 
+
+    //Layout manager
     public DisplayLayoutManager(Context context) {
         super(context);
     }
 
+    //Scrolling
     public void setScrollEnabled(boolean flag) {
         this.isScrollEnabled = flag;
     }
@@ -20,4 +23,5 @@ public class DisplayLayoutManager extends LinearLayoutManager {
     public boolean canScrollHorizontally() {
         return isScrollEnabled && super.canScrollHorizontally();
     }
+
 }

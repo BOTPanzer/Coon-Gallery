@@ -30,7 +30,7 @@ import com.botpa.turbophotos.util.Library;
 import com.botpa.turbophotos.R;
 import com.botpa.turbophotos.util.Orion;
 import com.botpa.turbophotos.util.Storage;
-import com.botpa.turbophotos.util.TurboFile;
+import com.botpa.turbophotos.util.TurboItem;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import org.jetbrains.annotations.NotNull;
@@ -342,39 +342,39 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        //Get indexes of files in gallery list & sort them
-        ArrayList<Integer> indexesInGallery = new ArrayList<>(action.files.length);
-        for (TurboFile file : action.files) {
-            int indexInGallery = gallery.files.indexOf(file);
+        //Get indexes of items in gallery list & sort them
+        ArrayList<Integer> indexesInGallery = new ArrayList<>(action.items.length);
+        for (TurboItem item : action.items) {
+            int indexInGallery = gallery.items.indexOf(item);
             if (indexInGallery != -1) indexesInGallery.add(indexInGallery);
         }
-        indexesInGallery.sort(Comparator.reverseOrder()); //Sort from last to first so that selected files can be removed correctly
+        indexesInGallery.sort(Comparator.reverseOrder()); //Sort from last to first so that selected items can be removed correctly
 
-        //Remove gallery files
+        //Remove gallery items
         for (int indexInGallery : indexesInGallery) {
-            //Get file
-            TurboFile file = gallery.files.get(indexInGallery);
+            //Get item
+            TurboItem item = gallery.items.get(indexInGallery);
 
             //Remove it & update adapter
-            gallery.files.remove(indexInGallery);
+            gallery.items.remove(indexInGallery);
             gallery.selected.remove(indexInGallery);
             gallery.albumAdapter.notifyItemRemoved(indexInGallery);
 
             //Check if gallery is empty
-            if (gallery.files.isEmpty()) {
+            if (gallery.items.isEmpty()) {
                 //Is empty -> Close display list & return to albums
                 display.close();
                 gallery.showAlbumsList(true);
                 break;
             }
 
-            //Check if file is open in display
-            if (display.isOpen && display.files.contains(file)) {
+            //Check if item is open in display
+            if (display.isOpen && display.items.contains(item)) {
                 //Display list is visible -> Check if a new image can be selected
-                if (display.current != file) {
+                if (display.currentItem != item) {
                     //File is in display list but is not selected -> Reselect image to reset list
                     display.open(indexInGallery);
-                } else if (display.currentRelativeIndex != display.files.size() - 1) {
+                } else if (display.currentRelativeIndex != display.items.size() - 1) {
                     //An image is available next -> Select it
                     display.open(indexInGallery);   //Next image would be the same index since this image was deleted
                 } else if (display.currentRelativeIndex != 0) {
@@ -384,48 +384,48 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        //Remove select back callback if no more files are selected
+        //Remove select back callback if no more items are selected
         if (gallery.selected.isEmpty()) gallery.unselectAll();
     }
 
-    public void restoreFiles(TurboFile[] files) {
-        //Restore file & manage action result
-        manageAction(Library.restoreFiles(MainActivity.this, files));
+    public void restoreFiles(TurboItem[] items) {
+        //Restore item & manage action result
+        manageAction(Library.restoreItems(MainActivity.this, items));
     }
 
-    public void trashFiles(TurboFile[] files) {
-        //Trash file & manage action
-        manageAction(Library.trashFiles(MainActivity.this, files));
+    public void trashFiles(TurboItem[] items) {
+        //Trash item & manage action
+        manageAction(Library.trashItems(MainActivity.this, items));
     }
 
-    public void deleteFiles(TurboFile[] files) {
-        //Delete file & manage action
+    public void deleteFiles(TurboItem[] items) {
+        //Delete item & manage action
         new MaterialAlertDialogBuilder(MainActivity.this)
-                .setMessage("Are you sure you want to permanently delete " + (files.length == 1 ? "\"" + files[0].getName() + "\"" : files.length + " files") + "?")
+                .setMessage("Are you sure you want to permanently delete " + (items.length == 1 ? "\"" + items[0].getName() + "\"" : items.length + " items") + "?")
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setNegativeButton("Cancel", null)
                 .setPositiveButton("Delete", (dialog, whichButton) -> {
-                    manageAction(Library.deleteFiles(files));
+                    manageAction(Library.deleteItems(items));
                 })
                 .show();
     }
 
-    public void shareFiles(TurboFile[] files) {
-        //No files
-        if (files.length == 0) return;
+    public void shareFiles(TurboItem[] items) {
+        //No items
+        if (items.length == 0) return;
 
-        //Share files
+        //Share items
         Intent intent;
-        if (files.length == 1) {
-            //Share 1 file
+        if (items.length == 1) {
+            //Share 1 item
             intent = new Intent(Intent.ACTION_SEND);
-            intent.putExtra(Intent.EXTRA_STREAM, Orion.getUriFromFile(MainActivity.this, files[0].file));
-            intent.setType(files[0].getMimeType());
+            intent.putExtra(Intent.EXTRA_STREAM, Orion.getUriFromFile(MainActivity.this, items[0].file));
+            intent.setType(items[0].getMimeType());
         } else {
-            //Share multiple files
+            //Share multiple items
             intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
             ArrayList<Uri> URIs = new ArrayList<>();
-            for (TurboFile file : files) URIs.add(Orion.getUriFromFile(MainActivity.this, file.file));
+            for (TurboItem item : items) URIs.add(Orion.getUriFromFile(MainActivity.this, item.file));
             intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, URIs);
             intent.setType("*/*");
         }

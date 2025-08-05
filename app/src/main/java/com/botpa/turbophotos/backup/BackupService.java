@@ -22,7 +22,7 @@ import com.botpa.turbophotos.util.Album;
 import com.botpa.turbophotos.util.Library;
 import com.botpa.turbophotos.util.Link;
 import com.botpa.turbophotos.util.Orion;
-import com.botpa.turbophotos.util.TurboFile;
+import com.botpa.turbophotos.util.TurboItem;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -73,7 +73,7 @@ public class BackupService extends Service {
     private MetadataInfo metadataRequest;
 
     //Albums
-    private final ArrayList<ArrayList<TurboFile>> backupFiles = new ArrayList<>();
+    private final ArrayList<ArrayList<TurboItem>> backupItems = new ArrayList<>();
 
 
     @Nullable
@@ -96,18 +96,18 @@ public class BackupService extends Service {
             notificationManager.notify(NOTIFICATION_ID, notification);
             startForeground(NOTIFICATION_ID, notification);
 
-            //Init backup files
-            backupFiles.clear();
+            //Init backup items
+            backupItems.clear();
             for (Link link: Library.links) {
-                //Get album & create files list
+                //Get album & create items list
                 Album album = link.album;
-                ArrayList<TurboFile> files = new ArrayList<>();
+                ArrayList<TurboItem> items = new ArrayList<>();
 
-                //Add files if album exists
-                if (album != null) files.addAll(album.files);
+                //Add items if album exists
+                if (album != null) items.addAll(album.items);
 
                 //Save list
-                backupFiles.add(files);
+                backupItems.add(items);
             }
         }
 
@@ -152,16 +152,16 @@ public class BackupService extends Service {
                 ObjectNode obj = Orion.getEmptyJson();
                 obj.put("action", "albums");
                 ArrayNode albumsJsonArray = Orion.getEmptyJsonArray();
-                for (int i = 0; i < backupFiles.size(); i++) {
-                    //Get files
-                    ArrayList<TurboFile> files = backupFiles.get(i);
+                for (int i = 0; i < backupItems.size(); i++) {
+                    //Get items
+                    ArrayList<TurboItem> items = backupItems.get(i);
 
-                    //Create files list
-                    String[] filesArray = new String[files.size()];
-                    for (int j = 0; j < files.size(); j++) filesArray[j] = files.get(j).getName();
+                    //Create items list
+                    String[] itemsArray = new String[items.size()];
+                    for (int j = 0; j < items.size(); j++) itemsArray[j] = items.get(j).getName();
 
-                    //Add array with album files
-                    albumsJsonArray.add(Orion.arrayToJson(filesArray));
+                    //Add array with album items
+                    albumsJsonArray.add(Orion.arrayToJson(itemsArray));
                 }
                 obj.set("albums", albumsJsonArray);
 
@@ -239,15 +239,15 @@ public class BackupService extends Service {
 
                     //Get album
                     int albumIndex = message.get("albumIndex").asInt();
-                    ArrayList<TurboFile> album = backupFiles.get(albumIndex);
+                    ArrayList<TurboItem> album = backupItems.get(albumIndex);
 
-                    //Get file
+                    //Get item & file
                     int fileIndex = message.get("fileIndex").asInt();
-                    TurboFile turboFile = album.get(fileIndex);
-                    File file = turboFile.file;
+                    TurboItem item = album.get(fileIndex);
+                    File file = item.file;
 
                     //Log
-                    send("log", "Sending file info for: " + turboFile.getName());
+                    send("log", "Sending file info for: " + item.getName());
 
                     //Create message
                     ObjectNode obj = Orion.getEmptyJson();
@@ -255,9 +255,9 @@ public class BackupService extends Service {
                     obj.put("albumIndex", albumIndex);
                     obj.put("fileIndex", fileIndex);
                     if (file.exists()) {
-                        obj.put("lastModified", turboFile.lastModified);
-                        obj.put("size", turboFile.size);
-                        obj.put("parts", (turboFile.size / MAX_PART_SIZE) + 1);
+                        obj.put("lastModified", item.lastModified);
+                        obj.put("size", item.size);
+                        obj.put("parts", (item.size / MAX_PART_SIZE) + 1);
                         obj.put("maxPartSize", MAX_PART_SIZE);
                     }
 
@@ -270,16 +270,16 @@ public class BackupService extends Service {
                 case "requestFileData": {
                     //Get album
                     int albumIndex = message.get("albumIndex").asInt();
-                    ArrayList<TurboFile> album = backupFiles.get(albumIndex);
+                    ArrayList<TurboItem> album = backupItems.get(albumIndex);
 
-                    //Get file
+                    //Get item & file
                     int fileIndex = message.get("fileIndex").asInt();
-                    TurboFile turboFile = album.get(fileIndex);
-                    File file = turboFile.file;
+                    TurboItem item = album.get(fileIndex);
+                    File file = item.file;
 
                     //Get offset & length
                     int offset = message.get("part").asInt() * MAX_PART_SIZE;
-                    int length = Math.min((int) turboFile.size - offset, MAX_PART_SIZE);
+                    int length = Math.min((int) item.size - offset, MAX_PART_SIZE);
 
                     //Send file data
                     try {

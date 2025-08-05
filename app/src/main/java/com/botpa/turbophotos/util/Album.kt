@@ -10,7 +10,7 @@ class Album(val name: String, val imagesFolder: File?, val metadataFile: File?) 
 
     //Album info
     @JvmField var metadata: ObjectNode? = null
-    @JvmField val files: ArrayList<TurboFile> = ArrayList()
+    @JvmField val items: ArrayList<TurboItem> = ArrayList()
     var lastModified: Long = if (imagesFolder == null) 0 else imagesFolder.lastModified()
     val imagesPath: String = if (imagesFolder == null) "" else imagesFolder.absolutePath
     val metadataPath: String = if (metadataFile == null) "" else metadataFile.absolutePath
@@ -23,46 +23,46 @@ class Album(val name: String, val imagesFolder: File?, val metadataFile: File?) 
 
     //Files
     fun sort() {
-        files.sortByDescending { it }
+        items.sortByDescending { it }
     }
 
     fun reset() {
-        files.clear()
-        lastModified = if (imagesFolder != null) imagesFolder.lastModified() else 0
+        items.clear()
+        lastModified = imagesFolder?.lastModified() ?: 0
     }
 
     fun size(): Int {
-        return files.size
+        return items.size
     }
 
     fun isEmpty(): Boolean {
-        return files.isEmpty()
+        return items.isEmpty()
     }
 
     fun isNotEmpty(): Boolean {
-        return files.isNotEmpty()
+        return items.isNotEmpty()
     }
 
-    fun get(index: Int): TurboFile {
-        return files[index]
+    fun get(index: Int): TurboItem {
+        return items[index]
     }
 
-    fun add(file: TurboFile) {
-        files.add(file)
+    fun add(item: TurboItem) {
+        items.add(item)
     }
 
-    fun addSorted(file: TurboFile) {
-        val index = Collections.binarySearch(files, file)
+    fun addSorted(item: TurboItem) {
+        val index = Collections.binarySearch(items, item)
         val insertionPoint = if (index < 0) -(index + 1) else index
-        files.add(insertionPoint, file)
+        items.add(insertionPoint, item)
     }
 
-    fun remove(index: Int): TurboFile {
-        return files.removeAt(index)
+    fun remove(index: Int): TurboItem {
+        return items.removeAt(index)
     }
 
-    fun indexOf(file: TurboFile): Int {
-        return files.indexOf(file)
+    fun indexOf(item: TurboItem): Int {
+        return items.indexOf(item)
     }
 
     //Load & save metadata
@@ -71,10 +71,10 @@ class Album(val name: String, val imagesFolder: File?, val metadataFile: File?) 
     }
 
     fun saveMetadata(): Boolean {
-        if (hasMetadata())
-            return Orion.writeJson(metadataFile, metadata)
+        return if (hasMetadata())
+            Orion.writeJson(metadataFile, metadata)
         else
-            return false
+            false
     }
 
     //Metadata actions

@@ -1,6 +1,6 @@
 package com.botpa.turbophotos.util
 
-class ActionHelper(file: TurboFile) {
+class ActionHelper(file: TurboItem) {
 
     @JvmField var indexInTrash = Library.trash.indexOf(file)
     @JvmField var indexInAll = Library.all.indexOf(file)

@@ -10,11 +10,7 @@ import com.botpa.turbophotos.R
 
 class UserAdapter(private val context: Context, private val users: List<User>) : RecyclerView.Adapter<UserAdapter.AlbumHolder>() {
 
-    private var onClickListener: OnClickListener? = null
-    private var onLongClickListener: OnClickListener? = null
-    private var onDeleteListener: OnClickListener? = null
-
-
+    //Adapter
     override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): AlbumHolder {
         val view = LayoutInflater.from(context).inflate(R.layout.connect_item, viewGroup, false)
         return AlbumHolder(view)
@@ -51,6 +47,10 @@ class UserAdapter(private val context: Context, private val users: List<User>) :
     }
 
     //Listeners
+    private var onClickListener: OnClickListener? = null
+    private var onLongClickListener: OnClickListener? = null
+    private var onDeleteListener: OnClickListener? = null
+
     fun interface OnClickListener {
         fun run(view: View, index: Int)
     }
@@ -69,10 +69,12 @@ class UserAdapter(private val context: Context, private val users: List<User>) :
 
     //Holder
     class AlbumHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+
         var background: View = itemView.findViewById(R.id.background)
         var name: TextView = itemView.findViewById(R.id.name)
         var url: TextView = itemView.findViewById(R.id.url)
         var delete: View = itemView.findViewById(R.id.delete)
+
     }
 
 }
