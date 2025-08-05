@@ -465,10 +465,10 @@ public class GalleryHelper {
     //Filter items
     private boolean filterFile(TurboItem item, String filter) {
         //Check item name
-        if (item.getName().toLowerCase().contains(filter)) return true;
+        if (item.name.toLowerCase().contains(filter)) return true;
 
         //Get metadata
-        ObjectNode metadata = item.album.getMetadataKey(item.getName());
+        ObjectNode metadata = item.album.getMetadataKey(item.name);
         if (metadata == null) return false;
 
         //Check caption

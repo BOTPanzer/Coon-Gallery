@@ -399,9 +399,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void deleteFiles(TurboItem[] items) {
+        //Create message
+        StringBuilder message = new StringBuilder();
+        message.append("Are you sure you want to permanently delete ");
+        if (items.length == 1) {
+            message.append("\"");
+            message.append(items[0].name);
+            message.append("\"");
+        } else {
+            message.append(items.length);
+            message.append(" items");
+        }
+        message.append("?");
+
         //Delete item & manage action
         new MaterialAlertDialogBuilder(MainActivity.this)
-                .setMessage("Are you sure you want to permanently delete " + (items.length == 1 ? "\"" + items[0].getName() + "\"" : items.length + " items") + "?")
+                .setMessage(message.toString())
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setNegativeButton("Cancel", null)
                 .setPositiveButton("Delete", (dialog, whichButton) -> {
@@ -420,7 +433,7 @@ public class MainActivity extends AppCompatActivity {
             //Share 1 item
             intent = new Intent(Intent.ACTION_SEND);
             intent.putExtra(Intent.EXTRA_STREAM, Orion.getUriFromFile(MainActivity.this, items[0].file));
-            intent.setType(items[0].getMimeType());
+            intent.setType(items[0].mimeType);
         } else {
             //Share multiple items
             intent = new Intent(Intent.ACTION_SEND_MULTIPLE);

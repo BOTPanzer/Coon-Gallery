@@ -158,7 +158,7 @@ public class BackupService extends Service {
 
                     //Create items list
                     String[] itemsArray = new String[items.size()];
-                    for (int j = 0; j < items.size(); j++) itemsArray[j] = items.get(j).getName();
+                    for (int j = 0; j < items.size(); j++) itemsArray[j] = items.get(j).name;
 
                     //Add array with album items
                     albumsJsonArray.add(Orion.arrayToJson(itemsArray));
@@ -247,7 +247,7 @@ public class BackupService extends Service {
                     File file = item.file;
 
                     //Log
-                    send("log", "Sending file info for: " + item.getName());
+                    send("log", "Sending file info for: " + item.name);
 
                     //Create message
                     ObjectNode obj = Orion.getEmptyJson();

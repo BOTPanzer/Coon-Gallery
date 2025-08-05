@@ -20,8 +20,8 @@ class TurboItem(
 ) : Comparable<TurboItem> {
 
     //Item info
-    var name: String = file.name
-    var mimeType: String = if (isVideo) "video/*" else "image/*"
+    @JvmField var name: String = file.name
+    @JvmField var mimeType: String = if (isVideo) "video/*" else "image/*"
 
 
     //Helpers
@@ -46,7 +46,7 @@ class TurboItem(
             imageView.setScaleType(ImageView.ScaleType.CENTER)
 
             //Load item preview
-            val requestBuilder = Glide.with(context).asBitmap().sizeMultiplier(0.2f)
+            val requestBuilder = Glide.with(context).asBitmap().sizeMultiplier(if (item.isVideo) 0.1f else 0.2f)
             Glide.with(context)
                 .asBitmap()
                 .load(item.file.absolutePath)

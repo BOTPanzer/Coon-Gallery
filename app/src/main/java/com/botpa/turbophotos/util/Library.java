@@ -559,7 +559,7 @@ public class Library {
             ActionHelper helper = action.getHelper(item);
 
             //Delete item metadata from album
-            album.removeMetadataKey(item.getName());
+            album.removeMetadataKey(item.name);
             album.saveMetadata();
 
             //Check if item is in trash

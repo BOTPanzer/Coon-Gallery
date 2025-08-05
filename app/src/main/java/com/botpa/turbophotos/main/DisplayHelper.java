@@ -164,7 +164,7 @@ public class DisplayHelper {
             infoLabelsText.setText(labels);
 
             //Update metadata
-            String key = currentItem.getName();
+            String key = currentItem.name;
             ObjectNode metadata = currentItem.album.getMetadataKey(key);
             if (metadata == null) {
                 metadata = Orion.getEmptyJson();
@@ -223,7 +223,7 @@ public class DisplayHelper {
             showOptions(false);
 
             //Get mime type and URI
-            String mimeType = currentItem.getMimeType();
+            String mimeType = currentItem.mimeType;
             Uri uri = Orion.getMediaStoreUriFromFile(activity, currentItem.file, mimeType);
 
             //Edit
@@ -239,7 +239,7 @@ public class DisplayHelper {
 
             //Show open with menu
             Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setDataAndType(Uri.parse(currentItem.file.getAbsolutePath()), currentItem.getMimeType());
+            intent.setDataAndType(Uri.parse(currentItem.file.getAbsolutePath()), currentItem.mimeType);
             activity.startActivity(intent);
         });
     }
@@ -372,7 +372,7 @@ public class DisplayHelper {
         layoutManager.setScrollEnabled(true);
 
         //Change image name
-        nameText.setText(currentItem.getName());
+        nameText.setText(currentItem.name);
 
         //Prepare options menu
         optionsRestore.setVisibility(currentItem.isTrashed() ? View.VISIBLE : View.GONE);
@@ -386,7 +386,7 @@ public class DisplayHelper {
         String labels = "";
         String text = "";
         try {
-            JsonNode metadata = currentItem.album.getMetadataKey(currentItem.getName());
+            JsonNode metadata = currentItem.album.getMetadataKey(currentItem.name);
             if (metadata == null) throw new Exception();
 
             //Load caption
@@ -426,7 +426,7 @@ public class DisplayHelper {
         } catch (Exception ignored) {
             //Error while parsing JSON
         }
-        infoNameText.setText(currentItem.getName());
+        infoNameText.setText(currentItem.name);
         infoCaptionText.setText(caption);
         infoLabelsText.setText(labels);
         infoTextText.setText(text);
