@@ -203,6 +203,10 @@ public class Library {
         //Add link
         links.add(link);
         linksMap.put(key, link);
+
+        //Relink with album if it exists
+        link.album = albumsMap.getOrDefault(link.getImagesPath(), null);
+        if (link.album != null) link.album.updateMetadataFile(link.metadataFile);
         return true;
     }
 

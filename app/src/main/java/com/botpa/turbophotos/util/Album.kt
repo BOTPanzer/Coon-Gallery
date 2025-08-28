@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import java.io.File
 import java.util.Collections
 
-class Album(val name: String, val imagesFolder: File?, val metadataFile: File?) {
+class Album(val name: String, val imagesFolder: File?, var metadataFile: File?) {
 
     constructor(name: String) : this(name, null, null)
 
@@ -13,12 +13,12 @@ class Album(val name: String, val imagesFolder: File?, val metadataFile: File?) 
     @JvmField val items: ArrayList<TurboItem> = ArrayList()
     var lastModified: Long = if (imagesFolder == null) 0 else imagesFolder.lastModified()
     val imagesPath: String = if (imagesFolder == null) "" else imagesFolder.absolutePath
-    val metadataPath: String = if (metadataFile == null) "" else metadataFile.absolutePath
+    val metadataPath: String = if (metadataFile == null) "" else metadataFile!!.absolutePath
 
 
     //Util
     fun exists(): Boolean {
-        return imagesFolder != null && metadataFile != null && imagesFolder.exists() && metadataFile.exists()
+        return imagesFolder != null && metadataFile != null && imagesFolder.exists() && metadataFile!!.exists()
     }
 
     //Files
@@ -66,6 +66,11 @@ class Album(val name: String, val imagesFolder: File?, val metadataFile: File?) 
     }
 
     //Load & save metadata
+    fun updateMetadataFile(newFile: File?) {
+        metadataFile = newFile;
+        metadata = null;
+    }
+
     fun loadMetadata() {
         metadata = Orion.loadJson(metadataFile)
     }

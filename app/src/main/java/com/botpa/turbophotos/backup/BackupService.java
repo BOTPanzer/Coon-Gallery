@@ -101,6 +101,7 @@ public class BackupService extends Service {
             for (Link link: Library.links) {
                 //Get album & create items list
                 Album album = link.album;
+                Log.i("ALBUM", "" + album);
                 ArrayList<TurboItem> items = new ArrayList<>();
 
                 //Add items if album exists
@@ -108,6 +109,9 @@ public class BackupService extends Service {
 
                 //Save list
                 backupItems.add(items);
+            }
+            for (ArrayList<TurboItem> list: backupItems) {
+                Log.i("LIST", "" + list.size());
             }
         }
 
