@@ -13,6 +13,7 @@ import android.provider.Settings;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -20,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.WindowCompat;
 
 import android.Manifest;
 
@@ -102,22 +104,35 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
         setContentView(R.layout.main);
 
         //Load storage
         Storage.load(MainActivity.this);
 
+        //Load views
+        loadViews();
+
         //Check permissions
         checkPermissions();
+    }
+
+    private void loadViews() {
+        //Load indicator
+        loadIndicator = findViewById(R.id.loadIndicator);
+        loadIndicatorText = findViewById(R.id.loadIndicatorText);
+
+        //Gallery & Search
+        gallery.loadViews();
+
+        //Display
+        display.loadViews();
     }
 
     private void loadApp() {
         //App
         backManager = new BackManager(MainActivity.this, getOnBackPressedDispatcher());
         getWindow().setColorMode(ActivityInfo.COLOR_MODE_HDR);
-
-        //Load views
-        loadViews();
 
         //Add listeners
         addListeners();
@@ -143,18 +158,6 @@ public class MainActivity extends AppCompatActivity {
             //Gallery loaded
             isLoaded = true;
         }).start();
-    }
-
-    private void loadViews() {
-        //Load indicator
-        loadIndicator = findViewById(R.id.loadIndicator);
-        loadIndicatorText = findViewById(R.id.loadIndicatorText);
-
-        //Gallery & Search
-        gallery.loadViews();
-
-        //Display
-        display.loadViews();
     }
 
     private void addListeners() {
@@ -373,13 +376,13 @@ public class MainActivity extends AppCompatActivity {
                 //Display list is visible -> Check if a new image can be selected
                 if (display.currentItem != item) {
                     //File is in display list but is not selected -> Reselect image to reset list
-                    display.open(indexInGallery);
+                    display.open(indexInGallery, false);
                 } else if (display.currentRelativeIndex != display.items.size() - 1) {
                     //An image is available next -> Select it
-                    display.open(indexInGallery);   //Next image would be the same index since this image was deleted
+                    display.open(indexInGallery, false);    //Next image would be the same index since this image was deleted
                 } else if (display.currentRelativeIndex != 0) {
                     //An image is available before -> Select it
-                    display.open(indexInGallery - 1);
+                    display.open(indexInGallery - 1, false);
                 }
             }
         }

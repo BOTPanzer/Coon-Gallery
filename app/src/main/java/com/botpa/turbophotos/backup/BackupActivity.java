@@ -116,6 +116,9 @@ public class BackupActivity extends AppCompatActivity {
         usersLoading = findViewById(R.id.usersLoading);
         usersList = findViewById(R.id.usersList);
         logsList = findViewById(R.id.logsList);
+
+        //Insets
+        Orion.addInsetsChangedListener(getWindow().getDecorView());
     }
 
     private void addListeners() {

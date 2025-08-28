@@ -117,6 +117,9 @@ public class SettingsActivity extends AppCompatActivity {
         //Links
         linksFoldersList = findViewById(R.id.linksList);
         linksFoldersAdd = findViewById(R.id.linksAdd);
+
+        //Insets
+        Orion.addInsetsChangedListener(getWindow().getDecorView());
     }
 
     private void loadSettings() {

@@ -9,6 +9,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.recyclerview.widget.PagerSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SnapHelper;
@@ -108,13 +111,16 @@ public class DisplayHelper {
         optionsShare = activity.findViewById(R.id.displayOptionsShare);
         optionsEdit = activity.findViewById(R.id.displayOptionsEdit);
         optionsOpenOutside = activity.findViewById(R.id.displayOptionsOpen);
+
+        //Insets
+        Orion.addInsetsChangedListener(overlayLayout, 150);
     }
 
     public void addListeners() {
         //Main
         closeButton.setOnClickListener(view -> {
             //Reset display current
-            open(-1);
+            open(-1, false);
 
             //Hide display
             Orion.hideAnim(layout);
@@ -250,7 +256,7 @@ public class DisplayHelper {
             infoLabelsScroll.scrollTo(0, 0);
             infoTextScroll.scrollTo(0, 0);
             Orion.showAnim(infoLayout);
-            activity.backManager.register("displayInfo", () -> infoButton.performClick());
+            activity.backManager.register("displayInfo", () -> showInfo(false));
         } else {
             Orion.hideAnim(infoLayout);
             activity.backManager.unregister("displayInfo");
@@ -262,7 +268,7 @@ public class DisplayHelper {
             editCaptionText.setText(infoCaptionText.getText());
             editLabelsText.setText(infoLabelsText.getText());
             Orion.showAnim(editLayout);
-            activity.backManager.register("displayEdit", () -> infoEdit.performClick());
+            activity.backManager.register("displayEdit", () -> showEdit(false));
         } else {
             Orion.hideKeyboard(activity);
             Orion.clearFocus(activity);
@@ -294,10 +300,13 @@ public class DisplayHelper {
         //Create display adapter
         adapter = new DisplayAdapter(activity, items);
         adapter.setOnClickListener((view, index) -> {
-            if (overlayLayout.getVisibility() == View.VISIBLE)
+            if (overlayLayout.getVisibility() == View.VISIBLE) {
                 Orion.hideAnim(overlayLayout);
-            else
+                showBars(false);
+            } else {
                 Orion.showAnim(overlayLayout);
+                showBars(true);
+            }
         });
         adapter.setOnZoomChangedListener((view, index) -> {
             //Enable scrolling only if not zoomed and one finger is over
@@ -327,11 +336,11 @@ public class DisplayHelper {
                     if (position < currentRelativeIndex) {
                         //Previous
                         layoutManager.setScrollEnabled(false);
-                        open(currentIndex - 1);
+                        open(currentIndex - 1, false);
                     } else if (position > currentRelativeIndex) {
                         //Next
                         layoutManager.setScrollEnabled(false);
-                        open(currentIndex + 1);
+                        open(currentIndex + 1, false);
                     }
                 }
                 super.onScrollStateChanged(recyclerView, newState);
@@ -339,7 +348,7 @@ public class DisplayHelper {
         });
     }
 
-    public void open(int index) {
+    public void open(int index, boolean showOverlay) {
         //Deselect
         if (index == -1) {
             currentRelativeIndex = -1;
@@ -432,6 +441,11 @@ public class DisplayHelper {
         infoTextText.setText(text);
 
         //Close search & show display
+        if (showOverlay) {
+            overlayLayout.setVisibility(View.VISIBLE);
+            showBars(false);    //Hide & show to trigger overlay animation
+            showBars(true);
+        }
         activity.gallery.showSearchLayout(false);
         Orion.showAnim(layout);
         isOpen = true;
@@ -441,10 +455,21 @@ public class DisplayHelper {
     }
 
     public void close() {
+        showBars(true);
         showInfo(false);
         showEdit(false);
         showOptions(false);
         closeButton.performClick();
+    }
+
+    private void showBars(boolean show) {
+        WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(activity.getWindow(), overlayLayout);
+
+        if (show) {
+            controller.show(WindowInsetsCompat.Type.systemBars());
+        } else {
+            controller.hide(WindowInsetsCompat.Type.systemBars());
+        }
     }
 
 }

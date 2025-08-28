@@ -1,5 +1,6 @@
 package com.botpa.turbophotos.util;
 
+import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ClipData;
@@ -31,6 +32,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.core.content.FileProvider;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.botpa.turbophotos.R;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -311,6 +315,52 @@ public class Orion {
         public boolean willChangeBounds() {
             return true;
         }
+    }
+
+    //Insets
+    public static void addInsetsChangedListener(View view) {
+        addInsetsChangedListener(view, 0);
+    }
+
+    public static void addInsetsChangedListener(View view, float duration) {
+        ViewCompat.setOnApplyWindowInsetsListener(view, (_view, windowInsets) -> {
+            //Get insets
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+
+            //Check if animate
+            if (duration <= 0) {
+                //No animation
+                view.setPadding(insets.left, insets.top, insets.right, insets.bottom);
+            } else {
+                //Animate
+                float leftStart = view.getPaddingLeft();
+                float leftEnd = insets.left;
+                float topStart = view.getPaddingTop();
+                float topEnd = insets.top;
+                float rightStart = view.getPaddingRight();
+                float rightEnd = insets.right;
+                float botStart = view.getPaddingBottom();
+                float botEnd = insets.bottom;
+
+                //Animate
+                ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
+                animator.setDuration(150);
+                animator.addUpdateListener(animation -> {
+                    float percent = animation.getAnimatedFraction();
+
+                    view.setPadding(
+                            (int) Orion.lerp(leftStart, leftEnd, percent),
+                            (int) Orion.lerp(topStart, topEnd, percent),
+                            (int) Orion.lerp(rightStart, rightEnd, percent),
+                            (int) Orion.lerp(botStart, botEnd, percent)
+                    );
+                });
+                animator.start();
+            }
+
+            //Done
+            return WindowInsetsCompat.CONSUMED;
+        });
     }
 
     //Clipboard

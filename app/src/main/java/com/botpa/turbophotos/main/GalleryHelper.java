@@ -110,6 +110,9 @@ public class GalleryHelper {
         searchOpenLayout = activity.findViewById(R.id.searchLayoutOpen);
         searchCloseButton = activity.findViewById(R.id.searchButtonClose);
         searchInput = activity.findViewById(R.id.searchInput);
+
+        //Insets
+        Orion.addInsetsChangedListener(activity.findViewById(R.id.galleryLayout));
     }
 
     public void addListeners() {
@@ -360,7 +363,7 @@ public class GalleryHelper {
                 toggleSelected(index);
             } else {
                 //Not selecting -> Open image
-                activity.display.open(index);
+                activity.display.open(index, true);
             }
         });
         albumAdapter.setOnLongClickListener((view, index) -> {
