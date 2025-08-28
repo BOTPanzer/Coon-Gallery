@@ -268,7 +268,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         //Check albums for updates
-        gallery.refresh();
+        if (gallery.inHome) gallery.refresh();
     }
 
     @Override
