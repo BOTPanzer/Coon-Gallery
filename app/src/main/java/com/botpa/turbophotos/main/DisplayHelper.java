@@ -113,7 +113,6 @@ public class DisplayHelper {
         optionsOpenOutside = activity.findViewById(R.id.displayOptionsOpen);
 
         //Insets
-        //Orion.addInsetsChangedListener(overlayLayout, WindowInsetsCompat.Type.systemBars(), 150);
         Orion.addInsetsChangedListener(overlayLayout, new int[] { WindowInsetsCompat.Type.systemBars(), WindowInsetsCompat.Type.ime() }, 150);
     }
 

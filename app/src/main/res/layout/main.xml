@@ -577,7 +577,7 @@
                     android:background="#33000000"
                     android:gravity="bottom"
                     android:orientation="vertical"
-                    android:paddingVertical="100dp"
+                    android:paddingBottom="100dp"
                     android:visibility="gone">
 
                     <androidx.cardview.widget.CardView
@@ -611,6 +611,11 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:hint="Caption"
+                                    android:textColor="?attr/colorOnPrimary"
+                                    android:textColorHighlight="?attr/colorOnPrimary"
+                                    android:textColorHint="?attr/colorOnPrimary"
+                                    android:textColorLink="?attr/colorOnPrimary"
+                                    android:textSize="14sp"
                                     android:theme="@style/EditTextStyle" />
 
                                 <TextView
@@ -627,6 +632,11 @@
                                     android:layout_height="wrap_content"
                                     android:hint="Labels (coma separated)"
                                     android:singleLine="true"
+                                    android:textColor="?attr/colorOnPrimary"
+                                    android:textColorHighlight="?attr/colorOnPrimary"
+                                    android:textColorHint="?attr/colorOnPrimary"
+                                    android:textColorLink="?attr/colorOnPrimary"
+                                    android:textSize="14sp"
                                     android:theme="@style/EditTextStyle" />
 
                                 <androidx.cardview.widget.CardView
@@ -670,7 +680,7 @@
                     android:background="#33000000"
                     android:gravity="bottom"
                     android:orientation="vertical"
-                    android:paddingVertical="100dp"
+                    android:paddingBottom="100dp"
                     android:visibility="gone">
 
                     <androidx.cardview.widget.CardView
