@@ -1,14 +1,20 @@
 package com.botpa.turbophotos.main;
 
+import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.net.Uri;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
 import android.widget.HorizontalScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
@@ -62,7 +68,7 @@ public class DisplayHelper {
     private View editLayout;
     private TextView editCaptionText;
     private TextView editLabelsText;
-    private View editSave;
+    private View editSave, editSpace;
 
     private View optionsLayout;
     private View optionsRestore;
@@ -102,6 +108,7 @@ public class DisplayHelper {
         editCaptionText = activity.findViewById(R.id.displayEditCaptionText);
         editLabelsText = activity.findViewById(R.id.displayEditLabelsText);
         editSave = activity.findViewById(R.id.displayEditSave);
+        editSpace = activity.findViewById(R.id.displayEditSpace);
 
         //Options
         optionsLayout = activity.findViewById(R.id.displayOptionsLayout);
@@ -113,7 +120,45 @@ public class DisplayHelper {
         optionsOpenOutside = activity.findViewById(R.id.displayOptionsOpen);
 
         //Insets
-        Orion.addInsetsChangedListener(overlayLayout, new int[] { WindowInsetsCompat.Type.systemBars(), WindowInsetsCompat.Type.ime() }, 150);
+        Orion.addInsetsChangedListener(
+                activity.findViewById(R.id.displayOverlayIndent),
+                new int[]{ WindowInsetsCompat.Type.systemBars() },
+                0,
+                (view, insets, duration) -> {
+                    //Ignore if no margins
+                    if (insets.top <= 0 && insets.bottom <= 0) return;
+
+                    //Update margins
+                    ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+                    params.setMargins(insets.left, insets.top, insets.right, insets.bottom);
+                    view.setLayoutParams(params);
+                }
+        );
+
+        //Insets (edit info layout)
+        int defaultEditSpaceHeight = editSpace.getMinimumHeight(); //getHeight() returns 0 when view is not rendered, so store height on minHeight too :D
+        ViewCompat.setOnApplyWindowInsetsListener(editSpace, (view, windowInsets) -> {
+            //Get new bottom space height
+            Insets insetsSystemBars = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+            Insets insetsKeyboard = windowInsets.getInsets(WindowInsetsCompat.Type.ime());
+            boolean keyboardOpen = insetsKeyboard.bottom != 0;
+            int height = keyboardOpen ? insetsKeyboard.bottom : insetsSystemBars.bottom + defaultEditSpaceHeight;
+
+            //Update bottom space height
+            if (view.getHeight() == 0) {
+                //Not rendered yet -> Don't animate
+                view.getLayoutParams().height = height;
+                view.requestLayout();
+            } else {
+                //Has height -> Animate
+                Orion.ResizeHeightAnimation resize = new Orion.ResizeHeightAnimation(editSpace, height);
+                resize.setDuration(100L);
+                view.startAnimation(resize);
+            }
+
+            //Done
+            return windowInsets;
+        });
     }
 
     public void addListeners() {

@@ -34,7 +34,6 @@ import android.widget.TextView;
 import androidx.core.content.FileProvider;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.botpa.turbophotos.R;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -262,20 +261,26 @@ public class Orion {
     }
 
     public static class ResizeWidthAnimation extends Animation {
-        private final int mWidth;
-        private final int mStartWidth;
-        private final View mView;
+
+        private final View view;
+        private final int width, startWidth;
 
         public ResizeWidthAnimation(View view, int width) {
-            mView = view;
-            mWidth = width;
-            mStartWidth = view.getWidth();
+            this.view = view;
+            this.width = width;
+            startWidth = view.getWidth();
+        }
+
+        public ResizeWidthAnimation(View view, int width, int startWidth) {
+            this.view = view;
+            this.width = width;
+            this.startWidth = startWidth;
         }
 
         @Override
         protected void applyTransformation(float interpolatedTime, Transformation t) {
-            mView.getLayoutParams().width = mStartWidth + (int) ((mWidth - mStartWidth) * interpolatedTime);
-            mView.requestLayout();
+            view.getLayoutParams().width = startWidth + (int) ((width - startWidth) * interpolatedTime);
+            view.requestLayout();
         }
 
         @Override
@@ -287,23 +292,30 @@ public class Orion {
         public boolean willChangeBounds() {
             return true;
         }
+
     }
 
     public static class ResizeHeightAnimation extends Animation {
-        private final int mHeight;
-        private final int mStartHeight;
-        private final View mView;
+
+        private final View view;
+        private final int height, startHeight;
 
         public ResizeHeightAnimation(View view, int height) {
-            mView = view;
-            mHeight = height;
-            mStartHeight = view.getHeight();
+            this.view = view;
+            this.height = height;
+            startHeight = view.getHeight();
+        }
+
+        public ResizeHeightAnimation(View view, int height, int startHeight) {
+            this.view = view;
+            this.height = height;
+            this.startHeight = startHeight;
         }
 
         @Override
         protected void applyTransformation(float interpolatedTime, Transformation t) {
-            mView.getLayoutParams().height = mStartHeight + (int) ((mHeight - mStartHeight) * interpolatedTime);
-            mView.requestLayout();
+            view.getLayoutParams().height = startHeight + (int) ((height - startHeight) * interpolatedTime);
+            view.requestLayout();
         }
 
         @Override
@@ -315,22 +327,64 @@ public class Orion {
         public boolean willChangeBounds() {
             return true;
         }
+
     }
 
     //Insets
+    public interface OnInsetsChanged {
+        void run(View view, Insets insets, float duration);
+    }
+
+    public static final OnInsetsChanged onInsetsChangedDefault = (view, insets, duration) -> {
+        //Check if animate
+        if (duration <= 0) {
+            //No animation
+            view.setPadding(insets.left, insets.top, insets.right, insets.bottom);
+        } else {
+            //Animate
+            float leftStart = view.getPaddingLeft();
+            float leftEnd = insets.left;
+            float topStart = view.getPaddingTop();
+            float topEnd = insets.top;
+            float rightStart = view.getPaddingRight();
+            float rightEnd = insets.right;
+            float botStart = view.getPaddingBottom();
+            float botEnd = insets.bottom;
+
+            //Animate
+            ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
+            animator.setDuration((long) duration);
+            animator.addUpdateListener(animation -> {
+                float percent = animation.getAnimatedFraction();
+
+                view.setPadding(
+                        (int) Orion.lerp(leftStart, leftEnd, percent),
+                        (int) Orion.lerp(topStart, topEnd, percent),
+                        (int) Orion.lerp(rightStart, rightEnd, percent),
+                        (int) Orion.lerp(botStart, botEnd, percent)
+                );
+            });
+            animator.start();
+        }
+    };
+
     public static void addInsetsChangedListener(View view, int type) {
-        addInsetsChangedListener(view, new int[] { type }, 0);
+        addInsetsChangedListener(view, new int[] { type }, 0, onInsetsChangedDefault);
     }
 
     public static void addInsetsChangedListener(View view, int[] types) {
-        addInsetsChangedListener(view, types, 0);
+        addInsetsChangedListener(view, types, 0, onInsetsChangedDefault);
     }
 
     public static void addInsetsChangedListener(View view, int type, float duration) {
-        addInsetsChangedListener(view, new int[] { type }, duration);
+        addInsetsChangedListener(view, new int[] { type }, duration, onInsetsChangedDefault);
     }
 
     public static void addInsetsChangedListener(View view, int[] types, float duration) {
+        addInsetsChangedListener(view, types, duration, onInsetsChangedDefault);
+    }
+
+    public static void addInsetsChangedListener(View view, int[] types, float duration, OnInsetsChanged onInsetsChanged) {
         if (types.length == 0) return;
 
         ViewCompat.setOnApplyWindowInsetsListener(view, (_view, windowInsets) -> {
@@ -338,36 +392,8 @@ public class Orion {
             Insets insets = Insets.of(0, 0, 0, 0);
             for (int type: types) insets = Insets.add(insets, windowInsets.getInsets(type)); //WindowInsetsCompat.Type.systemBars()
 
-            //Check if animate
-            if (duration <= 0) {
-                //No animation
-                view.setPadding(insets.left, insets.top, insets.right, insets.bottom);
-            } else {
-                //Animate
-                float leftStart = view.getPaddingLeft();
-                float leftEnd = insets.left;
-                float topStart = view.getPaddingTop();
-                float topEnd = insets.top;
-                float rightStart = view.getPaddingRight();
-                float rightEnd = insets.right;
-                float botStart = view.getPaddingBottom();
-                float botEnd = insets.bottom;
-
-                //Animate
-                ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
-                animator.setDuration(150);
-                animator.addUpdateListener(animation -> {
-                    float percent = animation.getAnimatedFraction();
-
-                    view.setPadding(
-                            (int) Orion.lerp(leftStart, leftEnd, percent),
-                            (int) Orion.lerp(topStart, topEnd, percent),
-                            (int) Orion.lerp(rightStart, rightEnd, percent),
-                            (int) Orion.lerp(botStart, botEnd, percent)
-                    );
-                });
-                animator.start();
-            }
+            //Run on insets changed
+            onInsetsChanged.run(view, insets, duration);
 
             //Done
             return windowInsets;
