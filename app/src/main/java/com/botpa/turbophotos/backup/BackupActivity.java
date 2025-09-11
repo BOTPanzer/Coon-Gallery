@@ -10,6 +10,9 @@ import android.view.View;
 import android.widget.EditText;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -118,7 +121,7 @@ public class BackupActivity extends AppCompatActivity {
         logsList = findViewById(R.id.logsList);
 
         //Insets
-        Orion.addInsetsChangedListener(getWindow().getDecorView());
+        Orion.addInsetsChangedListener(getWindow().getDecorView(), new int[] { WindowInsetsCompat.Type.systemBars(), WindowInsetsCompat.Type.ime() });
     }
 
     private void addListeners() {

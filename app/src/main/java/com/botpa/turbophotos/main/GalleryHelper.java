@@ -1,5 +1,6 @@
 package com.botpa.turbophotos.main;
 
+import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -10,6 +11,9 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
@@ -111,8 +115,19 @@ public class GalleryHelper {
         searchCloseButton = activity.findViewById(R.id.searchButtonClose);
         searchInput = activity.findViewById(R.id.searchInput);
 
-        //Insets
-        Orion.addInsetsChangedListener(activity.findViewById(R.id.galleryLayout));
+        //Insets (keyboard)
+        Orion.addInsetsChangedListener(activity.findViewById(R.id.galleryContent), WindowInsetsCompat.Type.ime());
+        ViewCompat.setOnApplyWindowInsetsListener(activity.findViewById(R.id.galleryLayout), (view, windowInsets) -> {
+            //Get insets
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+
+            //Update padding
+            view.setPadding(insets.left, insets.top, insets.right, 0);
+            list.setPadding(0, list.getPaddingTop(), 0, insets.bottom);
+
+            //Done
+            return windowInsets;
+        });
     }
 
     public void addListeners() {

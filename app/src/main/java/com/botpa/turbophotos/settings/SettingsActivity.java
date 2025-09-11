@@ -9,6 +9,7 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -119,7 +120,7 @@ public class SettingsActivity extends AppCompatActivity {
         linksFoldersAdd = findViewById(R.id.linksAdd);
 
         //Insets
-        Orion.addInsetsChangedListener(getWindow().getDecorView());
+        Orion.addInsetsChangedListener(getWindow().getDecorView(), new int[] { WindowInsetsCompat.Type.systemBars(), WindowInsetsCompat.Type.ime() });
     }
 
     private void loadSettings() {

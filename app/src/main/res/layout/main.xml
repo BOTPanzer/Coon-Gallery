@@ -18,6 +18,7 @@
             android:orientation="vertical">
 
             <LinearLayout
+                android:id="@+id/galleryTop"
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
                 android:gravity="center_vertical"
@@ -69,155 +70,167 @@
                         app:tint="?attr/colorOnSurface" />
 
                 </androidx.cardview.widget.CardView>
+
             </LinearLayout>
 
             <RelativeLayout
+                android:id="@+id/galleryContent"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1">
+                android:layout_height="match_parent"
+                android:layout_marginTop="-10dp">
 
-                <LinearLayout
+                <RelativeLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical">
+                    android:layout_height="match_parent">
 
-                    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-                        android:id="@+id/galleryRefreshLayout"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="1">
+                        android:layout_height="match_parent"
+                        android:orientation="vertical">
 
-                        <com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView
-                            android:id="@+id/gallery"
+                        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                            android:id="@+id/galleryRefreshLayout"
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:clipToPadding="false"
-                            android:paddingTop="5dp"
-                            android:paddingBottom="20dp"
-                            android:visibility="gone"
-                            app:fastScrollThumbColor="?attr/colorPrimary"
-                            app:fastScrollThumbInactiveColor="?attr/colorPrimary"
-                            app:fastScrollVerticalThumbDrawable="@drawable/custom_scrollbar_thumb">
+                            android:layout_height="0dp"
+                            android:layout_weight="1">
 
-                        </com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView>
+                            <com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView
+                                android:id="@+id/gallery"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:clipToPadding="false"
+                                android:paddingTop="10dp"
+                                android:visibility="gone"
+                                app:fastScrollThumbColor="?attr/colorPrimary"
+                                app:fastScrollThumbInactiveColor="?attr/colorPrimary"
+                                app:fastScrollVerticalThumbDrawable="@drawable/custom_scrollbar_thumb">
 
-                    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+                            </com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView>
+
+                        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
 
-                    <androidx.cardview.widget.CardView
-                        android:id="@+id/searchLayoutOpen"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="-20dp"
-                        android:layout_marginBottom="-20dp"
-                        android:padding="20dp"
-                        android:visibility="gone"
-                        app:cardBackgroundColor="?attr/colorSurface"
-                        app:cardCornerRadius="20dp">
-
-                        <LinearLayout
+                        <androidx.cardview.widget.CardView
+                            android:id="@+id/searchLayoutOpen"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginBottom="20dp"
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal">
+                            android:layout_marginTop="-20dp"
+                            android:layout_marginBottom="-20dp"
+                            android:padding="20dp"
+                            android:visibility="gone"
+                            app:cardBackgroundColor="?attr/colorSurface"
+                            app:cardCornerRadius="20dp">
 
-                            <EditText
-                                android:id="@+id/searchInput"
-                                android:layout_width="0dp"
+                            <LinearLayout
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginStart="15dp"
-                                android:layout_weight="1"
-                                android:ems="10"
-                                android:hint="Search"
-                                android:singleLine="true" />
+                                android:layout_marginBottom="20dp"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
 
-                            <androidx.cardview.widget.CardView
-                                android:id="@+id/searchButtonClose"
-                                android:layout_width="40dp"
-                                android:layout_height="40dp"
-                                android:layout_margin="15dp"
-                                app:cardBackgroundColor="#00000000"
-                                app:cardCornerRadius="20dp"
-                                app:cardElevation="0dp">
+                                <EditText
+                                    android:id="@+id/searchInput"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="15dp"
+                                    android:layout_weight="1"
+                                    android:ems="10"
+                                    android:hint="Search"
+                                    android:singleLine="true" />
 
-                                <ImageView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:background="?attr/selectableItemBackground"
-                                    android:padding="8dp"
-                                    android:rotation="90"
-                                    app:srcCompat="@drawable/chevron_right"
-                                    app:tint="?attr/colorOnSurface" />
+                                <androidx.cardview.widget.CardView
+                                    android:id="@+id/searchButtonClose"
+                                    android:layout_width="40dp"
+                                    android:layout_height="40dp"
+                                    android:layout_margin="15dp"
+                                    app:cardBackgroundColor="#00000000"
+                                    app:cardCornerRadius="20dp"
+                                    app:cardElevation="0dp">
 
-                            </androidx.cardview.widget.CardView>
+                                    <ImageView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:background="?attr/selectableItemBackground"
+                                        android:padding="8dp"
+                                        android:rotation="90"
+                                        app:srcCompat="@drawable/chevron_right"
+                                        app:tint="?attr/colorOnSurface" />
 
-                        </LinearLayout>
-                    </androidx.cardview.widget.CardView>
+                                </androidx.cardview.widget.CardView>
 
-                </LinearLayout>
+                            </LinearLayout>
+                        </androidx.cardview.widget.CardView>
 
-                <LinearLayout
-                    android:id="@+id/loadIndicator"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="bottom|center"
-                    android:orientation="vertical"
-                    android:paddingHorizontal="15dp"
-                    android:paddingVertical="25dp"
-                    android:visibility="gone">
+                    </LinearLayout>
 
-                    <androidx.cardview.widget.CardView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        app:cardBackgroundColor="?attr/colorPrimary"
-                        app:cardCornerRadius="30dp">
+                    <LinearLayout
+                        android:id="@+id/loadIndicator"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="bottom|center"
+                        android:orientation="vertical"
+                        android:paddingHorizontal="15dp"
+                        android:paddingVertical="25dp"
+                        android:visibility="gone">
 
-                        <TextView
-                            android:id="@+id/loadIndicatorText"
+                        <androidx.cardview.widget.CardView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginHorizontal="20dp"
-                            android:layout_marginVertical="10dp"
-                            android:text="Loading..."
-                            android:textColor="?attr/colorOnPrimary" />
-                    </androidx.cardview.widget.CardView>
-                </LinearLayout>
+                            app:cardBackgroundColor="?attr/colorPrimary"
+                            app:cardCornerRadius="30dp">
 
-                <LinearLayout
-                    android:id="@+id/searchLayoutClosed"
+                            <TextView
+                                android:id="@+id/loadIndicatorText"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginHorizontal="20dp"
+                                android:layout_marginVertical="10dp"
+                                android:text="Loading..."
+                                android:textColor="?attr/colorOnPrimary" />
+                        </androidx.cardview.widget.CardView>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/searchLayoutClosed"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="bottom|right"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <androidx.cardview.widget.CardView
+                            android:layout_width="60dp"
+                            android:layout_height="60dp"
+                            android:layout_margin="24dp"
+                            app:cardBackgroundColor="?attr/colorPrimary"
+                            app:cardCornerRadius="15dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:background="?attr/selectableItemBackground"
+                                android:gravity="center"
+                                android:orientation="horizontal">
+
+                                <ImageView
+                                    android:id="@+id/searchButtonOpen"
+                                    android:layout_width="24dp"
+                                    android:layout_height="24dp"
+                                    app:srcCompat="@drawable/search"
+                                    app:tint="?attr/colorOnPrimary" />
+
+                            </LinearLayout>
+
+                        </androidx.cardview.widget.CardView>
+                    </LinearLayout>
+
+                </RelativeLayout>
+
+                <ImageView
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="bottom|right"
-                    android:orientation="vertical"
-                    android:visibility="gone">
-
-                    <androidx.cardview.widget.CardView
-                        android:layout_width="50dp"
-                        android:layout_height="50dp"
-                        android:layout_margin="24dp"
-                        app:cardBackgroundColor="?attr/colorPrimary"
-                        app:cardCornerRadius="15dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:background="?attr/selectableItemBackground"
-                            android:gravity="center"
-                            android:orientation="horizontal">
-
-                            <ImageView
-                                android:id="@+id/searchButtonOpen"
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
-                                app:srcCompat="@drawable/search"
-                                app:tint="?attr/colorOnPrimary" />
-
-                        </LinearLayout>
-
-                    </androidx.cardview.widget.CardView>
-                </LinearLayout>
-
+                    android:layout_height="10dp"
+                    android:tint="?attr/colorSurface"
+                    app:srcCompat="@drawable/bg_gradient" />
             </RelativeLayout>
 
         </LinearLayout>

@@ -318,14 +318,25 @@ public class Orion {
     }
 
     //Insets
-    public static void addInsetsChangedListener(View view) {
-        addInsetsChangedListener(view, 0);
+    public static void addInsetsChangedListener(View view, int type) {
+        addInsetsChangedListener(view, new int[] { type }, 0);
     }
 
-    public static void addInsetsChangedListener(View view, float duration) {
+    public static void addInsetsChangedListener(View view, int[] types) {
+        addInsetsChangedListener(view, types, 0);
+    }
+
+    public static void addInsetsChangedListener(View view, int type, float duration) {
+        addInsetsChangedListener(view, new int[] { type }, duration);
+    }
+
+    public static void addInsetsChangedListener(View view, int[] types, float duration) {
+        if (types.length == 0) return;
+
         ViewCompat.setOnApplyWindowInsetsListener(view, (_view, windowInsets) -> {
             //Get insets
-            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+            Insets insets = Insets.of(0, 0, 0, 0);
+            for (int type: types) insets = Insets.add(insets, windowInsets.getInsets(type)); //WindowInsetsCompat.Type.systemBars()
 
             //Check if animate
             if (duration <= 0) {
@@ -359,7 +370,7 @@ public class Orion {
             }
 
             //Done
-            return WindowInsetsCompat.CONSUMED;
+            return windowInsets;
         });
     }
 
