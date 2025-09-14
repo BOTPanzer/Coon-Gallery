@@ -197,7 +197,7 @@ public class Library {
 
     public static boolean addLink(Link link) {
         //Check if link exists
-        String key = link.getImagesPath();
+        String key = link.getAlbumPath();
         if (linksMap.containsKey(key)) return false;
 
         //Add link
@@ -205,7 +205,7 @@ public class Library {
         linksMap.put(key, link);
 
         //Relink with album if it exists
-        link.album = albumsMap.getOrDefault(link.getImagesPath(), null);
+        link.album = albumsMap.getOrDefault(link.getAlbumPath(), null);
         if (link.album != null) link.album.updateMetadataFile(link.metadataFile);
         return true;
     }
@@ -216,7 +216,7 @@ public class Library {
 
         //Remove link
         Link link = links.remove(index);
-        linksMap.remove(link.getImagesPath());
+        linksMap.remove(link.getAlbumPath());
         return true;
     }
 
@@ -226,8 +226,8 @@ public class Library {
         if (linksMap.containsKey(keyNew)) return false;
 
         //Update
-        String keyOld = links.get(index).getImagesPath();
-        links.get(index).imagesFolder = newFolder;
+        String keyOld = links.get(index).getAlbumPath();
+        links.get(index).albumFolder = newFolder;
         linksMap.put(keyNew, linksMap.get(keyOld));
         linksMap.remove(keyOld);
         return true;

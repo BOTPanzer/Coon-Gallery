@@ -2,20 +2,20 @@ package com.botpa.turbophotos.util
 
 import java.io.File
 
-class Link(imagesPath: String, metadataPath: String) {
+class Link(albumPath: String, metadataPath: String) {
 
-    @JvmField var imagesFolder: File = File(imagesPath)
+    @JvmField var albumFolder: File = File(albumPath)
     @JvmField var metadataFile: File = File(metadataPath)
     @JvmField var album: Album? = null
 
     //Getters
-    val imagesPath: String get() = imagesFolder.absolutePath
+    val albumPath: String get() = albumFolder.absolutePath
     val metadataPath: String get() = metadataFile.absolutePath
 
 
     //Override toString to be able to save albums in a string
     override fun toString(): String {
-        return "$imagesPath\n$metadataPath"
+        return "$albumPath\n$metadataPath"
     }
 
     //Static

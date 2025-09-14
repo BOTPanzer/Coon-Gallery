@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace = "com.botpa.turbophotos"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.botpa.turbophotos"
         minSdk = 31
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -26,10 +26,20 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+
+    buildFeatures {
+        compose = true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.15"
+    }
+
     kotlinOptions {
         jvmTarget = "1.8"
     }
@@ -41,8 +51,14 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.constraintlayout)
     implementation(libs.core.ktx)
+    implementation(libs.lifecycle.livedata.ktx)
     implementation(libs.swiperefreshlayout)
     implementation(libs.recyclerview.fastscroll)
+
+    debugImplementation("androidx.compose.ui:ui-tooling:1.9.1")
+    implementation("androidx.compose.ui:ui-tooling-preview:1.9.1")
+
+    implementation(libs.activity.compose)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

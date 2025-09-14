@@ -6,16 +6,11 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.IBinder;
 import android.util.Log;
-
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-
 import com.botpa.turbophotos.R;
 import com.botpa.turbophotos.main.MainActivity;
 import com.botpa.turbophotos.util.Album;
@@ -25,7 +20,6 @@ import com.botpa.turbophotos.util.Orion;
 import com.botpa.turbophotos.util.TurboItem;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -37,13 +31,9 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 import java.util.ArrayList;
-
 import dev.gustavoavila.websocketclient.WebSocketClient;
 
 public class BackupService extends Service {
-
-    //Activity communication
-    public static final String BROADCAST_ID = "backupBroadcast";
 
     //Notifications
     private static final int NOTIFICATION_ID = 420;
@@ -58,7 +48,6 @@ public class BackupService extends Service {
     public static final int STATUS_CONNECTING = 1;
     public static final int STATUS_ONLINE = 2;
 
-    private BroadcastReceiver broadcastReceiver;
     public static WebSocketClient webSocketClient;
     private static int connectStatus = STATUS_OFFLINE;
 
@@ -88,9 +77,6 @@ public class BackupService extends Service {
         if (!init) {
             init = true;
 
-            //Register receiver
-            registerReceiver();
-
             //Start service with notification
             buildForegroundNotification();
             notificationManager.notify(NOTIFICATION_ID, notification);
@@ -101,7 +87,6 @@ public class BackupService extends Service {
             for (Link link: Library.links) {
                 //Get album & create items list
                 Album album = link.album;
-                Log.i("ALBUM", "" + album);
                 ArrayList<TurboItem> items = new ArrayList<>();
 
                 //Add items if album exists
@@ -110,23 +95,21 @@ public class BackupService extends Service {
                 //Save list
                 backupItems.add(items);
             }
-            for (ArrayList<TurboItem> list: backupItems) {
-                Log.i("LIST", "" + list.size());
-            }
+
+            //Tell the activity to start
+            send("init");
         }
 
-        //Tell the activity to start
-        send("init");
+        //Handle events
+        handleEvent(intent);
 
+        //Finish
         return Service.START_STICKY;
     }
 
     private void onStop() {
         //Close web socket
         if (webSocketClient != null) webSocketClient.close(1000, 1001, "Left app");
-
-        //Unregister receiver
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
 
         //Stop service
         stopSelf();
@@ -453,79 +436,54 @@ public class BackupService extends Service {
             .setContentText("The backup service is active")
             .setContentIntent(PendingIntent.getActivity(this, 0, new Intent(this, BackupActivity.class), PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE))
             .setAutoCancel(true)
-            .setDeleteIntent(PendingIntent.getBroadcast(this, 1, new Intent(this, NotificationDeleteReceiver.class), PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE))
             .setOngoing(true);
 
         notification = builder.build();
     }
 
-    public static class NotificationDeleteReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(BackupService.BROADCAST_ID).putExtra("command", "notification"));
+    //Events
+    private void handleEvent(Intent intent) {
+        //Check intent
+        if (intent == null || intent.getExtras() == null) return;
+
+        //Get command
+        String command = intent.getStringExtra("command");
+        if (command == null) return;
+
+        //Parse command
+        switch (command) {
+            //Connect to URL
+            case "connect":
+                String url = intent.getStringExtra("value");
+                if (url != null) connect(url);
+                break;
+
+            //Stop service
+            case "stop":
+                onStop();
+                break;
+
+            //Notification dismissed
+            case "notification":
+                notificationManager.notify(NOTIFICATION_ID, notification);
+                break;
         }
     }
 
-    //Broadcasts
-    private void registerReceiver() {
-        //Create broadcast receiver
-        broadcastReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context arg0, Intent intent) {
-                //Invalid command
-                if (intent.getExtras() == null) return;
-                String command = intent.getStringExtra("command");
-                if (command == null) return;
-
-                //Check command
-                switch (command) {
-                    //Connect to URL
-                    case "connect":
-                        connect(intent.getStringExtra(command));
-                        break;
-
-                    //Stop service
-                    case "stop":
-                        onStop();
-                        break;
-
-                    //Notification dismissed
-                    case "notification":
-                        notificationManager.notify(NOTIFICATION_ID, notification);
-                        break;
-                }
-            }
-        };
-
-        //Register receiver filter
-        LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, new IntentFilter(BackupService.BROADCAST_ID));
-    }
-
     private void send(String name) {
-        Intent intent = new Intent(BackupService.BROADCAST_ID);
-        intent.putExtra("command", name);
-        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+        BackupEventBus.getInstance().postEvent(name, 0); //Using int as a dummy value
     }
 
     private void send(String name, String value) {
-        Intent intent = new Intent(BackupService.BROADCAST_ID);
-        intent.putExtra("command", name);
-        intent.putExtra(name, value);
-        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+        BackupEventBus.getInstance().postEvent(name, value);
     }
 
     private void send(String name, boolean value) {
-        Intent intent = new Intent(BackupService.BROADCAST_ID);
-        intent.putExtra("command", name);
-        intent.putExtra(name, value);
-        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+        BackupEventBus.getInstance().postEvent(name, value ? 1 : 0); //Convert boolean to int
     }
 
     private void send(String name, int value) {
-        Intent intent = new Intent(BackupService.BROADCAST_ID);
-        intent.putExtra("command", name);
-        intent.putExtra(name, value);
-        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+        BackupEventBus.getInstance().postEvent(name, value);
     }
 
     //Metadata requests

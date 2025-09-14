@@ -1,19 +1,13 @@
 package com.botpa.turbophotos.backup;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -38,8 +32,6 @@ public class BackupActivity extends AppCompatActivity {
     private UserAdapter usersAdapter;
 
     //Connect
-    private BroadcastReceiver broadcastReceiver;
-
     private View usersLayout;
     private EditText usersName;
     private EditText usersURL;
@@ -91,8 +83,8 @@ public class BackupActivity extends AppCompatActivity {
         logsList.setLayoutManager(new LinearLayoutManager(BackupActivity.this, LinearLayoutManager.VERTICAL, true));
         logsList.setItemAnimator(null);
 
-        //Register receiver
-        registerReceiver();
+        //Init events observer
+        initEventsObserver();
 
         //Start service
         Intent intent = new Intent(this, BackupService.class);
@@ -103,9 +95,6 @@ public class BackupActivity extends AppCompatActivity {
     protected void onDestroy() {
         //Close service
         send("stop");
-
-        //Unregister receiver
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
 
         super.onDestroy();
     }
@@ -235,87 +224,78 @@ public class BackupActivity extends AppCompatActivity {
         logsList.scrollToPosition(0);
     }
 
-    //Broadcasts
-    private void registerReceiver() {
-        //Create broadcast receiver
-        broadcastReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context arg0, Intent intent) {
-                //Invalid command
-                if (intent.getExtras() == null) return;
-                String command = intent.getStringExtra("command");
-                if (command == null) return;
+    //Events
+    private void initEventsObserver() {
+        BackupEventBus.getInstance().getEvent().observe(this, event -> {
+            if (event == null) return;
+            String command = event.command;
 
-                //Check command
-                switch (command) {
-                    //Service started
-                    case "init":
-                        log("Service started");
-                        break;
+            //Check command
+            switch (command) {
+                //Service started
+                case "init":
+                    log("Service started");
+                    break;
 
-                    //Status changed
-                    case "status":
-                        connectStatus = intent.getIntExtra(command, STATUS_OFFLINE);
-                        switch (connectStatus) {
-                            case STATUS_OFFLINE:
-                                log("Disconnected");
-                                usersLayout.setVisibility(View.VISIBLE);
-                                usersLoading.setVisibility(View.GONE);
-                                break;
-                            case STATUS_CONNECTING:
-                                log("Connecting...");
-                                usersLoading.setVisibility(View.VISIBLE);
-                                break;
-                            case STATUS_ONLINE:
-                                log("Connected");
-                                usersLayout.setVisibility(View.GONE);
-                                usersLoading.setVisibility(View.GONE);
-                                break;
-                        }
-                        break;
+                //Status changed
+                case "status":
+                    connectStatus = event.intValue;
+                    switch (connectStatus) {
+                        case STATUS_OFFLINE:
+                            log("Disconnected");
+                            usersLayout.setVisibility(View.VISIBLE);
+                            usersLoading.setVisibility(View.GONE);
+                            break;
+                        case STATUS_CONNECTING:
+                            log("Connecting...");
+                            usersLoading.setVisibility(View.VISIBLE);
+                            break;
+                        case STATUS_ONLINE:
+                            log("Connected");
+                            usersLayout.setVisibility(View.GONE);
+                            usersLoading.setVisibility(View.GONE);
+                            break;
+                    }
+                    break;
 
-                    //Snack
-                    case "snack":
-                        Orion.snack(BackupActivity.this, intent.getStringExtra(command));
-                        break;
+                //Snack
+                case "snack":
+                    Orion.snack(BackupActivity.this, event.stringValue);
+                    break;
 
-                    //Log
-                    case "log":
-                        log(intent.getStringExtra(command));
-                        break;
-                }
+                //Log
+                case "log":
+                    log(event.stringValue);
+                    break;
             }
-        };
-
-        //Register receiver filter
-        LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, new IntentFilter(BackupService.BROADCAST_ID));
+        });
     }
 
     private void send(String name) {
-        Intent intent = new Intent(BackupService.BROADCAST_ID);
+        Intent intent = new Intent(this, BackupService.class);
         intent.putExtra("command", name);
-        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+        startService(intent);
     }
 
     private void send(String name, String value) {
-        Intent intent = new Intent(BackupService.BROADCAST_ID);
+        Intent intent = new Intent(this, BackupService.class);
         intent.putExtra("command", name);
-        intent.putExtra(name, value);
-        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+        intent.putExtra("value", value);
+        startService(intent);
     }
 
     private void send(String name, boolean value) {
-        Intent intent = new Intent(BackupService.BROADCAST_ID);
+        Intent intent = new Intent(this, BackupService.class);
         intent.putExtra("command", name);
-        intent.putExtra(name, value);
-        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+        intent.putExtra("value", value);
+        startService(intent);
     }
 
     private void send(String name, int value) {
-        Intent intent = new Intent(BackupService.BROADCAST_ID);
+        Intent intent = new Intent(this, BackupService.class);
         intent.putExtra("command", name);
-        intent.putExtra(name, value);
-        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+        intent.putExtra("value", value);
+        startService(intent);
     }
 
 }
