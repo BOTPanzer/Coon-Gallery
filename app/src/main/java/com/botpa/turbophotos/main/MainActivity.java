@@ -21,7 +21,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.view.WindowCompat;
 
 import android.Manifest;
 
@@ -149,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
             //Show gallery
             runOnUiThread(() -> {
                 //Show list
-                gallery.showList(true);
+                gallery.loaded();
 
                 //Reload albums list
                 gallery.homeAdapter.notifyDataSetChanged();

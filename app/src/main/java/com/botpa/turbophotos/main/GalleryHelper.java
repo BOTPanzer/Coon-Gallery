@@ -1,6 +1,5 @@
 package com.botpa.turbophotos.main;
 
-import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -71,6 +70,8 @@ public class GalleryHelper {
     private View optionsDelete;
     private View optionsShare;
 
+    private View loadingIndicator;
+
     private SwipeRefreshLayout refreshLayout;
     private FastScrollRecyclerView list;
 
@@ -102,6 +103,9 @@ public class GalleryHelper {
         optionsTrash = activity.findViewById(R.id.galleryOptionsTrash);
         optionsDelete = activity.findViewById(R.id.galleryOptionsDelete);
         optionsShare = activity.findViewById(R.id.galleryOptionsShare);
+
+        //Load indicator
+        loadingIndicator = activity.findViewById(R.id.galleryLoadingIndicator);
 
         //Gallery
         refreshLayout = activity.findViewById(R.id.galleryRefreshLayout);
@@ -419,8 +423,9 @@ public class GalleryHelper {
         }
     }
 
-    public void showList(boolean show) {
-        list.setVisibility(show ? View.VISIBLE : View.GONE);
+    public void loaded() {
+        loadingIndicator.setVisibility(View.GONE);
+        list.setVisibility(View.VISIBLE);
     }
 
     public void updateHorizontalItemCount() {

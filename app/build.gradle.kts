@@ -6,17 +6,14 @@ plugins {
 android {
     namespace = "com.botpa.turbophotos"
     compileSdk = 36
-
     defaultConfig {
         applicationId = "com.botpa.turbophotos"
         minSdk = 31
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
-
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -26,48 +23,48 @@ android {
             )
         }
     }
-
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
-
     buildFeatures {
         compose = true
     }
-
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.15"
     }
-
     kotlinOptions {
         jvmTarget = "1.8"
     }
 }
 
 dependencies {
-    implementation(libs.appcompat)
-    implementation(libs.material)
-    implementation(libs.activity)
-    implementation(libs.constraintlayout)
+    //Core
     implementation(libs.core.ktx)
+    implementation(libs.appcompat)
+    implementation(libs.activity)
     implementation(libs.lifecycle.livedata.ktx)
-    implementation(libs.swiperefreshlayout)
-    implementation(libs.recyclerview.fastscroll)
-
-    debugImplementation("androidx.compose.ui:ui-tooling:1.9.1")
-    implementation("androidx.compose.ui:ui-tooling-preview:1.9.1")
-
-    implementation(libs.activity.compose)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.ext.junit)
-    androidTestImplementation(libs.espresso.core)
-
     implementation(libs.glide)
+
+    //Layout
+    implementation(libs.constraintlayout)
+    implementation(libs.recyclerview.fastscroll)
+    implementation(libs.swiperefreshlayout)
     implementation(libs.recyclerview)
+
+    //Material
+    implementation(libs.material)
     implementation(libs.material3)
+
+    //Compose
+    debugImplementation(libs.ui.tooling)
+    implementation(libs.ui.tooling.preview)
+    implementation(libs.activity.compose)
+
+    //WebSockets
     implementation(libs.java.android.websocket.client)
 
+    //Jackson (JSON)
     implementation(libs.jackson.core)
     implementation(libs.jackson.databind)
     implementation(libs.jackson.annotations)
