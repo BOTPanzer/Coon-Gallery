@@ -37,9 +37,9 @@ fun LinkItemPreview() {
     LinkItem(
         index = 0,
         link = Link("Camera", "camera.metadata.json"),
-        onChooseFolder = {},
-        onChooseFile = {},
-        onDelete = {}
+        onChooseFolder = { i -> },
+        onChooseFile = { i, l -> },
+        onDelete = { i -> }
     )
 }
 
@@ -48,9 +48,9 @@ fun LinkItemPreview() {
 fun LinkItem(
     index: Int,
     link: Link,
-    onChooseFolder: () -> Unit,
-    onChooseFile: () -> Unit,
-    onDelete: () -> Unit,
+    onChooseFolder: (Int) -> Unit,
+    onChooseFile: (Int, Link) -> Unit,
+    onDelete: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     // This is a simplified example of what your item might look like
@@ -95,7 +95,7 @@ fun LinkItem(
                     ) {
                         //Select button
                         Card(
-                            onClick = onChooseFolder,
+                            onClick = { onChooseFolder(index) },
                             shape = RoundedCornerShape(20.dp),
                             colors = CardDefaults.cardColors(
                                 containerColor = MaterialTheme.colorScheme.primary
@@ -144,7 +144,7 @@ fun LinkItem(
                     ) {
                         //Select button
                         Card(
-                            onClick = onChooseFile,
+                            onClick = { onChooseFile(index, link) },
                             shape = RoundedCornerShape(20.dp),
                             colors = CardDefaults.cardColors(
                                 containerColor = MaterialTheme.colorScheme.primary
@@ -187,7 +187,7 @@ fun LinkItem(
 
                 //Delete button
                 Card(
-                    onClick = onDelete,
+                    onClick = { onDelete(index) },
                     shape = RoundedCornerShape(20.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.primary
