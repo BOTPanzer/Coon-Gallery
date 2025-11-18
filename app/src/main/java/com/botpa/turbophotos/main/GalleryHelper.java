@@ -68,6 +68,7 @@ public class GalleryHelper {
     private View optionsRestore;
     private View optionsTrash;
     private View optionsDelete;
+    private View optionsDeleteAll;
     private View optionsShare;
 
     private View loadingIndicator;
@@ -102,6 +103,7 @@ public class GalleryHelper {
         optionsRestore = activity.findViewById(R.id.galleryOptionsRestore);
         optionsTrash = activity.findViewById(R.id.galleryOptionsTrash);
         optionsDelete = activity.findViewById(R.id.galleryOptionsDelete);
+        optionsDeleteAll = activity.findViewById(R.id.galleryOptionsDeleteAll);
         optionsShare = activity.findViewById(R.id.galleryOptionsShare);
 
         //Load indicator
@@ -187,6 +189,14 @@ public class GalleryHelper {
 
             //Delete items
             activity.deleteFiles(getSelectedFiles());
+        });
+
+        optionsDeleteAll.setOnClickListener(view -> {
+            //Close options menu
+            showOptions(false);
+
+            //Delete items
+            activity.deleteFiles(itemsUnfiltered.toArray(new TurboItem[0]));
         });
 
         optionsShare.setOnClickListener(view -> {
@@ -276,6 +286,7 @@ public class GalleryHelper {
             optionsRestore.setVisibility(isSelecting && inTrash ? View.VISIBLE : View.GONE);
             optionsTrash.setVisibility(isSelecting && !inTrash ? View.VISIBLE : View.GONE);
             optionsDelete.setVisibility(isSelecting ? View.VISIBLE : View.GONE);
+            optionsDeleteAll.setVisibility(inTrash ? View.VISIBLE : View.GONE);
             optionsShare.setVisibility(isSelecting && !inTrash ? View.VISIBLE : View.GONE);
 
             //Show
