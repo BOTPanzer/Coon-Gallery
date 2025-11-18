@@ -66,9 +66,10 @@ public class GalleryHelper {
     private View optionsSettings;
     private View optionsBackup;
     private View optionsRestore;
-    private View optionsTrash;
     private View optionsDelete;
-    private View optionsDeleteAll;
+    private View optionsTrash;
+    private View optionsTrashEmpty;
+    private View optionsMove;
     private View optionsShare;
 
     private View loadingIndicator;
@@ -101,10 +102,11 @@ public class GalleryHelper {
         optionsSettings = activity.findViewById(R.id.galleryOptionsSettings);
         optionsBackup = activity.findViewById(R.id.galleryOptionsBackup);
         optionsRestore = activity.findViewById(R.id.galleryOptionsRestore);
-        optionsTrash = activity.findViewById(R.id.galleryOptionsTrash);
         optionsDelete = activity.findViewById(R.id.galleryOptionsDelete);
-        optionsDeleteAll = activity.findViewById(R.id.galleryOptionsDeleteAll);
+        optionsTrash = activity.findViewById(R.id.galleryOptionsTrash);
+        optionsTrashEmpty = activity.findViewById(R.id.galleryOptionsTrashEmpty);
         optionsShare = activity.findViewById(R.id.galleryOptionsShare);
+        optionsMove = activity.findViewById(R.id.galleryOptionsMove);
 
         //Load indicator
         loadingIndicator = activity.findViewById(R.id.galleryLoadingIndicator);
@@ -175,14 +177,6 @@ public class GalleryHelper {
             activity.restoreFiles(getSelectedFiles());
         });
 
-        optionsTrash.setOnClickListener(view -> {
-            //Close options menu
-            showOptions(false);
-
-            //Move items to trash
-            activity.trashFiles(getSelectedFiles());
-        });
-
         optionsDelete.setOnClickListener(view -> {
             //Close options menu
             showOptions(false);
@@ -191,7 +185,15 @@ public class GalleryHelper {
             activity.deleteFiles(getSelectedFiles());
         });
 
-        optionsDeleteAll.setOnClickListener(view -> {
+        optionsTrash.setOnClickListener(view -> {
+            //Close options menu
+            showOptions(false);
+
+            //Move items to trash
+            activity.trashFiles(getSelectedFiles());
+        });
+
+        optionsTrashEmpty.setOnClickListener(view -> {
             //Close options menu
             showOptions(false);
 
@@ -205,6 +207,14 @@ public class GalleryHelper {
 
             //Share
             activity.shareFiles(getSelectedFiles());
+        });
+
+        optionsMove.setOnClickListener(view -> {
+            //Close options menu
+            showOptions(false);
+
+            //Move items
+            activity.moveFiles(getSelectedFiles(), null);
         });
 
         //Gallery
@@ -280,14 +290,17 @@ public class GalleryHelper {
 
     private void showOptions(boolean show) {
         if (show) {
-            //Toggle buttons
+            //Get state info
             boolean isSelecting = !selected.isEmpty();
             boolean inTrash = album == Library.trash;
+
+            //Toggle buttons
             optionsRestore.setVisibility(isSelecting && inTrash ? View.VISIBLE : View.GONE);
-            optionsTrash.setVisibility(isSelecting && !inTrash ? View.VISIBLE : View.GONE);
             optionsDelete.setVisibility(isSelecting ? View.VISIBLE : View.GONE);
-            optionsDeleteAll.setVisibility(inTrash ? View.VISIBLE : View.GONE);
+            optionsTrash.setVisibility(isSelecting && !inTrash ? View.VISIBLE : View.GONE);
+            optionsTrashEmpty.setVisibility(inTrash ? View.VISIBLE : View.GONE);
             optionsShare.setVisibility(isSelecting && !inTrash ? View.VISIBLE : View.GONE);
+            optionsMove.setVisibility(isSelecting && !inTrash ? View.VISIBLE : View.GONE);
 
             //Show
             Orion.showAnim(optionsLayout);

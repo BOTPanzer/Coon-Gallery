@@ -354,33 +354,6 @@
                     </LinearLayout>
 
                     <LinearLayout
-                        android:id="@+id/galleryOptionsTrash"
-                        android:layout_width="match_parent"
-                        android:layout_height="40dp"
-                        android:background="?attr/selectableItemBackground"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:paddingHorizontal="20dp">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:layout_marginEnd="10dp"
-                            app:srcCompat="@drawable/delete"
-                            app:tint="?attr/colorOnPrimary" />
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/poppins"
-                            android:paddingTop="5dp"
-                            android:text="Move to Trash"
-                            android:textColor="?attr/colorOnPrimary"
-                            android:textSize="16sp" />
-
-                    </LinearLayout>
-
-                    <LinearLayout
                         android:id="@+id/galleryOptionsDelete"
                         android:layout_width="match_parent"
                         android:layout_height="40dp"
@@ -408,7 +381,7 @@
                     </LinearLayout>
 
                     <LinearLayout
-                        android:id="@+id/galleryOptionsDeleteAll"
+                        android:id="@+id/galleryOptionsTrash"
                         android:layout_width="match_parent"
                         android:layout_height="40dp"
                         android:background="?attr/selectableItemBackground"
@@ -428,7 +401,34 @@
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/poppins"
                             android:paddingTop="5dp"
-                            android:text="Delete All"
+                            android:text="Move to Trash"
+                            android:textColor="?attr/colorOnPrimary"
+                            android:textSize="16sp" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/galleryOptionsTrashEmpty"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="20dp">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_marginEnd="10dp"
+                            app:srcCompat="@drawable/delete"
+                            app:tint="?attr/colorOnPrimary" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/poppins"
+                            android:paddingTop="5dp"
+                            android:text="Empty Trash"
                             android:textColor="?attr/colorOnPrimary"
                             android:textSize="16sp" />
 
@@ -456,6 +456,33 @@
                             android:fontFamily="@font/poppins"
                             android:paddingTop="5dp"
                             android:text="Share"
+                            android:textColor="?attr/colorOnPrimary"
+                            android:textSize="16sp" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/galleryOptionsMove"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="?attr/selectableItemBackground"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="20dp">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_marginEnd="10dp"
+                            app:srcCompat="@drawable/edit"
+                            app:tint="?attr/colorOnPrimary" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/poppins"
+                            android:paddingTop="5dp"
+                            android:text="Move"
                             android:textColor="?attr/colorOnPrimary"
                             android:textSize="16sp" />
 
@@ -844,33 +871,6 @@
                                 </LinearLayout>
 
                                 <LinearLayout
-                                    android:id="@+id/displayOptionsTrash"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="40dp"
-                                    android:background="?attr/selectableItemBackground"
-                                    android:gravity="center_vertical"
-                                    android:orientation="horizontal"
-                                    android:paddingHorizontal="20dp">
-
-                                    <ImageView
-                                        android:layout_width="24dp"
-                                        android:layout_height="24dp"
-                                        android:layout_marginEnd="10dp"
-                                        app:srcCompat="@drawable/delete"
-                                        app:tint="?attr/colorOnPrimary" />
-
-                                    <TextView
-                                        android:layout_width="match_parent"
-                                        android:layout_height="wrap_content"
-                                        android:fontFamily="@font/poppins"
-                                        android:paddingTop="5dp"
-                                        android:text="Move to Trash"
-                                        android:textColor="?attr/colorOnPrimary"
-                                        android:textSize="16sp" />
-
-                                </LinearLayout>
-
-                                <LinearLayout
                                     android:id="@+id/displayOptionsDelete"
                                     android:layout_width="match_parent"
                                     android:layout_height="40dp"
@@ -892,6 +892,33 @@
                                         android:fontFamily="@font/poppins"
                                         android:paddingTop="5dp"
                                         android:text="Delete"
+                                        android:textColor="?attr/colorOnPrimary"
+                                        android:textSize="16sp" />
+
+                                </LinearLayout>
+
+                                <LinearLayout
+                                    android:id="@+id/displayOptionsTrash"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="40dp"
+                                    android:background="?attr/selectableItemBackground"
+                                    android:gravity="center_vertical"
+                                    android:orientation="horizontal"
+                                    android:paddingHorizontal="20dp">
+
+                                    <ImageView
+                                        android:layout_width="24dp"
+                                        android:layout_height="24dp"
+                                        android:layout_marginEnd="10dp"
+                                        app:srcCompat="@drawable/delete"
+                                        app:tint="?attr/colorOnPrimary" />
+
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:fontFamily="@font/poppins"
+                                        android:paddingTop="5dp"
+                                        android:text="Move to Trash"
                                         android:textColor="?attr/colorOnPrimary"
                                         android:textSize="16sp" />
 

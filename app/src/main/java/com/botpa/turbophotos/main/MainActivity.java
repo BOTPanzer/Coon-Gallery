@@ -347,6 +347,10 @@ public class MainActivity extends AppCompatActivity {
         //Get indexes of items in gallery list & sort them
         ArrayList<Integer> indexesInGallery = new ArrayList<>(action.items.length);
         for (TurboItem item : action.items) {
+            //Check if item failed
+            if (action.failed.containsKey(item)) continue;
+
+            //Get index
             int indexInGallery = gallery.items.indexOf(item);
             if (indexInGallery != -1) indexesInGallery.add(indexInGallery);
         }
@@ -445,6 +449,11 @@ public class MainActivity extends AppCompatActivity {
             intent.setType("*/*");
         }
         startActivity(Intent.createChooser(intent, null));
+    }
+
+    public void moveFiles(TurboItem[] items, Album destination) {
+        //Move items & manage action
+        manageAction(Library.moveItems(items, destination));
     }
 
 }

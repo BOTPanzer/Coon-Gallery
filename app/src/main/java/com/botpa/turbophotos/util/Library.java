@@ -551,8 +551,7 @@ public class Library {
     public static Action deleteItems(TurboItem[] items) {
         return performAction(Action.TYPE_DELETE, items, (action, item) -> {
             //Delete item file
-            boolean deleted = Orion.deleteFile(item.file);
-            if (!deleted) {
+            if (!Orion.deleteFile(item.file)) {
                 //Failed to delete file
                 action.failed.put(item, "Error while deleting a file");
                 return;
@@ -563,8 +562,10 @@ public class Library {
             ActionHelper helper = action.getHelper(item);
 
             //Delete item metadata from album
-            album.removeMetadataKey(item.name);
-            album.saveMetadata();
+            if (album.hasMetadataKey(item.name)) {
+                album.removeMetadataKey(item.name);
+                album.saveMetadata();
+            }
 
             //Check if item is in trash
             if (helper.indexInTrash != -1) {
@@ -600,6 +601,75 @@ public class Library {
                     action.sortedAlbumsList = true;
                 }
             }
+        });
+    }
+
+    public static Action moveItems(TurboItem[] items, Album destination) {
+        return performAction(Action.TYPE_MOVE, items, (action, item) -> {
+            //Check destination
+            if (destination == null) {
+                //Invalid destination
+                action.failed.put(item, "Invalid destination");
+                return;
+            }
+
+            //Check if in trash
+            if (item.isTrashed()) {
+                //Item is in trash
+                action.failed.put(item, "File is in the trash");
+                return;
+            }
+
+            //Check if can move
+            if (item.album == destination) {
+                //Already in the destination album
+                action.failed.put(item, "File does not need to be moved");
+                return;
+            }
+
+            //Move item file
+            File newFile = new File(destination.getImagesPath(), item.name);
+            if (!Orion.moveFile(item.file, newFile)) {
+                //Failed to move file
+                action.failed.put(item, "Error while moving a file");
+                return;
+            }
+
+            //Get album & action helper
+            Album album = item.album;
+            ActionHelper helper = action.getHelper(item);
+
+            //Move item metadata from old album to destination
+            if (album.hasMetadataKey(item.name)) {
+                destination.setMetadataKey(item.name, album.getMetadataKey(item.name));
+                destination.saveMetadata();
+                album.removeMetadataKey(item.name);
+                album.saveMetadata();
+            }
+
+            //Check if item is in album
+            if (helper.indexInAlbum != -1) {
+                //Is present -> Remove it
+                album.remove(helper.indexInAlbum);
+
+                //Check if album needs to be deleted or sorted
+                if (album.isEmpty()) {
+                    //Album is empty -> Remove it from list & mark it as deleted
+                    removeAlbum(helper.indexOfAlbum);
+                    action.deletedAlbums.add(album);
+                } else if (helper.indexInAlbum == 0) {
+                    //Album isn't empty & first image was deleted -> Sort albums list in case the order changed
+                    action.sortedAlbumsList = true;
+                }
+            }
+
+            //Add to destination album
+            int destinationIndex = destination.addSorted(item);
+            if (destinationIndex == 0) {
+                //Added as the album cover -> Sort albums list in case the order changed
+                action.sortedAlbumsList = true;
+            }
+            item.album = destination;
         });
     }
 

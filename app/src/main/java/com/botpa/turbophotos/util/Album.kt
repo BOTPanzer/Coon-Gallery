@@ -51,10 +51,11 @@ class Album(val name: String, val imagesFolder: File?, var metadataFile: File?) 
         items.add(item)
     }
 
-    fun addSorted(item: TurboItem) {
-        val index = Collections.binarySearch(items, item)
+    fun addSorted(item: TurboItem): Int {
+        val index = items.binarySearch(item)
         val insertionPoint = if (index < 0) -(index + 1) else index
         items.add(insertionPoint, item)
+        return index
     }
 
     fun remove(index: Int): TurboItem {
@@ -104,6 +105,11 @@ class Album(val name: String, val imagesFolder: File?, var metadataFile: File?) 
     fun removeMetadataKey(key: String) {
         if (hasMetadata())
             metadata!!.remove(key)
+    }
+
+    fun setMetadataKey(key: String, node: ObjectNode?) {
+        if (hasMetadata())
+            metadata!!.replace(key, node)
     }
 
     //Override toString to be able to save albums in a string

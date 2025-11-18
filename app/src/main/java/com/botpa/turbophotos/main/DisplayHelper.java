@@ -72,8 +72,8 @@ public class DisplayHelper {
 
     private View optionsLayout;
     private View optionsRestore;
-    private View optionsTrash;
     private View optionsDelete;
+    private View optionsTrash;
     private View optionsShare;
     private View optionsEdit;
     private View optionsOpenOutside;
@@ -113,8 +113,8 @@ public class DisplayHelper {
         //Options
         optionsLayout = activity.findViewById(R.id.displayOptionsLayout);
         optionsRestore = activity.findViewById(R.id.displayOptionsRestore);
-        optionsTrash = activity.findViewById(R.id.displayOptionsTrash);
         optionsDelete = activity.findViewById(R.id.displayOptionsDelete);
+        optionsTrash = activity.findViewById(R.id.displayOptionsTrash);
         optionsShare = activity.findViewById(R.id.displayOptionsShare);
         optionsEdit = activity.findViewById(R.id.displayOptionsEdit);
         optionsOpenOutside = activity.findViewById(R.id.displayOptionsOpen);
@@ -245,20 +245,20 @@ public class DisplayHelper {
             activity.restoreFiles(new TurboItem[] {currentItem});
         });
 
-        optionsTrash.setOnClickListener(view -> {
-            //Close options menu
-            showOptions(false);
-
-            //Move to trash
-            activity.trashFiles(new TurboItem[] {currentItem});
-        });
-
         optionsDelete.setOnClickListener(view -> {
             //Close options menu
             showOptions(false);
 
             //Delete items
             activity.deleteFiles(new TurboItem[] {currentItem});
+        });
+
+        optionsTrash.setOnClickListener(view -> {
+            //Close options menu
+            showOptions(false);
+
+            //Move to trash
+            activity.trashFiles(new TurboItem[] {currentItem});
         });
 
         optionsShare.setOnClickListener(view -> {
@@ -429,11 +429,12 @@ public class DisplayHelper {
         nameText.setText(currentItem.name);
 
         //Prepare options menu
-        optionsRestore.setVisibility(currentItem.isTrashed() ? View.VISIBLE : View.GONE);
-        optionsTrash.setVisibility(currentItem.isTrashed() ? View.GONE : View.VISIBLE);
-        optionsShare.setVisibility(currentItem.isTrashed() ? View.GONE : View.VISIBLE);
-        optionsEdit.setVisibility(currentItem.isTrashed() ? View.GONE : View.VISIBLE);
-        optionsOpenOutside.setVisibility(currentItem.isTrashed() ? View.GONE : View.VISIBLE);
+        boolean isTrashed = currentItem.isTrashed();
+        optionsRestore.setVisibility(isTrashed ? View.VISIBLE : View.GONE);
+        optionsShare.setVisibility(isTrashed ? View.GONE : View.VISIBLE);
+        optionsTrash.setVisibility(isTrashed ? View.GONE : View.VISIBLE);
+        optionsEdit.setVisibility(isTrashed ? View.GONE : View.VISIBLE);
+        optionsOpenOutside.setVisibility(isTrashed ? View.GONE : View.VISIBLE);
 
         //Load image info (caption & labels)
         String caption = "";

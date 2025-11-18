@@ -10,6 +10,7 @@ class Action(private val type: Int, @JvmField val items: Array<TurboItem>) {
         const val TYPE_DELETE: Int = 1
         const val TYPE_TRASH: Int = 2
         const val TYPE_RESTORE: Int = 3
+        const val TYPE_MOVE: Int = 4
 
         //Trash changes
         const val TRASH_NONE: Int = 0
