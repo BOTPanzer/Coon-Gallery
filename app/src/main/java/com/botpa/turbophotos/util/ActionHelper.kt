@@ -1,10 +1,11 @@
 package com.botpa.turbophotos.util
 
-class ActionHelper(file: TurboItem) {
+class ActionHelper(@JvmField val item: TurboItem) {
 
-    @JvmField var indexInTrash = Library.trash.indexOf(file)
-    @JvmField var indexInAll = Library.all.indexOf(file)
-    @JvmField var indexInAlbum = file.album.indexOf(file)
-    @JvmField var indexOfAlbum = Library.albums.indexOf(file.album)
+    @JvmField var indexInTrash = Library.trash.indexOf(item)
+    @JvmField var indexInAll = Library.all.indexOf(item)
+    @JvmField var indexInGallery = Library.gallery.indexOf(item)
+    @JvmField var indexInAlbum = item.album.indexOf(item)
+    @JvmField var indexOfAlbum = Library.albums.indexOf(item.album)
 
 }

@@ -2,11 +2,16 @@ package com.botpa.turbophotos.util;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.Log;
 
 import com.botpa.turbophotos.main.MainActivity;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -41,6 +46,12 @@ public class Library {
     public static final Album all = new Album("All");
     public static final ArrayList<Album> albums = new ArrayList<>();
     public static final HashMap<String, Album> albumsMap = new HashMap<>(); //Uses album path as key
+
+    //Gallery
+    public static final ArrayList<TurboItem> gallery = new ArrayList<>();
+
+    //Actions
+    private static final ArrayList<ActionEvent> onAction = new ArrayList<>();
 
 
     //Library
@@ -192,7 +203,7 @@ public class Library {
         Storage.putStringList("Settings.albums", list);
 
         //Restart main activity on resume
-        MainActivity.shouldReload();
+        MainActivity.reloadOnResume();
     }
 
     public static boolean addLink(Link link) {
@@ -405,18 +416,98 @@ public class Library {
         }
     }
 
-    //Actions
-    private static Action performAction(int actionType, TurboItem[] items, BiConsumer<Action, TurboItem> onPerformAction) {
+    //Gallery
+    private static boolean filterFile(TurboItem item, String filter) {
+        //Check item name
+        if (item.name.toLowerCase().contains(filter)) return true;
+
+        //Get metadata
+        ObjectNode metadata = item.album.getMetadataKey(item.name);
+        if (metadata == null) return false;
+
+        //Check caption
+        if (metadata.has("caption")) {
+            JsonNode caption = metadata.path("caption");
+            if (caption.isTextual() && caption.asText().toLowerCase().contains(filter)) {
+                return true;
+            }
+        }
+
+        //Check labels
+        if (metadata.has("labels")) {
+            JsonNode labels = metadata.path("labels");
+            for (int i = 0; i < labels.size(); i++) {
+                if (labels.get(i).asText().toLowerCase().contains(filter)) {
+                    return true;
+                }
+            }
+        }
+
+        //Check text
+        if (metadata.has("text")) {
+            JsonNode text = metadata.path("text");
+            for (int i = 0; i < text.size(); i++) {
+                if (text.get(i).asText().toLowerCase().contains(filter)) {
+                    return true;
+                }
+            }
+        }
+
+        //Not found
+        return false;
+    }
+
+    public static void filterGallery(String filter, Album album) {
+        //Check if filtering
+        boolean isFiltering = !filter.isEmpty();
+
+        //Clear items list
+        gallery.clear();
+
+        //Look for items that contain the filter
+        for (TurboItem item: album.items) {
+            //No filter -> Skip check
+            if (!isFiltering) {
+                gallery.add(item);
+                continue;
+            }
+
+            //Check if json contains filter
+            if (filterFile(item, filter)) Library.gallery.add(item);
+        }
+    }
+
+    //Action (events)
+    public interface ActionEvent {
+
+        void onAction(Action action);
+
+    }
+
+    private static void invokeAction(Action action) {
+        for (ActionEvent listener: onAction) listener.onAction(action);
+    }
+
+    public static void addOnActionEvent(ActionEvent listener) {
+        onAction.add(listener);
+    }
+
+    public static void removeOnActionEvent(ActionEvent listener) {
+        onAction.remove(listener);
+    }
+
+    //Actions (modify items)
+    private static void performAction(int type, TurboItem[] items, BiConsumer<Action, TurboItem> onPerformAction) {
         //Create action
-        Action action = new Action(actionType, items);
+        Action action = new Action(type, items);
 
         //Perform action for each item
         for (TurboItem item : items) onPerformAction.accept(action, item);
 
         //Trash was modified
-        if (action.trashChanged != Action.TRASH_NONE) {
+        if (action.trashChanges != Action.TRASH_NONE) {
             //No more items -> Empty trash folder
-            if (action.trashChanged == Action.TRASH_REMOVED) Orion.emptyFolder(trashFolder, false);
+            if (action.trashChanges == Action.TRASH_REMOVED) Orion.emptyFolder(trashFolder, false);
 
             //Save trash
             saveTrash();
@@ -428,12 +519,161 @@ public class Library {
             sortAlbumsList();
         }
 
-        //Return action
-        return action;
+        //Invoke action
+        invokeAction(action);
     }
 
-    public static Action restoreItems(Context context, TurboItem[] items) {
-        return performAction(Action.TYPE_RESTORE, items, (action, item) -> {
+    private static void performRemoveFromAll(ActionHelper helper) {
+        //Not in all items list
+        if (helper.indexInAll == -1) return;
+
+        //Remove item
+        all.remove(helper.indexInAll);
+    }
+
+    private static void performRemoveFromGallery(ActionHelper helper, Action action) {
+        //Not in gallery items list
+        if (helper.indexInGallery == -1) return;
+
+        //Remove item
+        gallery.remove(helper.indexInGallery);
+
+        //Add shifted index to gallery
+        action.removedIndexesInGallery.add(helper.indexInGallery);
+    }
+
+    private static void performRemoveFromAlbum(ActionHelper helper, Action action) {
+        //Not in album items list
+        if (helper.indexInAlbum == -1) return;
+
+        //Get album
+        Album album = helper.item.album;
+
+        //Remove item
+        album.remove(helper.indexInAlbum);
+
+        //Check if album needs to be deleted or sorted
+        if (album.isEmpty()) {
+            //Album is empty -> Remove it from list & mark it as deleted
+            removeAlbum(helper.indexOfAlbum);
+            action.deletedAlbums.add(album);
+        } else if (helper.indexInAlbum == 0) {
+            //Album isn't empty & first image was deleted -> Sort albums list in case the order changed
+            action.sortedAlbumsList = true;
+        }
+    }
+
+    private static void deleteItems(TurboItem[] items) {
+        performAction(Action.TYPE_DELETE, items, (action, item) -> {
+            //Delete item file
+            if (!Orion.deleteFile(item.file)) {
+                //Failed to delete file
+                action.failed.put(item, "Error while deleting a file");
+                return;
+            }
+
+            //Get album & action helper
+            Album album = item.album;
+            ActionHelper helper = action.getHelper(item);
+
+            //Delete item metadata from album
+            if (album.hasMetadataKey(item.name)) {
+                album.removeMetadataKey(item.name);
+                album.saveMetadata();
+            }
+
+            //Check if item is in trash
+            if (helper.indexInTrash != -1) {
+                //Is present -> Remove it
+                Item(helper.indexInTrash);
+                action.trashChanges = trash.isEmpty() ? Action.TRASH_REMOVED : Action.TRASH_UPDATED;
+
+                //Check to finish removing album
+                if (helper.indexOfAlbum == -1 && !trashAlbumsMap.containsKey(item.album)) {
+                    //Album not used in albums list nor in trash items -> Finish removing it completely
+                    albumsMap.remove(album.getImagesPath());
+                }
+            }
+
+            //Remove from all items list
+            performRemoveFromAll(helper);
+
+            //Remove from gallery items list
+            performRemoveFromGallery(helper, action);
+
+            //Remove from album items list
+            performRemoveFromAlbum(helper, action);
+        });
+    }
+
+    public static void deleteItems(Context context, TurboItem[] items) {
+        //Create message
+        StringBuilder message = new StringBuilder();
+        message.append("Are you sure you want to permanently delete ");
+        if (items.length == 1) {
+            message.append("\"");
+            message.append(items[0].name);
+            message.append("\"");
+        } else {
+            message.append(items.length);
+            message.append(" items");
+        }
+        message.append("?");
+
+        //Delete item & manage action
+        new MaterialAlertDialogBuilder(context)
+                .setMessage(message.toString())
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("Delete", (dialog, whichButton) -> deleteItems(items))
+                .show();
+    }
+
+    public static void trashItems(Context context, TurboItem[] items) {
+        performAction(Action.TYPE_TRASH, items, (action, item) -> {
+            //Already in trash
+            if (item.isTrashed()) {
+                action.failed.put(item, "Item is already trashed");
+                return;
+            }
+
+            //Create trash info
+            TrashInfo trashInfo = new TrashInfo(item.file.getAbsolutePath(), trashFolder.getAbsolutePath() + item.file.getPath(), item.isVideo);
+
+            //Move item file to trash folder
+            if (!Orion.cloneFile(context, item.file, trashInfo.trashFile)) {
+                action.failed.put(item, "Could not clone original file to trash path");
+                return;
+            }
+            Orion.deleteFile(item.file);
+
+            //Update item
+            item.file = trashInfo.trashFile;
+            item.trashInfo = trashInfo;
+
+            //Add item to trash album
+            addTrashItem(item);
+            if (action.trashChanges == Action.TRASH_NONE) {
+                //First change to trash this action -> Check if trash was added to list or just updated
+                action.trashChanges = trash.size() == 1 ? Action.TRASH_ADDED : Action.TRASH_UPDATED;
+            }
+
+            //Get action helper
+            ActionHelper helper = action.getHelper(item);
+
+            //Remove from all items list
+            performRemoveFromAll(helper);
+
+            //Remove from gallery items list
+            performRemoveFromGallery(helper, action);
+
+            //Remove from album items list
+            performRemoveFromAlbum(helper, action);
+        });
+    }
+
+    public static void restoreItems(Context context, TurboItem[] items) {
+        performAction(Action.TYPE_RESTORE, items, (action, item) -> {
             //Not in trash
             if (!item.isTrashed()) {
                 action.failed.put(item, "Item is not trashed");
@@ -465,12 +705,15 @@ public class Library {
             if (helper.indexInTrash != -1) {
                 //Is present -> Remove it
                 Item(helper.indexInTrash);
-                action.trashChanged = trash.isEmpty() ? Action.TRASH_REMOVED : Action.TRASH_UPDATED;
+                action.trashChanges = trash.isEmpty() ? Action.TRASH_REMOVED : Action.TRASH_UPDATED;
             }
 
             //Add item to all items
             all.addSorted(item);
             action.sortedAlbums.add(all);
+
+            //Remove from gallery items list
+            performRemoveFromGallery(helper, action);
 
             //Add item to album
             item.album.addSorted(item);
@@ -491,121 +734,30 @@ public class Library {
         });
     }
 
-    public static Action trashItems(Context context, TurboItem[] items) {
-        return performAction(Action.TYPE_TRASH, items, (action, item) -> {
-            //Already in trash
-            if (item.isTrashed()) {
-                action.failed.put(item, "Item is already trashed");
-                return;
-            }
+    public static void shareItems(Context context, TurboItem[] items) {
+        //No items
+        if (items.length == 0) return;
 
-            //Create trash info
-            TrashInfo trashInfo = new TrashInfo(item.file.getAbsolutePath(), trashFolder.getAbsolutePath() + item.file.getPath(), item.isVideo);
-
-            //Move item file to trash folder
-            if (!Orion.cloneFile(context, item.file, trashInfo.trashFile)) {
-                action.failed.put(item, "Could not clone original file to trash path");
-                return;
-            }
-            Orion.deleteFile(item.file);
-
-            //Update item
-            item.file = trashInfo.trashFile;
-            item.trashInfo = trashInfo;
-
-            //Add item to trash album
-            addTrashItem(item);
-            if (action.trashChanged == Action.TRASH_NONE) {
-                //First change to trash this action -> Check if trash was added to list or just updated
-                action.trashChanged = trash.size() == 1 ? Action.TRASH_ADDED : Action.TRASH_UPDATED;
-            }
-
-            //Get album & action helper
-            Album album = item.album;
-            ActionHelper helper = action.getHelper(item);
-
-            //Check if item is in all items
-            if (helper.indexInAll != -1) {
-                //Is present -> Remove it
-                all.remove(helper.indexInAll);
-            }
-
-            //Check if item is in album
-            if (helper.indexInAlbum != -1) {
-                //Is present -> Remove it
-                album.remove(helper.indexInAlbum);
-
-                //Check if album needs to be deleted or sorted
-                if (album.isEmpty()) {
-                    //Album is empty -> Remove it from list & mark it as deleted
-                    removeAlbum(helper.indexOfAlbum);
-                    action.deletedAlbums.add(album);
-                } else if (helper.indexInAlbum == 0) {
-                    //Album isn't empty & first image was deleted -> Sort albums list in case the order changed
-                    action.sortedAlbumsList = true;
-                }
-            }
-        });
+        //Share items
+        Intent intent;
+        if (items.length == 1) {
+            //Share 1 item
+            intent = new Intent(Intent.ACTION_SEND);
+            intent.putExtra(Intent.EXTRA_STREAM, Orion.getUriFromFile(context, items[0].file));
+            intent.setType(items[0].mimeType);
+        } else {
+            //Share multiple items
+            intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
+            ArrayList<Uri> URIs = new ArrayList<>();
+            for (TurboItem item : items) URIs.add(Orion.getUriFromFile(context, item.file));
+            intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, URIs);
+            intent.setType("*/*");
+        }
+        context.startActivity(Intent.createChooser(intent, null));
     }
 
-    public static Action deleteItems(TurboItem[] items) {
-        return performAction(Action.TYPE_DELETE, items, (action, item) -> {
-            //Delete item file
-            if (!Orion.deleteFile(item.file)) {
-                //Failed to delete file
-                action.failed.put(item, "Error while deleting a file");
-                return;
-            }
-
-            //Get album & action helper
-            Album album = item.album;
-            ActionHelper helper = action.getHelper(item);
-
-            //Delete item metadata from album
-            if (album.hasMetadataKey(item.name)) {
-                album.removeMetadataKey(item.name);
-                album.saveMetadata();
-            }
-
-            //Check if item is in trash
-            if (helper.indexInTrash != -1) {
-                //Is present -> Remove it
-                Item(helper.indexInTrash);
-                action.trashChanged = trash.isEmpty() ? Action.TRASH_REMOVED : Action.TRASH_UPDATED;
-
-                //Check to finish removing album
-                if (helper.indexOfAlbum == -1 && !trashAlbumsMap.containsKey(item.album)) {
-                    //Album not used in albums list nor in trash items -> Finish removing it completely
-                    albumsMap.remove(album.getImagesPath());
-                }
-            }
-
-            //Check if item is in all items
-            if (helper.indexInAll != -1) {
-                //Is present -> Remove it
-                all.remove(helper.indexInAll);
-            }
-
-            //Check if item is in album
-            if (helper.indexInAlbum != -1) {
-                //Is present -> Remove it
-                album.remove(helper.indexInAlbum);
-
-                //Check if album needs to be deleted or sorted
-                if (album.isEmpty()) {
-                    //Album is empty -> Remove it from list & mark it as deleted
-                    removeAlbum(helper.indexOfAlbum);
-                    action.deletedAlbums.add(album);
-                } else if (helper.indexInAlbum == 0) {
-                    //Album isn't empty & first image was deleted -> Sort albums list in case the order changed
-                    action.sortedAlbumsList = true;
-                }
-            }
-        });
-    }
-
-    public static Action moveItems(TurboItem[] items, Album destination) {
-        return performAction(Action.TYPE_MOVE, items, (action, item) -> {
+    public static void moveItems(TurboItem[] items, Album destination) {
+        performAction(Action.TYPE_MOVE, items, (action, item) -> {
             //Check destination
             if (destination == null) {
                 //Invalid destination
@@ -639,6 +791,9 @@ public class Library {
             Album album = item.album;
             ActionHelper helper = action.getHelper(item);
 
+            //Remove from gallery items list
+            performRemoveFromGallery(helper, action);
+
             //Move item metadata from old album to destination
             if (album.hasMetadataKey(item.name)) {
                 destination.setMetadataKey(item.name, album.getMetadataKey(item.name));
@@ -647,23 +802,10 @@ public class Library {
                 album.saveMetadata();
             }
 
-            //Check if item is in album
-            if (helper.indexInAlbum != -1) {
-                //Is present -> Remove it
-                album.remove(helper.indexInAlbum);
+            //Remove from album items list
+            performRemoveFromAlbum(helper, action);
 
-                //Check if album needs to be deleted or sorted
-                if (album.isEmpty()) {
-                    //Album is empty -> Remove it from list & mark it as deleted
-                    removeAlbum(helper.indexOfAlbum);
-                    action.deletedAlbums.add(album);
-                } else if (helper.indexInAlbum == 0) {
-                    //Album isn't empty & first image was deleted -> Sort albums list in case the order changed
-                    action.sortedAlbumsList = true;
-                }
-            }
-
-            //Add to destination album
+            //Add to destination album items list
             int destinationIndex = destination.addSorted(item);
             if (destinationIndex == 0) {
                 //Added as the album cover -> Sort albums list in case the order changed

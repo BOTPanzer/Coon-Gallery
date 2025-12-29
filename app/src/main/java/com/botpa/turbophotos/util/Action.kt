@@ -1,6 +1,11 @@
 package com.botpa.turbophotos.util
 
-class Action(private val type: Int, @JvmField val items: Array<TurboItem>) {
+import java.util.Arrays
+
+class Action(
+    private val type: Int,
+    @JvmField val items: Array<TurboItem>
+) {
 
     //Static
     companion object {
@@ -24,11 +29,24 @@ class Action(private val type: Int, @JvmField val items: Array<TurboItem>) {
     @JvmField var failed: HashMap<TurboItem, String> = HashMap()
 
     //Results
-    @JvmField var trashChanged: Int = TRASH_NONE
+    @JvmField var trashChanges: Int = TRASH_NONE
     @JvmField var deletedAlbums: HashSet<Album> = HashSet()
     @JvmField var sortedAlbums: HashSet<Album> = HashSet()
     @JvmField var sortedAlbumsList: Boolean = false
+    @JvmField var removedIndexesInGallery: ArrayList<Int> = ArrayList() //In the order of removal, if index 1 gets removed before 2, both will appear as 1
 
+
+    //Constructor
+    init {
+        //Get item gallery indexes
+        val indexesInGallery: MutableMap<TurboItem?, Int> = HashMap()
+        for (item in items) indexesInGallery[item] = Library.gallery.indexOf(item)
+
+        //Sort items based on their indexes
+        Arrays.sort<TurboItem?>(items, Comparator { a: TurboItem?, b: TurboItem? ->
+            indexesInGallery.getOrDefault(b, -1).compareTo(indexesInGallery.getOrDefault(a, -1))
+        })
+    }
 
     //Action
     fun getHelper(file: TurboItem): ActionHelper {

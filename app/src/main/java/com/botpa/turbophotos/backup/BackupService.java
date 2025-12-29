@@ -5,7 +5,6 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
@@ -405,7 +404,7 @@ public class BackupService extends Service {
             Files.setLastModifiedTime(Paths.get(file.getAbsolutePath()), FileTime.from(Instant.ofEpochMilli(metadataRequest.lastModified)));
 
             //File modified -> Should restart
-            MainActivity.shouldReload();
+            MainActivity.reloadOnResume();
         } catch (IOException e) {
             //Error sending message
             String errorMessage = e.getMessage();

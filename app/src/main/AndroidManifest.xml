@@ -39,6 +39,11 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".display.DisplayActivity"
+            android:launchMode="singleTask"
+            android:exported="false">
+        </activity>
+        <activity
             android:name=".settings.SettingsActivity"
             android:launchMode="singleTask"
             android:exported="false">

@@ -1,18 +1,18 @@
-package com.botpa.turbophotos.main;
+package com.botpa.turbophotos.display;
 
-import android.animation.ValueAnimator;
-import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.net.Uri;
+import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AlphaAnimation;
 import android.widget.HorizontalScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
-import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
@@ -23,32 +23,36 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SnapHelper;
 
 import com.botpa.turbophotos.R;
+import com.botpa.turbophotos.main.DisplayLayoutManager;
+import com.botpa.turbophotos.util.Action;
+import com.botpa.turbophotos.util.BackManager;
+import com.botpa.turbophotos.util.Library;
 import com.botpa.turbophotos.util.Orion;
+import com.botpa.turbophotos.util.Storage;
 import com.botpa.turbophotos.util.TurboItem;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.util.ArrayList;
 
-@SuppressLint({"SetTextI18n", "NotifyDataSetChanged"})
-public class DisplayHelper {
+public class DisplayActivity extends AppCompatActivity {
 
-    //State
-    private final MainActivity activity;
+    //Activity
+    private BackManager backManager;
 
-    public boolean isOpen = false;
+    //Actions
+    private final Library.ActionEvent onAction = this::manageAction;
 
     //Display
     private DisplayLayoutManager layoutManager;
     private DisplayAdapter adapter;
 
-    public final ArrayList<TurboItem> items = new ArrayList<>();
+    public final ArrayList<TurboItem> displayItems = new ArrayList<>();
+    public int currentIndexInGallery = -1;
+    public int currentIndexInDisplay = -1;
     public TurboItem currentItem = null;
-    public int currentIndex = -1;
-    public int currentRelativeIndex = -1;
 
     //Views
-    private View layout;
     private TextView nameText;
     private View closeButton;
     private View infoButton;
@@ -79,49 +83,97 @@ public class DisplayHelper {
     private View optionsOpenOutside;
 
 
-    //Constructor
-    public DisplayHelper(MainActivity activity) {
-        this.activity = activity;
+    //Activity
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
+        setContentView(R.layout.display);
+
+        //Load storage
+        Storage.load(DisplayActivity.this);
+
+        //Add on action listener
+        Library.addOnActionEvent(onAction);
+
+        //Load views & add listeners
+        loadViews();
+        addListeners();
+
+        //Init activity
+        initActivity();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        //Remove on action listener
+        Library.removeOnActionEvent(onAction);
+    }
+
+    private void initActivity() {
+        //Init back manager
+        backManager = new BackManager(DisplayActivity.this, getOnBackPressedDispatcher());
+
+        //Enable HDR
+        getWindow().setColorMode(ActivityInfo.COLOR_MODE_HDR);
+
+        //Init adapters
+        initAdapters();
+
+        //Check intent
+        Intent intent = getIntent();
+        if (intent == null) {
+            finish();
+            return;
+        }
+        int index = intent.getIntExtra("index", -1);
+        if (index < 0) {
+            finish();
+            return;
+        }
+        selectItem(index);
     }
 
     //Views
-    public void loadViews() {
-        layout = activity.findViewById(R.id.displayLayout);
-        nameText = activity.findViewById(R.id.displayNameText);
-        closeButton = activity.findViewById(R.id.displayCloseButton);
-        infoButton = activity.findViewById(R.id.displayInfoButton);
-        infoEdit = activity.findViewById(R.id.displayInfoEdit);
-        optionsButton = activity.findViewById(R.id.displayOptionsButton);
-        list = activity.findViewById(R.id.displayList);
+    private void loadViews() {
+        //Find views
+        nameText = findViewById(R.id.displayNameText);
+        closeButton = findViewById(R.id.displayCloseButton);
+        infoButton = findViewById(R.id.displayInfoButton);
+        infoEdit = findViewById(R.id.displayInfoEdit);
+        optionsButton = findViewById(R.id.displayOptionsButton);
+        list = findViewById(R.id.displayList);
 
-        overlayLayout = activity.findViewById(R.id.displayOverlayLayout);
+        overlayLayout = findViewById(R.id.displayOverlayLayout);
 
-        infoLayout = activity.findViewById(R.id.displayInfoLayout);
-        infoNameText = activity.findViewById(R.id.displayInfoNameText);
-        infoCaptionText = activity.findViewById(R.id.displayInfoCaptionText);
-        infoLabelsScroll = activity.findViewById(R.id.displayInfoLabelsScroll);
-        infoLabelsText = activity.findViewById(R.id.displayInfoLabelsText);
-        infoTextScroll = activity.findViewById(R.id.displayInfoTextScroll);
-        infoTextText = activity.findViewById(R.id.displayInfoTextText);
+        infoLayout = findViewById(R.id.displayInfoLayout);
+        infoNameText = findViewById(R.id.displayInfoNameText);
+        infoCaptionText = findViewById(R.id.displayInfoCaptionText);
+        infoLabelsScroll = findViewById(R.id.displayInfoLabelsScroll);
+        infoLabelsText = findViewById(R.id.displayInfoLabelsText);
+        infoTextScroll = findViewById(R.id.displayInfoTextScroll);
+        infoTextText = findViewById(R.id.displayInfoTextText);
 
-        editLayout = activity.findViewById(R.id.displayEditLayout);
-        editCaptionText = activity.findViewById(R.id.displayEditCaptionText);
-        editLabelsText = activity.findViewById(R.id.displayEditLabelsText);
-        editSave = activity.findViewById(R.id.displayEditSave);
-        editSpace = activity.findViewById(R.id.displayEditSpace);
+        editLayout = findViewById(R.id.displayEditLayout);
+        editCaptionText = findViewById(R.id.displayEditCaptionText);
+        editLabelsText = findViewById(R.id.displayEditLabelsText);
+        editSave = findViewById(R.id.displayEditSave);
+        editSpace = findViewById(R.id.displayEditSpace);
 
         //Options
-        optionsLayout = activity.findViewById(R.id.displayOptionsLayout);
-        optionsRestore = activity.findViewById(R.id.displayOptionsRestore);
-        optionsDelete = activity.findViewById(R.id.displayOptionsDelete);
-        optionsTrash = activity.findViewById(R.id.displayOptionsTrash);
-        optionsShare = activity.findViewById(R.id.displayOptionsShare);
-        optionsEdit = activity.findViewById(R.id.displayOptionsEdit);
-        optionsOpenOutside = activity.findViewById(R.id.displayOptionsOpen);
+        optionsLayout = findViewById(R.id.displayOptionsLayout);
+        optionsRestore = findViewById(R.id.displayOptionsRestore);
+        optionsDelete = findViewById(R.id.displayOptionsDelete);
+        optionsTrash = findViewById(R.id.displayOptionsTrash);
+        optionsShare = findViewById(R.id.displayOptionsShare);
+        optionsEdit = findViewById(R.id.displayOptionsEdit);
+        optionsOpenOutside = findViewById(R.id.displayOptionsOpen);
 
         //Insets
         Orion.addInsetsChangedListener(
-                activity.findViewById(R.id.displayOverlayIndent),
+                findViewById(R.id.displayOverlayIndent),
                 new int[]{ WindowInsetsCompat.Type.systemBars() },
                 0,
                 (view, insets, duration) -> {
@@ -161,47 +213,36 @@ public class DisplayHelper {
         });
     }
 
-    public void addListeners() {
+    private void addListeners() {
         //Main
-        closeButton.setOnClickListener(view -> {
-            //Reset display current
-            open(-1, false);
-
-            //Hide display
-            Orion.hideAnim(layout);
-            Orion.hideAnim(infoLayout);
-            isOpen = false;
-
-            //Back button
-            activity.backManager.unregister("display");
-        });
+        closeButton.setOnClickListener(view -> finish());
 
         //Info & edit
-        infoButton.setOnClickListener(view -> showInfo(true));
+        infoButton.setOnClickListener(view -> toggleInfo(true));
 
-        infoLayout.setOnClickListener(view -> showInfo(false));
+        infoLayout.setOnClickListener(view -> toggleInfo(false));
 
         infoEdit.setOnClickListener(view -> {
             //No metadata file
             if (!currentItem.album.hasMetadata()) {
-                Toast.makeText(activity, "This item's album does not have a metadata file linked to it", Toast.LENGTH_SHORT).show();
+                Toast.makeText(DisplayActivity.this, "This item's album does not have a metadata file linked to it", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             //No metadata
             if (!currentItem.hasMetadata()) {
-                Toast.makeText(activity, "This item does not have a key in its album metadata", Toast.LENGTH_SHORT).show();
+                Toast.makeText(DisplayActivity.this, "This item does not have a key in its album metadata", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             //Hide display info
-            showInfo(false);
+            toggleInfo(false);
 
             //Toggle display edit
-            showEdit(editLayout.getVisibility() != View.VISIBLE);
+            toggleEdit(editLayout.getVisibility() != View.VISIBLE);
         });
 
-        editLayout.setOnClickListener(view -> showEdit(false));
+        editLayout.setOnClickListener(view -> toggleEdit(false));
 
         editSave.setOnClickListener(view -> {
             //Get new caption & labels
@@ -226,115 +267,97 @@ public class DisplayHelper {
 
             //Save
             boolean saved = currentItem.album.saveMetadata();
-            Toast.makeText(activity, saved ? "Saved successfully" : "An error occurred while saving", Toast.LENGTH_SHORT).show();
+            Toast.makeText(DisplayActivity.this, saved ? "Saved successfully" : "An error occurred while saving", Toast.LENGTH_SHORT).show();
 
             //Close menu
-            showEdit(false);
+            toggleEdit(false);
         });
 
         //Options
-        optionsButton.setOnClickListener(view -> showOptions(true));
+        optionsButton.setOnClickListener(view -> toggleOptions(true));
 
-        optionsLayout.setOnClickListener(view -> showOptions(false));
+        optionsLayout.setOnClickListener(view -> toggleOptions(false));
 
         optionsRestore.setOnClickListener(view -> {
             //Close options menu
-            showOptions(false);
+            toggleOptions(false);
 
             //Restore from trash
-            activity.restoreFiles(new TurboItem[] {currentItem});
+            Library.restoreItems(DisplayActivity.this, new TurboItem[] { currentItem });
         });
 
         optionsDelete.setOnClickListener(view -> {
             //Close options menu
-            showOptions(false);
+            toggleOptions(false);
 
             //Delete items
-            activity.deleteFiles(new TurboItem[] {currentItem});
+            Library.deleteItems(DisplayActivity.this, new TurboItem[] { currentItem });
         });
 
         optionsTrash.setOnClickListener(view -> {
             //Close options menu
-            showOptions(false);
+            toggleOptions(false);
 
             //Move to trash
-            activity.trashFiles(new TurboItem[] {currentItem});
+            Library.trashItems(DisplayActivity.this, new TurboItem[] { currentItem });
         });
 
         optionsShare.setOnClickListener(view -> {
             //Close options menu
-            showOptions(false);
+            toggleOptions(false);
 
             //Share
-            activity.shareFiles(new TurboItem[]{currentItem});
+            Library.shareItems(DisplayActivity.this, new TurboItem[]{ currentItem });
         });
 
         optionsEdit.setOnClickListener(view -> {
             //Close options menu
-            showOptions(false);
+            toggleOptions(false);
 
             //Get mime type and URI
             String mimeType = currentItem.mimeType;
-            Uri uri = Orion.getMediaStoreUriFromFile(activity, currentItem.file, mimeType);
+            Uri uri = Orion.getMediaStoreUriFromFile(DisplayActivity.this, currentItem.file, mimeType);
 
             //Edit
             Intent intent = new Intent(Intent.ACTION_EDIT);
             intent.setDataAndType(uri, mimeType);
             intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-            activity.startActivity(Intent.createChooser(intent, null));
+            startActivity(Intent.createChooser(intent, null));
         });
 
         optionsOpenOutside.setOnClickListener(view -> {
             //Close options menu
-            showOptions(false);
+            toggleOptions(false);
 
             //Show open with menu
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setDataAndType(Uri.parse(currentItem.file.getAbsolutePath()), currentItem.mimeType);
-            activity.startActivity(intent);
+            startActivity(intent);
         });
     }
 
+    //Actions
+    private void manageAction(Action action) {
+        //Check if gallery is empty
+        if (Library.gallery.isEmpty()) {
+            //Is empty -> Close display
+            finish();
+            return;
+        }
+
+        //Update selected item
+        int originalCurrentIndex = currentIndexInGallery;
+        for (int indexInGallery : action.removedIndexesInGallery) {
+            //Check if current item index changed (an item before it was removed)
+            if (indexInGallery < originalCurrentIndex) currentIndexInGallery--;
+        }
+        selectItem(currentIndexInGallery);
+    }
+
     //Display
-    private void showInfo(boolean show) {
-        if (show) {
-            infoLabelsScroll.scrollTo(0, 0);
-            infoTextScroll.scrollTo(0, 0);
-            Orion.showAnim(infoLayout);
-            activity.backManager.register("displayInfo", () -> showInfo(false));
-        } else {
-            Orion.hideAnim(infoLayout);
-            activity.backManager.unregister("displayInfo");
-        }
-    }
-
-    private void showEdit(boolean show) {
-        if (show) {
-            editCaptionText.setText(infoCaptionText.getText());
-            editLabelsText.setText(infoLabelsText.getText());
-            Orion.showAnim(editLayout);
-            activity.backManager.register("displayEdit", () -> showEdit(false));
-        } else {
-            Orion.hideKeyboard(activity);
-            Orion.clearFocus(activity);
-            Orion.hideAnim(editLayout);
-            activity.backManager.unregister("displayEdit");
-        }
-    }
-
-    private void showOptions(boolean show) {
-        if (show) {
-            Orion.showAnim(optionsLayout);
-            activity.backManager.register("displayOptions", () -> showOptions(false));
-        } else {
-            Orion.hideAnim(optionsLayout);
-            activity.backManager.unregister("displayOptions");
-        }
-    }
-
-    public void initAdapters() {
+    private void initAdapters() {
         //Create display list viewer
-        layoutManager = new DisplayLayoutManager(activity);
+        layoutManager = new DisplayLayoutManager(DisplayActivity.this);
         layoutManager.setOrientation(RecyclerView.HORIZONTAL);
         list.setLayoutManager(layoutManager);
 
@@ -343,14 +366,14 @@ public class DisplayHelper {
         snapHelper.attachToRecyclerView(list);
 
         //Create display adapter
-        adapter = new DisplayAdapter(activity, items);
+        adapter = new DisplayAdapter(DisplayActivity.this, displayItems);
         adapter.setOnClickListener((view, index) -> {
             if (overlayLayout.getVisibility() == View.VISIBLE) {
                 Orion.hideAnim(overlayLayout);
-                showBars(false);
+                toggleSystemUI(false);
             } else {
                 Orion.showAnim(overlayLayout);
-                showBars(true);
+                toggleSystemUI(true);
             }
         });
         adapter.setOnZoomChangedListener((view, index) -> {
@@ -378,14 +401,14 @@ public class DisplayHelper {
                     if (position == -1) return;
 
                     //Check what to do
-                    if (position < currentRelativeIndex) {
+                    if (position < currentIndexInDisplay) {
                         //Previous
                         layoutManager.setScrollEnabled(false);
-                        open(currentIndex - 1, false);
-                    } else if (position > currentRelativeIndex) {
+                        selectItem(currentIndexInGallery - 1);
+                    } else if (position > currentIndexInDisplay) {
                         //Next
                         layoutManager.setScrollEnabled(false);
-                        open(currentIndex + 1, false);
+                        selectItem(currentIndexInGallery + 1);
                     }
                 }
                 super.onScrollStateChanged(recyclerView, newState);
@@ -393,36 +416,31 @@ public class DisplayHelper {
         });
     }
 
-    public void open(int index, boolean showOverlay) {
-        //Deselect
-        if (index == -1) {
-            currentRelativeIndex = -1;
-            currentIndex = -1;
-            currentItem = null;
-            return;
-        }
+    private void selectItem(int index) {
+        //Fix index overflow
+        index = Math.clamp(index, 0, Library.gallery.size() - 1);
 
         //Reset display items
-        items.clear();
-        currentIndex = index;
-        currentRelativeIndex = 0;
+        displayItems.clear();
+        currentIndexInGallery = index;
+        currentIndexInDisplay = 0;
 
         //Add items to display list
         if (index > 0) {
             //Has item before -> Add it
-            items.add(activity.gallery.items.get(index - 1));
-            currentRelativeIndex++;
+            displayItems.add(Library.gallery.get(index - 1));
+            currentIndexInDisplay++;
         }
-        items.add(activity.gallery.items.get(index));
-        if (index < activity.gallery.items.size() - 1) {
+        displayItems.add(Library.gallery.get(index));
+        if (index < Library.gallery.size() - 1) {
             //Has item after -> Add it
-            items.add(activity.gallery.items.get(index + 1));
+            displayItems.add(Library.gallery.get(index + 1));
         }
 
         //Get current image, update adapter & select it
-        currentItem = items.get(currentRelativeIndex);
+        currentItem = displayItems.get(currentIndexInDisplay);
         adapter.notifyDataSetChanged();
-        list.scrollToPosition(currentRelativeIndex);
+        list.scrollToPosition(currentIndexInDisplay);
         layoutManager.setScrollEnabled(true);
 
         //Change image name
@@ -485,32 +503,51 @@ public class DisplayHelper {
         infoCaptionText.setText(caption);
         infoLabelsText.setText(labels);
         infoTextText.setText(text);
+    }
 
-        //Close search & show display
-        if (showOverlay) {
-            overlayLayout.setVisibility(View.VISIBLE);
-            showBars(false);    //Hide & show to trigger overlay animation
-            showBars(true);
+    //Menus
+    private void toggleInfo(boolean show) {
+        if (show) {
+            infoLabelsScroll.scrollTo(0, 0);
+            infoTextScroll.scrollTo(0, 0);
+            Orion.showAnim(infoLayout);
+            backManager.register("displayInfo", () -> toggleInfo(false));
+        } else {
+            Orion.hideAnim(infoLayout);
+            backManager.unregister("displayInfo");
         }
-        activity.gallery.showSearchLayout(false);
-        Orion.showAnim(layout);
-        isOpen = true;
-
-        //Back button
-        activity.backManager.register("display", () -> closeButton.performClick());
     }
 
-    public void close() {
-        showBars(true);
-        showInfo(false);
-        showEdit(false);
-        showOptions(false);
-        closeButton.performClick();
+    private void toggleEdit(boolean show) {
+        if (show) {
+            editCaptionText.setText(infoCaptionText.getText());
+            editLabelsText.setText(infoLabelsText.getText());
+            Orion.showAnim(editLayout);
+            backManager.register("displayEdit", () -> toggleEdit(false));
+        } else {
+            Orion.hideKeyboard(DisplayActivity.this);
+            Orion.clearFocus(DisplayActivity.this);
+            Orion.hideAnim(editLayout);
+            backManager.unregister("displayEdit");
+        }
     }
 
-    private void showBars(boolean show) {
-        WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(activity.getWindow(), overlayLayout);
+    private void toggleOptions(boolean show) {
+        if (show) {
+            Orion.showAnim(optionsLayout);
+            backManager.register("displayOptions", () -> toggleOptions(false));
+        } else {
+            Orion.hideAnim(optionsLayout);
+            backManager.unregister("displayOptions");
+        }
+    }
 
+    //Util
+    private void toggleSystemUI(boolean show) {
+        //Get controller
+        WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(getWindow(), overlayLayout);
+
+        //Toggle system UI
         if (show) {
             controller.show(WindowInsetsCompat.Type.systemBars());
         } else {

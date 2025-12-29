@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.main
+package com.botpa.turbophotos.display
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
+import com.botpa.turbophotos.main.ZoomableImageView
 import com.botpa.turbophotos.util.TurboItem
 import com.bumptech.glide.Glide
 

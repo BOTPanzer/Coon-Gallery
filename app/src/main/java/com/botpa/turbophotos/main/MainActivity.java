@@ -31,13 +31,8 @@ import com.botpa.turbophotos.util.Library;
 import com.botpa.turbophotos.R;
 import com.botpa.turbophotos.util.Orion;
 import com.botpa.turbophotos.util.Storage;
-import com.botpa.turbophotos.util.TurboItem;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.Comparator;
 
 @SuppressLint({"SetTextI18n", "NotifyDataSetChanged"})
 public class MainActivity extends AppCompatActivity {
@@ -52,12 +47,18 @@ public class MainActivity extends AppCompatActivity {
         checkPermissions();
     });
 
-    //App
-    private static boolean shouldReload = false;
+    //Activity
+    private static boolean shouldReloadOnResume = false;
     private boolean isLoaded = false;
     private boolean skipResume = true;
 
     public BackManager backManager;
+
+    //Actions
+    private final Library.ActionEvent onAction = this::manageAction;
+
+    //Gallery
+    public final GalleryHelper gallery = new GalleryHelper(this);
 
     //Loading indicator
     private View loadIndicator;
@@ -92,14 +93,8 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    //Gallery
-    public final GalleryHelper gallery = new GalleryHelper(this);
 
-    //Display
-    public final DisplayHelper display = new DisplayHelper(this);
-
-
-    //App
+    //Activity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -109,36 +104,34 @@ public class MainActivity extends AppCompatActivity {
         //Load storage
         Storage.load(MainActivity.this);
 
-        //Load views
+        //Add on action listener
+        Library.addOnActionEvent(onAction);
+
+        //Load views & add listeners
         loadViews();
+        addListeners();
 
         //Check permissions
         checkPermissions();
     }
 
-    private void loadViews() {
-        //Load indicator
-        loadIndicator = findViewById(R.id.loadIndicator);
-        loadIndicatorText = findViewById(R.id.loadIndicatorText);
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
 
-        //Gallery & Search
-        gallery.loadViews();
-
-        //Display
-        display.loadViews();
+        //Remove on action listener
+        Library.removeOnActionEvent(onAction);
     }
 
-    private void loadApp() {
-        //App
+    private void initActivity() {
+        //Init back manager
         backManager = new BackManager(MainActivity.this, getOnBackPressedDispatcher());
+
+        //Enable HDR
         getWindow().setColorMode(ActivityInfo.COLOR_MODE_HDR);
 
-        //Add listeners
-        addListeners();
-
-        //Init list adapters (gallery & display)
+        //Init list adapters (gallery)
         gallery.initAdapters();
-        display.initAdapters();
 
         //Load albums
         new Thread(() -> {
@@ -159,62 +152,34 @@ public class MainActivity extends AppCompatActivity {
         }).start();
     }
 
+    public static void reloadOnResume() {
+        //Reload on resume
+        shouldReloadOnResume = true;
+    }
+
+    //Views
+    private void loadViews() {
+        //Load indicator
+        loadIndicator = findViewById(R.id.loadIndicator);
+        loadIndicatorText = findViewById(R.id.loadIndicatorText);
+
+        //Gallery & Search
+        gallery.loadViews();
+    }
+
     private void addListeners() {
         //Gallery & Search
         gallery.addListeners();
-
-        //Display
-        display.addListeners();
-    }
-
-    public static void shouldReload() {
-        //Reload on resume
-        shouldReload = true;
     }
 
     //Permission & Settings
     private void checkPermissions() {
-        //Show permission layout
-        findViewById(R.id.permissionLayout).setVisibility(View.VISIBLE);
-
-        //Button listeners
-        findViewById(R.id.permissionWrite).setOnClickListener(v -> {
-            if (permissionWrite) return;
-
-            //Ask for permission
-            permissionCheck = true;
-            Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
-            intent.setData(Uri.fromParts("package", getPackageName(), null));
-            startActivity(intent);
-        });
-
-        findViewById(R.id.permissionMedia).setOnClickListener(v -> {
-            if (permissionMedia) return;
-
-            //Ask for permission
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                ActivityCompat.requestPermissions(this, new String[] { Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO }, 0);
-            } else {
-                ActivityCompat.requestPermissions(this, new String[] { Manifest.permission.READ_EXTERNAL_STORAGE }, 0);
-            }
-        });
-
-        findViewById(R.id.permissionNotifications).setOnClickListener(v -> {
-            if (permissionNotifications) return;
-
-            //Ask for permission
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
-            }
-        });
-
-        //Check for permissions
+        //Update permissions
         if (Environment.isExternalStorageManager()) {
             permissionWrite = true;
             findViewById(R.id.permissionWrite).setAlpha(0.5f);
         }
-        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_MEDIA_VIDEO) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_MEDIA_VIDEO) == PackageManager.PERMISSION_GRANTED) {
             permissionMedia = true;
             findViewById(R.id.permissionMedia).setAlpha(0.5f);
         }
@@ -223,12 +188,50 @@ public class MainActivity extends AppCompatActivity {
             findViewById(R.id.permissionNotifications).setAlpha(0.5f);
         }
 
-        //Has permissions
+        //Check if permissions are granted
         if (permissionWrite && permissionMedia && permissionNotifications) {
+            //Hide permission layout
             findViewById(R.id.permissionLayout).setVisibility(View.GONE);
 
-            //Start
-            loadApp();
+            //Init activity
+            initActivity();
+        } else {
+            //Show permission layout
+            findViewById(R.id.permissionLayout).setVisibility(View.VISIBLE);
+
+            //Add request permission button listeners
+            findViewById(R.id.permissionWrite).setOnClickListener(view -> {
+                //Already has permission
+                if (permissionWrite) return;
+
+                //Ask for permission
+                permissionCheck = true;
+                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                intent.setData(Uri.fromParts("package", getPackageName(), null));
+                startActivity(intent);
+            });
+
+            findViewById(R.id.permissionMedia).setOnClickListener(view -> {
+                //Already has permission
+                if (permissionMedia) return;
+
+                //Ask for permission
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    ActivityCompat.requestPermissions(this, new String[] { Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO }, 0);
+                } else {
+                    ActivityCompat.requestPermissions(this, new String[] { Manifest.permission.READ_EXTERNAL_STORAGE }, 0);
+                }
+            });
+
+            findViewById(R.id.permissionNotifications).setOnClickListener(view -> {
+                //Already has permission
+                if (permissionNotifications) return;
+
+                //Ask for permission
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+                }
+            });
         }
     }
 
@@ -243,8 +246,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         //Reload
-        if (shouldReload) {
-            shouldReload = false;
+        if (shouldReloadOnResume) {
+            shouldReloadOnResume = false;
             recreate();
             return;
         }
@@ -313,7 +316,7 @@ public class MainActivity extends AppCompatActivity {
             gallery.homeAdapter.notifyDataSetChanged();
         } else {
             //Check if trash was added, removed or updated
-            switch (action.trashChanged) {
+            switch (action.trashChanges) {
                 case Action.TRASH_ADDED:
                     gallery.homeAdapter.notifyItemInserted(0);
                     break;
@@ -327,10 +330,10 @@ public class MainActivity extends AppCompatActivity {
 
             //Check if albums were deleted or sorted
             if (!action.deletedAlbums.isEmpty()) {
-                //Deleted albums -> Notify items removed
+                //Albums were deleted -> Notify items removed
                 for (Album album : action.deletedAlbums) {
-                    //position = albumIndex + adapterIndexOffset
-                    gallery.homeAdapter.notifyItemRemoved(gallery.homeAdapter.getIndexFromAlbum(album) + gallery.homeAdapter.getIndexOffset());
+                    int position = gallery.homeAdapter.getIndexFromAlbum(album) + gallery.homeAdapter.getIndexOffset(); //albumIndex + adapterIndexOffset
+                    gallery.homeAdapter.notifyItemRemoved(position);
                 }
             }
 
@@ -338,122 +341,26 @@ public class MainActivity extends AppCompatActivity {
             if (!action.sortedAlbums.isEmpty()) {
                 //Sorted albums -> Notify items removed
                 for (Album album : action.sortedAlbums) {
-                    //position = albumIndex + adapterIndexOffset
-                    gallery.homeAdapter.notifyItemChanged(gallery.homeAdapter.getIndexFromAlbum(album) + gallery.homeAdapter.getIndexOffset());
+                    int position = gallery.homeAdapter.getIndexFromAlbum(album) + gallery.homeAdapter.getIndexOffset(); //albumIndex + adapterIndexOffset
+                    gallery.homeAdapter.notifyItemChanged(position);
                 }
             }
         }
 
-        //Get indexes of items in gallery list & sort them
-        ArrayList<Integer> indexesInGallery = new ArrayList<>(action.items.length);
-        for (TurboItem item : action.items) {
-            //Check if item failed
-            if (action.failed.containsKey(item)) continue;
-
-            //Get index
-            int indexInGallery = gallery.items.indexOf(item);
-            if (indexInGallery != -1) indexesInGallery.add(indexInGallery);
-        }
-        indexesInGallery.sort(Comparator.reverseOrder()); //Sort from last to first so that selected items can be removed correctly
-
-        //Remove gallery items
-        for (int indexInGallery : indexesInGallery) {
-            //Get item
-            TurboItem item = gallery.items.get(indexInGallery);
-
-            //Remove it & update adapter
-            gallery.items.remove(indexInGallery);
-            gallery.selected.remove(indexInGallery);
-            gallery.albumAdapter.notifyItemRemoved(indexInGallery);
-
-            //Check if gallery is empty
-            if (gallery.items.isEmpty()) {
-                //Is empty -> Close display list & return to albums
-                display.close();
-                gallery.showAlbumsList(true);
-                break;
-            }
-
-            //Check if item is open in display
-            if (display.isOpen && display.items.contains(item)) {
-                //Display list is visible -> Check if a new image can be selected
-                if (display.currentItem != item) {
-                    //File is in display list but is not selected -> Reselect image to reset list
-                    display.open(indexInGallery, false);
-                } else if (display.currentRelativeIndex != display.items.size() - 1) {
-                    //An image is available next -> Select it
-                    display.open(indexInGallery, false);    //Next image would be the same index since this image was deleted
-                } else if (display.currentRelativeIndex != 0) {
-                    //An image is available before -> Select it
-                    display.open(indexInGallery - 1, false);
-                }
+        //Check if gallery is empty
+        if (Library.gallery.isEmpty()) {
+            //Is empty -> Return to albums
+            gallery.showAlbumsList(true);
+        } else {
+            //Not empty -> Remove selected items & update adapter
+            for (int indexInGallery : action.removedIndexesInGallery) {
+                gallery.itemsSelected.remove(indexInGallery);
+                gallery.albumAdapter.notifyItemRemoved(indexInGallery);
             }
         }
 
         //Remove select back callback if no more items are selected
-        if (gallery.selected.isEmpty()) gallery.unselectAll();
-    }
-
-    public void restoreFiles(TurboItem[] items) {
-        //Restore item & manage action result
-        manageAction(Library.restoreItems(MainActivity.this, items));
-    }
-
-    public void trashFiles(TurboItem[] items) {
-        //Trash item & manage action
-        manageAction(Library.trashItems(MainActivity.this, items));
-    }
-
-    public void deleteFiles(TurboItem[] items) {
-        //Create message
-        StringBuilder message = new StringBuilder();
-        message.append("Are you sure you want to permanently delete ");
-        if (items.length == 1) {
-            message.append("\"");
-            message.append(items[0].name);
-            message.append("\"");
-        } else {
-            message.append(items.length);
-            message.append(" items");
-        }
-        message.append("?");
-
-        //Delete item & manage action
-        new MaterialAlertDialogBuilder(MainActivity.this)
-                .setMessage(message.toString())
-                .setIcon(android.R.drawable.ic_dialog_alert)
-                .setNegativeButton("Cancel", null)
-                .setPositiveButton("Delete", (dialog, whichButton) -> {
-                    manageAction(Library.deleteItems(items));
-                })
-                .show();
-    }
-
-    public void shareFiles(TurboItem[] items) {
-        //No items
-        if (items.length == 0) return;
-
-        //Share items
-        Intent intent;
-        if (items.length == 1) {
-            //Share 1 item
-            intent = new Intent(Intent.ACTION_SEND);
-            intent.putExtra(Intent.EXTRA_STREAM, Orion.getUriFromFile(MainActivity.this, items[0].file));
-            intent.setType(items[0].mimeType);
-        } else {
-            //Share multiple items
-            intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
-            ArrayList<Uri> URIs = new ArrayList<>();
-            for (TurboItem item : items) URIs.add(Orion.getUriFromFile(MainActivity.this, item.file));
-            intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, URIs);
-            intent.setType("*/*");
-        }
-        startActivity(Intent.createChooser(intent, null));
-    }
-
-    public void moveFiles(TurboItem[] items, Album destination) {
-        //Move items & manage action
-        manageAction(Library.moveItems(items, destination));
+        if (gallery.itemsSelected.isEmpty()) gallery.unselectAll();
     }
 
 }

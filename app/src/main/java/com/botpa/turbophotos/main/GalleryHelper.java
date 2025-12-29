@@ -18,6 +18,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.botpa.turbophotos.R;
 import com.botpa.turbophotos.backup.BackupActivity;
+import com.botpa.turbophotos.display.DisplayActivity;
 import com.botpa.turbophotos.settings.SettingsActivity;
 import com.botpa.turbophotos.util.Album;
 import com.botpa.turbophotos.util.Library;
@@ -44,10 +45,8 @@ public class GalleryHelper {
 
     //Loaded album
     private Album album = null;
-    private ArrayList<TurboItem> itemsUnfiltered = new ArrayList<>();
 
-    public final ArrayList<TurboItem> items = new ArrayList<>();
-    public final HashSet<Integer> selected = new HashSet<>();
+    public final HashSet<Integer> itemsSelected = new HashSet<>();
 
     //Adapters
     private Parcelable listScroll;
@@ -174,7 +173,7 @@ public class GalleryHelper {
             showOptions(false);
 
             //Restore items from trash
-            activity.restoreFiles(getSelectedFiles());
+            Library.restoreItems(activity, getSelectedFiles());
         });
 
         optionsDelete.setOnClickListener(view -> {
@@ -182,7 +181,7 @@ public class GalleryHelper {
             showOptions(false);
 
             //Delete items
-            activity.deleteFiles(getSelectedFiles());
+            Library.deleteItems(activity, getSelectedFiles());
         });
 
         optionsTrash.setOnClickListener(view -> {
@@ -190,7 +189,7 @@ public class GalleryHelper {
             showOptions(false);
 
             //Move items to trash
-            activity.trashFiles(getSelectedFiles());
+            Library.trashItems(activity, getSelectedFiles());
         });
 
         optionsTrashEmpty.setOnClickListener(view -> {
@@ -198,7 +197,7 @@ public class GalleryHelper {
             showOptions(false);
 
             //Delete items
-            activity.deleteFiles(itemsUnfiltered.toArray(new TurboItem[0]));
+            Library.deleteItems(activity, album.items.toArray(new TurboItem[0]));
         });
 
         optionsShare.setOnClickListener(view -> {
@@ -206,7 +205,7 @@ public class GalleryHelper {
             showOptions(false);
 
             //Share
-            activity.shareFiles(getSelectedFiles());
+            Library.shareItems(activity, getSelectedFiles());
         });
 
         optionsMove.setOnClickListener(view -> {
@@ -214,7 +213,7 @@ public class GalleryHelper {
             showOptions(false);
 
             //Move items
-            activity.moveFiles(getSelectedFiles(), null);
+            Library.moveItems(getSelectedFiles(), null);
         });
 
         //Gallery
@@ -283,15 +282,15 @@ public class GalleryHelper {
 
     //Options
     private TurboItem[] getSelectedFiles() {
-        ArrayList<TurboItem> selectedFiles = new ArrayList<>(selected.size());
-        for (int index: selected) selectedFiles.add(items.get(index));
+        ArrayList<TurboItem> selectedFiles = new ArrayList<>(itemsSelected.size());
+        for (int index: itemsSelected) selectedFiles.add(Library.gallery.get(index));
         return selectedFiles.toArray(new TurboItem[0]);
     }
 
     private void showOptions(boolean show) {
         if (show) {
             //Get state info
-            boolean isSelecting = !selected.isEmpty();
+            boolean isSelecting = !itemsSelected.isEmpty();
             boolean inTrash = album == Library.trash;
 
             //Toggle buttons
@@ -347,23 +346,23 @@ public class GalleryHelper {
 
     private void toggleSelected(int index) {
         //Check if item is selected
-        if (selected.contains(index)) {
+        if (itemsSelected.contains(index)) {
             //Remove item
-            selected.remove(index);
+            itemsSelected.remove(index);
 
             //No more selected items -> Remove back event
-            if (selected.isEmpty()) activity.backManager.unregister("selected");
+            if (itemsSelected.isEmpty()) activity.backManager.unregister("selected");
         } else {
             //First item to be selected -> Add back event
-            if (selected.isEmpty()) activity.backManager.register("selected", this::unselectAll);
+            if (itemsSelected.isEmpty()) activity.backManager.register("selected", this::unselectAll);
 
             //Add item
-            selected.add(index);
+            itemsSelected.add(index);
         }
         albumAdapter.notifyItemChanged(index);
 
         //Update gallery title
-        title.setText(album.getName() + (selected.isEmpty() ? "" : " (" + selected.size() + " selected)"));
+        title.setText(album.getName() + (itemsSelected.isEmpty() ? "" : " (" + itemsSelected.size() + " selected)"));
     }
 
     public void unselectAll() {
@@ -371,9 +370,9 @@ public class GalleryHelper {
         activity.backManager.unregister("selected");
 
         //Unselect all
-        if (!selected.isEmpty()) {
-            HashSet<Integer> tmp = new HashSet<>(selected);
-            selected.clear();
+        if (!itemsSelected.isEmpty()) {
+            HashSet<Integer> tmp = new HashSet<>(itemsSelected);
+            itemsSelected.clear();
             for (Integer index: tmp) albumAdapter.notifyItemChanged(index);
         }
 
@@ -395,18 +394,20 @@ public class GalleryHelper {
         list.setAdapter(homeAdapter);
 
         //Init album adapter
-        albumAdapter = new GalleryAlbumAdapter(activity, items, selected, Storage.getBool("Settings.showMissingMetadataIcon", false));
+        albumAdapter = new GalleryAlbumAdapter(activity, Library.gallery, itemsSelected, Storage.getBool("Settings.showMissingMetadataIcon", false));
         albumAdapter.setOnClickListener((view, index) -> {
             //Loading metadata -> Return
             if (!hasLoadedMetadata) return;
 
             //Check if selecting
-            if (!selected.isEmpty()) {
+            if (!itemsSelected.isEmpty()) {
                 //Selecting -> Toggle selected
                 toggleSelected(index);
             } else {
-                //Not selecting -> Open image
-                activity.display.open(index, true);
+                //Not selecting -> Open display
+                Intent intent = new Intent(activity, DisplayActivity.class);
+                intent.putExtra("index", index);
+                activity.startActivity(intent);
             }
         });
         albumAdapter.setOnLongClickListener((view, index) -> {
@@ -441,9 +442,6 @@ public class GalleryHelper {
 
             //Update gallery list
             if (!inHome) selectAlbum(album);
-
-            //Close display menu
-            activity.display.close();
         }
     }
 
@@ -504,55 +502,16 @@ public class GalleryHelper {
         title.setText(album.getName());
 
         //Load album
-        itemsUnfiltered = album.items;
         loadMetadata(album);
         filterGallery();
     }
 
     //Filter items
-    private boolean filterFile(TurboItem item, String filter) {
-        //Check item name
-        if (item.name.toLowerCase().contains(filter)) return true;
-
-        //Get metadata
-        ObjectNode metadata = item.album.getMetadataKey(item.name);
-        if (metadata == null) return false;
-
-        //Check caption
-        if (metadata.has("caption")) {
-            JsonNode caption = metadata.path("caption");
-            if (caption.isTextual() && caption.asText().toLowerCase().contains(filter)) {
-                return true;
-            }
-        }
-
-        //Check labels
-        if (metadata.has("labels")) {
-            JsonNode labels = metadata.path("labels");
-            for (int i = 0; i < labels.size(); i++) {
-                if (labels.get(i).asText().toLowerCase().contains(filter)) {
-                    return true;
-                }
-            }
-        }
-
-        //Check text
-        if (metadata.has("text")) {
-            JsonNode text = metadata.path("text");
-            for (int i = 0; i < text.size(); i++) {
-                if (text.get(i).asText().toLowerCase().contains(filter)) {
-                    return true;
-                }
-            }
-        }
-
-        //Not found
-        return false;
-    }
-
-    public void filterGallery(String filterText, boolean scrollToTop) {
+    private void filterGallery(String filterText, boolean scrollToTop) {
         //Ignore case
         String filter = filterText.toLowerCase();
+
+        //Check if filtering
         boolean isFiltering = !filter.isEmpty();
 
         //Loading or searching
@@ -568,29 +527,19 @@ public class GalleryHelper {
         if (isFiltering) activity.loadingIndicator.search();
         showSearchLayout(false);
 
-        //Clear items list
-        items.clear();
-        selected.clear();
-
-        //Back button
+        //Update back manager
         if (isFiltering)
             activity.backManager.register("search", this::filterGallery);
         else
             activity.backManager.unregister("search");
 
+        //Clear selected items
+        itemsSelected.clear();
+
         //Filter items
         new Thread(() -> {
-            //Look for items that contain the filter
-            for (TurboItem item: itemsUnfiltered) {
-                //No filter -> Skip check
-                if (!isFiltering) {
-                    items.add(item);
-                    continue;
-                }
-
-                //Check if json contains filter
-                if (filterFile(item, filter)) items.add(item);
-            }
+            //Filter library gallery list
+            Library.filterGallery(filter, album);
 
             //Show gallery
             activity.runOnUiThread(() -> {
