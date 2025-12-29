@@ -64,7 +64,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
-/** @noinspection CallToPrintStackTrace*/
 public class Orion {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -332,41 +331,12 @@ public class Orion {
 
     //Insets
     public interface OnInsetsChanged {
-        void run(View view, Insets insets, float duration);
+
+        void run(View view, Insets insets, float percent);
+
     }
 
-    public static final OnInsetsChanged onInsetsChangedDefault = (view, insets, duration) -> {
-        //Check if animate
-        if (duration <= 0) {
-            //No animation
-            view.setPadding(insets.left, insets.top, insets.right, insets.bottom);
-        } else {
-            //Animate
-            float leftStart = view.getPaddingLeft();
-            float leftEnd = insets.left;
-            float topStart = view.getPaddingTop();
-            float topEnd = insets.top;
-            float rightStart = view.getPaddingRight();
-            float rightEnd = insets.right;
-            float botStart = view.getPaddingBottom();
-            float botEnd = insets.bottom;
-
-            //Animate
-            ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
-            animator.setDuration((long) duration);
-            animator.addUpdateListener(animation -> {
-                float percent = animation.getAnimatedFraction();
-
-                view.setPadding(
-                        (int) Orion.lerp(leftStart, leftEnd, percent),
-                        (int) Orion.lerp(topStart, topEnd, percent),
-                        (int) Orion.lerp(rightStart, rightEnd, percent),
-                        (int) Orion.lerp(botStart, botEnd, percent)
-                );
-            });
-            animator.start();
-        }
-    };
+    public static final OnInsetsChanged onInsetsChangedDefault = (view, insets, duration) -> view.setPadding(insets.left, insets.top, insets.right, insets.bottom);
 
     public static void addInsetsChangedListener(View view, int type) {
         addInsetsChangedListener(view, new int[] { type }, 0, onInsetsChangedDefault);
@@ -376,24 +346,59 @@ public class Orion {
         addInsetsChangedListener(view, types, 0, onInsetsChangedDefault);
     }
 
-    public static void addInsetsChangedListener(View view, int type, float duration) {
-        addInsetsChangedListener(view, new int[] { type }, duration, onInsetsChangedDefault);
-    }
-
     public static void addInsetsChangedListener(View view, int[] types, float duration) {
         addInsetsChangedListener(view, types, duration, onInsetsChangedDefault);
+    }
+
+    public static void addInsetsChangedListener(View view, int[] types, OnInsetsChanged onInsetsChanged) {
+        addInsetsChangedListener(view, types, 0, onInsetsChanged);
     }
 
     public static void addInsetsChangedListener(View view, int[] types, float duration, OnInsetsChanged onInsetsChanged) {
         if (types.length == 0) return;
 
-        ViewCompat.setOnApplyWindowInsetsListener(view, (_view, windowInsets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(view, (v, windowInsets) -> {
             //Get insets
             Insets insets = Insets.of(0, 0, 0, 0);
             for (int type: types) insets = Insets.add(insets, windowInsets.getInsets(type)); //WindowInsetsCompat.Type.systemBars()
 
             //Run on insets changed
-            onInsetsChanged.run(view, insets, duration);
+            //Check if animate
+            if (duration <= 0) {
+                //No animation -> Run on insets changed as if it finished
+                onInsetsChanged.run(view, insets, 1.0f);
+            } else {
+                //Calculate start & end values
+                float leftStart = view.getPaddingLeft();
+                float leftEnd = insets.left;
+                float topStart = view.getPaddingTop();
+                float topEnd = insets.top;
+                float rightStart = view.getPaddingRight();
+                float rightEnd = insets.right;
+                float botStart = view.getPaddingBottom();
+                float botEnd = insets.bottom;
+
+                //Animate
+                ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
+                animator.setDuration((long) duration);
+                animator.addUpdateListener(animation -> {
+                    //Calculate animation percent
+                    float percent = animation.getAnimatedFraction();
+
+                    //Run on insets changed
+                    onInsetsChanged.run(
+                            view,
+                            Insets.of(
+                                    (int) Orion.lerp(leftStart, leftEnd, percent),
+                                    (int) Orion.lerp(topStart, topEnd, percent),
+                                    (int) Orion.lerp(rightStart, rightEnd, percent),
+                                    (int) Orion.lerp(botStart, botEnd, percent)
+                            ),
+                            percent
+                    );
+                });
+                animator.start();
+            }
 
             //Done
             return windowInsets;

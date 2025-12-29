@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.main
+package com.botpa.turbophotos.gallery
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -11,7 +11,7 @@ import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.TurboItem
 import com.google.android.material.card.MaterialCardView
 
-class GalleryAlbumAdapter(private val context: Context, private val items: ArrayList<TurboItem>, private val selected: HashSet<Int>, var showMissingMetadataIcon: Boolean) : RecyclerView.Adapter<GalleryAlbumAdapter.GalleryHolder>() {
+class GalleryAdapter(private val context: Context, private val items: ArrayList<TurboItem>, private val selected: HashSet<Int>, var showMissingMetadataIcon: Boolean) : RecyclerView.Adapter<GalleryAdapter.GalleryHolder>() {
 
     //Adapter
     override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): GalleryHolder {
@@ -26,7 +26,7 @@ class GalleryAlbumAdapter(private val context: Context, private val items: Array
         val item = items[position]
 
         //Load item preview
-        TurboItem.load(context, holder.image, item)
+        TurboItem.Companion.load(context, holder.image, item)
 
         //Toggle is video & missing info icons
         holder.isVideo.visibility = if (item.isVideo) View.VISIBLE else View.GONE

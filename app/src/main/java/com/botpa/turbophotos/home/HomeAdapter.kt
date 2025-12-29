@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.main
+package com.botpa.turbophotos.home
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -14,11 +14,11 @@ import com.botpa.turbophotos.util.Library
 import com.botpa.turbophotos.util.TurboItem
 
 @SuppressLint("SetTextI18n")
-class GalleryHomeAdapter(private val context: Context, private val albums: ArrayList<Album>) : RecyclerView.Adapter<GalleryHomeAdapter.AlbumHolder>() {
+class HomeAdapter(private val context: Context, private val albums: ArrayList<Album>) : RecyclerView.Adapter<HomeAdapter.AlbumHolder>() {
 
     //Adapter
     override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): AlbumHolder {
-        return AlbumHolder(LayoutInflater.from(context).inflate(R.layout.gallery_album, viewGroup, false))
+        return AlbumHolder(LayoutInflater.from(context).inflate(R.layout.home_item, viewGroup, false))
     }
 
     override fun onBindViewHolder(holder: AlbumHolder, i: Int) {

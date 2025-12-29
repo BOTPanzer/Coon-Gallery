@@ -29,7 +29,7 @@
 
         <!-- Activities -->
         <activity
-            android:name=".main.MainActivity"
+            android:name=".home.HomeActivity"
             android:configChanges="orientation|screenSize"
             android:launchMode="singleTask"
             android:exported="true">
@@ -37,6 +37,11 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".gallery.GalleryActivity"
+            android:launchMode="singleTask"
+            android:exported="false">
         </activity>
         <activity
             android:name=".display.DisplayActivity"

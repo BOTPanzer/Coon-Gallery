@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.main
+package com.botpa.turbophotos.display
 
 import android.animation.ValueAnimator
 import android.content.Context
@@ -10,7 +10,6 @@ import android.os.Looper
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
-import android.view.ScaleGestureDetector.SimpleOnScaleGestureListener
 import android.view.View
 import androidx.appcompat.widget.AppCompatImageView
 import com.botpa.turbophotos.util.Orion
@@ -321,7 +320,7 @@ class ZoomableImageView(context: Context, attr: AttributeSet?) : AppCompatImageV
         onSizeChanged()
     }
 
-    private inner class ScaleListener : SimpleOnScaleGestureListener() {
+    private inner class ScaleListener : ScaleGestureDetector.SimpleOnScaleGestureListener() {
 
         override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
             mode = ZOOM

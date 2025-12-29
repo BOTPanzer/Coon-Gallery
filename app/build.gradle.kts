@@ -55,6 +55,7 @@ dependencies {
     //Material
     implementation(libs.material)
     implementation(libs.material3)
+    implementation(libs.cardview)
 
     //Compose
     debugImplementation(libs.ui.tooling)

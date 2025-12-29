@@ -8,7 +8,7 @@ import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.Log;
 
-import com.botpa.turbophotos.main.MainActivity;
+import com.botpa.turbophotos.home.HomeActivity;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -203,7 +203,7 @@ public class Library {
         Storage.putStringList("Settings.albums", list);
 
         //Restart main activity on resume
-        MainActivity.reloadOnResume();
+        HomeActivity.reloadOnResume();
     }
 
     public static boolean addLink(Link link) {

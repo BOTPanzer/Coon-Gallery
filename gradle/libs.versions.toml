@@ -17,6 +17,7 @@ coreKtx = "1.17.0"
 recyclerviewFastscroll = "2.0.1"
 swiperefreshlayout = "1.1.0"
 uiToolingPreview = "1.9.2"
+cardview = "1.0.0"
 
 [libraries]
 activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
@@ -38,6 +39,7 @@ recyclerview-fastscroll = { module = "com.simplecityapps:recyclerview-fastscroll
 swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefreshlayout" }
 ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "uiToolingPreview" }
 ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "uiToolingPreview" }
+cardview = { group = "androidx.cardview", name = "cardview", version.ref = "cardview" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

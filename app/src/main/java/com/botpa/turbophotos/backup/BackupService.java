@@ -11,7 +11,7 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import com.botpa.turbophotos.R;
-import com.botpa.turbophotos.main.MainActivity;
+import com.botpa.turbophotos.home.HomeActivity;
 import com.botpa.turbophotos.util.Album;
 import com.botpa.turbophotos.util.Library;
 import com.botpa.turbophotos.util.Link;
@@ -404,7 +404,7 @@ public class BackupService extends Service {
             Files.setLastModifiedTime(Paths.get(file.getAbsolutePath()), FileTime.from(Instant.ofEpochMilli(metadataRequest.lastModified)));
 
             //File modified -> Should restart
-            MainActivity.reloadOnResume();
+            HomeActivity.reloadOnResume();
         } catch (IOException e) {
             //Error sending message
             String errorMessage = e.getMessage();

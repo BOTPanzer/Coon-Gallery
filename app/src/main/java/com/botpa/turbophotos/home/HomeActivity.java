@@ -1,0 +1,444 @@
+package com.botpa.turbophotos.home;
+
+import android.annotation.SuppressLint;
+import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
+import android.content.res.Configuration;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Environment;
+import android.provider.Settings;
+import android.util.DisplayMetrics;
+import android.view.View;
+
+import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
+import android.Manifest;
+
+import com.botpa.turbophotos.backup.BackupActivity;
+import com.botpa.turbophotos.gallery.GalleryActivity;
+import com.botpa.turbophotos.settings.SettingsActivity;
+import com.botpa.turbophotos.util.Action;
+import com.botpa.turbophotos.util.Album;
+import com.botpa.turbophotos.util.BackManager;
+import com.botpa.turbophotos.util.Library;
+import com.botpa.turbophotos.R;
+import com.botpa.turbophotos.util.Orion;
+import com.botpa.turbophotos.util.Storage;
+import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView;
+
+import org.jetbrains.annotations.NotNull;
+
+import java.io.File;
+
+@SuppressLint({"SetTextI18n", "NotifyDataSetChanged"})
+public class HomeActivity extends AppCompatActivity {
+
+    //Permissions
+    private boolean permissionCheck = false;
+    private boolean permissionWrite = false;
+    private boolean permissionMedia = false;
+    private boolean permissionNotifications = false;
+    private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+        permissionNotifications = isGranted;
+        checkPermissions();
+    });
+
+    //Activity
+    private static boolean shouldReloadOnResume = false;
+    private boolean isLoaded = false;
+    private boolean skipResume = true;
+
+    private BackManager backManager;
+
+    //Actions
+    private final Library.ActionEvent onAction = this::manageAction;
+
+    //Adapters
+    private HomeAdapter adapter;
+    private GridLayoutManager layoutManager;
+
+    //Views (navbar)
+    private View navbarBackup;
+    private View navbarSettings;
+
+    //Views (list)
+    private SwipeRefreshLayout refreshLayout;
+    private FastScrollRecyclerView list;
+
+    //Views (loading indicator)
+    private View loadingIndicator;
+
+
+    //Activity
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
+        setContentView(R.layout.home);
+
+        //Load storage
+        Storage.load(HomeActivity.this);
+
+        //Add on action listener
+        Library.addOnActionEvent(onAction);
+
+        //Load views & add listeners
+        loadViews();
+        addListeners();
+
+        //Check permissions
+        checkPermissions();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        //Remove on action listener
+        Library.removeOnActionEvent(onAction);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        //Skip first resume (called after onCreate)
+        if (skipResume) {
+            skipResume = false;
+            return;
+        }
+
+        //Reload
+        if (shouldReloadOnResume) {
+            shouldReloadOnResume = false;
+            recreate();
+            return;
+        }
+
+        //Check for permissions
+        if (permissionCheck) {
+            permissionCheck = false;
+            checkPermissions();
+            return;
+        }
+
+        //Gallery not loaded -> Skip next
+        if (!isLoaded) return;
+
+        //Update horizontal item count
+        updateHorizontalItemCount();
+
+        //Check albums for updates
+        refresh();
+    }
+
+    @Override
+    public void onConfigurationChanged(@NotNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        //Update horizontal item count
+        updateHorizontalItemCount();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        checkPermissions();
+    }
+
+    private void checkPermissions() {
+        //Update permissions
+        if (Environment.isExternalStorageManager()) {
+            permissionWrite = true;
+            findViewById(R.id.permissionWrite).setAlpha(0.5f);
+        }
+        if (ContextCompat.checkSelfPermission(HomeActivity.this, Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(HomeActivity.this, Manifest.permission.READ_MEDIA_VIDEO) == PackageManager.PERMISSION_GRANTED) {
+            permissionMedia = true;
+            findViewById(R.id.permissionMedia).setAlpha(0.5f);
+        }
+        if (NotificationManagerCompat.from(HomeActivity.this).areNotificationsEnabled()) {
+            permissionNotifications = true;
+            findViewById(R.id.permissionNotifications).setAlpha(0.5f);
+        }
+
+        //Check if permissions are granted
+        if (permissionWrite && permissionMedia && permissionNotifications) {
+            //Hide permission layout
+            findViewById(R.id.permissionLayout).setVisibility(View.GONE);
+
+            //Init activity
+            initActivity();
+        } else {
+            //Show permission layout
+            findViewById(R.id.permissionLayout).setVisibility(View.VISIBLE);
+
+            //Add request permission button listeners
+            findViewById(R.id.permissionWrite).setOnClickListener(view -> {
+                //Already has permission
+                if (permissionWrite) return;
+
+                //Ask for permission
+                permissionCheck = true;
+                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                intent.setData(Uri.fromParts("package", getPackageName(), null));
+                startActivity(intent);
+            });
+
+            findViewById(R.id.permissionMedia).setOnClickListener(view -> {
+                //Already has permission
+                if (permissionMedia) return;
+
+                //Ask for permission
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    ActivityCompat.requestPermissions(this, new String[] { Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO }, 0);
+                } else {
+                    ActivityCompat.requestPermissions(this, new String[] { Manifest.permission.READ_EXTERNAL_STORAGE }, 0);
+                }
+            });
+
+            findViewById(R.id.permissionNotifications).setOnClickListener(view -> {
+                //Already has permission
+                if (permissionNotifications) return;
+
+                //Ask for permission
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+                }
+            });
+        }
+    }
+
+    private void initActivity() {
+        //Init back manager
+        backManager = new BackManager(HomeActivity.this, getOnBackPressedDispatcher());
+
+        //Enable HDR
+        getWindow().setColorMode(ActivityInfo.COLOR_MODE_HDR);
+
+        //Init adapters
+        initAdapters();
+
+        //Load albums
+        new Thread(() -> {
+            //Load albums
+            Library.loadLibrary(HomeActivity.this, true);
+
+            //Show gallery
+            runOnUiThread(() -> {
+                //Hide loading indicator
+                loadingIndicator.setVisibility(View.GONE);
+
+                //Show list
+                Orion.showAnim(list);
+
+                //Reload albums list
+                adapter.notifyDataSetChanged();
+            });
+
+            //Gallery loaded
+            isLoaded = true;
+        }).start();
+    }
+
+    public static void reloadOnResume() {
+        //Reload on resume
+        shouldReloadOnResume = true;
+    }
+
+    //Views
+    private void loadViews() {
+        //Navbar
+        navbarBackup = findViewById(R.id.navbarBackup);
+        navbarSettings = findViewById(R.id.navbarSettings);
+
+        //List
+        refreshLayout = findViewById(R.id.refreshLayout);
+        list = findViewById(R.id.list);
+
+        //Loading indicator
+        loadingIndicator = findViewById(R.id.loadingIndicator);
+
+        //Insets (keyboard & system bars)
+        Orion.addInsetsChangedListener(
+                findViewById(R.id.homeContent),
+                new int[] {
+                        WindowInsetsCompat.Type.systemBars()
+                },
+                (view, insets, duration) -> list.setPadding(0, insets.top, 0, list.getPaddingBottom() + insets.bottom)
+        );
+        Orion.addInsetsChangedListener(
+                findViewById(R.id.homeLayout),
+                new int[] {
+                        WindowInsetsCompat.Type.ime(),
+                        WindowInsetsCompat.Type.systemBars()
+                },
+                200,
+                (view, insets, percent) -> {
+                    //Check if keyboard is open
+                    WindowInsetsCompat windowInsets = ViewCompat.getRootWindowInsets(view);
+                    if (windowInsets != null && windowInsets.isVisible(WindowInsetsCompat.Type.ime())) {
+                        //Keyboard is open -> Only use keyboard insets
+                        insets = windowInsets.getInsets(WindowInsetsCompat.Type.ime());
+                    }
+
+                    //Update insets
+                    Orion.onInsetsChangedDefault.run(view, insets, percent);
+                }
+        );
+    }
+
+    private void addListeners() {
+        //Navbar
+        navbarSettings.setOnClickListener(view -> {
+            //Open settings
+            startActivity(new Intent(HomeActivity.this, SettingsActivity.class));
+        });
+
+        navbarBackup.setOnClickListener(view -> {
+            //Open backup
+            startActivity(new Intent(HomeActivity.this, BackupActivity.class));
+        });
+
+        //Home
+        refreshLayout.setOnRefreshListener(() -> {
+            //Refresh gallery
+            refresh();
+
+            //Stop refreshing
+            refreshLayout.setRefreshing(false);
+        });
+    }
+
+    //Actions
+    private void manageAction(Action action) {
+        //No action
+        if (action.isOfType(Action.TYPE_NONE)) return;
+
+        //Failed actions
+        if (!action.failed.isEmpty()) {
+            if (action.failed.size() == 1) {
+                //Only 1 failed -> Show error
+                Orion.snack(HomeActivity.this, action.failed.entrySet().iterator().next().getValue());
+            } else if (!action.allFailed()) {
+                //More than 1 failed -> Show general error
+                Orion.snack(HomeActivity.this, "Failed to perform " + action.failed.size() + " actions");
+            } else {
+                //All failed -> Show general error
+                Orion.snack(HomeActivity.this, "Failed to perform all actions");
+                return;
+            }
+        }
+
+        //Check if albums list was changed
+        if (action.sortedAlbumsList) {
+            //Sorted albums list -> Notify all
+            adapter.notifyDataSetChanged();
+        } else {
+            //Check if trash was added, removed or updated
+            switch (action.trashChanges) {
+                case Action.TRASH_ADDED:
+                    adapter.notifyItemInserted(0);
+                    break;
+                case Action.TRASH_REMOVED:
+                    adapter.notifyItemRemoved(0);
+                    break;
+                case Action.TRASH_UPDATED:
+                    adapter.notifyItemChanged(0);
+                    break;
+            }
+
+            //Check if albums were deleted or sorted
+            if (!action.deletedAlbums.isEmpty()) {
+                //Albums were deleted -> Notify items removed
+                for (Album album : action.deletedAlbums) {
+                    int position = adapter.getIndexFromAlbum(album) + adapter.getIndexOffset(); //albumIndex + adapterIndexOffset
+                    adapter.notifyItemRemoved(position);
+                }
+            }
+
+            //Check if albums were sorted
+            if (!action.sortedAlbums.isEmpty()) {
+                //Sorted albums -> Notify items removed
+                for (Album album : action.sortedAlbums) {
+                    int position = adapter.getIndexFromAlbum(album) + adapter.getIndexOffset(); //albumIndex + adapterIndexOffset
+                    adapter.notifyItemChanged(position);
+                }
+            }
+        }
+    }
+
+    //Home
+    private int getHorizontalItemCount() {
+        boolean isHorizontal = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        float ratio = ((float) metrics.widthPixels / (float) metrics.heightPixels);
+
+        //Get size for portrait
+        int size = Storage.getInt("Settings.galleryAlbumsPerRow", 2);
+
+        //Return size for current orientation
+        return isHorizontal ? (int) (size * ratio) : size;
+    }
+
+    public void updateHorizontalItemCount() {
+        int newHorizontalItemCount = getHorizontalItemCount();
+        if (layoutManager.getSpanCount() != newHorizontalItemCount) layoutManager.setSpanCount(newHorizontalItemCount);
+    }
+
+    public void initAdapters() {
+        //Create layout manager
+        layoutManager = new GridLayoutManager(HomeActivity.this, getHorizontalItemCount());
+        list.setLayoutManager(layoutManager);
+
+        //Init home adapter
+        adapter = new HomeAdapter(HomeActivity.this, Library.albums);
+        adapter.setOnClickListener((view, album) -> {
+            //Open gallery
+            Intent intent = new Intent(HomeActivity.this, GalleryActivity.class);
+            if (album == Library.trash) {
+                intent.putExtra("albumName", "trash");
+            } else if (album == Library.all) {
+                intent.putExtra("albumName", "all");
+            } else {
+                intent.putExtra("albumIndex", Library.albums.indexOf(album));
+            }
+            startActivity(intent);
+        });
+        list.setAdapter(adapter);
+    }
+
+    public void refresh() {
+        //Check folders for updates (could have new or deleted items)
+        boolean albumsWereModified = false;
+        for (Album album : Library.albums) {
+            //Check if last modified date changed
+            File imagesFolder = album.getImagesFolder();
+            if (imagesFolder == null || imagesFolder.lastModified() == album.getLastModified()) continue;
+
+            //An album was modified -> Reload activity
+            albumsWereModified = true;
+            break;
+        }
+
+        //Reload albums (reset if albums were modified)
+        boolean albumsWereUpdated = Library.loadLibrary(HomeActivity.this, albumsWereModified);
+
+        //Refresh list
+        if (albumsWereUpdated) adapter.notifyDataSetChanged();
+    }
+
+}

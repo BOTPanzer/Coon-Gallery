@@ -23,7 +23,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SnapHelper;
 
 import com.botpa.turbophotos.R;
-import com.botpa.turbophotos.main.DisplayLayoutManager;
 import com.botpa.turbophotos.util.Action;
 import com.botpa.turbophotos.util.BackManager;
 import com.botpa.turbophotos.util.Library;
@@ -43,23 +42,25 @@ public class DisplayActivity extends AppCompatActivity {
     //Actions
     private final Library.ActionEvent onAction = this::manageAction;
 
-    //Display
+    //List adapter
     private DisplayLayoutManager layoutManager;
     private DisplayAdapter adapter;
 
-    public final ArrayList<TurboItem> displayItems = new ArrayList<>();
-    public int currentIndexInGallery = -1;
-    public int currentIndexInDisplay = -1;
-    public TurboItem currentItem = null;
+    //List items
+    private final ArrayList<TurboItem> displayItems = new ArrayList<>();
+    private int currentIndexInGallery = -1;
+    private int currentIndexInDisplay = -1;
+    private TurboItem currentItem = null;
 
-    //Views
+    //Views (overlay)
+    private View overlayLayout;
     private TextView nameText;
     private View closeButton;
     private View infoButton;
     private View optionsButton;
     private RecyclerView list;
-    private View overlayLayout;
 
+    //Views (info)
     private View infoLayout;
     private TextView infoNameText;
     private TextView infoCaptionText;
@@ -69,11 +70,13 @@ public class DisplayActivity extends AppCompatActivity {
     private TextView infoTextText;
     private View infoEdit;
 
+    //Views (edit)
     private View editLayout;
     private TextView editCaptionText;
     private TextView editLabelsText;
     private View editSave, editSpace;
 
+    //Views (options)
     private View optionsLayout;
     private View optionsRestore;
     private View optionsDelete;
@@ -90,8 +93,8 @@ public class DisplayActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.display);
 
-        //Load storage
-        Storage.load(DisplayActivity.this);
+        //Init back manager
+        backManager = new BackManager(DisplayActivity.this, getOnBackPressedDispatcher());
 
         //Add on action listener
         Library.addOnActionEvent(onAction);
@@ -99,6 +102,9 @@ public class DisplayActivity extends AppCompatActivity {
         //Load views & add listeners
         loadViews();
         addListeners();
+
+        //Init adapters
+        initAdapters();
 
         //Init activity
         initActivity();
@@ -113,21 +119,14 @@ public class DisplayActivity extends AppCompatActivity {
     }
 
     private void initActivity() {
-        //Init back manager
-        backManager = new BackManager(DisplayActivity.this, getOnBackPressedDispatcher());
-
-        //Enable HDR
-        getWindow().setColorMode(ActivityInfo.COLOR_MODE_HDR);
-
-        //Init adapters
-        initAdapters();
-
-        //Check intent
+        //Check if intent is valid
         Intent intent = getIntent();
         if (intent == null) {
             finish();
             return;
         }
+
+        //Check if intent has item index
         int index = intent.getIntExtra("index", -1);
         if (index < 0) {
             finish();
@@ -138,7 +137,8 @@ public class DisplayActivity extends AppCompatActivity {
 
     //Views
     private void loadViews() {
-        //Find views
+        //Views (overlay)
+        overlayLayout = findViewById(R.id.displayOverlayLayout);
         nameText = findViewById(R.id.displayNameText);
         closeButton = findViewById(R.id.displayCloseButton);
         infoButton = findViewById(R.id.displayInfoButton);
@@ -146,8 +146,7 @@ public class DisplayActivity extends AppCompatActivity {
         optionsButton = findViewById(R.id.displayOptionsButton);
         list = findViewById(R.id.displayList);
 
-        overlayLayout = findViewById(R.id.displayOverlayLayout);
-
+        //Views (info)
         infoLayout = findViewById(R.id.displayInfoLayout);
         infoNameText = findViewById(R.id.displayInfoNameText);
         infoCaptionText = findViewById(R.id.displayInfoCaptionText);
@@ -156,13 +155,14 @@ public class DisplayActivity extends AppCompatActivity {
         infoTextScroll = findViewById(R.id.displayInfoTextScroll);
         infoTextText = findViewById(R.id.displayInfoTextText);
 
+        //Views (edit)
         editLayout = findViewById(R.id.displayEditLayout);
         editCaptionText = findViewById(R.id.displayEditCaptionText);
         editLabelsText = findViewById(R.id.displayEditLabelsText);
         editSave = findViewById(R.id.displayEditSave);
         editSpace = findViewById(R.id.displayEditSpace);
 
-        //Options
+        //Views (options)
         optionsLayout = findViewById(R.id.displayOptionsLayout);
         optionsRestore = findViewById(R.id.displayOptionsRestore);
         optionsDelete = findViewById(R.id.displayOptionsDelete);
@@ -174,9 +174,10 @@ public class DisplayActivity extends AppCompatActivity {
         //Insets
         Orion.addInsetsChangedListener(
                 findViewById(R.id.displayOverlayIndent),
-                new int[]{ WindowInsetsCompat.Type.systemBars() },
-                0,
-                (view, insets, duration) -> {
+                new int[] {
+                        WindowInsetsCompat.Type.systemBars()
+                },
+                (view, insets, percent) -> {
                     //Ignore if no margins
                     if (insets.top <= 0 && insets.bottom <= 0) return;
 
@@ -338,6 +339,24 @@ public class DisplayActivity extends AppCompatActivity {
 
     //Actions
     private void manageAction(Action action) {
+        //No action
+        if (action.isOfType(Action.TYPE_NONE)) return;
+
+        //Failed actions
+        if (!action.failed.isEmpty()) {
+            if (action.failed.size() == 1) {
+                //Only 1 failed -> Show error
+                Orion.snack(DisplayActivity.this, action.failed.entrySet().iterator().next().getValue());
+            } else if (!action.allFailed()) {
+                //More than 1 failed -> Show general error
+                Orion.snack(DisplayActivity.this, "Failed to perform " + action.failed.size() + " actions");
+            } else {
+                //All failed -> Show general error
+                Orion.snack(DisplayActivity.this, "Failed to perform all actions");
+                return;
+            }
+        }
+
         //Check if gallery is empty
         if (Library.gallery.isEmpty()) {
             //Is empty -> Close display
@@ -356,17 +375,16 @@ public class DisplayActivity extends AppCompatActivity {
 
     //Display
     private void initAdapters() {
-        //Create display list viewer
+        //Create layout manager
         layoutManager = new DisplayLayoutManager(DisplayActivity.this);
         layoutManager.setOrientation(RecyclerView.HORIZONTAL);
         list.setLayoutManager(layoutManager);
 
-        //Create display snap helper
-        SnapHelper snapHelper = new PagerSnapHelper();
-        snapHelper.attachToRecyclerView(list);
-
-        //Create display adapter
+        //Create adapter
         adapter = new DisplayAdapter(DisplayActivity.this, displayItems);
+        list.setAdapter(adapter);
+
+        //Add adapter listeners
         adapter.setOnClickListener((view, index) -> {
             if (overlayLayout.getVisibility() == View.VISIBLE) {
                 Orion.hideAnim(overlayLayout);
@@ -388,9 +406,12 @@ public class DisplayActivity extends AppCompatActivity {
             //Play video outside
             optionsOpenOutside.performClick();
         });
-        list.setAdapter(adapter);
 
-        //Add snap listener
+        //Create snap helper
+        SnapHelper snapHelper = new PagerSnapHelper();
+        snapHelper.attachToRecyclerView(list);
+
+        //Add snap helper listener
         list.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {

@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.main;
+package com.botpa.turbophotos.display;
 
 import android.content.Context;
 
