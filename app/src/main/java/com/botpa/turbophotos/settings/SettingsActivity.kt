@@ -110,7 +110,7 @@ class SettingsActivity : ComponentActivity() {
         var filePickerAction by remember { mutableStateOf(PickerAction.SelectFolder) }
         val filePickerLauncher: ActivityResultLauncher<Intent> = rememberLauncherForActivityResult(StartActivityForResult()) { result ->
             //Bad result
-            if (result.resultCode == RESULT_OK && result.data != null) return@rememberLauncherForActivityResult
+            if (result.resultCode != RESULT_OK || result.data == null) return@rememberLauncherForActivityResult
 
             //Parse result
             try {
