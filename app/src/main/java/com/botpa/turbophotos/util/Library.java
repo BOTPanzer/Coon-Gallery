@@ -27,6 +27,9 @@ public class Library {
     private static final String LOG_LIBRARY = "LIBRARY";
     private static final String LOG_TRASH = "TRASH";
 
+    //Library
+    private static final ArrayList<RefreshEvent> onRefresh = new ArrayList<>();
+
     //Links
     private static boolean linksLoaded = false;
 
@@ -55,6 +58,22 @@ public class Library {
 
 
     //Library
+    public interface RefreshEvent {
+        void invoke(boolean updated);
+    }
+
+    private static void invokeOnRefresh(boolean updated) {
+        for (RefreshEvent listener: onRefresh) listener.invoke(updated);
+    }
+
+    public static void addOnRefreshEvent(RefreshEvent listener) {
+        onRefresh.add(listener);
+    }
+
+    public static void removeOnRefreshEvent(RefreshEvent listener) {
+        onRefresh.remove(listener);
+    }
+
     private static Cursor getMediaCursor(Context context) {
         //Get content resolver
         ContentResolver contentResolver = context.getContentResolver();
@@ -85,7 +104,7 @@ public class Library {
         );
     }
 
-    public static boolean loadLibrary(Context context, boolean reset) {
+    public static void loadLibrary(Context context, boolean reset) {
         //Load links & trash
         loadLinks(reset);
         loadTrash(context, reset);
@@ -176,7 +195,7 @@ public class Library {
         sortAlbumsList();
 
         //Return true if the albums were updated
-        return updated;
+        invokeOnRefresh(updated);
     }
 
     //Links
@@ -479,13 +498,11 @@ public class Library {
 
     //Action (events)
     public interface ActionEvent {
-
-        void onAction(Action action);
-
+        void invoke(Action action);
     }
 
-    private static void invokeAction(Action action) {
-        for (ActionEvent listener: onAction) listener.onAction(action);
+    private static void invokeOnAction(Action action) {
+        for (ActionEvent listener: onAction) listener.invoke(action);
     }
 
     public static void addOnActionEvent(ActionEvent listener) {
@@ -520,7 +537,7 @@ public class Library {
         }
 
         //Invoke action
-        invokeAction(action);
+        invokeOnAction(action);
     }
 
     private static void performRemoveFromAll(ActionHelper helper) {

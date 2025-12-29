@@ -19,6 +19,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.botpa.turbophotos.R;
 import com.botpa.turbophotos.display.DisplayActivity;
+import com.botpa.turbophotos.home.HomeActivity;
 import com.botpa.turbophotos.util.Action;
 import com.botpa.turbophotos.util.Album;
 import com.botpa.turbophotos.util.BackManager;
@@ -41,7 +42,8 @@ public class GalleryActivity extends AppCompatActivity {
     private boolean isSearching = false;
     private boolean hasLoadedMetadata = false;
 
-    //Actions
+    //Events
+    private final Library.RefreshEvent onRefresh = this::manageRefresh;
     private final Library.ActionEvent onAction = this::manageAction;
 
     //List adapter
@@ -121,7 +123,8 @@ public class GalleryActivity extends AppCompatActivity {
         //Init back manager
         backManager = new BackManager(GalleryActivity.this, getOnBackPressedDispatcher());
 
-        //Add on action listener
+        //Add events
+        Library.addOnRefreshEvent(onRefresh);
         Library.addOnActionEvent(onAction);
 
         //Load views & add listeners
@@ -139,7 +142,8 @@ public class GalleryActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
 
-        //Remove on action listener
+        //Remove events
+        Library.removeOnRefreshEvent(onRefresh);
         Library.removeOnActionEvent(onAction);
     }
 
@@ -302,8 +306,8 @@ public class GalleryActivity extends AppCompatActivity {
 
         //Gallery
         refreshLayout.setOnRefreshListener(() -> {
-            //Refresh gallery
-            refresh();
+            //Reload library
+            Library.loadLibrary(GalleryActivity.this, true);
 
             //Stop refreshing
             refreshLayout.setRefreshing(false);
@@ -324,7 +328,12 @@ public class GalleryActivity extends AppCompatActivity {
         searchClose.setOnClickListener(view -> showSearchLayout(false));
     }
 
-    //Actions
+    //Events
+    private void manageRefresh(boolean updated) {
+        //Refresh list
+        if (updated) selectAlbum(currentAlbum);
+    }
+
     private void manageAction(Action action) {
         //No action
         if (action.isOfType(Action.TYPE_NONE)) return;
@@ -556,26 +565,6 @@ public class GalleryActivity extends AppCompatActivity {
 
         //Update gallery title
         navbarTitle.setText(currentAlbum.getName());
-    }
-
-    private void refresh() {
-        //Check folders for updates (could have new or deleted items)
-        boolean albumsWereModified = false;
-        for (Album album : Library.albums) {
-            //Check if last modified date changed
-            File imagesFolder = album.getImagesFolder();
-            if (imagesFolder == null || imagesFolder.lastModified() == album.getLastModified()) continue;
-
-            //An album was modified -> Reload activity
-            albumsWereModified = true;
-            break;
-        }
-
-        //Reload albums (reset if albums were modified)
-        boolean albumsWereUpdated = Library.loadLibrary(GalleryActivity.this, albumsWereModified);
-
-        //Refresh list
-        if (albumsWereUpdated) selectAlbum(currentAlbum);
     }
 
     //Search

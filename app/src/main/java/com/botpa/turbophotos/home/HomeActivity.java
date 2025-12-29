@@ -62,9 +62,8 @@ public class HomeActivity extends AppCompatActivity {
     private boolean isLoaded = false;
     private boolean skipResume = true;
 
-    private BackManager backManager;
-
-    //Actions
+    //Events
+    private final Library.RefreshEvent onRefresh = this::manageRefresh;
     private final Library.ActionEvent onAction = this::manageAction;
 
     //Adapters
@@ -93,9 +92,6 @@ public class HomeActivity extends AppCompatActivity {
         //Load storage
         Storage.load(HomeActivity.this);
 
-        //Add on action listener
-        Library.addOnActionEvent(onAction);
-
         //Load views & add listeners
         loadViews();
         addListeners();
@@ -108,7 +104,8 @@ public class HomeActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
 
-        //Remove on action listener
+        //Remove events
+        Library.removeOnRefreshEvent(onRefresh);
         Library.removeOnActionEvent(onAction);
     }
 
@@ -143,7 +140,7 @@ public class HomeActivity extends AppCompatActivity {
         updateHorizontalItemCount();
 
         //Check albums for updates
-        refresh();
+        refreshLibrary();
     }
 
     @Override
@@ -223,9 +220,6 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void initActivity() {
-        //Init back manager
-        backManager = new BackManager(HomeActivity.this, getOnBackPressedDispatcher());
-
         //Enable HDR
         getWindow().setColorMode(ActivityInfo.COLOR_MODE_HDR);
 
@@ -237,7 +231,7 @@ public class HomeActivity extends AppCompatActivity {
             //Load albums
             Library.loadLibrary(HomeActivity.this, true);
 
-            //Show gallery
+            //Show list
             runOnUiThread(() -> {
                 //Hide loading indicator
                 loadingIndicator.setVisibility(View.GONE);
@@ -249,7 +243,11 @@ public class HomeActivity extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
             });
 
-            //Gallery loaded
+            //Add events
+            Library.addOnRefreshEvent(onRefresh);
+            Library.addOnActionEvent(onAction);
+
+            //Mark as loaded
             isLoaded = true;
         }).start();
     }
@@ -315,15 +313,20 @@ public class HomeActivity extends AppCompatActivity {
 
         //Home
         refreshLayout.setOnRefreshListener(() -> {
-            //Refresh gallery
-            refresh();
+            //Reload library
+            Library.loadLibrary(HomeActivity.this, true);
 
             //Stop refreshing
             refreshLayout.setRefreshing(false);
         });
     }
 
-    //Actions
+    //Events
+    private void manageRefresh(boolean updated) {
+        //Refresh list
+        if (updated) adapter.notifyDataSetChanged();
+    }
+
     private void manageAction(Action action) {
         //No action
         if (action.isOfType(Action.TYPE_NONE)) return;
@@ -394,12 +397,12 @@ public class HomeActivity extends AppCompatActivity {
         return isHorizontal ? (int) (size * ratio) : size;
     }
 
-    public void updateHorizontalItemCount() {
+    private void updateHorizontalItemCount() {
         int newHorizontalItemCount = getHorizontalItemCount();
         if (layoutManager.getSpanCount() != newHorizontalItemCount) layoutManager.setSpanCount(newHorizontalItemCount);
     }
 
-    public void initAdapters() {
+    private void initAdapters() {
         //Create layout manager
         layoutManager = new GridLayoutManager(HomeActivity.this, getHorizontalItemCount());
         list.setLayoutManager(layoutManager);
@@ -421,8 +424,8 @@ public class HomeActivity extends AppCompatActivity {
         list.setAdapter(adapter);
     }
 
-    public void refresh() {
-        //Check folders for updates (could have new or deleted items)
+    private void refreshLibrary() {
+        //Check albums for updates (could have new or deleted items)
         boolean albumsWereModified = false;
         for (Album album : Library.albums) {
             //Check if last modified date changed
@@ -435,10 +438,7 @@ public class HomeActivity extends AppCompatActivity {
         }
 
         //Reload albums (reset if albums were modified)
-        boolean albumsWereUpdated = Library.loadLibrary(HomeActivity.this, albumsWereModified);
-
-        //Refresh list
-        if (albumsWereUpdated) adapter.notifyDataSetChanged();
+        Library.loadLibrary(HomeActivity.this, albumsWereModified);
     }
 
 }

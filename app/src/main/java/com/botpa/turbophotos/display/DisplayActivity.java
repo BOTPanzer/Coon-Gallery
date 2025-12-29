@@ -39,7 +39,7 @@ public class DisplayActivity extends AppCompatActivity {
     //Activity
     private BackManager backManager;
 
-    //Actions
+    //Events
     private final Library.ActionEvent onAction = this::manageAction;
 
     //List adapter
@@ -96,7 +96,7 @@ public class DisplayActivity extends AppCompatActivity {
         //Init back manager
         backManager = new BackManager(DisplayActivity.this, getOnBackPressedDispatcher());
 
-        //Add on action listener
+        //Add events
         Library.addOnActionEvent(onAction);
 
         //Load views & add listeners
@@ -114,7 +114,7 @@ public class DisplayActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
 
-        //Remove on action listener
+        //Remove events
         Library.removeOnActionEvent(onAction);
     }
 
@@ -337,7 +337,7 @@ public class DisplayActivity extends AppCompatActivity {
         });
     }
 
-    //Actions
+    //Events
     private void manageAction(Action action) {
         //No action
         if (action.isOfType(Action.TYPE_NONE)) return;
