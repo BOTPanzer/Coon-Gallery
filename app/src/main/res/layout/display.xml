@@ -63,25 +63,6 @@
                             android:textColor="?attr/colorOnSurface"
                             android:textSize="16sp" />
 
-                        <androidx.cardview.widget.CardView
-                            android:id="@+id/overlayClose"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:layout_marginEnd="20dp"
-                            app:cardBackgroundColor="#00000000"
-                            app:cardCornerRadius="20dp"
-                            app:cardElevation="0dp">
-
-                            <ImageView
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:background="?attr/selectableItemBackground"
-                                android:padding="8dp"
-                                app:srcCompat="@drawable/clear"
-                                app:tint="?attr/colorOnSurface" />
-
-                        </androidx.cardview.widget.CardView>
-
                     </LinearLayout>
 
                     <View

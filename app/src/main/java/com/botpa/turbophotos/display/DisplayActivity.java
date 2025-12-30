@@ -60,7 +60,6 @@ public class DisplayActivity extends AppCompatActivity {
     //Views (overlay)
     private View overlayLayout;
     private TextView overlayName;
-    private View overlayClose;
     private View overlayInfo;
     private View overlayOptions;
 
@@ -153,7 +152,6 @@ public class DisplayActivity extends AppCompatActivity {
         //Views (overlay)
         overlayLayout = findViewById(R.id.overlayLayout);
         overlayName = findViewById(R.id.overlayName);
-        overlayClose = findViewById(R.id.overlayClose);
         overlayInfo = findViewById(R.id.overlayInfo);
         overlayOptions = findViewById(R.id.overlayOptions);
 
@@ -230,9 +228,6 @@ public class DisplayActivity extends AppCompatActivity {
     }
 
     private void addListeners() {
-        //Main
-        overlayClose.setOnClickListener(view -> finish());
-
         //Info & edit
         overlayInfo.setOnClickListener(view -> toggleInfo(true));
 
