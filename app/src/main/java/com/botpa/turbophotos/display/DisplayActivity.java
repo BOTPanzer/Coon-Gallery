@@ -1,6 +1,7 @@
 package com.botpa.turbophotos.display;
 
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -22,10 +23,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SnapHelper;
 
 import com.botpa.turbophotos.R;
+import com.botpa.turbophotos.gallery.GalleryActivity;
+import com.botpa.turbophotos.home.HomeActivity;
 import com.botpa.turbophotos.util.Action;
 import com.botpa.turbophotos.util.BackManager;
 import com.botpa.turbophotos.util.Library;
 import com.botpa.turbophotos.util.Orion;
+import com.botpa.turbophotos.util.Storage;
 import com.botpa.turbophotos.util.TurboItem;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -92,6 +96,12 @@ public class DisplayActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.display);
+
+        //Enable HDR
+        getWindow().setColorMode(ActivityInfo.COLOR_MODE_HDR);
+
+        //Load storage
+        Storage.load(DisplayActivity.this);
 
         //Init back manager
         backManager = new BackManager(DisplayActivity.this, getOnBackPressedDispatcher());
@@ -320,15 +330,8 @@ public class DisplayActivity extends AppCompatActivity {
             //Close options menu
             toggleOptions(false);
 
-            //Get mime type and URI
-            String mimeType = currentItem.mimeType;
-            Uri uri = Orion.getMediaStoreUriFromFile(DisplayActivity.this, currentItem.file, mimeType);
-
             //Edit
-            Intent intent = new Intent(Intent.ACTION_EDIT);
-            intent.setDataAndType(uri, mimeType);
-            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-            startActivity(Intent.createChooser(intent, null));
+            Library.editItem(DisplayActivity.this, currentItem);
         });
 
         optionsOpenOutside.setOnClickListener(view -> {

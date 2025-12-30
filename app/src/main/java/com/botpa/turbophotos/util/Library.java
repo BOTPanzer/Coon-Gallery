@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.Log;
 
+import com.botpa.turbophotos.gallery.GalleryActivity;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -672,6 +673,18 @@ public class Library {
                 action.sortedAlbumsList = true;
             }
         });
+    }
+
+    public static void editItem(Context context, TurboItem item) {
+        //Get mime type and URI
+        String mimeType = item.mimeType;
+        Uri uri = Orion.getMediaStoreUriFromFile(context, item.file, mimeType);
+
+        //Edit
+        Intent intent = new Intent(Intent.ACTION_EDIT);
+        intent.setDataAndType(uri, mimeType);
+        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        context.startActivity(Intent.createChooser(intent, null));
     }
 
     public static void shareItems(Context context, TurboItem[] items) {

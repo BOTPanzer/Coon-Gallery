@@ -1,6 +1,7 @@
 package com.botpa.turbophotos.gallery;
 
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
@@ -20,6 +21,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.botpa.turbophotos.R;
 import com.botpa.turbophotos.display.DisplayActivity;
+import com.botpa.turbophotos.home.HomeActivity;
 import com.botpa.turbophotos.util.Action;
 import com.botpa.turbophotos.util.Album;
 import com.botpa.turbophotos.util.BackManager;
@@ -125,6 +127,12 @@ public class GalleryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.gallery);
+
+        //Enable HDR
+        getWindow().setColorMode(ActivityInfo.COLOR_MODE_HDR);
+
+        //Load storage
+        Storage.load(GalleryActivity.this);
 
         //Init back manager
         backManager = new BackManager(GalleryActivity.this, getOnBackPressedDispatcher());
@@ -344,18 +352,8 @@ public class GalleryActivity extends AppCompatActivity {
             //Empty selection
             if (selectedItems.size() != 1) return;
 
-            //Get first selection
-            TurboItem item = Library.gallery.get(selectedItems.iterator().next());
-
-            //Get mime type and URI
-            String mimeType = item.mimeType;
-            Uri uri = Orion.getMediaStoreUriFromFile(GalleryActivity.this, item.file, mimeType);
-
             //Edit
-            Intent intent = new Intent(Intent.ACTION_EDIT);
-            intent.setDataAndType(uri, mimeType);
-            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-            startActivity(Intent.createChooser(intent, null));
+            Library.editItem(GalleryActivity.this, Library.gallery.get(selectedItems.iterator().next()));
         });
 
         optionsMove.setOnClickListener(view -> {

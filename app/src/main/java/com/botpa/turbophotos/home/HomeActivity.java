@@ -94,6 +94,9 @@ public class HomeActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.home);
 
+        //Enable HDR
+        getWindow().setColorMode(ActivityInfo.COLOR_MODE_HDR);
+
         //Load storage
         Storage.load(HomeActivity.this);
 
@@ -225,9 +228,6 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void initActivity() {
-        //Enable HDR
-        getWindow().setColorMode(ActivityInfo.COLOR_MODE_HDR);
-
         //Init adapters
         initAdapters();
 
