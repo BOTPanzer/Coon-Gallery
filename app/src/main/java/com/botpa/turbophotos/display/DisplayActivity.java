@@ -34,7 +34,10 @@ import com.botpa.turbophotos.util.TurboItem;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
 
 public class DisplayActivity extends AppCompatActivity {
 
@@ -66,6 +69,7 @@ public class DisplayActivity extends AppCompatActivity {
     //Views (info)
     private View infoLayout;
     private TextView infoName;
+    private TextView infoDate;
     private TextView infoCaption;
     private HorizontalScrollView infoLabelsScroll;
     private TextView infoLabels;
@@ -158,6 +162,7 @@ public class DisplayActivity extends AppCompatActivity {
         //Views (info)
         infoLayout = findViewById(R.id.infoLayout);
         infoName = findViewById(R.id.infoName);
+        infoDate = findViewById(R.id.infoDate);
         infoCaption = findViewById(R.id.infoCaption);
         infoLabelsScroll = findViewById(R.id.infoLabelsScroll);
         infoLabels = findViewById(R.id.infoLabels);
@@ -478,6 +483,11 @@ public class DisplayActivity extends AppCompatActivity {
         optionsEdit.setVisibility(isTrashed ? View.GONE : View.VISIBLE);
         optionsOpenOutside.setVisibility(isTrashed ? View.GONE : View.VISIBLE);
 
+        //Create date text
+        Date date = new Date(currentItem.lastModified * 1000);
+        SimpleDateFormat formatter1 = new SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH);
+        SimpleDateFormat formatter2 = new SimpleDateFormat("hh:mm.ss a", Locale.ENGLISH);
+
         //Load image info (caption & labels)
         String caption = "";
         String labels = "";
@@ -523,7 +533,10 @@ public class DisplayActivity extends AppCompatActivity {
         } catch (Exception ignored) {
             //Error while parsing JSON
         }
+
+        //Update text
         infoName.setText(currentItem.name);
+        infoDate.setText(formatter1.format(date) + ", " + formatter2.format(date));
         infoCaption.setText(caption);
         infoLabels.setText(labels);
         infoText.setText(text);
