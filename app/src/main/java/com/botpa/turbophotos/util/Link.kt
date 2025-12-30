@@ -1,11 +1,15 @@
 package com.botpa.turbophotos.util
 
+import androidx.compose.runtime.mutableStateListOf
+import com.botpa.turbophotos.home.HomeActivity
+import com.botpa.turbophotos.util.Storage.getStringList
+import com.botpa.turbophotos.util.Storage.putStringList
 import java.io.File
 
 class Link(albumPath: String, metadataPath: String) {
 
-    @JvmField var albumFolder: File = File(albumPath)
-    @JvmField var metadataFile: File = File(metadataPath)
+    @JvmField val albumFolder: File = File(albumPath)
+    @JvmField val metadataFile: File = File(metadataPath)
     @JvmField var album: Album? = null
 
     //Getters
@@ -18,9 +22,95 @@ class Link(albumPath: String, metadataPath: String) {
         return "$albumPath\n$metadataPath"
     }
 
+
     //Static
     companion object {
 
+        //Links
+        var linksLoaded: Boolean = false
+
+        @JvmField val links = mutableStateListOf<Link>()
+        @JvmField val linksMap: HashMap<String, Link?> = HashMap<String, Link?>()
+
+
+        //Loading & saving list
+        fun loadLinks(reset: Boolean) {
+            //Already loaded
+            if (!reset && linksLoaded) return
+            linksLoaded = true
+
+            //Clear links
+            links.clear()
+            linksMap.clear()
+
+            //Get links from storage (as strings)
+            val linksUnparsed = getStringList("Settings.albums")
+
+            //Parse links
+            for (string in linksUnparsed) addLink(parse(string))
+        }
+
+        fun saveLinks() {
+            //Save links
+            val list = ArrayList<String>()
+            for (link in Companion.links) list.add(link.toString())
+            putStringList("Settings.albums", list)
+
+            //Restart main activity on resume
+            HomeActivity.reloadOnResume()
+        }
+
+        //Updating list
+        fun addLink(link: Link): Boolean {
+            //Check if link exists
+            val key = link.albumPath
+            if (linksMap.containsKey(key)) return false
+
+            //Add link
+            links.add(link)
+            linksMap[key] = link
+
+            //Relink with album if it exists
+            link.album = Library.albumsMap.getOrDefault(link.albumPath, null)
+            if (link.album != null) link.album!!.updateMetadataFile(link.metadataFile)
+            return true
+        }
+
+        fun removeLink(index: Int): Boolean {
+            //Check if link exists
+            if (index < 0 || index >= links.size) return false
+
+            //Remove link
+            val link = links.removeAt(index)
+            linksMap.remove(link.albumPath)
+            return true
+        }
+
+        fun updateLinkFolder(index: Int, newFolder: File): Boolean {
+            //Check if album is already in a link
+            val keyNew = newFolder.absolutePath
+            if (linksMap.containsKey(keyNew)) return false
+
+            //Get link
+            val link = links[index]
+
+            //Update it
+            val keyOld = link.albumPath
+            links[index] = Link(newFolder.absolutePath, link.metadataPath)
+            linksMap[keyNew] = linksMap.get(keyOld)
+            linksMap.remove(keyOld)
+            return true
+        }
+
+        fun updateLinkFile(index: Int, newFile: File) {
+            //Get link
+            val link = links[index]
+
+            //Update it
+            links[index] = Link(link.albumPath, newFile.absolutePath)
+        }
+
+        //Parsing
         fun parse(string: String): Link {
             //Split string into parts
             val parts = string.split("\n")

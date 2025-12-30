@@ -7,9 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -23,8 +21,6 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -33,11 +29,9 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -51,7 +45,6 @@ import androidx.compose.ui.unit.sp
 import com.botpa.turbophotos.theme.CoonTheme
 import com.botpa.turbophotos.theme.FONT_COMFORTAA
 import com.botpa.turbophotos.theme.FONT_OPIFICIO
-import com.botpa.turbophotos.util.Library
 import com.botpa.turbophotos.util.Link
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
@@ -95,20 +88,10 @@ class SettingsActivity : ComponentActivity() {
         var galleryImagesPerRow by remember { mutableFloatStateOf(Storage.getInt("Settings.galleryImagesPerRow", 3).toFloat()) }
         var showMissingMetadataIcon by remember { mutableStateOf(Storage.getBool("Settings.showMissingMetadataIcon", false)) }
 
-        //Links list
-        val links = remember { mutableStateListOf<Link>() }
-        var updateLinksList = remember {
-            {
-                links.clear()
-                links.addAll(Library.links)
-            }
-        }
-        LaunchedEffect(Unit) { links.addAll(Library.links) }
-
         //Link item file picker actions
         var filePickerIndex by remember { mutableIntStateOf(-1) }
         var filePickerAction by remember { mutableStateOf(PickerAction.SelectFolder) }
-        val filePickerLauncher: ActivityResultLauncher<Intent> = rememberLauncherForActivityResult(StartActivityForResult()) { result ->
+        val filePickerLauncher = rememberLauncherForActivityResult(StartActivityForResult()) { result ->
             //Bad result
             if (result.resultCode != RESULT_OK || result.data == null) return@rememberLauncherForActivityResult
 
@@ -120,11 +103,11 @@ class SettingsActivity : ComponentActivity() {
                 val file = File(path)
 
                 //Update the link based on the action
-                val album = Library.links[filePickerIndex]
+                val link = Link.links[filePickerIndex]
                 when (filePickerAction) {
                     //Select folder
                     PickerAction.SelectFolder -> {
-                        val updated = Library.updateLinkFolder(filePickerIndex, file)
+                        val updated = Link.updateLinkFolder(filePickerIndex, file)
                         if (!updated) {
                             Orion.snack(this@SettingsActivity, "Album already exists")
                             return@rememberLauncherForActivityResult
@@ -133,29 +116,32 @@ class SettingsActivity : ComponentActivity() {
 
                     //Select file
                     PickerAction.SelectFile -> {
-                        Library.updateLinkFile(filePickerIndex, file)
+                        //Update link with selected file
+                        Link.updateLinkFile(filePickerIndex, file)
                     }
 
                     //Create file
                     PickerAction.CreateFile -> {
+                        //Create file based in album name
                         var metadataFile: File
                         var name: String
                         var i = 0
                         do {
                             name = "${
-                                album.albumFolder.name.lowercase().replace(" ", "-")
+                                link.albumFolder.name.lowercase().replace(" ", "-")
                             }${if (i > 0) " ($i)" else ""}.metadata.json"
                             metadataFile = File(file.absolutePath + "/" + name)
                             i++
                         } while (metadataFile.exists())
                         Orion.writeFile(metadataFile, "{}")
-                        album.metadataFile = metadataFile
+
+                        //Update link with created file
+                        Link.updateLinkFile(filePickerIndex, metadataFile)
                     }
                 }
 
-                //Update list & save links
-                updateLinksList()
-                Library.saveLinks()
+                //Save links
+                Link.saveLinks()
             } catch (e: Exception) {
                 //Feedback toast
                 Toast.makeText(context, e.toString(), Toast.LENGTH_LONG).show()
@@ -201,7 +187,7 @@ class SettingsActivity : ComponentActivity() {
                         },
                         "Create",
                         {
-                            if (!Library.links[index].albumFolder.exists()) {
+                            if (!Link.links[index].albumFolder.exists()) {
                                 Toast.makeText(this@SettingsActivity, "Please select an album folder first", Toast.LENGTH_LONG).show()
                             } else {
                                 Toast.makeText(this@SettingsActivity,"Select a folder to create the album metadata file", Toast.LENGTH_LONG).show()
@@ -218,12 +204,7 @@ class SettingsActivity : ComponentActivity() {
         val onDelete = remember<(Int) -> Unit> {
             { index ->
                 //Remove link
-                val removed = Library.removeLink(index)
-                if (removed) {
-                    //Update list & save links
-                    updateLinksList()
-                    Library.saveLinks()
-                }
+                if (Link.removeLink(index)) Link.saveLinks()
             }
         }
 
@@ -385,7 +366,7 @@ class SettingsActivity : ComponentActivity() {
                 }
 
                 //Links (list)
-                itemsIndexed(links) { index, link ->
+                itemsIndexed(Link.links) { index, link ->
                     LinkItem(
                         index = index,
                         link = link,
@@ -399,15 +380,10 @@ class SettingsActivity : ComponentActivity() {
                 item {
                         Button(
                             onClick = {
-                                //Create link & try to add it
-                                val link = Link("", "");
-                                val added = Library.addLink(link)
-
-                                //Check if link was added
-                                if (added) {
-                                    //Added -> Update list & save links
-                                    updateLinksList()
-                                    Library.saveLinks()
+                                //Create & try to add new link
+                                if (Link.addLink(Link("", ""))) {
+                                    //Added -> Save links
+                                    Link.saveLinks()
                                 } else {
                                     //Not added -> There is another link with the same album
                                     Orion.snack(activity, "Can't have duplicate albums")

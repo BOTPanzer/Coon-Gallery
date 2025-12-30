@@ -8,7 +8,6 @@ import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.Log;
 
-import com.botpa.turbophotos.home.HomeActivity;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -29,12 +28,6 @@ public class Library {
 
     //Library
     private static final ArrayList<RefreshEvent> onRefresh = new ArrayList<>();
-
-    //Links
-    private static boolean linksLoaded = false;
-
-    public static final ArrayList<Link> links = new ArrayList<>();
-    public static final HashMap<String, Link> linksMap = new HashMap<>();
 
     //Trash
     private static boolean trashLoaded = false;
@@ -106,7 +99,7 @@ public class Library {
 
     public static void loadLibrary(Context context, boolean reset) {
         //Load links & trash
-        loadLinks(reset);
+        Link.Companion.loadLinks(reset);
         loadTrash(context, reset);
 
         //Reset
@@ -196,76 +189,6 @@ public class Library {
 
         //Return true if the albums were updated
         invokeOnRefresh(updated);
-    }
-
-    //Links
-    private static void loadLinks(boolean reset) {
-        //Already loaded
-        if (!reset && linksLoaded) return;
-        linksLoaded = true;
-
-        //Clear links
-        links.clear();
-        linksMap.clear();
-
-        //Get links from storage (as strings)
-        ArrayList<String> linksUnparsed = Storage.getStringList("Settings.albums");
-
-        //Parse links
-        for (String string: linksUnparsed) addLink(Link.Companion.parse(string));
-    }
-
-    public static void saveLinks() {
-        //Save links
-        ArrayList<String> list = new ArrayList<>();
-        for (Link link: links) list.add(link.toString());
-        Storage.putStringList("Settings.albums", list);
-
-        //Restart main activity on resume
-        HomeActivity.reloadOnResume();
-    }
-
-    public static boolean addLink(Link link) {
-        //Check if link exists
-        String key = link.getAlbumPath();
-        if (linksMap.containsKey(key)) return false;
-
-        //Add link
-        links.add(link);
-        linksMap.put(key, link);
-
-        //Relink with album if it exists
-        link.album = albumsMap.getOrDefault(link.getAlbumPath(), null);
-        if (link.album != null) link.album.updateMetadataFile(link.metadataFile);
-        return true;
-    }
-
-    public static boolean removeLink(int index) {
-        //Check if link exists
-        if (index < 0 || index >= links.size()) return false;
-
-        //Remove link
-        Link link = links.remove(index);
-        linksMap.remove(link.getAlbumPath());
-        return true;
-    }
-
-    public static boolean updateLinkFolder(int index, File newFolder) {
-        //Check if album is already in a link
-        String keyNew = newFolder.getAbsolutePath();
-        if (linksMap.containsKey(keyNew)) return false;
-
-        //Update
-        String keyOld = links.get(index).getAlbumPath();
-        links.get(index).albumFolder = newFolder;
-        linksMap.put(keyNew, linksMap.get(keyOld));
-        linksMap.remove(keyOld);
-        return true;
-    }
-
-    public static void updateLinkFile(int index, File newFile) {
-        //Update
-        links.get(index).metadataFile = newFile;
     }
 
     //Trash
@@ -367,7 +290,7 @@ public class Library {
         String folderPath = imagesFolder != null ? imagesFolder.getAbsolutePath() : null;
 
         //Get album link
-        Link link = linksMap.getOrDefault(folderPath, null);
+        Link link = Link.linksMap.getOrDefault(folderPath, null);
         boolean hasLink = link != null;
 
         //Get metadata file

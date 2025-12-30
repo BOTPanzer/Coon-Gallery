@@ -13,7 +13,6 @@ import androidx.core.app.NotificationCompat;
 import com.botpa.turbophotos.R;
 import com.botpa.turbophotos.home.HomeActivity;
 import com.botpa.turbophotos.util.Album;
-import com.botpa.turbophotos.util.Library;
 import com.botpa.turbophotos.util.Link;
 import com.botpa.turbophotos.util.Orion;
 import com.botpa.turbophotos.util.TurboItem;
@@ -83,7 +82,7 @@ public class BackupService extends Service {
 
             //Init backup items
             backupItems.clear();
-            for (Link link: Library.links) {
+            for (Link link: Link.links) {
                 //Get album & create items list
                 Album album = link.album;
                 ArrayList<TurboItem> items = new ArrayList<>();
@@ -297,7 +296,7 @@ public class BackupService extends Service {
                 case "requestMetadataInfo": {
                     //Get album
                     int albumIndex = message.get("albumIndex").asInt();
-                    Album album = Library.links.get(albumIndex).album;
+                    Album album = Link.links.get(albumIndex).album;
 
                     //Send metadata info
                     File file = album.getMetadataFile();
@@ -320,7 +319,7 @@ public class BackupService extends Service {
                 case "requestMetadataData": {
                     //Get album
                     int albumIndex = message.get("albumIndex").asInt();
-                    Album album = Library.links.get(albumIndex).album;
+                    Album album = Link.links.get(albumIndex).album;
 
                     //Send metadata data
                     File file = album.getMetadataFile();
@@ -396,7 +395,7 @@ public class BackupService extends Service {
         if (metadataRequest == null) return;
 
         //Save file
-        File file = Library.links.get(metadataRequest.albumIndex).metadataFile;
+        File file = Link.links.get(metadataRequest.albumIndex).metadataFile;
         try {
             BufferedOutputStream buffer = new BufferedOutputStream(Files.newOutputStream(file.toPath()));
             buffer.write(data, 0, data.length);
@@ -494,7 +493,7 @@ public class BackupService extends Service {
             metadataRequestIndex++;
 
         //Finished
-        if (metadataRequestIndex >= Library.links.size()) {
+        if (metadataRequestIndex >= Link.links.size()) {
             //Create message
             ObjectNode obj = Orion.getEmptyJson();
             obj.put("action", "endSync");
@@ -506,7 +505,7 @@ public class BackupService extends Service {
         }
 
         //Check if metadata file exists
-        File file = Library.links.get(metadataRequestIndex).metadataFile;
+        File file = Link.links.get(metadataRequestIndex).metadataFile;
         if (!file.exists()) {
             Log.e("Metadata missing", "Metadata file " + metadataRequestIndex + " does not exist");
             requestNextMetadata(false);

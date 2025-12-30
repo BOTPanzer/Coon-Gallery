@@ -72,7 +72,6 @@ class TurboItem(
                         imageView.scaleType = ImageView.ScaleType.CENTER_CROP
 
                         //Show animation
-                        imageView.alpha = 0.0f
                         imageView.animate().alpha(1f).setDuration(400).start()
                         return false
                     }
