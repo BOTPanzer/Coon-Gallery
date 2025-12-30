@@ -82,6 +82,10 @@ public class HomeActivity extends AppCompatActivity {
     //Views (loading indicator)
     private View loadingIndicator;
 
+    //Views (system)
+    private View systemNotificationsBar;
+    private View systemNavigationBar;
+
 
     //Activity
     @Override
@@ -274,6 +278,11 @@ public class HomeActivity extends AppCompatActivity {
         //Loading indicator
         loadingIndicator = findViewById(R.id.loadingIndicator);
 
+        //System
+        systemNotificationsBar = findViewById(R.id.notificationsBar);
+        systemNavigationBar = findViewById(R.id.navigationBar);
+
+
         //Insets (keyboard & system bars)
         Orion.addInsetsChangedListener(
                 findViewById(R.id.homeContent),
@@ -307,13 +316,13 @@ public class HomeActivity extends AppCompatActivity {
 
         //Insets (system bars background)
         Orion.addInsetsChangedListener(
-                findViewById(R.id.background),
+                systemNotificationsBar,
                 new int[] {
                         WindowInsetsCompat.Type.systemBars()
                 },
                 (view, insets, duration) -> {
-                    findViewById(R.id.notificationsBar).setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, insets.top));
-                    findViewById(R.id.navigationBar).setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, insets.bottom));
+                    systemNotificationsBar.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, insets.top));
+                    systemNavigationBar.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, insets.bottom));
                 }
         );
     }

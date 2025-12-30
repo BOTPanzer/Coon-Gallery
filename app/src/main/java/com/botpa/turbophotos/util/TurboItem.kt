@@ -6,6 +6,7 @@ import android.widget.ImageView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.load.resource.bitmap.BitmapTransitionOptions
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import java.io.File
@@ -51,6 +52,7 @@ class TurboItem(
                 .asBitmap()
                 .load(item.file.absolutePath)
                 .thumbnail(requestBuilder)
+                .transition(BitmapTransitionOptions.withCrossFade())
                 .listener(object : RequestListener<Bitmap> {
                     override fun onLoadFailed(
                         e: GlideException?,
@@ -70,9 +72,6 @@ class TurboItem(
                     ): Boolean {
                         //Update scale type
                         imageView.scaleType = ImageView.ScaleType.CENTER_CROP
-
-                        //Show animation
-                        imageView.animate().alpha(1f).setDuration(400).start()
                         return false
                     }
 

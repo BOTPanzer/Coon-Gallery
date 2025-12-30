@@ -51,7 +51,8 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="70dp"
-                android:layout_margin="10dp"
+                android:layout_marginHorizontal="15dp"
+                android:layout_marginVertical="10dp"
                 android:clickable="true"
                 app:cardBackgroundColor="?attr/colorSurface"
                 app:cardCornerRadius="40dp">

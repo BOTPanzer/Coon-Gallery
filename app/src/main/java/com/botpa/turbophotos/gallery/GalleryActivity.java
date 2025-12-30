@@ -2,6 +2,7 @@ package com.botpa.turbophotos.gallery;
 
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.KeyEvent;
@@ -49,6 +50,7 @@ public class GalleryActivity extends AppCompatActivity {
     private GalleryAdapter adapter;
 
     //List album
+    private boolean inTrash = false;
     private Album currentAlbum = null;
     private final HashSet<Integer> selectedItems = new HashSet<>();
 
@@ -67,11 +69,13 @@ public class GalleryActivity extends AppCompatActivity {
     //Views (options)
     private View optionsLayout;
     private View optionsRestore;
+    private View optionsRestoreAll;
     private View optionsDelete;
+    private View optionsDeleteAll;
     private View optionsTrash;
-    private View optionsTrashEmpty;
-    private View optionsMove;
     private View optionsShare;
+    private View optionsEdit;
+    private View optionsMove;
 
     //Views (list)
     private SwipeRefreshLayout refreshLayout;
@@ -109,6 +113,10 @@ public class GalleryActivity extends AppCompatActivity {
             runOnUiThread(() -> loadIndicator.setVisibility(View.GONE));
         }
     };
+
+    //Views (system)
+    private View systemNotificationsBar;
+    private View systemNavigationBar;
 
 
     //Activity
@@ -202,10 +210,12 @@ public class GalleryActivity extends AppCompatActivity {
         //Options
         optionsLayout = findViewById(R.id.optionsLayout);
         optionsRestore = findViewById(R.id.optionsRestore);
+        optionsRestoreAll = findViewById(R.id.optionsRestoreAll);
         optionsDelete = findViewById(R.id.optionsDelete);
+        optionsDeleteAll = findViewById(R.id.optionsDeleteAll);
         optionsTrash = findViewById(R.id.optionsTrash);
-        optionsTrashEmpty = findViewById(R.id.optionsTrashEmpty);
         optionsShare = findViewById(R.id.optionsShare);
+        optionsEdit = findViewById(R.id.optionsEdit);
         optionsMove = findViewById(R.id.optionsMove);
 
         //List
@@ -215,6 +225,11 @@ public class GalleryActivity extends AppCompatActivity {
         //Loading indicator
         loadIndicator = findViewById(R.id.loadIndicator);
         loadIndicatorText = findViewById(R.id.loadIndicatorText);
+
+        //System
+        systemNotificationsBar = findViewById(R.id.notificationsBar);
+        systemNavigationBar = findViewById(R.id.navigationBar);
+
 
         //Insets (gallery content)
         Orion.addInsetsChangedListener(
@@ -254,13 +269,13 @@ public class GalleryActivity extends AppCompatActivity {
 
         //Insets (system bars background)
         Orion.addInsetsChangedListener(
-                findViewById(R.id.background),
+                systemNotificationsBar,
                 new int[] {
                         WindowInsetsCompat.Type.systemBars()
                 },
                 (view, insets, duration) -> {
-                    findViewById(R.id.notificationsBar).setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, insets.top));
-                    findViewById(R.id.navigationBar).setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, insets.bottom));
+                    systemNotificationsBar.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, insets.top));
+                    systemNavigationBar.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, insets.bottom));
                 }
         );
     }
@@ -298,11 +313,19 @@ public class GalleryActivity extends AppCompatActivity {
             Library.trashItems(GalleryActivity.this, getSelectedItems());
         });
 
-        optionsTrashEmpty.setOnClickListener(view -> {
+        optionsRestoreAll.setOnClickListener(view -> {
             //Close options menu
             toggleOptions(false);
 
-            //Delete items
+            //Restore all items
+            Library.restoreItems(GalleryActivity.this, currentAlbum.items.toArray(new TurboItem[0]));
+        });
+
+        optionsDeleteAll.setOnClickListener(view -> {
+            //Close options menu
+            toggleOptions(false);
+
+            //Delete all items
             Library.deleteItems(GalleryActivity.this, currentAlbum.items.toArray(new TurboItem[0]));
         });
 
@@ -312,6 +335,27 @@ public class GalleryActivity extends AppCompatActivity {
 
             //Share
             Library.shareItems(GalleryActivity.this, getSelectedItems());
+        });
+
+        optionsEdit.setOnClickListener(view -> {
+            //Close options menu
+            toggleOptions(false);
+
+            //Empty selection
+            if (selectedItems.size() != 1) return;
+
+            //Get first selection
+            TurboItem item = Library.gallery.get(selectedItems.iterator().next());
+
+            //Get mime type and URI
+            String mimeType = item.mimeType;
+            Uri uri = Orion.getMediaStoreUriFromFile(GalleryActivity.this, item.file, mimeType);
+
+            //Edit
+            Intent intent = new Intent(Intent.ACTION_EDIT);
+            intent.setDataAndType(uri, mimeType);
+            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            startActivity(Intent.createChooser(intent, null));
         });
 
         optionsMove.setOnClickListener(view -> {
@@ -525,6 +569,10 @@ public class GalleryActivity extends AppCompatActivity {
         //Select album
         this.currentAlbum = album;
 
+        //Check if in trash (trash always shows options cause of "Empty trash" action)
+        inTrash = (album == Library.trash);
+        navbarOptions.setVisibility(inTrash ? View.VISIBLE : View.GONE);
+
         //Change gallery title
         navbarTitle.setText(album.getName());
 
@@ -546,7 +594,7 @@ public class GalleryActivity extends AppCompatActivity {
                 backManager.unregister("selected");
 
                 //Hide options button
-                navbarOptions.setVisibility(View.GONE);
+                if (!inTrash) navbarOptions.setVisibility(View.GONE);
             }
         } else {
             //First item to be selected
@@ -555,7 +603,7 @@ public class GalleryActivity extends AppCompatActivity {
                 backManager.register("selected", this::unselectAll);
 
                 //Show options button
-                navbarOptions.setVisibility(View.VISIBLE);
+                if (!inTrash) navbarOptions.setVisibility(View.VISIBLE);
             }
 
             //Add item
@@ -572,7 +620,7 @@ public class GalleryActivity extends AppCompatActivity {
         backManager.unregister("selected");
 
         //Hide options
-        navbarOptions.setVisibility(View.GONE);
+        if (!inTrash) navbarOptions.setVisibility(View.GONE);
 
         //Unselect all
         if (!selectedItems.isEmpty()) {
@@ -625,14 +673,16 @@ public class GalleryActivity extends AppCompatActivity {
         if (show) {
             //Get state info
             boolean isSelecting = !selectedItems.isEmpty();
-            boolean inTrash = (currentAlbum == Library.trash);
+            boolean isSelectingSingle = selectedItems.size() == 1;
 
             //Toggle buttons
             optionsRestore.setVisibility(isSelecting && inTrash ? View.VISIBLE : View.GONE);
+            optionsRestoreAll.setVisibility(!isSelecting && inTrash ? View.VISIBLE : View.GONE);
             optionsDelete.setVisibility(isSelecting ? View.VISIBLE : View.GONE);
+            optionsDeleteAll.setVisibility(!isSelecting && inTrash ? View.VISIBLE : View.GONE);
             optionsTrash.setVisibility(isSelecting && !inTrash ? View.VISIBLE : View.GONE);
-            optionsTrashEmpty.setVisibility(inTrash ? View.VISIBLE : View.GONE);
             optionsShare.setVisibility(isSelecting && !inTrash ? View.VISIBLE : View.GONE);
+            optionsEdit.setVisibility(isSelectingSingle && !inTrash ? View.VISIBLE : View.GONE);
             optionsMove.setVisibility(isSelecting && !inTrash ? View.VISIBLE : View.GONE);
 
             //Show

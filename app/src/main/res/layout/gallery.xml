@@ -52,7 +52,8 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="70dp"
-                android:layout_margin="10dp"
+                android:layout_marginHorizontal="15dp"
+                android:layout_marginVertical="10dp"
                 android:clickable="true"
                 app:cardBackgroundColor="?attr/colorSurface"
                 app:cardCornerRadius="40dp">
@@ -98,7 +99,6 @@
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:layout_marginStart="10dp"
-                        android:visibility="gone"
                         app:cardBackgroundColor="#00000000"
                         app:cardCornerRadius="20dp"
                         app:cardElevation="0dp">
@@ -183,10 +183,10 @@
             android:id="@+id/loadIndicator"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:gravity="center|top"
+            android:gravity="bottom|center"
             android:orientation="vertical"
             android:paddingHorizontal="15dp"
-            android:paddingVertical="25dp"
+            android:paddingBottom="90dp"
             android:visibility="gone">
 
             <androidx.cardview.widget.CardView
@@ -258,6 +258,33 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/optionsRestoreAll"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="20dp">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginEnd="10dp"
+                        app:srcCompat="@drawable/restore"
+                        app:tint="?attr/colorOnPrimary" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/poppins"
+                        android:paddingTop="5dp"
+                        android:text="Restore All"
+                        android:textColor="?attr/colorOnPrimary"
+                        android:textSize="16sp" />
+
+                </LinearLayout>
+
+                <LinearLayout
                     android:id="@+id/optionsDelete"
                     android:layout_width="match_parent"
                     android:layout_height="40dp"
@@ -279,6 +306,33 @@
                         android:fontFamily="@font/poppins"
                         android:paddingTop="5dp"
                         android:text="Delete"
+                        android:textColor="?attr/colorOnPrimary"
+                        android:textSize="16sp" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/optionsDeleteAll"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="20dp">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginEnd="10dp"
+                        app:srcCompat="@drawable/delete"
+                        app:tint="?attr/colorOnPrimary" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/poppins"
+                        android:paddingTop="5dp"
+                        android:text="Delete All"
                         android:textColor="?attr/colorOnPrimary"
                         android:textSize="16sp" />
 
@@ -312,33 +366,6 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/optionsTrashEmpty"
-                    android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:background="?attr/selectableItemBackground"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingHorizontal="20dp">
-
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_marginEnd="10dp"
-                        app:srcCompat="@drawable/delete"
-                        app:tint="?attr/colorOnPrimary" />
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/poppins"
-                        android:paddingTop="5dp"
-                        android:text="Empty Trash"
-                        android:textColor="?attr/colorOnPrimary"
-                        android:textSize="16sp" />
-
-                </LinearLayout>
-
-                <LinearLayout
                     android:id="@+id/optionsShare"
                     android:layout_width="match_parent"
                     android:layout_height="40dp"
@@ -360,6 +387,33 @@
                         android:fontFamily="@font/poppins"
                         android:paddingTop="5dp"
                         android:text="Share"
+                        android:textColor="?attr/colorOnPrimary"
+                        android:textSize="16sp" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/optionsEdit"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="20dp">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginEnd="10dp"
+                        app:srcCompat="@drawable/edit"
+                        app:tint="?attr/colorOnPrimary" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/poppins"
+                        android:paddingTop="5dp"
+                        android:text="Edit"
                         android:textColor="?attr/colorOnPrimary"
                         android:textSize="16sp" />
 
