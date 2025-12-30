@@ -1,7 +1,6 @@
 package com.botpa.turbophotos.display;
 
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -27,7 +26,6 @@ import com.botpa.turbophotos.util.Action;
 import com.botpa.turbophotos.util.BackManager;
 import com.botpa.turbophotos.util.Library;
 import com.botpa.turbophotos.util.Orion;
-import com.botpa.turbophotos.util.Storage;
 import com.botpa.turbophotos.util.TurboItem;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -52,28 +50,30 @@ public class DisplayActivity extends AppCompatActivity {
     private int currentIndexInDisplay = -1;
     private TurboItem currentItem = null;
 
+    //Views (list)
+    private RecyclerView list;
+
     //Views (overlay)
     private View overlayLayout;
-    private TextView nameText;
-    private View closeButton;
-    private View infoButton;
-    private View optionsButton;
-    private RecyclerView list;
+    private TextView overlayName;
+    private View overlayClose;
+    private View overlayInfo;
+    private View overlayOptions;
 
     //Views (info)
     private View infoLayout;
-    private TextView infoNameText;
-    private TextView infoCaptionText;
+    private TextView infoName;
+    private TextView infoCaption;
     private HorizontalScrollView infoLabelsScroll;
-    private TextView infoLabelsText;
+    private TextView infoLabels;
     private HorizontalScrollView infoTextScroll;
-    private TextView infoTextText;
+    private TextView infoText;
     private View infoEdit;
 
     //Views (edit)
     private View editLayout;
-    private TextView editCaptionText;
-    private TextView editLabelsText;
+    private TextView editCaption;
+    private TextView editLabels;
     private View editSave, editSpace;
 
     //Views (options)
@@ -137,43 +137,45 @@ public class DisplayActivity extends AppCompatActivity {
 
     //Views
     private void loadViews() {
+        //Views (list)
+        list = findViewById(R.id.list);
+
         //Views (overlay)
-        overlayLayout = findViewById(R.id.displayOverlayLayout);
-        nameText = findViewById(R.id.displayNameText);
-        closeButton = findViewById(R.id.displayCloseButton);
-        infoButton = findViewById(R.id.displayInfoButton);
-        infoEdit = findViewById(R.id.displayInfoEdit);
-        optionsButton = findViewById(R.id.displayOptionsButton);
-        list = findViewById(R.id.displayList);
+        overlayLayout = findViewById(R.id.overlayLayout);
+        overlayName = findViewById(R.id.overlayName);
+        overlayClose = findViewById(R.id.overlayClose);
+        overlayInfo = findViewById(R.id.overlayInfo);
+        overlayOptions = findViewById(R.id.overlayOptions);
 
         //Views (info)
-        infoLayout = findViewById(R.id.displayInfoLayout);
-        infoNameText = findViewById(R.id.displayInfoNameText);
-        infoCaptionText = findViewById(R.id.displayInfoCaptionText);
-        infoLabelsScroll = findViewById(R.id.displayInfoLabelsScroll);
-        infoLabelsText = findViewById(R.id.displayInfoLabelsText);
-        infoTextScroll = findViewById(R.id.displayInfoTextScroll);
-        infoTextText = findViewById(R.id.displayInfoTextText);
+        infoLayout = findViewById(R.id.infoLayout);
+        infoName = findViewById(R.id.infoName);
+        infoCaption = findViewById(R.id.infoCaption);
+        infoLabelsScroll = findViewById(R.id.infoLabelsScroll);
+        infoLabels = findViewById(R.id.infoLabels);
+        infoTextScroll = findViewById(R.id.infoTextScroll);
+        infoText = findViewById(R.id.infoText);
+        infoEdit = findViewById(R.id.infoEdit);
 
         //Views (edit)
-        editLayout = findViewById(R.id.displayEditLayout);
-        editCaptionText = findViewById(R.id.displayEditCaptionText);
-        editLabelsText = findViewById(R.id.displayEditLabelsText);
-        editSave = findViewById(R.id.displayEditSave);
-        editSpace = findViewById(R.id.displayEditSpace);
+        editLayout = findViewById(R.id.editLayout);
+        editCaption = findViewById(R.id.editCaption);
+        editLabels = findViewById(R.id.editLabels);
+        editSave = findViewById(R.id.editSave);
+        editSpace = findViewById(R.id.editSpace);
 
         //Views (options)
-        optionsLayout = findViewById(R.id.displayOptionsLayout);
-        optionsRestore = findViewById(R.id.displayOptionsRestore);
-        optionsDelete = findViewById(R.id.displayOptionsDelete);
-        optionsTrash = findViewById(R.id.displayOptionsTrash);
-        optionsShare = findViewById(R.id.displayOptionsShare);
-        optionsEdit = findViewById(R.id.displayOptionsEdit);
-        optionsOpenOutside = findViewById(R.id.displayOptionsOpen);
+        optionsLayout = findViewById(R.id.optionsLayout);
+        optionsRestore = findViewById(R.id.optionsRestore);
+        optionsDelete = findViewById(R.id.optionsDelete);
+        optionsTrash = findViewById(R.id.optionsTrash);
+        optionsShare = findViewById(R.id.optionsShare);
+        optionsEdit = findViewById(R.id.optionsEdit);
+        optionsOpenOutside = findViewById(R.id.optionsOpen);
 
-        //Insets
+        //Insets (overlay)
         Orion.addInsetsChangedListener(
-                findViewById(R.id.displayOverlayIndent),
+                findViewById(R.id.overlayIndent),
                 new int[] {
                         WindowInsetsCompat.Type.systemBars()
                 },
@@ -212,14 +214,17 @@ public class DisplayActivity extends AppCompatActivity {
             //Done
             return windowInsets;
         });
+
+        //Insets (options layout)
+        Orion.addInsetsChangedListener(optionsLayout, new int[] { WindowInsetsCompat.Type.systemBars() });
     }
 
     private void addListeners() {
         //Main
-        closeButton.setOnClickListener(view -> finish());
+        overlayClose.setOnClickListener(view -> finish());
 
         //Info & edit
-        infoButton.setOnClickListener(view -> toggleInfo(true));
+        overlayInfo.setOnClickListener(view -> toggleInfo(true));
 
         infoLayout.setOnClickListener(view -> toggleInfo(false));
 
@@ -247,14 +252,14 @@ public class DisplayActivity extends AppCompatActivity {
 
         editSave.setOnClickListener(view -> {
             //Get new caption & labels
-            String caption = editCaptionText.getText().toString();
-            String labels = editLabelsText.getText().toString();
+            String caption = editCaption.getText().toString();
+            String labels = editLabels.getText().toString();
             String[] labelsArray = labels.split(",");
             for (int i = 0; i < labelsArray.length; i++) labelsArray[i] = labelsArray[i].trim();
 
             //Update info texts with new ones
-            infoCaptionText.setText(caption);
-            infoLabelsText.setText(labels);
+            infoCaption.setText(caption);
+            infoLabels.setText(labels);
 
             //Update metadata
             String key = currentItem.name;
@@ -275,7 +280,7 @@ public class DisplayActivity extends AppCompatActivity {
         });
 
         //Options
-        optionsButton.setOnClickListener(view -> toggleOptions(true));
+        overlayOptions.setOnClickListener(view -> toggleOptions(true));
 
         optionsLayout.setOnClickListener(view -> toggleOptions(false));
 
@@ -465,7 +470,7 @@ public class DisplayActivity extends AppCompatActivity {
         layoutManager.setScrollEnabled(true);
 
         //Change image name
-        nameText.setText(currentItem.name);
+        overlayName.setText(currentItem.name);
 
         //Prepare options menu
         boolean isTrashed = currentItem.isTrashed();
@@ -520,10 +525,10 @@ public class DisplayActivity extends AppCompatActivity {
         } catch (Exception ignored) {
             //Error while parsing JSON
         }
-        infoNameText.setText(currentItem.name);
-        infoCaptionText.setText(caption);
-        infoLabelsText.setText(labels);
-        infoTextText.setText(text);
+        infoName.setText(currentItem.name);
+        infoCaption.setText(caption);
+        infoLabels.setText(labels);
+        infoText.setText(text);
     }
 
     //Menus
@@ -541,8 +546,8 @@ public class DisplayActivity extends AppCompatActivity {
 
     private void toggleEdit(boolean show) {
         if (show) {
-            editCaptionText.setText(infoCaptionText.getText());
-            editLabelsText.setText(infoLabelsText.getText());
+            editCaption.setText(infoCaption.getText());
+            editLabels.setText(infoLabels.getText());
             Orion.showAnim(editLayout);
             backManager.register("displayEdit", () -> toggleEdit(false));
         } else {

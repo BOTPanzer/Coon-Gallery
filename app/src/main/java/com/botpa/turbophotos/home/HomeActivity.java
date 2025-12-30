@@ -1,6 +1,7 @@
 package com.botpa.turbophotos.home;
 
 import android.annotation.SuppressLint;
+import android.app.ActivityOptions;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
@@ -27,13 +28,13 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.Manifest;
+import android.widget.LinearLayout;
 
 import com.botpa.turbophotos.backup.BackupActivity;
 import com.botpa.turbophotos.gallery.GalleryActivity;
 import com.botpa.turbophotos.settings.SettingsActivity;
 import com.botpa.turbophotos.util.Action;
 import com.botpa.turbophotos.util.Album;
-import com.botpa.turbophotos.util.BackManager;
 import com.botpa.turbophotos.util.Library;
 import com.botpa.turbophotos.R;
 import com.botpa.turbophotos.util.Orion;
@@ -226,6 +227,9 @@ public class HomeActivity extends AppCompatActivity {
         //Init adapters
         initAdapters();
 
+        //Hide list
+        list.setVisibility(View.GONE);
+
         //Load albums
         new Thread(() -> {
             //Load albums
@@ -276,7 +280,10 @@ public class HomeActivity extends AppCompatActivity {
                 new int[] {
                         WindowInsetsCompat.Type.systemBars()
                 },
-                (view, insets, duration) -> list.setPadding(0, insets.top, 0, list.getPaddingBottom() + insets.bottom)
+                (view, insets, duration) -> {
+                    refreshLayout.setProgressViewOffset(false, 0, insets.top + 50);
+                    list.setPadding(0, insets.top, 0, list.getPaddingBottom() + insets.bottom);
+                }
         );
         Orion.addInsetsChangedListener(
                 findViewById(R.id.homeLayout),
@@ -297,6 +304,18 @@ public class HomeActivity extends AppCompatActivity {
                     Orion.onInsetsChangedDefault.run(view, insets, percent);
                 }
         );
+
+        //Insets (system bars background)
+        Orion.addInsetsChangedListener(
+                findViewById(R.id.background),
+                new int[] {
+                        WindowInsetsCompat.Type.systemBars()
+                },
+                (view, insets, duration) -> {
+                    findViewById(R.id.notificationsBar).setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, insets.top));
+                    findViewById(R.id.navigationBar).setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, insets.bottom));
+                }
+        );
     }
 
     private void addListeners() {
@@ -314,7 +333,7 @@ public class HomeActivity extends AppCompatActivity {
         //Home
         refreshLayout.setOnRefreshListener(() -> {
             //Reload library
-            Library.loadLibrary(HomeActivity.this, true);
+            Library.loadLibrary(HomeActivity.this, true); //Fully refresh
 
             //Stop refreshing
             refreshLayout.setRefreshing(false);
@@ -410,6 +429,15 @@ public class HomeActivity extends AppCompatActivity {
         //Init home adapter
         adapter = new HomeAdapter(HomeActivity.this, Library.albums);
         adapter.setOnClickListener((view, album) -> {
+            //Create open animation
+            int startX = view.getLeft() + (view.getWidth() / 2);
+            int startY = view.getTop() + (view.getHeight() / 2);
+            ActivityOptions options = ActivityOptions.makeScaleUpAnimation(
+                    list, //The view to scale from
+                    startX, startY, //Starting point
+                    0, 0 //Starting size
+            );
+
             //Open gallery
             Intent intent = new Intent(HomeActivity.this, GalleryActivity.class);
             if (album == Library.trash) {
@@ -419,7 +447,7 @@ public class HomeActivity extends AppCompatActivity {
             } else {
                 intent.putExtra("albumIndex", Library.albums.indexOf(album));
             }
-            startActivity(intent);
+            startActivity(intent, options.toBundle());
         });
         list.setAdapter(adapter);
     }

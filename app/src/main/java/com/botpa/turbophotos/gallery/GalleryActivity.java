@@ -1,13 +1,13 @@
 package com.botpa.turbophotos.gallery;
 
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -19,7 +19,6 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.botpa.turbophotos.R;
 import com.botpa.turbophotos.display.DisplayActivity;
-import com.botpa.turbophotos.home.HomeActivity;
 import com.botpa.turbophotos.util.Action;
 import com.botpa.turbophotos.util.Album;
 import com.botpa.turbophotos.util.BackManager;
@@ -31,7 +30,6 @@ import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -218,14 +216,19 @@ public class GalleryActivity extends AppCompatActivity {
         loadIndicator = findViewById(R.id.loadIndicator);
         loadIndicatorText = findViewById(R.id.loadIndicatorText);
 
-        //Insets (keyboard & system bars)
+        //Insets (gallery content)
         Orion.addInsetsChangedListener(
                 findViewById(R.id.galleryContent),
                 new int[] {
                         WindowInsetsCompat.Type.systemBars()
                 },
-                (view, insets, duration) -> list.setPadding(0, insets.top, 0, list.getPaddingBottom() + insets.bottom)
+                (view, insets, duration) -> {
+                    refreshLayout.setProgressViewOffset(false, 0, insets.top + 50);
+                    list.setPadding(0, insets.top, 0, list.getPaddingBottom() + insets.bottom);
+                }
         );
+
+        //Insets (gallery layout)
         Orion.addInsetsChangedListener(
                 findViewById(R.id.galleryLayout),
                 new int[] {
@@ -243,6 +246,21 @@ public class GalleryActivity extends AppCompatActivity {
 
                     //Update insets
                     Orion.onInsetsChangedDefault.run(view, insets, percent);
+                }
+        );
+
+        //Insets (options layout)
+        Orion.addInsetsChangedListener(optionsLayout, new int[] { WindowInsetsCompat.Type.systemBars() });
+
+        //Insets (system bars background)
+        Orion.addInsetsChangedListener(
+                findViewById(R.id.background),
+                new int[] {
+                        WindowInsetsCompat.Type.systemBars()
+                },
+                (view, insets, duration) -> {
+                    findViewById(R.id.notificationsBar).setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, insets.top));
+                    findViewById(R.id.navigationBar).setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, insets.bottom));
                 }
         );
     }
@@ -307,7 +325,7 @@ public class GalleryActivity extends AppCompatActivity {
         //Gallery
         refreshLayout.setOnRefreshListener(() -> {
             //Reload library
-            Library.loadLibrary(GalleryActivity.this, true);
+            Library.loadLibrary(GalleryActivity.this, false); //Soft refresh to look for new files
 
             //Stop refreshing
             refreshLayout.setRefreshing(false);

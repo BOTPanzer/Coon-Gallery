@@ -26,7 +26,7 @@ class GalleryAdapter(private val context: Context, private val items: ArrayList<
         val item = items[position]
 
         //Load item preview
-        TurboItem.Companion.load(context, holder.image, item)
+        TurboItem.load(context, holder.image, item)
 
         //Toggle is video & missing info icons
         holder.isVideo.visibility = if (item.isVideo) View.VISIBLE else View.GONE

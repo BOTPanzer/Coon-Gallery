@@ -43,7 +43,7 @@ class TurboItem(
         //Load item preview into ImageView
         fun load(context: Context, imageView: ImageView, item: TurboItem) {
             //Reset image scale type (due to a bug HDR does not load, but idk why changing scale type fixes it)
-            imageView.setScaleType(ImageView.ScaleType.CENTER)
+            imageView.scaleType = ImageView.ScaleType.CENTER
 
             //Load item preview
             val requestBuilder = Glide.with(context).asBitmap().sizeMultiplier(if (item.isVideo) 0.1f else 0.2f)
@@ -68,7 +68,12 @@ class TurboItem(
                         dataSource: DataSource,
                         isFirstResource: Boolean
                     ): Boolean {
-                        imageView.setScaleType(ImageView.ScaleType.CENTER_CROP)
+                        //Update scale type
+                        imageView.scaleType = ImageView.ScaleType.CENTER_CROP
+
+                        //Show animation
+                        imageView.alpha = 0.0f
+                        imageView.animate().alpha(1f).setDuration(400).start()
                         return false
                     }
 
