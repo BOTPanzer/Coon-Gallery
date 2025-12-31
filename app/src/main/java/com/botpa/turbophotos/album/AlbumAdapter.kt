@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.gallery
+package com.botpa.turbophotos.album
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -8,14 +8,14 @@ import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.util.Orion
-import com.botpa.turbophotos.util.TurboItem
+import com.botpa.turbophotos.gallery.CoonItem
 import com.google.android.material.card.MaterialCardView
 
-class GalleryAdapter(private val context: Context, private val items: ArrayList<TurboItem>, private val selected: HashSet<Int>, var showMissingMetadataIcon: Boolean) : RecyclerView.Adapter<GalleryAdapter.GalleryHolder>() {
+class AlbumAdapter(private val context: Context, private val items: ArrayList<CoonItem>, private val selected: HashSet<Int>, var showMissingMetadataIcon: Boolean) : RecyclerView.Adapter<AlbumAdapter.GalleryHolder>() {
 
     //Adapter
     override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): GalleryHolder {
-        return GalleryHolder(LayoutInflater.from(context).inflate(R.layout.gallery_item, viewGroup, false))
+        return GalleryHolder(LayoutInflater.from(context).inflate(R.layout.album_item, viewGroup, false))
     }
 
     override fun onBindViewHolder(holder: GalleryHolder, i: Int) {
@@ -26,7 +26,7 @@ class GalleryAdapter(private val context: Context, private val items: ArrayList<
         val item = items[position]
 
         //Load item preview
-        TurboItem.load(context, holder.image, item)
+        CoonItem.load(context, holder.image, item)
 
         //Toggle is video & missing info icons
         holder.isVideo.visibility = if (item.isVideo) View.VISIBLE else View.GONE

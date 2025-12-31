@@ -12,7 +12,7 @@ class LogAdapter(private val context: Context, private val logs: List<String>) :
 
     //Adapter
     override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): LogHolder {
-        val view = LayoutInflater.from(context).inflate(R.layout.log_item, viewGroup, false)
+        val view = LayoutInflater.from(context).inflate(R.layout.backup_log_item, viewGroup, false)
         return LogHolder(view)
     }
 

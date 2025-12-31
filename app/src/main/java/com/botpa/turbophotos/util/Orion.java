@@ -612,22 +612,6 @@ public class Orion {
         return oldFile.renameTo(newFile);
     }
 
-    public static boolean copyFile(File srcFile, File dstFile) {
-        if (!srcFile.exists()) return false;
-
-        try (InputStream inputStream = Files.newInputStream(srcFile.toPath()); OutputStream outputStream = Files.newOutputStream(dstFile.toPath())) {
-            byte[] buffer = new byte[1024];
-            int length;
-            while ((length = inputStream.read(buffer)) > 0) {
-                outputStream.write(buffer, 0, length);
-            }
-        } catch (Exception e) {
-            return false;
-        }
-
-        return true;
-    }
-
     public static boolean cloneFile(Context context, File sourceFile, File destFile) {
         try {
             //Get parent
@@ -646,7 +630,6 @@ public class Orion {
             scanFile(context, destFile);
             return true;
         } catch (IOException e) {
-            e.printStackTrace();
             return false;
         }
     }

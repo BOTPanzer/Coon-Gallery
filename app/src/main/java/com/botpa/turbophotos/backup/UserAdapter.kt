@@ -12,7 +12,7 @@ class UserAdapter(private val context: Context, private val users: List<User>) :
 
     //Adapter
     override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): AlbumHolder {
-        val view = LayoutInflater.from(context).inflate(R.layout.connect_item, viewGroup, false)
+        val view = LayoutInflater.from(context).inflate(R.layout.backup_connect_item, viewGroup, false)
         return AlbumHolder(view)
     }
 

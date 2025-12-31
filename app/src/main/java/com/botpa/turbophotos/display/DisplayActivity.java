@@ -23,14 +23,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SnapHelper;
 
 import com.botpa.turbophotos.R;
-import com.botpa.turbophotos.gallery.GalleryActivity;
-import com.botpa.turbophotos.home.HomeActivity;
-import com.botpa.turbophotos.util.Action;
+import com.botpa.turbophotos.gallery.Action;
 import com.botpa.turbophotos.util.BackManager;
-import com.botpa.turbophotos.util.Library;
+import com.botpa.turbophotos.gallery.Library;
 import com.botpa.turbophotos.util.Orion;
 import com.botpa.turbophotos.util.Storage;
-import com.botpa.turbophotos.util.TurboItem;
+import com.botpa.turbophotos.gallery.CoonItem;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -52,10 +50,10 @@ public class DisplayActivity extends AppCompatActivity {
     private DisplayAdapter adapter;
 
     //List items
-    private final ArrayList<TurboItem> displayItems = new ArrayList<>();
+    private final ArrayList<CoonItem> displayItems = new ArrayList<>();
     private int currentIndexInGallery = -1;
     private int currentIndexInDisplay = -1;
-    private TurboItem currentItem = null;
+    private CoonItem currentItem = null;
 
     //Views (list)
     private RecyclerView list;
@@ -91,6 +89,7 @@ public class DisplayActivity extends AppCompatActivity {
     private View optionsShare;
     private View optionsEdit;
     private View optionsMove;
+    private View optionsCopy;
     private View optionsOpenOutside;
 
 
@@ -99,7 +98,7 @@ public class DisplayActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.display);
+        setContentView(R.layout.display_screen);
 
         //Enable HDR
         getWindow().setColorMode(ActivityInfo.COLOR_MODE_HDR);
@@ -186,7 +185,9 @@ public class DisplayActivity extends AppCompatActivity {
         optionsShare = findViewById(R.id.optionsShare);
         optionsEdit = findViewById(R.id.optionsEdit);
         optionsMove = findViewById(R.id.optionsMove);
+        optionsCopy = findViewById(R.id.optionsCopy);
         optionsOpenOutside = findViewById(R.id.optionsOpen);
+
 
         //Insets (overlay)
         Orion.addInsetsChangedListener(
@@ -301,7 +302,7 @@ public class DisplayActivity extends AppCompatActivity {
             toggleOptions(false);
 
             //Restore from trash
-            Library.restoreItems(DisplayActivity.this, new TurboItem[] { currentItem });
+            Library.restoreItems(DisplayActivity.this, new CoonItem[] { currentItem });
         });
 
         optionsDelete.setOnClickListener(view -> {
@@ -309,7 +310,7 @@ public class DisplayActivity extends AppCompatActivity {
             toggleOptions(false);
 
             //Delete items
-            Library.deleteItems(DisplayActivity.this, new TurboItem[] { currentItem });
+            Library.deleteItems(DisplayActivity.this, new CoonItem[] { currentItem });
         });
 
         optionsTrash.setOnClickListener(view -> {
@@ -317,7 +318,7 @@ public class DisplayActivity extends AppCompatActivity {
             toggleOptions(false);
 
             //Move to trash
-            Library.trashItems(DisplayActivity.this, new TurboItem[] { currentItem });
+            Library.trashItems(DisplayActivity.this, new CoonItem[] { currentItem });
         });
 
         optionsShare.setOnClickListener(view -> {
@@ -325,7 +326,7 @@ public class DisplayActivity extends AppCompatActivity {
             toggleOptions(false);
 
             //Share
-            Library.shareItems(DisplayActivity.this, new TurboItem[]{ currentItem });
+            Library.shareItems(DisplayActivity.this, new CoonItem[]{ currentItem });
         });
 
         optionsEdit.setOnClickListener(view -> {
@@ -341,7 +342,15 @@ public class DisplayActivity extends AppCompatActivity {
             toggleOptions(false);
 
             //Move items
-            Library.moveItems(DisplayActivity.this, new TurboItem[]{ currentItem });
+            Library.moveItems(DisplayActivity.this, new CoonItem[]{ currentItem });
+        });
+
+        optionsCopy.setOnClickListener(view -> {
+            //Close options menu
+            toggleOptions(false);
+
+            //Copy items
+            Library.copyItems(DisplayActivity.this, new CoonItem[]{ currentItem });
         });
 
         optionsOpenOutside.setOnClickListener(view -> {

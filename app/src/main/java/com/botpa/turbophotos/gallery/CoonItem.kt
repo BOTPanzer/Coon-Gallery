@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.util
+package com.botpa.turbophotos.gallery
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -11,14 +11,14 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import java.io.File
 
-class TurboItem(
+class CoonItem(
     @JvmField var file: File,               //The file in storage
     @JvmField var album: Album,             //The album of the item
     @JvmField var lastModified: Long,       //Timestamp of the last time the file was modified
     @JvmField var size: Long,               //The size of the file in bytes
     @JvmField var isVideo: Boolean,         //If the item is a video
     @JvmField var trashInfo: TrashInfo?,    //Info about the item in the trash
-) : Comparable<TurboItem> {
+) : Comparable<CoonItem> {
 
     //Item info
     @JvmField var name: String = file.name
@@ -34,7 +34,7 @@ class TurboItem(
         return trashInfo != null
     }
 
-    override fun compareTo(other: TurboItem): Int {
+    override fun compareTo(other: CoonItem): Int {
         return lastModified.compareTo(other.lastModified)
     }
 
@@ -42,7 +42,7 @@ class TurboItem(
     companion object {
 
         //Load item preview into ImageView
-        fun load(context: Context, imageView: ImageView, item: TurboItem) {
+        fun load(context: Context, imageView: ImageView, item: CoonItem) {
             //Reset image scale type (due to a bug HDR does not load, but idk why changing scale type fixes it)
             imageView.scaleType = ImageView.ScaleType.CENTER
 

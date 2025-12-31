@@ -50,7 +50,7 @@ public class BackupActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.backup);
+        setContentView(R.layout.backup_screen);
 
         //Get views & add listeners
         getViews();

@@ -45,7 +45,7 @@ import androidx.compose.ui.unit.sp
 import com.botpa.turbophotos.theme.CoonTheme
 import com.botpa.turbophotos.theme.FONT_COMFORTAA
 import com.botpa.turbophotos.theme.FONT_OPIFICIO
-import com.botpa.turbophotos.util.Link
+import com.botpa.turbophotos.gallery.Link
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
 import com.google.android.material.snackbar.Snackbar

@@ -12,10 +12,10 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import com.botpa.turbophotos.R;
 import com.botpa.turbophotos.home.HomeActivity;
-import com.botpa.turbophotos.util.Album;
-import com.botpa.turbophotos.util.Link;
+import com.botpa.turbophotos.gallery.Album;
+import com.botpa.turbophotos.gallery.Link;
 import com.botpa.turbophotos.util.Orion;
-import com.botpa.turbophotos.util.TurboItem;
+import com.botpa.turbophotos.gallery.CoonItem;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.BufferedInputStream;
@@ -60,7 +60,7 @@ public class BackupService extends Service {
     private MetadataInfo metadataRequest;
 
     //Albums
-    private final ArrayList<ArrayList<TurboItem>> backupItems = new ArrayList<>();
+    private final ArrayList<ArrayList<CoonItem>> backupItems = new ArrayList<>();
 
 
     @Nullable
@@ -85,7 +85,7 @@ public class BackupService extends Service {
             for (Link link: Link.links) {
                 //Get album & create items list
                 Album album = link.album;
-                ArrayList<TurboItem> items = new ArrayList<>();
+                ArrayList<CoonItem> items = new ArrayList<>();
 
                 //Add items if album exists
                 if (album != null) items.addAll(album.items);
@@ -139,7 +139,7 @@ public class BackupService extends Service {
                 ArrayNode albumsJsonArray = Orion.getEmptyJsonArray();
                 for (int i = 0; i < backupItems.size(); i++) {
                     //Get items
-                    ArrayList<TurboItem> items = backupItems.get(i);
+                    ArrayList<CoonItem> items = backupItems.get(i);
 
                     //Create items list
                     String[] itemsArray = new String[items.size()];
@@ -224,11 +224,11 @@ public class BackupService extends Service {
 
                     //Get album
                     int albumIndex = message.get("albumIndex").asInt();
-                    ArrayList<TurboItem> album = backupItems.get(albumIndex);
+                    ArrayList<CoonItem> album = backupItems.get(albumIndex);
 
                     //Get item & file
                     int fileIndex = message.get("fileIndex").asInt();
-                    TurboItem item = album.get(fileIndex);
+                    CoonItem item = album.get(fileIndex);
                     File file = item.file;
 
                     //Log
@@ -255,11 +255,11 @@ public class BackupService extends Service {
                 case "requestFileData": {
                     //Get album
                     int albumIndex = message.get("albumIndex").asInt();
-                    ArrayList<TurboItem> album = backupItems.get(albumIndex);
+                    ArrayList<CoonItem> album = backupItems.get(albumIndex);
 
                     //Get item & file
                     int fileIndex = message.get("fileIndex").asInt();
-                    TurboItem item = album.get(fileIndex);
+                    CoonItem item = album.get(fileIndex);
                     File file = item.file;
 
                     //Get offset & length

@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.util
+package com.botpa.turbophotos.gallery
 
 import java.io.File
 

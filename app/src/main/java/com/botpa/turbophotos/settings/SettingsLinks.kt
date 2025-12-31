@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.sp
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.theme.FONT_OPIFICIO
 import com.botpa.turbophotos.theme.FONT_POPPINS
-import com.botpa.turbophotos.util.Link
+import com.botpa.turbophotos.gallery.Link
 
 //Preview for the link item with default values
 @Preview

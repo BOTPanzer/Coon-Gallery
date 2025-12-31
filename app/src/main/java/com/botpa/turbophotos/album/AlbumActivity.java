@@ -1,9 +1,8 @@
-package com.botpa.turbophotos.gallery;
+package com.botpa.turbophotos.album;
 
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.KeyEvent;
@@ -21,14 +20,13 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.botpa.turbophotos.R;
 import com.botpa.turbophotos.display.DisplayActivity;
-import com.botpa.turbophotos.home.HomeActivity;
-import com.botpa.turbophotos.util.Action;
-import com.botpa.turbophotos.util.Album;
+import com.botpa.turbophotos.gallery.Action;
+import com.botpa.turbophotos.gallery.Album;
 import com.botpa.turbophotos.util.BackManager;
-import com.botpa.turbophotos.util.Library;
+import com.botpa.turbophotos.gallery.Library;
 import com.botpa.turbophotos.util.Orion;
 import com.botpa.turbophotos.util.Storage;
-import com.botpa.turbophotos.util.TurboItem;
+import com.botpa.turbophotos.gallery.CoonItem;
 import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView;
 
 import org.jetbrains.annotations.NotNull;
@@ -36,7 +34,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-public class GalleryActivity extends AppCompatActivity {
+public class AlbumActivity extends AppCompatActivity {
 
     //Activity
     private BackManager backManager;
@@ -49,7 +47,7 @@ public class GalleryActivity extends AppCompatActivity {
 
     //List adapter
     private GridLayoutManager layoutManager;
-    private GalleryAdapter adapter;
+    private AlbumAdapter adapter;
 
     //List album
     private boolean inTrash = false;
@@ -78,6 +76,7 @@ public class GalleryActivity extends AppCompatActivity {
     private View optionsShare;
     private View optionsEdit;
     private View optionsMove;
+    private View optionsCopy;
 
     //Views (list)
     private SwipeRefreshLayout refreshLayout;
@@ -126,16 +125,16 @@ public class GalleryActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.gallery);
+        setContentView(R.layout.album_screen);
 
         //Enable HDR
         getWindow().setColorMode(ActivityInfo.COLOR_MODE_HDR);
 
         //Load storage
-        Storage.load(GalleryActivity.this);
+        Storage.load(AlbumActivity.this);
 
         //Init back manager
-        backManager = new BackManager(GalleryActivity.this, getOnBackPressedDispatcher());
+        backManager = new BackManager(AlbumActivity.this, getOnBackPressedDispatcher());
 
         //Add events
         Library.addOnRefreshEvent(onRefresh);
@@ -225,6 +224,7 @@ public class GalleryActivity extends AppCompatActivity {
         optionsShare = findViewById(R.id.optionsShare);
         optionsEdit = findViewById(R.id.optionsEdit);
         optionsMove = findViewById(R.id.optionsMove);
+        optionsCopy = findViewById(R.id.optionsCopy);
 
         //List
         refreshLayout = findViewById(R.id.refreshLayout);
@@ -239,9 +239,9 @@ public class GalleryActivity extends AppCompatActivity {
         systemNavigationBar = findViewById(R.id.navigationBar);
 
 
-        //Insets (gallery content)
+        //Insets (content)
         Orion.addInsetsChangedListener(
-                findViewById(R.id.galleryContent),
+                findViewById(R.id.content),
                 new int[] {
                         WindowInsetsCompat.Type.systemBars()
                 },
@@ -251,9 +251,9 @@ public class GalleryActivity extends AppCompatActivity {
                 }
         );
 
-        //Insets (gallery layout)
+        //Insets (layout)
         Orion.addInsetsChangedListener(
-                findViewById(R.id.galleryLayout),
+                findViewById(R.id.layout),
                 new int[] {
                         WindowInsetsCompat.Type.ime(),
                         WindowInsetsCompat.Type.systemBars()
@@ -302,7 +302,7 @@ public class GalleryActivity extends AppCompatActivity {
             toggleOptions(false);
 
             //Restore items from trash
-            Library.restoreItems(GalleryActivity.this, getSelectedItems());
+            Library.restoreItems(AlbumActivity.this, getSelectedItems());
         });
 
         optionsDelete.setOnClickListener(view -> {
@@ -310,7 +310,7 @@ public class GalleryActivity extends AppCompatActivity {
             toggleOptions(false);
 
             //Delete items
-            Library.deleteItems(GalleryActivity.this, getSelectedItems());
+            Library.deleteItems(AlbumActivity.this, getSelectedItems());
         });
 
         optionsTrash.setOnClickListener(view -> {
@@ -318,7 +318,7 @@ public class GalleryActivity extends AppCompatActivity {
             toggleOptions(false);
 
             //Move items to trash
-            Library.trashItems(GalleryActivity.this, getSelectedItems());
+            Library.trashItems(AlbumActivity.this, getSelectedItems());
         });
 
         optionsRestoreAll.setOnClickListener(view -> {
@@ -326,7 +326,7 @@ public class GalleryActivity extends AppCompatActivity {
             toggleOptions(false);
 
             //Restore all items
-            Library.restoreItems(GalleryActivity.this, currentAlbum.items.toArray(new TurboItem[0]));
+            Library.restoreItems(AlbumActivity.this, currentAlbum.items.toArray(new CoonItem[0]));
         });
 
         optionsDeleteAll.setOnClickListener(view -> {
@@ -334,7 +334,7 @@ public class GalleryActivity extends AppCompatActivity {
             toggleOptions(false);
 
             //Delete all items
-            Library.deleteItems(GalleryActivity.this, currentAlbum.items.toArray(new TurboItem[0]));
+            Library.deleteItems(AlbumActivity.this, currentAlbum.items.toArray(new CoonItem[0]));
         });
 
         optionsShare.setOnClickListener(view -> {
@@ -342,7 +342,7 @@ public class GalleryActivity extends AppCompatActivity {
             toggleOptions(false);
 
             //Share
-            Library.shareItems(GalleryActivity.this, getSelectedItems());
+            Library.shareItems(AlbumActivity.this, getSelectedItems());
         });
 
         optionsEdit.setOnClickListener(view -> {
@@ -353,7 +353,7 @@ public class GalleryActivity extends AppCompatActivity {
             if (selectedItems.size() != 1) return;
 
             //Edit
-            Library.editItem(GalleryActivity.this, Library.gallery.get(selectedItems.iterator().next()));
+            Library.editItem(AlbumActivity.this, Library.gallery.get(selectedItems.iterator().next()));
         });
 
         optionsMove.setOnClickListener(view -> {
@@ -361,13 +361,21 @@ public class GalleryActivity extends AppCompatActivity {
             toggleOptions(false);
 
             //Move items
-            Library.moveItems(GalleryActivity.this, getSelectedItems());
+            Library.moveItems(AlbumActivity.this, getSelectedItems());
         });
 
-        //Gallery
+        optionsCopy.setOnClickListener(view -> {
+            //Close options menu
+            toggleOptions(false);
+
+            //Copy items
+            Library.copyItems(AlbumActivity.this, getSelectedItems());
+        });
+
+        //List
         refreshLayout.setOnRefreshListener(() -> {
             //Reload library
-            Library.loadLibrary(GalleryActivity.this, false); //Soft refresh to look for new files
+            Library.loadLibrary(AlbumActivity.this, false); //Soft refresh to look for new files
 
             //Stop refreshing
             refreshLayout.setRefreshing(false);
@@ -379,8 +387,8 @@ public class GalleryActivity extends AppCompatActivity {
                 //Get search text
                 String search = searchInput.getText().toString();
 
-                //Filter gallery with search
-                filterGallery(search, true);
+                //Filter items with search
+                filterItems(search, true);
             }
             return false;
         });
@@ -402,13 +410,13 @@ public class GalleryActivity extends AppCompatActivity {
         if (!action.failed.isEmpty()) {
             if (action.failed.size() == 1) {
                 //Only 1 failed -> Show error
-                Orion.snack(GalleryActivity.this, action.failed.entrySet().iterator().next().getValue());
+                Orion.snack(AlbumActivity.this, action.failed.entrySet().iterator().next().getValue());
             } else if (!action.allFailed()) {
                 //More than 1 failed -> Show general error
-                Orion.snack(GalleryActivity.this, "Failed to perform " + action.failed.size() + " actions");
+                Orion.snack(AlbumActivity.this, "Failed to perform " + action.failed.size() + " actions");
             } else {
                 //All failed -> Show general error
-                Orion.snack(GalleryActivity.this, "Failed to perform all actions");
+                Orion.snack(AlbumActivity.this, "Failed to perform all actions");
                 return;
             }
         }
@@ -430,7 +438,7 @@ public class GalleryActivity extends AppCompatActivity {
         if (selectedItems.isEmpty()) unselectAll();
     }
 
-    //Gallery
+    //Album
     private int getHorizontalItemCount() {
         boolean isHorizontal = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
         DisplayMetrics metrics = getResources().getDisplayMetrics();
@@ -451,14 +459,14 @@ public class GalleryActivity extends AppCompatActivity {
     private void initAdapters() {
         //Create layout manager
         layoutManager = new GridLayoutManager(
-                GalleryActivity.this,
+                AlbumActivity.this,
                 getHorizontalItemCount()
         );
         list.setLayoutManager(layoutManager);
 
         //Create adapter
-        adapter = new GalleryAdapter(
-                GalleryActivity.this,
+        adapter = new AlbumAdapter(
+                AlbumActivity.this,
                 Library.gallery,
                 selectedItems,
                 Storage.getBool("Settings.showMissingMetadataIcon", false)
@@ -476,7 +484,7 @@ public class GalleryActivity extends AppCompatActivity {
                 toggleSelected(index);
             } else {
                 //Not selecting -> Open display
-                Intent intent = new Intent(GalleryActivity.this, DisplayActivity.class);
+                Intent intent = new Intent(AlbumActivity.this, DisplayActivity.class);
                 intent.putExtra("index", index);
                 startActivity(intent);
             }
@@ -499,7 +507,7 @@ public class GalleryActivity extends AppCompatActivity {
             //Load metadata
             Library.loadMetadata(loadingIndicator, album);
 
-            //Update gallery
+            //Update items
             runOnUiThread(() -> {
                 //Update album list
                 adapter.notifyDataSetChanged();
@@ -511,7 +519,7 @@ public class GalleryActivity extends AppCompatActivity {
         }).start();
     }
 
-    private void filterGallery(String filterText, boolean scrollToTop) {
+    private void filterItems(String filterText, boolean scrollToTop) {
         //Ignore case
         String filter = filterText.toLowerCase();
 
@@ -533,7 +541,7 @@ public class GalleryActivity extends AppCompatActivity {
 
         //Update back manager
         if (isFiltering)
-            backManager.register("search", this::filterGallery);
+            backManager.register("search", this::filterItems);
         else
             backManager.unregister("search");
 
@@ -545,7 +553,7 @@ public class GalleryActivity extends AppCompatActivity {
             //Filter library gallery list
             Library.filterGallery(filter, currentAlbum);
 
-            //Update gallery
+            //Update items
             runOnUiThread(() -> {
                 //Update adapter
                 adapter.notifyDataSetChanged();
@@ -561,7 +569,7 @@ public class GalleryActivity extends AppCompatActivity {
         }).start();
     }
 
-    private void filterGallery() { filterGallery("", false); }
+    private void filterItems() { filterItems("", false); }
 
     private void selectAlbum(Album album) {
         //Select album
@@ -571,12 +579,12 @@ public class GalleryActivity extends AppCompatActivity {
         inTrash = (album == Library.trash);
         navbarOptions.setVisibility(inTrash ? View.VISIBLE : View.GONE);
 
-        //Change gallery title
+        //Change navbar title
         navbarTitle.setText(album.getName());
 
         //Load album
         loadMetadata(album);
-        filterGallery();
+        filterItems();
     }
 
     //Selections
@@ -609,7 +617,7 @@ public class GalleryActivity extends AppCompatActivity {
         }
         adapter.notifyItemChanged(index);
 
-        //Update gallery title
+        //Update navbar title
         navbarTitle.setText(currentAlbum.getName() + (selectedItems.isEmpty() ? "" : " (" + selectedItems.size() + " selected)"));
     }
 
@@ -627,7 +635,7 @@ public class GalleryActivity extends AppCompatActivity {
             for (Integer index: temp) adapter.notifyItemChanged(index);
         }
 
-        //Update gallery title
+        //Update navbar title
         navbarTitle.setText(currentAlbum.getName());
     }
 
@@ -643,14 +651,14 @@ public class GalleryActivity extends AppCompatActivity {
             //Focus text & show keyboard
             searchInput.requestFocus();
             searchInput.selectAll();
-            Orion.showKeyboard(GalleryActivity.this);
+            Orion.showKeyboard(AlbumActivity.this);
 
             //Back button
             backManager.register("searchMenu", () -> showSearchLayout(false));
         } else {
             //Close keyboard
-            Orion.hideKeyboard(GalleryActivity.this);
-            Orion.clearFocus(GalleryActivity.this);
+            Orion.hideKeyboard(AlbumActivity.this);
+            Orion.clearFocus(AlbumActivity.this);
 
             //Toggle search
             Orion.hideAnim(searchLayout, 50, () -> Orion.showAnim(navbarLayout, 50));
@@ -661,10 +669,10 @@ public class GalleryActivity extends AppCompatActivity {
     }
 
     //Options
-    private TurboItem[] getSelectedItems() {
-        ArrayList<TurboItem> selectedFiles = new ArrayList<>(selectedItems.size());
+    private CoonItem[] getSelectedItems() {
+        ArrayList<CoonItem> selectedFiles = new ArrayList<>(selectedItems.size());
         for (int index: selectedItems) selectedFiles.add(Library.gallery.get(index));
-        return selectedFiles.toArray(new TurboItem[0]);
+        return selectedFiles.toArray(new CoonItem[0]);
     }
 
     private void toggleOptions(boolean show) {
@@ -685,10 +693,10 @@ public class GalleryActivity extends AppCompatActivity {
 
             //Show
             Orion.showAnim(optionsLayout);
-            backManager.register("galleryOptions", () -> toggleOptions(false));
+            backManager.register("options", () -> toggleOptions(false));
         } else {
             Orion.hideAnim(optionsLayout);
-            backManager.unregister("galleryOptions");
+            backManager.unregister("options");
         }
     }
 

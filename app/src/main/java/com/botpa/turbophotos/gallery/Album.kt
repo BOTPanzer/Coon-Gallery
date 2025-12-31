@@ -1,8 +1,8 @@
-package com.botpa.turbophotos.util
+package com.botpa.turbophotos.gallery
 
+import com.botpa.turbophotos.util.Orion
 import com.fasterxml.jackson.databind.node.ObjectNode
 import java.io.File
-import java.util.Collections
 
 class Album(val name: String, val imagesFolder: File?, var metadataFile: File?) {
 
@@ -10,7 +10,7 @@ class Album(val name: String, val imagesFolder: File?, var metadataFile: File?) 
 
     //Album info
     @JvmField var metadata: ObjectNode? = null
-    @JvmField val items: ArrayList<TurboItem> = ArrayList()
+    @JvmField val items: ArrayList<CoonItem> = ArrayList()
     var lastModified: Long = if (imagesFolder == null) 0 else imagesFolder.lastModified()
     val imagesPath: String = if (imagesFolder == null) "" else imagesFolder.absolutePath
     val metadataPath: String = if (metadataFile == null) "" else metadataFile!!.absolutePath
@@ -43,26 +43,26 @@ class Album(val name: String, val imagesFolder: File?, var metadataFile: File?) 
         return items.isNotEmpty()
     }
 
-    fun get(index: Int): TurboItem {
+    fun get(index: Int): CoonItem {
         return items[index]
     }
 
-    fun add(item: TurboItem) {
+    fun add(item: CoonItem) {
         items.add(item)
     }
 
-    fun addSorted(item: TurboItem): Int {
+    fun addSorted(item: CoonItem): Int {
         val index = items.binarySearch(item)
         val insertionPoint = if (index < 0) -(index + 1) else index
         items.add(insertionPoint, item)
         return index
     }
 
-    fun remove(index: Int): TurboItem {
+    fun remove(index: Int): CoonItem {
         return items.removeAt(index)
     }
 
-    fun indexOf(item: TurboItem): Int {
+    fun indexOf(item: CoonItem): Int {
         return items.indexOf(item)
     }
 

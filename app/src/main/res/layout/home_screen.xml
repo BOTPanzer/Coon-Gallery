@@ -9,7 +9,7 @@
     tools:context=".home.HomeActivity">
 
     <LinearLayout
-        android:id="@+id/homeContent"
+        android:id="@+id/content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
@@ -37,7 +37,7 @@
     </LinearLayout>
 
     <RelativeLayout
-        android:id="@+id/homeLayout"
+        android:id="@+id/layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 

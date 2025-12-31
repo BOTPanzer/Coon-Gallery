@@ -1,32 +1,33 @@
-package com.botpa.turbophotos.util
+package com.botpa.turbophotos.gallery
 
 import java.util.Arrays
 
 class Action(
     private val type: Int,
-    @JvmField val items: Array<TurboItem>
+    @JvmField val items: Array<CoonItem>
 ) {
 
     //Static
     companion object {
 
         //Actions
-        const val TYPE_NONE: Int = 0
-        const val TYPE_DELETE: Int = 1
-        const val TYPE_TRASH: Int = 2
-        const val TYPE_RESTORE: Int = 3
-        const val TYPE_MOVE: Int = 4
+        const val TYPE_NONE: Int =      0
+        const val TYPE_DELETE: Int =    1
+        const val TYPE_TRASH: Int =     2
+        const val TYPE_RESTORE: Int =   3
+        const val TYPE_MOVE: Int =      4
+        const val TYPE_COPY: Int =      5
 
         //Trash changes
-        const val TRASH_NONE: Int = 0
-        const val TRASH_ADDED: Int = 1
-        const val TRASH_REMOVED: Int = 2
-        const val TRASH_UPDATED: Int = 3
+        const val TRASH_NONE: Int =     0
+        const val TRASH_ADDED: Int =    1
+        const val TRASH_REMOVED: Int =  2
+        const val TRASH_UPDATED: Int =  3
 
     }
 
     //Failed messages
-    @JvmField var failed: HashMap<TurboItem, String> = HashMap()
+    @JvmField var failed: HashMap<CoonItem, String> = HashMap()
 
     //Results
     @JvmField var trashChanges: Int = TRASH_NONE
@@ -39,17 +40,17 @@ class Action(
     //Constructor
     init {
         //Get item gallery indexes
-        val indexesInGallery: MutableMap<TurboItem?, Int> = HashMap()
+        val indexesInGallery: MutableMap<CoonItem?, Int> = HashMap()
         for (item in items) indexesInGallery[item] = Library.gallery.indexOf(item)
 
         //Sort items based on their indexes
-        Arrays.sort<TurboItem?>(items, Comparator { a: TurboItem?, b: TurboItem? ->
+        Arrays.sort<CoonItem?>(items, Comparator { a: CoonItem?, b: CoonItem? ->
             indexesInGallery.getOrDefault(b, -1).compareTo(indexesInGallery.getOrDefault(a, -1))
         })
     }
 
     //Action
-    fun getHelper(file: TurboItem): ActionHelper {
+    fun getHelper(file: CoonItem): ActionHelper {
         return ActionHelper(file)
     }
 

@@ -31,11 +31,11 @@ import android.Manifest;
 import android.widget.LinearLayout;
 
 import com.botpa.turbophotos.backup.BackupActivity;
-import com.botpa.turbophotos.gallery.GalleryActivity;
+import com.botpa.turbophotos.album.AlbumActivity;
 import com.botpa.turbophotos.settings.SettingsActivity;
-import com.botpa.turbophotos.util.Action;
-import com.botpa.turbophotos.util.Album;
-import com.botpa.turbophotos.util.Library;
+import com.botpa.turbophotos.gallery.Action;
+import com.botpa.turbophotos.gallery.Album;
+import com.botpa.turbophotos.gallery.Library;
 import com.botpa.turbophotos.R;
 import com.botpa.turbophotos.util.Orion;
 import com.botpa.turbophotos.util.Storage;
@@ -92,7 +92,7 @@ public class HomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.home);
+        setContentView(R.layout.home_screen);
 
         //Enable HDR
         getWindow().setColorMode(ActivityInfo.COLOR_MODE_HDR);
@@ -141,7 +141,7 @@ public class HomeActivity extends AppCompatActivity {
             return;
         }
 
-        //Gallery not loaded -> Skip next
+        //Library not loaded -> Skip next
         if (!isLoaded) return;
 
         //Update horizontal item count
@@ -285,7 +285,7 @@ public class HomeActivity extends AppCompatActivity {
 
         //Insets (keyboard & system bars)
         Orion.addInsetsChangedListener(
-                findViewById(R.id.homeContent),
+                findViewById(R.id.content),
                 new int[] {
                         WindowInsetsCompat.Type.systemBars()
                 },
@@ -295,7 +295,7 @@ public class HomeActivity extends AppCompatActivity {
                 }
         );
         Orion.addInsetsChangedListener(
-                findViewById(R.id.homeLayout),
+                findViewById(R.id.layout),
                 new int[] {
                         WindowInsetsCompat.Type.ime(),
                         WindowInsetsCompat.Type.systemBars()
@@ -339,7 +339,7 @@ public class HomeActivity extends AppCompatActivity {
             startActivity(new Intent(HomeActivity.this, BackupActivity.class));
         });
 
-        //Home
+        //List
         refreshLayout.setOnRefreshListener(() -> {
             //Reload library
             Library.loadLibrary(HomeActivity.this, true); //Fully refresh
@@ -447,8 +447,8 @@ public class HomeActivity extends AppCompatActivity {
                     0, 0 //Starting size
             );
 
-            //Open gallery
-            Intent intent = new Intent(HomeActivity.this, GalleryActivity.class);
+            //Open album
+            Intent intent = new Intent(HomeActivity.this, AlbumActivity.class);
             if (album == Library.trash) {
                 intent.putExtra("albumName", "trash");
             } else if (album == Library.all) {
