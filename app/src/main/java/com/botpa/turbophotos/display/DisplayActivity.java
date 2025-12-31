@@ -90,6 +90,7 @@ public class DisplayActivity extends AppCompatActivity {
     private View optionsTrash;
     private View optionsShare;
     private View optionsEdit;
+    private View optionsMove;
     private View optionsOpenOutside;
 
 
@@ -184,6 +185,7 @@ public class DisplayActivity extends AppCompatActivity {
         optionsTrash = findViewById(R.id.optionsTrash);
         optionsShare = findViewById(R.id.optionsShare);
         optionsEdit = findViewById(R.id.optionsEdit);
+        optionsMove = findViewById(R.id.optionsMove);
         optionsOpenOutside = findViewById(R.id.optionsOpen);
 
         //Insets (overlay)
@@ -332,6 +334,14 @@ public class DisplayActivity extends AppCompatActivity {
 
             //Edit
             Library.editItem(DisplayActivity.this, currentItem);
+        });
+
+        optionsMove.setOnClickListener(view -> {
+            //Close options menu
+            toggleOptions(false);
+
+            //Move items
+            Library.moveItems(DisplayActivity.this, new TurboItem[]{ currentItem });
         });
 
         optionsOpenOutside.setOnClickListener(view -> {
