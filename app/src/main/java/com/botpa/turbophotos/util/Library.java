@@ -1,5 +1,6 @@
 package com.botpa.turbophotos.util;
 
+import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -7,8 +8,14 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.widget.ArrayAdapter;
+import android.widget.Toast;
 
-import com.botpa.turbophotos.gallery.GalleryActivity;
+import androidx.activity.ComponentActivity;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+
+import com.botpa.turbophotos.R;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -561,10 +568,9 @@ public class Library {
         }
         message.append("?");
 
-        //Delete item & manage action
+        //Show confirmation dialog
         new MaterialAlertDialogBuilder(context)
                 .setMessage(message.toString())
-                .setIcon(android.R.drawable.ic_dialog_alert)
                 .setNegativeButton("Cancel", null)
                 .setPositiveButton("Delete", (dialog, whichButton) -> deleteItems(items))
                 .show();
@@ -728,7 +734,7 @@ public class Library {
             //Check if can move
             if (item.album == destination) {
                 //Already in the destination album
-                action.failed.put(item, "File does not need to be moved");
+                action.failed.put(item, "File is already in the destination album");
                 return;
             }
 
@@ -766,6 +772,26 @@ public class Library {
             }
             item.album = destination;
         });
+    }
+
+    public static void moveItems(Context context, TurboItem[] items) {
+        //Create albums adapter
+        MoveItemsAdapter adapter = new MoveItemsAdapter(context, albums);
+
+        //Show confirmation dialog
+        new MaterialAlertDialogBuilder(context)
+                .setTitle("Select a destination")
+                .setAdapter(adapter, (dialog, which) -> {
+                    //Move items to selected album
+                    Album destination = albums.get(which);
+                    moveItems(items, destination);
+                })
+                .setNeutralButton("Select External", (dialog, which) -> {
+                    //Select an external folder
+                    Toast.makeText(context, "Not implemented", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                .show();
     }
 
     //Util

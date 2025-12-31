@@ -361,7 +361,7 @@ public class GalleryActivity extends AppCompatActivity {
             toggleOptions(false);
 
             //Move items
-            Library.moveItems(getSelectedItems(), null);
+            Library.moveItems(GalleryActivity.this, getSelectedItems());
         });
 
         //Gallery
