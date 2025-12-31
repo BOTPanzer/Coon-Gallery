@@ -83,10 +83,12 @@ class SettingsActivity : ComponentActivity() {
         val context = LocalContext.current
         val activity = this
 
-        //App settings
-        var galleryAlbumsPerRow by remember { mutableFloatStateOf(Storage.getInt("Settings.galleryAlbumsPerRow", 2).toFloat()) }
-        var galleryImagesPerRow by remember { mutableFloatStateOf(Storage.getInt("Settings.galleryImagesPerRow", 3).toFloat()) }
-        var showMissingMetadataIcon by remember { mutableStateOf(Storage.getBool("Settings.showMissingMetadataIcon", false)) }
+        //Home settings
+        var homeItemsPerRow by remember { mutableFloatStateOf(Storage.getInt("Settings.homeItemsPerRow", 2).toFloat()) }
+
+        //Album settings
+        var albumItemsPerRow by remember { mutableFloatStateOf(Storage.getInt("Settings.albumItemsPerRow", 3).toFloat()) }
+        var albumShowMissingMetadataIcon by remember { mutableStateOf(Storage.getBool("Settings.albumShowMissingMetadataIcon", false)) }
 
         //Link item file picker actions
         var filePickerIndex by remember { mutableIntStateOf(-1) }
@@ -232,20 +234,20 @@ class SettingsActivity : ComponentActivity() {
                     .padding(it)
                     .padding(horizontal = 20.dp)
             ) {
-                //App settings
+                //Home screen
                 item {
                     //Title
                     Text(
-                        text = "App",
+                        text = "Home Screen",
                         textAlign = TextAlign.Center,
                         fontFamily = FONT_OPIFICIO,
                         fontSize = 18.sp,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 20.dp, bottom = 10.dp)
+                            .padding(bottom = 10.dp)
                     )
 
-                    //Gallery albums per row
+                    //Items per row
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
@@ -254,7 +256,7 @@ class SettingsActivity : ComponentActivity() {
                     ) {
                         //Name
                         Text(
-                            text = "Gallery albums per row (${galleryAlbumsPerRow.toInt()})",
+                            text = "Items per row · ${homeItemsPerRow.toInt()}",
                             fontSize = 14.sp,
                             modifier = Modifier
                                 .weight(1.5f)
@@ -262,17 +264,31 @@ class SettingsActivity : ComponentActivity() {
 
                         //Value
                         Slider(
-                            value = galleryAlbumsPerRow,
-                            onValueChange = { newValue -> galleryAlbumsPerRow = newValue },
-                            onValueChangeFinished = { Storage.putInt("Settings.galleryAlbumsPerRow", galleryAlbumsPerRow.toInt()) },
-                            valueRange = 2f..4f,
-                            steps = 1,
+                            value = homeItemsPerRow,
+                            onValueChange = { newValue -> homeItemsPerRow = newValue },
+                            onValueChangeFinished = { Storage.putInt("Settings.homeItemsPerRow", homeItemsPerRow.toInt()) },
+                            valueRange = 1f..5f,
+                            steps = 3,
                             modifier = Modifier
                                 .weight(1f)
                         )
                     }
+                }
 
-                    //Gallery images per row
+                //Albums screen
+                item {
+                    //Title
+                    Text(
+                        text = "Album Screen",
+                        textAlign = TextAlign.Center,
+                        fontFamily = FONT_OPIFICIO,
+                        fontSize = 18.sp,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 30.dp, bottom = 10.dp)
+                    )
+
+                    //Items per row
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
@@ -281,7 +297,7 @@ class SettingsActivity : ComponentActivity() {
                     ) {
                         //Name
                         Text(
-                            text = "Gallery images per row (${galleryImagesPerRow.toInt()})",
+                            text = "Items per row · ${albumItemsPerRow.toInt()}",
                             fontSize = 14.sp,
                             modifier = Modifier
                                 .weight(1.5f)
@@ -289,11 +305,11 @@ class SettingsActivity : ComponentActivity() {
 
                         //Value
                         Slider(
-                            value = galleryImagesPerRow,
-                            onValueChange = { newValue -> galleryImagesPerRow = newValue },
-                            onValueChangeFinished = { Storage.putInt("Settings.galleryImagesPerRow", galleryImagesPerRow.toInt()) },
-                            valueRange = 2f..4f,
-                            steps = 1,
+                            value = albumItemsPerRow,
+                            onValueChange = { newValue -> albumItemsPerRow = newValue },
+                            onValueChangeFinished = { Storage.putInt("Settings.albumItemsPerRow", albumItemsPerRow.toInt()) },
+                            valueRange = 1f..5f,
+                            steps = 3,
                             modifier = Modifier
                                 .weight(1f)
                         )
@@ -316,10 +332,10 @@ class SettingsActivity : ComponentActivity() {
 
                         //Value
                         Switch(
-                            checked = showMissingMetadataIcon,
+                            checked = albumShowMissingMetadataIcon,
                             onCheckedChange = { isChecked ->
-                                showMissingMetadataIcon = isChecked
-                                Storage.putBool("Settings.showMissingMetadataIcon", isChecked)
+                                albumShowMissingMetadataIcon = isChecked
+                                Storage.putBool("Settings.albumShowMissingMetadataIcon", isChecked)
                             }
                         )
                     }
@@ -335,7 +351,7 @@ class SettingsActivity : ComponentActivity() {
                         fontSize = 18.sp,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 20.dp)
+                            .padding(top = 30.dp)
                     )
 
                     //Description
@@ -356,7 +372,7 @@ class SettingsActivity : ComponentActivity() {
                             .padding(top = 5.dp)
                     )
                     Text(
-                        text = "To change where an album and its metadata are located, click the \"album folder\" or \"metadata file\" icons.",
+                        text = "To change where an album and its metadata are located, click on their respective icons.",
                         textAlign = TextAlign.Center,
                         fontSize = 14.sp,
                         modifier = Modifier

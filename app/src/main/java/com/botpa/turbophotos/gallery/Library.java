@@ -438,7 +438,7 @@ public class Library {
         onAction.remove(listener);
     }
 
-    //Actions (modify items)
+    //Actions (base)
     private static void performAction(int type, CoonItem[] items, BiConsumer<Action, CoonItem> onPerformAction) {
         //Create action
         Action action = new Action(type, items);
@@ -505,174 +505,17 @@ public class Library {
         }
     }
 
-    public static void restoreItems(Context context, CoonItem[] items) {
-        performAction(Action.TYPE_RESTORE, items, (action, item) -> {
-            //Not in trash
-            if (!item.isTrashed()) {
-                action.failed.put(item, "Item is not trashed");
-                return;
-            }
+    //Actions (modify items)
+    public static void editItem(Context context, CoonItem item) {
+        //Get mime type and URI
+        String mimeType = item.mimeType;
+        Uri uri = Orion.getMediaStoreUriFromFile(context, item.file, mimeType);
 
-            //Get trash info
-            TrashInfo trashInfo = item.trashInfo;
-            if (trashInfo == null) {
-                action.failed.put(item, "Invalid trash info");
-                return;
-            }
-
-            //Move item file to original folder
-            if (!Orion.cloneFile(context, item.file, trashInfo.originalFile)) {
-                action.failed.put(item, "Could not clone trash file to original path");
-                return;
-            }
-            Orion.deleteFile(item.file);
-
-            //Update item
-            item.file = trashInfo.originalFile;
-            item.trashInfo = null;
-
-            //Get action helper
-            ActionHelper helper = action.getHelper(item);
-
-            //Check if item is in trash
-            if (helper.indexInTrash != -1) {
-                //Is present -> Remove it
-                removeTrashItem(helper.indexInTrash);
-                action.trashChanges = trash.isEmpty() ? Action.TRASH_REMOVED : Action.TRASH_UPDATED;
-            }
-
-            //Add item to all items
-            all.addSorted(item);
-            action.sortedAlbums.add(all);
-
-            //Remove from gallery items list
-            performRemoveFromGallery(helper, action);
-
-            //Add item to album
-            item.album.addSorted(item);
-            action.sortedAlbums.add(item.album);
-            helper.indexInAlbum = item.album.indexOf(item);
-
-            //Check album state
-            if (helper.indexInAlbum == 0) {
-                //Item is the first in the album -> Check if the album is in albums list
-                if (helper.indexOfAlbum == -1) {
-                    //Album is missing -> Add it to albums list
-                    addAlbum(item.album);
-                }
-
-                //Sort albums list in case the order changed
-                action.sortedAlbumsList = true;
-            }
-        });
-    }
-
-    private static void deleteItemsInternal(CoonItem[] items) {
-        performAction(Action.TYPE_DELETE, items, (action, item) -> {
-            //Delete item file
-            if (!Orion.deleteFile(item.file)) {
-                //Failed to delete file
-                action.failed.put(item, "Error while deleting a file");
-                return;
-            }
-
-            //Get album & action helper
-            Album album = item.album;
-            ActionHelper helper = action.getHelper(item);
-
-            //Delete item metadata from album
-            if (album.hasMetadataKey(item.name)) {
-                album.removeMetadataKey(item.name);
-                album.saveMetadata();
-            }
-
-            //Check if item is in trash
-            if (helper.indexInTrash != -1) {
-                //Is present -> Remove it
-                removeTrashItem(helper.indexInTrash);
-                action.trashChanges = trash.isEmpty() ? Action.TRASH_REMOVED : Action.TRASH_UPDATED;
-
-                //Check to finish removing album
-                if (helper.indexOfAlbum == -1 && !trashAlbumsMap.containsKey(item.album)) {
-                    //Album not used in albums list nor in trash items -> Finish removing it completely
-                    albumsMap.remove(album.getImagesPath());
-                }
-            }
-
-            //Remove from all items list
-            performRemoveFromAll(helper);
-
-            //Remove from gallery items list
-            performRemoveFromGallery(helper, action);
-
-            //Remove from album items list
-            performRemoveFromAlbum(helper, action);
-        });
-    }
-
-    public static void deleteItems(Context context, CoonItem[] items) {
-        //Create message
-        StringBuilder message = new StringBuilder();
-        message.append("Are you sure you want to permanently delete ");
-        if (items.length == 1) {
-            message.append("\"");
-            message.append(items[0].name);
-            message.append("\"");
-        } else {
-            message.append(items.length);
-            message.append(" items");
-        }
-        message.append("?");
-
-        //Show confirmation dialog
-        new MaterialAlertDialogBuilder(context)
-                .setMessage(message.toString())
-                .setNegativeButton("Cancel", null)
-                .setPositiveButton("Delete", (dialog, whichButton) -> deleteItemsInternal(items))
-                .show();
-    }
-
-    public static void trashItems(Context context, CoonItem[] items) {
-        performAction(Action.TYPE_TRASH, items, (action, item) -> {
-            //Already in trash
-            if (item.isTrashed()) {
-                action.failed.put(item, "Item is already trashed");
-                return;
-            }
-
-            //Create trash info
-            TrashInfo trashInfo = new TrashInfo(item.file.getAbsolutePath(), trashFolder.getAbsolutePath() + item.file.getPath(), item.isVideo);
-
-            //Move item file to trash folder
-            if (!Orion.cloneFile(context, item.file, trashInfo.trashFile)) {
-                action.failed.put(item, "Could not clone original file to trash path");
-                return;
-            }
-            Orion.deleteFile(item.file);
-
-            //Update item
-            item.file = trashInfo.trashFile;
-            item.trashInfo = trashInfo;
-
-            //Add item to trash album
-            addTrashItem(item);
-            if (action.trashChanges == Action.TRASH_NONE) {
-                //First change to trash this action -> Check if trash was added to list or just updated
-                action.trashChanges = trash.size() == 1 ? Action.TRASH_ADDED : Action.TRASH_UPDATED;
-            }
-
-            //Get action helper
-            ActionHelper helper = action.getHelper(item);
-
-            //Remove from all items list
-            performRemoveFromAll(helper);
-
-            //Remove from gallery items list
-            performRemoveFromGallery(helper, action);
-
-            //Remove from album items list
-            performRemoveFromAlbum(helper, action);
-        });
+        //Edit
+        Intent intent = new Intent(Intent.ACTION_EDIT);
+        intent.setDataAndType(uri, mimeType);
+        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        context.startActivity(Intent.createChooser(intent, null));
     }
 
     public static void shareItems(Context context, CoonItem[] items) {
@@ -694,18 +537,6 @@ public class Library {
             intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, URIs);
             intent.setType("*/*");
         }
-        context.startActivity(Intent.createChooser(intent, null));
-    }
-
-    public static void editItem(Context context, CoonItem item) {
-        //Get mime type and URI
-        String mimeType = item.mimeType;
-        Uri uri = Orion.getMediaStoreUriFromFile(context, item.file, mimeType);
-
-        //Edit
-        Intent intent = new Intent(Intent.ACTION_EDIT);
-        intent.setDataAndType(uri, mimeType);
-        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
         context.startActivity(Intent.createChooser(intent, null));
     }
 
@@ -859,6 +690,176 @@ public class Library {
                     Toast.makeText(context, "Not implemented", Toast.LENGTH_SHORT).show();
                 })
                 .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                .show();
+    }
+
+    public static void trashItems(Context context, CoonItem[] items) {
+        performAction(Action.TYPE_TRASH, items, (action, item) -> {
+            //Already in trash
+            if (item.isTrashed()) {
+                action.failed.put(item, "Item is already trashed");
+                return;
+            }
+
+            //Create trash info
+            TrashInfo trashInfo = new TrashInfo(item.file.getAbsolutePath(), trashFolder.getAbsolutePath() + item.file.getPath(), item.isVideo);
+
+            //Move item file to trash folder
+            if (!Orion.cloneFile(context, item.file, trashInfo.trashFile)) {
+                action.failed.put(item, "Could not clone original file to trash path");
+                return;
+            }
+            Orion.deleteFile(item.file);
+
+            //Update item
+            item.file = trashInfo.trashFile;
+            item.trashInfo = trashInfo;
+
+            //Add item to trash album
+            addTrashItem(item);
+            if (action.trashChanges == Action.TRASH_NONE) {
+                //First change to trash this action -> Check if trash was added to list or just updated
+                action.trashChanges = trash.size() == 1 ? Action.TRASH_ADDED : Action.TRASH_UPDATED;
+            }
+
+            //Get action helper
+            ActionHelper helper = action.getHelper(item);
+
+            //Remove from all items list
+            performRemoveFromAll(helper);
+
+            //Remove from gallery items list
+            performRemoveFromGallery(helper, action);
+
+            //Remove from album items list
+            performRemoveFromAlbum(helper, action);
+        });
+    }
+
+    public static void restoreItems(Context context, CoonItem[] items) {
+        performAction(Action.TYPE_RESTORE, items, (action, item) -> {
+            //Not in trash
+            if (!item.isTrashed()) {
+                action.failed.put(item, "Item is not trashed");
+                return;
+            }
+
+            //Get trash info
+            TrashInfo trashInfo = item.trashInfo;
+            if (trashInfo == null) {
+                action.failed.put(item, "Invalid trash info");
+                return;
+            }
+
+            //Move item file to original folder
+            if (!Orion.cloneFile(context, item.file, trashInfo.originalFile)) {
+                action.failed.put(item, "Could not clone trash file to original path");
+                return;
+            }
+            Orion.deleteFile(item.file);
+
+            //Update item
+            item.file = trashInfo.originalFile;
+            item.trashInfo = null;
+
+            //Get action helper
+            ActionHelper helper = action.getHelper(item);
+
+            //Check if item is in trash
+            if (helper.indexInTrash != -1) {
+                //Is present -> Remove it
+                removeTrashItem(helper.indexInTrash);
+                action.trashChanges = trash.isEmpty() ? Action.TRASH_REMOVED : Action.TRASH_UPDATED;
+            }
+
+            //Add item to all items
+            all.addSorted(item);
+            action.sortedAlbums.add(all);
+
+            //Remove from gallery items list
+            performRemoveFromGallery(helper, action);
+
+            //Add item to album
+            item.album.addSorted(item);
+            action.sortedAlbums.add(item.album);
+            helper.indexInAlbum = item.album.indexOf(item);
+
+            //Check album state
+            if (helper.indexInAlbum == 0) {
+                //Item is the first in the album -> Check if the album is in albums list
+                if (helper.indexOfAlbum == -1) {
+                    //Album is missing -> Add it to albums list
+                    addAlbum(item.album);
+                }
+
+                //Sort albums list in case the order changed
+                action.sortedAlbumsList = true;
+            }
+        });
+    }
+
+    private static void deleteItemsInternal(CoonItem[] items) {
+        performAction(Action.TYPE_DELETE, items, (action, item) -> {
+            //Delete item file
+            if (!Orion.deleteFile(item.file)) {
+                //Failed to delete file
+                action.failed.put(item, "Error while deleting a file");
+                return;
+            }
+
+            //Get album & action helper
+            Album album = item.album;
+            ActionHelper helper = action.getHelper(item);
+
+            //Delete item metadata from album
+            if (album.hasMetadataKey(item.name)) {
+                album.removeMetadataKey(item.name);
+                album.saveMetadata();
+            }
+
+            //Check if item is in trash
+            if (helper.indexInTrash != -1) {
+                //Is present -> Remove it
+                removeTrashItem(helper.indexInTrash);
+                action.trashChanges = trash.isEmpty() ? Action.TRASH_REMOVED : Action.TRASH_UPDATED;
+
+                //Check to finish removing album
+                if (helper.indexOfAlbum == -1 && !trashAlbumsMap.containsKey(item.album)) {
+                    //Album not used in albums list nor in trash items -> Finish removing it completely
+                    albumsMap.remove(album.getImagesPath());
+                }
+            }
+
+            //Remove from all items list
+            performRemoveFromAll(helper);
+
+            //Remove from gallery items list
+            performRemoveFromGallery(helper, action);
+
+            //Remove from album items list
+            performRemoveFromAlbum(helper, action);
+        });
+    }
+
+    public static void deleteItems(Context context, CoonItem[] items) {
+        //Create message
+        StringBuilder message = new StringBuilder();
+        message.append("Are you sure you want to permanently delete ");
+        if (items.length == 1) {
+            message.append("\"");
+            message.append(items[0].name);
+            message.append("\"");
+        } else {
+            message.append(items.length);
+            message.append(" items");
+        }
+        message.append("?");
+
+        //Show confirmation dialog
+        new MaterialAlertDialogBuilder(context)
+                .setMessage(message.toString())
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("Delete", (dialog, whichButton) -> deleteItemsInternal(items))
                 .show();
     }
 

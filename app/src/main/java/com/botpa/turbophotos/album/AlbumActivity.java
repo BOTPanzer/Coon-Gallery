@@ -68,15 +68,15 @@ public class AlbumActivity extends AppCompatActivity {
 
     //Views (options)
     private View optionsLayout;
+    private View optionsEdit;
+    private View optionsShare;
+    private View optionsMove;
+    private View optionsCopy;
+    private View optionsTrash;
     private View optionsRestore;
     private View optionsRestoreAll;
     private View optionsDelete;
     private View optionsDeleteAll;
-    private View optionsTrash;
-    private View optionsShare;
-    private View optionsEdit;
-    private View optionsMove;
-    private View optionsCopy;
 
     //Views (list)
     private SwipeRefreshLayout refreshLayout;
@@ -297,54 +297,6 @@ public class AlbumActivity extends AppCompatActivity {
         //Options
         optionsLayout.setOnClickListener(view -> toggleOptions(false));
 
-        optionsRestore.setOnClickListener(view -> {
-            //Close options menu
-            toggleOptions(false);
-
-            //Restore items from trash
-            Library.restoreItems(AlbumActivity.this, getSelectedItems());
-        });
-
-        optionsDelete.setOnClickListener(view -> {
-            //Close options menu
-            toggleOptions(false);
-
-            //Delete items
-            Library.deleteItems(AlbumActivity.this, getSelectedItems());
-        });
-
-        optionsTrash.setOnClickListener(view -> {
-            //Close options menu
-            toggleOptions(false);
-
-            //Move items to trash
-            Library.trashItems(AlbumActivity.this, getSelectedItems());
-        });
-
-        optionsRestoreAll.setOnClickListener(view -> {
-            //Close options menu
-            toggleOptions(false);
-
-            //Restore all items
-            Library.restoreItems(AlbumActivity.this, currentAlbum.items.toArray(new CoonItem[0]));
-        });
-
-        optionsDeleteAll.setOnClickListener(view -> {
-            //Close options menu
-            toggleOptions(false);
-
-            //Delete all items
-            Library.deleteItems(AlbumActivity.this, currentAlbum.items.toArray(new CoonItem[0]));
-        });
-
-        optionsShare.setOnClickListener(view -> {
-            //Close options menu
-            toggleOptions(false);
-
-            //Share
-            Library.shareItems(AlbumActivity.this, getSelectedItems());
-        });
-
         optionsEdit.setOnClickListener(view -> {
             //Close options menu
             toggleOptions(false);
@@ -354,6 +306,14 @@ public class AlbumActivity extends AppCompatActivity {
 
             //Edit
             Library.editItem(AlbumActivity.this, Library.gallery.get(selectedItems.iterator().next()));
+        });
+
+        optionsShare.setOnClickListener(view -> {
+            //Close options menu
+            toggleOptions(false);
+
+            //Share
+            Library.shareItems(AlbumActivity.this, getSelectedItems());
         });
 
         optionsMove.setOnClickListener(view -> {
@@ -370,6 +330,46 @@ public class AlbumActivity extends AppCompatActivity {
 
             //Copy items
             Library.copyItems(AlbumActivity.this, getSelectedItems());
+        });
+
+        optionsTrash.setOnClickListener(view -> {
+            //Close options menu
+            toggleOptions(false);
+
+            //Move items to trash
+            Library.trashItems(AlbumActivity.this, getSelectedItems());
+        });
+
+        optionsRestore.setOnClickListener(view -> {
+            //Close options menu
+            toggleOptions(false);
+
+            //Restore items from trash
+            Library.restoreItems(AlbumActivity.this, getSelectedItems());
+        });
+
+        optionsRestoreAll.setOnClickListener(view -> {
+            //Close options menu
+            toggleOptions(false);
+
+            //Restore all items
+            Library.restoreItems(AlbumActivity.this, currentAlbum.items.toArray(new CoonItem[0]));
+        });
+
+        optionsDelete.setOnClickListener(view -> {
+            //Close options menu
+            toggleOptions(false);
+
+            //Delete items
+            Library.deleteItems(AlbumActivity.this, getSelectedItems());
+        });
+
+        optionsDeleteAll.setOnClickListener(view -> {
+            //Close options menu
+            toggleOptions(false);
+
+            //Delete all items
+            Library.deleteItems(AlbumActivity.this, currentAlbum.items.toArray(new CoonItem[0]));
         });
 
         //List
@@ -445,7 +445,7 @@ public class AlbumActivity extends AppCompatActivity {
         float ratio = ((float) metrics.widthPixels / (float) metrics.heightPixels);
 
         //Get size for portrait
-        int size = Storage.getInt("Settings.galleryImagesPerRow", 3);
+        int size = Storage.getInt("Settings.albumItemsPerRow", 3);
 
         //Return size for current orientation
         return isHorizontal ? (int) (size * ratio) : size;
@@ -469,7 +469,7 @@ public class AlbumActivity extends AppCompatActivity {
                 AlbumActivity.this,
                 Library.gallery,
                 selectedItems,
-                Storage.getBool("Settings.showMissingMetadataIcon", false)
+                Storage.getBool("Settings.albumShowMissingMetadataIcon", false)
         );
         list.setAdapter(adapter);
 
@@ -682,14 +682,15 @@ public class AlbumActivity extends AppCompatActivity {
             boolean isSelectingSingle = selectedItems.size() == 1;
 
             //Toggle buttons
+            optionsEdit.setVisibility(isSelectingSingle && !inTrash ? View.VISIBLE : View.GONE);
+            optionsShare.setVisibility(isSelecting && !inTrash ? View.VISIBLE : View.GONE);
+            optionsMove.setVisibility(isSelecting && !inTrash ? View.VISIBLE : View.GONE);
+            optionsCopy.setVisibility(isSelecting && !inTrash ? View.VISIBLE : View.GONE);
+            optionsTrash.setVisibility(isSelecting && !inTrash ? View.VISIBLE : View.GONE);
             optionsRestore.setVisibility(isSelecting && inTrash ? View.VISIBLE : View.GONE);
             optionsRestoreAll.setVisibility(!isSelecting && inTrash ? View.VISIBLE : View.GONE);
             optionsDelete.setVisibility(isSelecting ? View.VISIBLE : View.GONE);
             optionsDeleteAll.setVisibility(!isSelecting && inTrash ? View.VISIBLE : View.GONE);
-            optionsTrash.setVisibility(isSelecting && !inTrash ? View.VISIBLE : View.GONE);
-            optionsShare.setVisibility(isSelecting && !inTrash ? View.VISIBLE : View.GONE);
-            optionsEdit.setVisibility(isSelectingSingle && !inTrash ? View.VISIBLE : View.GONE);
-            optionsMove.setVisibility(isSelecting && !inTrash ? View.VISIBLE : View.GONE);
 
             //Show
             Orion.showAnim(optionsLayout);

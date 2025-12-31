@@ -83,14 +83,14 @@ public class DisplayActivity extends AppCompatActivity {
 
     //Views (options)
     private View optionsLayout;
-    private View optionsRestore;
-    private View optionsDelete;
-    private View optionsTrash;
-    private View optionsShare;
     private View optionsEdit;
+    private View optionsShare;
     private View optionsMove;
     private View optionsCopy;
     private View optionsOpenOutside;
+    private View optionsTrash;
+    private View optionsRestore;
+    private View optionsDelete;
 
 
     //Activity
@@ -297,28 +297,12 @@ public class DisplayActivity extends AppCompatActivity {
 
         optionsLayout.setOnClickListener(view -> toggleOptions(false));
 
-        optionsRestore.setOnClickListener(view -> {
+        optionsEdit.setOnClickListener(view -> {
             //Close options menu
             toggleOptions(false);
 
-            //Restore from trash
-            Library.restoreItems(DisplayActivity.this, new CoonItem[] { currentItem });
-        });
-
-        optionsDelete.setOnClickListener(view -> {
-            //Close options menu
-            toggleOptions(false);
-
-            //Delete items
-            Library.deleteItems(DisplayActivity.this, new CoonItem[] { currentItem });
-        });
-
-        optionsTrash.setOnClickListener(view -> {
-            //Close options menu
-            toggleOptions(false);
-
-            //Move to trash
-            Library.trashItems(DisplayActivity.this, new CoonItem[] { currentItem });
+            //Edit
+            Library.editItem(DisplayActivity.this, currentItem);
         });
 
         optionsShare.setOnClickListener(view -> {
@@ -327,14 +311,6 @@ public class DisplayActivity extends AppCompatActivity {
 
             //Share
             Library.shareItems(DisplayActivity.this, new CoonItem[]{ currentItem });
-        });
-
-        optionsEdit.setOnClickListener(view -> {
-            //Close options menu
-            toggleOptions(false);
-
-            //Edit
-            Library.editItem(DisplayActivity.this, currentItem);
         });
 
         optionsMove.setOnClickListener(view -> {
@@ -361,6 +337,30 @@ public class DisplayActivity extends AppCompatActivity {
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setDataAndType(Uri.parse(currentItem.file.getAbsolutePath()), currentItem.mimeType);
             startActivity(intent);
+        });
+
+        optionsTrash.setOnClickListener(view -> {
+            //Close options menu
+            toggleOptions(false);
+
+            //Move to trash
+            Library.trashItems(DisplayActivity.this, new CoonItem[] { currentItem });
+        });
+
+        optionsRestore.setOnClickListener(view -> {
+            //Close options menu
+            toggleOptions(false);
+
+            //Restore from trash
+            Library.restoreItems(DisplayActivity.this, new CoonItem[] { currentItem });
+        });
+
+        optionsDelete.setOnClickListener(view -> {
+            //Close options menu
+            toggleOptions(false);
+
+            //Delete items
+            Library.deleteItems(DisplayActivity.this, new CoonItem[] { currentItem });
         });
     }
 

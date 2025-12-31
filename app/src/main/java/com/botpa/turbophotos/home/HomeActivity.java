@@ -419,7 +419,7 @@ public class HomeActivity extends AppCompatActivity {
         float ratio = ((float) metrics.widthPixels / (float) metrics.heightPixels);
 
         //Get size for portrait
-        int size = Storage.getInt("Settings.galleryAlbumsPerRow", 2);
+        int size = Storage.getInt("Settings.homeItemsPerRow", 2);
 
         //Return size for current orientation
         return isHorizontal ? (int) (size * ratio) : size;
