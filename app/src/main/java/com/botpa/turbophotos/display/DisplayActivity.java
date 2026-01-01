@@ -369,21 +369,6 @@ public class DisplayActivity extends AppCompatActivity {
         //No action
         if (action.isOfType(Action.TYPE_NONE)) return;
 
-        //Failed actions
-        if (!action.failed.isEmpty()) {
-            if (action.failed.size() == 1) {
-                //Only 1 failed -> Show error
-                Orion.snack(DisplayActivity.this, action.failed.entrySet().iterator().next().getValue());
-            } else if (!action.allFailed()) {
-                //More than 1 failed -> Show general error
-                Orion.snack(DisplayActivity.this, "Failed to perform " + action.failed.size() + " actions");
-            } else {
-                //All failed -> Show general error
-                Orion.snack(DisplayActivity.this, "Failed to perform all actions");
-                return;
-            }
-        }
-
         //Check if gallery is empty
         if (Library.gallery.isEmpty()) {
             //Is empty -> Close display
@@ -495,7 +480,7 @@ public class DisplayActivity extends AppCompatActivity {
         overlayName.setText(currentItem.name);
 
         //Prepare options menu
-        boolean isTrashed = currentItem.isTrashed();
+        boolean isTrashed = currentItem.hasTrashInfo();
         optionsRestore.setVisibility(isTrashed ? View.VISIBLE : View.GONE);
         optionsShare.setVisibility(isTrashed ? View.GONE : View.VISIBLE);
         optionsTrash.setVisibility(isTrashed ? View.GONE : View.VISIBLE);

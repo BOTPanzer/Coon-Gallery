@@ -5,8 +5,8 @@ import java.io.File
 class TrashInfo(private val originalPath: String, private val trashPath: String, val isVideo: Boolean) {
 
     //Files
-    @JvmField var originalFile: File = File(originalPath)
-    @JvmField var trashFile: File = File(trashPath)
+    @JvmField val originalFile: File = File(originalPath)
+    @JvmField val trashFile: File = File(trashPath)
 
 
     //Override toString to be able to save trash info in a string

@@ -23,7 +23,7 @@ class HomeAdapter(private val context: Context, private val albums: ArrayList<Al
 
     override fun onBindViewHolder(holder: AlbumHolder, i: Int) {
         //Get holder position & album
-        val position = holder.bindingAdapterPosition - getIndexOffset()
+        val position = holder.bindingAdapterPosition - getPositionOffset()
         val album = getAlbumFromIndex(position)
 
         //Load album cover
@@ -42,20 +42,24 @@ class HomeAdapter(private val context: Context, private val albums: ArrayList<Al
     }
 
     override fun getItemCount(): Int {
-        return albums.size + getIndexOffset()
+        return albums.size + getPositionOffset()
     }
 
     //Helpers
-    fun getIndexOffset(): Int {
-        return if (Library.trash.isEmpty()) 1 else 2
-    }
-
-    fun getAlbumFromIndex(index: Int): Album {
+    private fun getAlbumFromIndex(index: Int): Album {
         return when (index) {
             -2 -> Library.trash
             -1 -> Library.all
             else -> albums[index]
         }
+    }
+
+    private fun getPositionOffset(): Int {
+        return if (Library.trash.isEmpty()) 1 else 2
+    }
+
+    fun getPositionFromIndex(index: Int): Int {
+        return index + getPositionOffset()
     }
 
     fun getIndexFromAlbum(album: Album): Int {

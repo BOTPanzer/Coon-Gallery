@@ -406,21 +406,6 @@ public class AlbumActivity extends AppCompatActivity {
         //No action
         if (action.isOfType(Action.TYPE_NONE)) return;
 
-        //Failed actions
-        if (!action.failed.isEmpty()) {
-            if (action.failed.size() == 1) {
-                //Only 1 failed -> Show error
-                Orion.snack(AlbumActivity.this, action.failed.entrySet().iterator().next().getValue());
-            } else if (!action.allFailed()) {
-                //More than 1 failed -> Show general error
-                Orion.snack(AlbumActivity.this, "Failed to perform " + action.failed.size() + " actions");
-            } else {
-                //All failed -> Show general error
-                Orion.snack(AlbumActivity.this, "Failed to perform all actions");
-                return;
-            }
-        }
-
         //Check if gallery is empty
         if (Library.gallery.isEmpty()) {
             //Is empty -> Close display
@@ -428,7 +413,7 @@ public class AlbumActivity extends AppCompatActivity {
             return;
         }
 
-        //Not empty -> Remove selected items & update adapter
+        //Remove selected items & update adapter
         for (int indexInGallery : action.removedIndexesInGallery) {
             selectedItems.remove(indexInGallery);
             adapter.notifyItemRemoved(indexInGallery);

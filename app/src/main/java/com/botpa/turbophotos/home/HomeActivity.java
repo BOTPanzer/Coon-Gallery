@@ -29,6 +29,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.Manifest;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import com.botpa.turbophotos.backup.BackupActivity;
 import com.botpa.turbophotos.album.AlbumActivity;
@@ -359,20 +360,11 @@ public class HomeActivity extends AppCompatActivity {
         //No action
         if (action.isOfType(Action.TYPE_NONE)) return;
 
-        //Failed actions
-        if (!action.failed.isEmpty()) {
-            if (action.failed.size() == 1) {
-                //Only 1 failed -> Show error
-                Orion.snack(HomeActivity.this, action.failed.entrySet().iterator().next().getValue());
-            } else if (!action.allFailed()) {
-                //More than 1 failed -> Show general error
-                Orion.snack(HomeActivity.this, "Failed to perform " + action.failed.size() + " actions");
-            } else {
-                //All failed -> Show general error
-                Orion.snack(HomeActivity.this, "Failed to perform all actions");
-                return;
-            }
-        }
+
+
+        Toast.makeText(HomeActivity.this, "list: " + Library.albums.size() + ", map: " + Library.albumsMap.size(), Toast.LENGTH_SHORT).show();
+
+
 
         //Check if albums list was changed
         if (action.sortedAlbumsList) {
@@ -380,7 +372,7 @@ public class HomeActivity extends AppCompatActivity {
             adapter.notifyDataSetChanged();
         } else {
             //Check if trash was added, removed or updated
-            switch (action.trashChanges) {
+            switch (action.trashAction) {
                 case Action.TRASH_ADDED:
                     adapter.notifyItemInserted(0);
                     break;
@@ -392,21 +384,25 @@ public class HomeActivity extends AppCompatActivity {
                     break;
             }
 
-            //Check if albums were deleted or sorted
-            if (!action.deletedAlbums.isEmpty()) {
+            //Check if albums were deleted
+            if (!action.removedIndexesInAlbums.isEmpty()) {
                 //Albums were deleted -> Notify items removed
-                for (Album album : action.deletedAlbums) {
-                    int position = adapter.getIndexFromAlbum(album) + adapter.getIndexOffset(); //albumIndex + adapterIndexOffset
-                    adapter.notifyItemRemoved(position);
+                for (int albumIndex : action.removedIndexesInAlbums) {
+                    //Notify position removed
+                    adapter.notifyItemRemoved(adapter.getPositionFromIndex(albumIndex));
                 }
             }
 
             //Check if albums were sorted
-            if (!action.sortedAlbums.isEmpty()) {
-                //Sorted albums -> Notify items removed
-                for (Album album : action.sortedAlbums) {
-                    int position = adapter.getIndexFromAlbum(album) + adapter.getIndexOffset(); //albumIndex + adapterIndexOffset
-                    adapter.notifyItemChanged(position);
+            if (!action.updatedAlbums.isEmpty()) {
+                //Albums were sorted -> Notify items changed
+                for (Album album : action.updatedAlbums) {
+                    //Get album index
+                    int albumIndex = adapter.getIndexFromAlbum(album);
+                    if (albumIndex < 0 && !album.isEspecial()) continue;
+
+                    //Notify position changed
+                    adapter.notifyItemChanged(adapter.getPositionFromIndex(albumIndex));
                 }
             }
         }

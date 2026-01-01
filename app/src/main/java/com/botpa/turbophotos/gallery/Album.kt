@@ -11,6 +11,9 @@ class Album(val name: String, val imagesFolder: File?, var metadataFile: File?) 
     //Album info
     @JvmField var metadata: ObjectNode? = null
     @JvmField val items: ArrayList<CoonItem> = ArrayList()
+
+    val isEspecial: Boolean = imagesFolder == null
+
     var lastModified: Long = if (imagesFolder == null) 0 else imagesFolder.lastModified()
     val imagesPath: String = if (imagesFolder == null) "" else imagesFolder.absolutePath
     val metadataPath: String = if (metadataFile == null) "" else metadataFile!!.absolutePath
@@ -52,9 +55,9 @@ class Album(val name: String, val imagesFolder: File?, var metadataFile: File?) 
     }
 
     fun addSorted(item: CoonItem): Int {
-        val index = items.binarySearch(item)
-        val insertionPoint = if (index < 0) -(index + 1) else index
-        items.add(insertionPoint, item)
+        val searchResult = items.binarySearch(item, reverseOrder())
+        val index = if (searchResult < 0) -searchResult - 1 else searchResult
+        items.add(index, item)
         return index
     }
 

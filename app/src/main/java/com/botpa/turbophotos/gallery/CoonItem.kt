@@ -30,7 +30,7 @@ class CoonItem(
         return album.hasMetadataKey(name)
     }
 
-    fun isTrashed(): Boolean {
+    fun hasTrashInfo(): Boolean {
         return trashInfo != null
     }
 

@@ -13,11 +13,11 @@ import com.botpa.turbophotos.R;
 
 import java.util.List;
 
-public class AlbumSelectionAdapter extends ArrayAdapter<Album> {
+public class DialogAlbumsAdapter extends ArrayAdapter<Album> {
 
     private final int layout;
 
-    public AlbumSelectionAdapter(Context context, List<Album> albums, int layout) {
+    public DialogAlbumsAdapter(Context context, List<Album> albums, int layout) {
         super(context, 0, albums);
         this.layout = layout;
     }
