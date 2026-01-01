@@ -360,12 +360,6 @@ public class HomeActivity extends AppCompatActivity {
         //No action
         if (action.isOfType(Action.TYPE_NONE)) return;
 
-
-
-        Toast.makeText(HomeActivity.this, "list: " + Library.albums.size() + ", map: " + Library.albumsMap.size(), Toast.LENGTH_SHORT).show();
-
-
-
         //Check if albums list was changed
         if (action.sortedAlbumsList) {
             //Sorted albums list -> Notify all

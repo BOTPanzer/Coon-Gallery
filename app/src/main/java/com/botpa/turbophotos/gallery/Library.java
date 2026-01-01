@@ -90,7 +90,7 @@ public class Library {
                 MediaStore.Files.FileColumns.DATE_ADDED + " > ? AND (" + MediaStore.Files.FileColumns.MEDIA_TYPE + "= ? OR " + MediaStore.Files.FileColumns.MEDIA_TYPE + "= ?)",
                 //Selection args
                 new String[] {
-                        String.valueOf(lastUpdate),
+                        String.valueOf(lastUpdate), //To check recently added items
                         String.valueOf(MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE),
                         String.valueOf(MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO),
                 },
@@ -805,6 +805,9 @@ public class Library {
                 action.trashAction = trash.isEmpty() ? Action.TRASH_REMOVED : Action.TRASH_UPDATED;
             }
 
+            //Remove from gallery items list
+            performRemoveFromGallery(helper, action);
+
             //Get original album
             Album album = getOrCreateAlbumFromItemFile(trashInfo.originalFile);
 
@@ -816,9 +819,6 @@ public class Library {
             //Add to all items list
             helper.indexInAll = all.addSorted(item);
             action.updatedAlbums.add(all);
-
-            //Remove from gallery items list
-            performRemoveFromGallery(helper, action);
 
             //Add to album
             helper.indexInAlbum = item.album.addSorted(item);

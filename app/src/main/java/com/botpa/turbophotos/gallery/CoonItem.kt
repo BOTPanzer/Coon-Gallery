@@ -14,7 +14,7 @@ import java.io.File
 class CoonItem(
     @JvmField var file: File,               //The file in storage
     @JvmField var album: Album,             //The album of the item
-    @JvmField var lastModified: Long,       //Timestamp of the last time the file was modified
+    @JvmField var lastModified: Long,       //Timestamp of the last time the file was modified (in seconds)
     @JvmField var size: Long,               //The size of the file in bytes
     @JvmField var isVideo: Boolean,         //If the item is a video
     @JvmField var trashInfo: TrashInfo?,    //Info about the item in the trash
