@@ -378,7 +378,7 @@ public class AlbumActivity extends GalleryActivity {
         //List
         refreshLayout.setOnRefreshListener(() -> {
             //Reload library
-            Library.loadLibrary(AlbumActivity.this, false); //Soft refresh to look for new files
+            Library.loadLibrary(AlbumActivity.this, false); //Soft refresh to ONLY look for new files
 
             //Stop refreshing
             refreshLayout.setRefreshing(false);
@@ -401,8 +401,14 @@ public class AlbumActivity extends GalleryActivity {
 
     //Events
     private void manageRefresh(boolean updated) {
+        //Nothing updated
+        if (!updated) return;
+
+        //Unselect all
+        unselectAll();
+
         //Refresh list
-        if (updated) selectAlbum(currentAlbum);
+        selectAlbum(currentAlbum);
     }
 
     private void manageAction(Action action) {

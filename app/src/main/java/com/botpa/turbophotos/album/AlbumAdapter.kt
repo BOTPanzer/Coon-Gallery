@@ -5,13 +5,19 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.gallery.CoonItem
 import com.google.android.material.card.MaterialCardView
 
-class AlbumAdapter(private val context: Context, private val items: ArrayList<CoonItem>, private val selected: HashSet<Int>, var showMissingMetadataIcon: Boolean) : RecyclerView.Adapter<AlbumAdapter.GalleryHolder>() {
+class AlbumAdapter(
+    private val context: Context,
+    private val items: ArrayList<CoonItem>,
+    private val selected: HashSet<Int>,
+    var showMissingMetadataIcon: Boolean
+) : RecyclerView.Adapter<AlbumAdapter.GalleryHolder>() {
 
     //Adapter
     override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): GalleryHolder {
@@ -32,8 +38,16 @@ class AlbumAdapter(private val context: Context, private val items: ArrayList<Co
         holder.isVideo.visibility = if (item.isVideo) View.VISIBLE else View.GONE
         holder.missingInfo.visibility = if (!showMissingMetadataIcon || item.album.hasMetadataKey(item.name)) View.GONE else View.VISIBLE
 
-        //Toggle selected border
-        holder.imageCard.strokeColor = if (selected.contains(position)) Orion.getColor(context, com.google.android.material.R.attr.colorOnSurface) else 0x00000000
+        //Toggle is selected
+        if (selected.contains(position)) {
+            holder.isSelected.visibility = View.VISIBLE
+            holder.imageCard.scaleX = 0.8f
+            holder.imageCard.scaleY = 0.8f
+        } else {
+            holder.isSelected.visibility = View.GONE
+            holder.imageCard.scaleX = 1.0f
+            holder.imageCard.scaleY = 1.0f
+        }
 
         //Add click listeners
         holder.background.setOnClickListener { view: View ->
@@ -77,6 +91,7 @@ class AlbumAdapter(private val context: Context, private val items: ArrayList<Co
         var image: ImageView = view.findViewById(R.id.image)
         var isVideo: View = view.findViewById(R.id.isVideo)
         var missingInfo: View = view.findViewById(R.id.missingInfo)
+        var isSelected: View = view.findViewById(R.id.isSelected)
 
     }
 

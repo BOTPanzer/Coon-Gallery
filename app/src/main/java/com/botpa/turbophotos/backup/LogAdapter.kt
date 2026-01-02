@@ -8,7 +8,10 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 
-class LogAdapter(private val context: Context, private val logs: List<String>) : RecyclerView.Adapter<LogAdapter.LogHolder>() {
+class LogAdapter(
+    private val context: Context,
+    private val logs: List<String>
+) : RecyclerView.Adapter<LogAdapter.LogHolder>() {
 
     //Adapter
     override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): LogHolder {

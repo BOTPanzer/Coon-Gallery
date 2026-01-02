@@ -8,7 +8,10 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 
-class UserAdapter(private val context: Context, private val users: List<User>) : RecyclerView.Adapter<UserAdapter.AlbumHolder>() {
+class UserAdapter(
+    private val context: Context,
+    private val users: List<User>
+) : RecyclerView.Adapter<UserAdapter.AlbumHolder>() {
 
     //Adapter
     override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): AlbumHolder {

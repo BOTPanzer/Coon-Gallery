@@ -9,7 +9,10 @@ import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.CoonItem
 import com.bumptech.glide.Glide
 
-class DisplayAdapter(private val context: Context, private val images: ArrayList<CoonItem>) : RecyclerView.Adapter<DisplayAdapter.DisplayHolder>() {
+class DisplayAdapter(
+    private val context: Context,
+    private val images: ArrayList<CoonItem>
+) : RecyclerView.Adapter<DisplayAdapter.DisplayHolder>() {
 
     //Adapter
     override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): DisplayHolder {
