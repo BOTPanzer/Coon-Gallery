@@ -24,6 +24,7 @@ import androidx.recyclerview.widget.SnapHelper;
 
 import com.botpa.turbophotos.R;
 import com.botpa.turbophotos.gallery.Action;
+import com.botpa.turbophotos.gallery.GalleryActivity;
 import com.botpa.turbophotos.util.BackManager;
 import com.botpa.turbophotos.gallery.Library;
 import com.botpa.turbophotos.util.Orion;
@@ -37,7 +38,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
-public class DisplayActivity extends AppCompatActivity {
+public class DisplayActivity extends GalleryActivity {
 
     //Activity
     private BackManager backManager;
@@ -179,14 +180,14 @@ public class DisplayActivity extends AppCompatActivity {
 
         //Views (options)
         optionsLayout = findViewById(R.id.optionsLayout);
-        optionsRestore = findViewById(R.id.optionsRestore);
-        optionsDelete = findViewById(R.id.optionsDelete);
-        optionsTrash = findViewById(R.id.optionsTrash);
-        optionsShare = findViewById(R.id.optionsShare);
         optionsEdit = findViewById(R.id.optionsEdit);
+        optionsShare = findViewById(R.id.optionsShare);
         optionsMove = findViewById(R.id.optionsMove);
         optionsCopy = findViewById(R.id.optionsCopy);
         optionsOpenOutside = findViewById(R.id.optionsOpen);
+        optionsTrash = findViewById(R.id.optionsTrash);
+        optionsRestore = findViewById(R.id.optionsRestore);
+        optionsDelete = findViewById(R.id.optionsDelete);
 
 
         //Insets (overlay)
@@ -344,7 +345,7 @@ public class DisplayActivity extends AppCompatActivity {
             toggleOptions(false);
 
             //Move to trash
-            Library.trashItems(DisplayActivity.this, new CoonItem[] { currentItem });
+            trashItems(new CoonItem[] { currentItem });
         });
 
         optionsRestore.setOnClickListener(view -> {
@@ -352,7 +353,7 @@ public class DisplayActivity extends AppCompatActivity {
             toggleOptions(false);
 
             //Restore from trash
-            Library.restoreItems(DisplayActivity.this, new CoonItem[] { currentItem });
+            restoreItems(new CoonItem[] { currentItem });
         });
 
         optionsDelete.setOnClickListener(view -> {
@@ -480,12 +481,14 @@ public class DisplayActivity extends AppCompatActivity {
         overlayName.setText(currentItem.name);
 
         //Prepare options menu
-        boolean isTrashed = currentItem.hasTrashInfo();
-        optionsRestore.setVisibility(isTrashed ? View.VISIBLE : View.GONE);
-        optionsShare.setVisibility(isTrashed ? View.GONE : View.VISIBLE);
-        optionsTrash.setVisibility(isTrashed ? View.GONE : View.VISIBLE);
+        boolean isTrashed = currentItem.isTrashed;
         optionsEdit.setVisibility(isTrashed ? View.GONE : View.VISIBLE);
+        optionsShare.setVisibility(isTrashed ? View.GONE : View.VISIBLE);
+        optionsMove.setVisibility(isTrashed ? View.GONE : View.VISIBLE);
+        optionsCopy.setVisibility(isTrashed ? View.GONE : View.VISIBLE);
         optionsOpenOutside.setVisibility(isTrashed ? View.GONE : View.VISIBLE);
+        optionsTrash.setVisibility(isTrashed ? View.GONE : View.VISIBLE);
+        optionsRestore.setVisibility(isTrashed ? View.VISIBLE : View.GONE);
 
         //Create date text
         Date date = new Date(currentItem.lastModified * 1000);

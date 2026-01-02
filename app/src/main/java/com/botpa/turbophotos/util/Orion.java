@@ -7,7 +7,6 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.ContentResolver;
 import android.content.ContentUris;
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -15,6 +14,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
@@ -31,7 +31,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import androidx.core.content.FileProvider;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 
@@ -51,9 +50,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
@@ -82,15 +79,15 @@ public class Orion {
     }
 
     //Snack bar
-    public static void snack(Activity activity, String msg) {
-        snack(activity, msg, "ok", null);
+    public static void snack(Activity activity, String message) {
+        snack(activity, message, "ok", null);
     }
 
-    public static void snack(Activity activity, String msg, String btn) {
-        snack(activity, msg, btn, null);
+    public static void snack(Activity activity, String message, String button) {
+        snack(activity, message, button, null);
     }
 
-    public static void snack(Activity activity, String msg, String btn, Runnable runnable) {
+    public static void snack(Activity activity, String message, String button, Runnable runnable) {
         LinearLayout.LayoutParams objLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         View rootView = activity.getWindow().getDecorView().findViewById(android.R.id.content);
         final Snackbar snackbar = Snackbar.make(rootView, "nepe", Snackbar.LENGTH_LONG);
@@ -104,10 +101,10 @@ public class Orion {
         View snackView = inflater.inflate(R.layout.snackbar_one, null);
 
         TextView snackText = snackView.findViewById(R.id.textView);
-        snackText.setText(msg);
+        snackText.setText(message);
 
         TextView textViewOne = snackView.findViewById(R.id.txtOne);
-        textViewOne.setText(btn.toUpperCase());
+        textViewOne.setText(button.toUpperCase());
         textViewOne.setOnClickListener(view -> {
             if (runnable != null) runnable.run();
             snackbar.dismiss();
@@ -117,7 +114,7 @@ public class Orion {
         snackbar.show();
     }
 
-    public static void snack2(Activity activity, String msg, String btnCancel, String btnConfirm, Runnable runnable) {
+    public static void snackTwo(Activity activity, String message, String cancel, String confirm, Runnable runnable) {
         LinearLayout.LayoutParams objLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         View rootView = activity.getWindow().getDecorView().findViewById(android.R.id.content);
         final Snackbar snackbar = Snackbar.make(rootView, "nepe", Snackbar.LENGTH_LONG);
@@ -131,14 +128,14 @@ public class Orion {
         View snackView = inflater.inflate(R.layout.snackbar_two, null);
 
         TextView snackText = snackView.findViewById(R.id.textView);
-        snackText.setText(msg);
+        snackText.setText(message);
 
         TextView textViewOne = snackView.findViewById(R.id.txtOne);
-        textViewOne.setText(btnCancel.toUpperCase());
+        textViewOne.setText(cancel.toUpperCase());
         textViewOne.setOnClickListener(view -> snackbar.dismiss());
 
         TextView textViewTwo = snackView.findViewById(R.id.txtTwo);
-        textViewTwo.setText(btnConfirm.toUpperCase());
+        textViewTwo.setText(confirm.toUpperCase());
         textViewTwo.setOnClickListener(view -> {
             runnable.run();
             snackbar.dismiss();
@@ -148,11 +145,11 @@ public class Orion {
         snackbar.show();
     }
 
-    public static void snack2(Activity activity, String msg, String btn1, Runnable runnable1, String btn2, Runnable runnable2) {
-        snack2(activity, msg, btn1, runnable1, btn2, runnable2, Snackbar.LENGTH_LONG);
+    public static void snackTwo(Activity activity, String message, String button1, Runnable runnable1, String button2, Runnable runnable2) {
+        snackTwo(activity, message, button1, runnable1, button2, runnable2, Snackbar.LENGTH_LONG);
     }
 
-    public static void snack2(Activity activity, String msg, String btn1, Runnable runnable1, String btn2, Runnable runnable2, int length) {
+    public static void snackTwo(Activity activity, String message, String button1, Runnable runnable1, String button2, Runnable runnable2, int length) {
         LinearLayout.LayoutParams objLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         View rootView = activity.getWindow().getDecorView().findViewById(android.R.id.content);
         final Snackbar snackbar = Snackbar.make(rootView, "nepe", length);
@@ -166,17 +163,17 @@ public class Orion {
         View snackView = inflater.inflate(R.layout.snackbar_two, null);
 
         TextView snackText = snackView.findViewById(R.id.textView);
-        snackText.setText(msg);
+        snackText.setText(message);
 
         TextView textViewOne = snackView.findViewById(R.id.txtOne);
-        textViewOne.setText(btn1.toUpperCase());
+        textViewOne.setText(button1.toUpperCase());
         textViewOne.setOnClickListener(view -> {
             runnable1.run();
             snackbar.dismiss();
         });
 
         TextView textViewTwo = snackView.findViewById(R.id.txtTwo);
-        textViewTwo.setText(btn2.toUpperCase());
+        textViewTwo.setText(button2.toUpperCase());
         textViewTwo.setOnClickListener(view -> {
             runnable2.run();
             snackbar.dismiss();
@@ -524,34 +521,6 @@ public class Orion {
         return sb.toString();
     }
 
-    /*public static String readFile(File file) {
-        StringBuilder sb = new StringBuilder();
-        Reader reader = null;
-
-        try {
-            reader = new BufferedReader(new InputStreamReader(Files.newInputStream(file.toPath())));
-
-            char[] buff = new char[1024];
-            int length;
-
-            while ((length = reader.read(buff)) > 0) {
-                sb.append(new String(buff, 0, length));
-            }
-        } catch (IOException e) {
-            String message = e.getMessage();
-            if (message != null) Log.e("Read file", message);
-        } finally {
-            try {
-                if (reader != null) reader.close();
-            } catch (Exception e) {
-                String message = e.getMessage();
-                if (message != null) Log.e("Read file (2)", message);
-            }
-        }
-
-        return sb.toString();
-    }*/
-
     public static boolean writeFile(File file, String data) {
         Writer writer = null;
         boolean success = true;
@@ -701,16 +670,69 @@ public class Orion {
     }
 
     //Files: directories
-    public static String getAppDir() {
-        return Environment.getExternalStorageDirectory().getAbsolutePath() + "/OrionAssistant/";
-    }
-
     public static String getExternalStorageDir() {
         return Environment.getExternalStorageDirectory().getAbsolutePath() + "/";
     }
 
     //Files: URIs
-    public static String convertUriToFilePath(final Context context, final Uri uri) {
+    public static Uri getUriFromPath(Context context, String filePath) {
+        //Build query args
+        Bundle queryArgs = new Bundle();
+        queryArgs.putString(ContentResolver.QUERY_ARG_SQL_SELECTION, MediaStore.Images.Media.DATA + "=? ");
+        queryArgs.putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, new String[] { filePath });
+        queryArgs.putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_INCLUDE);
+
+        //Create cursor
+        try (Cursor cursor = context.getContentResolver().query(
+                MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL),
+                new String[] { MediaStore.Images.Media._ID },
+                queryArgs,
+                null
+        )) {
+            //Search
+            if (cursor != null && cursor.moveToFirst()) {
+                int id = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID));
+                return Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, String.valueOf(id));
+            }
+        } catch (Exception e) {
+            //Error
+            Log.e("Orion.getUriFromPath", "Error querying for URI: " + e.getMessage());
+        }
+
+        //Failed
+        return null;
+    }
+
+    public static String getPathFromUri(Context context, Uri uri) {
+        //Build query args
+        Bundle queryArgs = new Bundle();
+        queryArgs.putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_INCLUDE);
+
+        //Data column (file path)
+        final String column = MediaStore.MediaColumns.DATA;
+
+        //Create cursor
+        try (Cursor cursor = context.getContentResolver().query(
+                uri,
+                new String[] { column },
+                queryArgs,
+                null
+        )) {
+            //Search
+            if (cursor != null && cursor.moveToFirst()) {
+                final int columnIndex = cursor.getColumnIndexOrThrow(column);
+                return cursor.getString(columnIndex);
+            }
+        } catch (Exception e) {
+            //Error
+            Log.e("Orion.getPathFromUri", "Error querying for path: " + e.getMessage());
+        }
+
+        //Failed
+        return null;
+    }
+
+    public static String getPathFromUri_DocumentProvider(Context context, Uri uri) {
         String path = null;
 
         //IDK, I copied this lol
@@ -785,46 +807,6 @@ public class Orion {
 
         //All failed
         return null;
-    }
-
-    public static Uri getUriFromFile(final Context context, final File file) {
-        return FileProvider.getUriForFile(context, "com.botpa.turbophotos.FileProvider", file);
-    }
-
-    public static Uri getMediaStoreUriFromFile(final Context context, final File file, final String mimeType) {
-        //Get content resolver & the URI for all the files in MediaStore
-        ContentResolver resolver = context.getContentResolver();
-        Uri externalUri = MediaStore.Files.getContentUri("external");
-
-        //Find our file in the MediaStore using its absolute path
-        String[] projection = {MediaStore.Files.FileColumns._ID};
-        String selection = MediaStore.Files.FileColumns.DATA + "=?";
-        String[] selectionArgs = new String[]{ file.getAbsolutePath() };
-
-        Uri uri = null;
-
-        try (Cursor cursor = resolver.query(
-                externalUri,
-                projection,
-                selection,
-                selectionArgs,
-                null)) {
-
-            if (cursor != null && cursor.moveToFirst()) {
-                long id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns._ID));
-                uri = Uri.withAppendedPath(externalUri, "" + id);
-            }
-        }
-
-        if (uri == null) {
-            ContentValues values = new ContentValues();
-            values.put(MediaStore.Files.FileColumns.DATA, file.getAbsolutePath());
-            values.put(MediaStore.Files.FileColumns.MIME_TYPE, mimeType);
-
-            uri = resolver.insert(externalUri, values);
-        }
-
-        return uri;
     }
 
     private static String getDataColumn(Context context, Uri uri, String selection, String[] selectionArgs) {

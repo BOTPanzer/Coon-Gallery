@@ -68,17 +68,6 @@
         <receiver
             android:name=".backup.BackupService$NotificationDeleteReceiver"
             android:exported="false"/>
-
-        <!-- Providers -->
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="com.botpa.turbophotos.FileProvider"
-            android:grantUriPermissions="true"
-            android:exported="false">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/provider_paths"/>
-        </provider>
     </application>
 
 </manifest>

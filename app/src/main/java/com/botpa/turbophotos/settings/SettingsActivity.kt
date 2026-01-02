@@ -99,8 +99,8 @@ class SettingsActivity : ComponentActivity() {
 
             //Parse result
             try {
-                // Parse file path from URI
-                val path = Orion.convertUriToFilePath(context, result.data!!.data)
+                //Parse file path from URI
+                val path = Orion.getPathFromUri_DocumentProvider(context, result.data!!.data)
                 if (path == null) throw Exception("Path was null")
                 val file = File(path)
 
@@ -169,13 +169,13 @@ class SettingsActivity : ComponentActivity() {
             { index, link ->
                 //Check if album folder exists
                 if (!link.albumFolder.exists()) {
-                    Toast.makeText(this@SettingsActivity, "Add album folder first", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this@SettingsActivity, "Add an album folder first", Toast.LENGTH_SHORT).show()
                 } else {
                     //Save link index
                     filePickerIndex = index
 
                     //Check action
-                    Orion.snack2(
+                    Orion.snackTwo(
                         this@SettingsActivity,
                         "Do you have an already created metadata file?",
                         "Select",
@@ -190,7 +190,7 @@ class SettingsActivity : ComponentActivity() {
                         "Create",
                         {
                             if (!Link.links[index].albumFolder.exists()) {
-                                Toast.makeText(this@SettingsActivity, "Please select an album folder first", Toast.LENGTH_LONG).show()
+                                Toast.makeText(this@SettingsActivity, "Add an album folder first", Toast.LENGTH_SHORT).show()
                             } else {
                                 Toast.makeText(this@SettingsActivity,"Select a folder to create the album metadata file", Toast.LENGTH_LONG).show()
                                 filePickerAction = PickerAction.CreateFile

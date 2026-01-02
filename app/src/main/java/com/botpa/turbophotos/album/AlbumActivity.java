@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -22,6 +23,7 @@ import com.botpa.turbophotos.R;
 import com.botpa.turbophotos.display.DisplayActivity;
 import com.botpa.turbophotos.gallery.Action;
 import com.botpa.turbophotos.gallery.Album;
+import com.botpa.turbophotos.gallery.GalleryActivity;
 import com.botpa.turbophotos.util.BackManager;
 import com.botpa.turbophotos.gallery.Library;
 import com.botpa.turbophotos.util.Orion;
@@ -34,7 +36,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-public class AlbumActivity extends AppCompatActivity {
+public class AlbumActivity extends GalleryActivity {
 
     //Activity
     private BackManager backManager;
@@ -337,7 +339,7 @@ public class AlbumActivity extends AppCompatActivity {
             toggleOptions(false);
 
             //Move items to trash
-            Library.trashItems(AlbumActivity.this, getSelectedItems());
+            trashItems(getSelectedItems());
         });
 
         optionsRestore.setOnClickListener(view -> {
@@ -345,7 +347,7 @@ public class AlbumActivity extends AppCompatActivity {
             toggleOptions(false);
 
             //Restore items from trash
-            Library.restoreItems(AlbumActivity.this, getSelectedItems());
+            restoreItems(getSelectedItems());
         });
 
         optionsRestoreAll.setOnClickListener(view -> {
@@ -353,7 +355,7 @@ public class AlbumActivity extends AppCompatActivity {
             toggleOptions(false);
 
             //Restore all items
-            Library.restoreItems(AlbumActivity.this, currentAlbum.items.toArray(new CoonItem[0]));
+            restoreItems(currentAlbum.items.toArray(new CoonItem[0]));
         });
 
         optionsDelete.setOnClickListener(view -> {

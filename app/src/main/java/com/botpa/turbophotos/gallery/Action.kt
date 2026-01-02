@@ -1,9 +1,32 @@
 package com.botpa.turbophotos.gallery
 
-class Action(
-    private val type: Int,
-    @JvmField val items: Array<CoonItem>
-) {
+import android.net.Uri
+
+class Action(val type: Int, @JvmField val items: Array<CoonItem>) {
+
+    //Errors
+    @JvmField var errors: ArrayList<ActionError> = ArrayList()
+
+    //Results (trash)
+    @JvmField var trashAction: Int = TRASH_NONE
+    @JvmField var trashPending: Map<Uri, CoonItem> = HashMap()
+
+    //Results (albums & gallery)
+    @JvmField var sortedAlbumsList: Boolean = false
+    @JvmField var updatedAlbums: HashSet<Album> = HashSet()
+    @JvmField var removedIndexesInAlbums: ArrayList<Int> = ArrayList()
+    @JvmField var removedIndexesInGallery: ArrayList<Int> = ArrayList()
+
+
+    //Action
+    fun getHelper(file: CoonItem): ActionHelper {
+        return ActionHelper(file)
+    }
+
+    fun isOfType(type: Int): Boolean {
+        return this.type == type
+    }
+
 
     //Static
     companion object {
@@ -22,30 +45,6 @@ class Action(
         const val TRASH_REMOVED:    Int = 2
         const val TRASH_UPDATED:    Int = 3
 
-    }
-
-    //Errors
-    @JvmField var errors: ArrayList<ActionError> = ArrayList()
-
-    //Results
-    @JvmField var trashAction: Int = TRASH_NONE
-    @JvmField var sortedAlbumsList: Boolean = false
-    @JvmField var updatedAlbums: HashSet<Album> = HashSet()
-    @JvmField var removedIndexesInAlbums: ArrayList<Int> = ArrayList()
-    @JvmField var removedIndexesInGallery: ArrayList<Int> = ArrayList()
-
-
-    //Action
-    fun getHelper(file: CoonItem): ActionHelper {
-        return ActionHelper(file)
-    }
-
-    fun isOfType(type: Int): Boolean {
-        return this.type == type
-    }
-
-    fun allFailed(): Boolean {
-        return errors.size == items.size
     }
 
 }

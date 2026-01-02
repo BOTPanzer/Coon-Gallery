@@ -33,6 +33,7 @@ import android.widget.Toast;
 
 import com.botpa.turbophotos.backup.BackupActivity;
 import com.botpa.turbophotos.album.AlbumActivity;
+import com.botpa.turbophotos.gallery.GalleryActivity;
 import com.botpa.turbophotos.settings.SettingsActivity;
 import com.botpa.turbophotos.gallery.Action;
 import com.botpa.turbophotos.gallery.Album;
@@ -47,7 +48,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 
 @SuppressLint({"SetTextI18n", "NotifyDataSetChanged"})
-public class HomeActivity extends AppCompatActivity {
+public class HomeActivity extends GalleryActivity {
 
     //Permissions
     private boolean permissionCheck = false;

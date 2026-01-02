@@ -17,7 +17,7 @@ class CoonItem(
     @JvmField var lastModified: Long,       //Timestamp of the last time the file was modified (in seconds)
     @JvmField var size: Long,               //The size of the file in bytes
     @JvmField var isVideo: Boolean,         //If the item is a video
-    @JvmField var trashInfo: TrashInfo?,    //Info about the item in the trash
+    @JvmField var isTrashed: Boolean,       //If the item is in the trash
 ) : Comparable<CoonItem> {
 
     //Item info
@@ -28,10 +28,6 @@ class CoonItem(
     //Helpers
     fun hasMetadata(): Boolean {
         return album.hasMetadataKey(name)
-    }
-
-    fun hasTrashInfo(): Boolean {
-        return trashInfo != null
     }
 
     override fun compareTo(other: CoonItem): Int {
