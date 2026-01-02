@@ -8,17 +8,17 @@
     android:padding="16dp">
 
     <ImageView
-        android:id="@+id/album_icon"
+        android:id="@+id/albumIcon"
         android:layout_width="24dp"
         android:layout_height="24dp"
-        android:src="@drawable/move"
+        android:src="@drawable/image"
         app:tint="?attr/colorPrimary" />
 
     <TextView
-        android:id="@+id/album_name"
+        android:id="@+id/albumName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:text="Album Name"
+        android:text="Album name"
         android:textSize="16sp" />
 </LinearLayout>

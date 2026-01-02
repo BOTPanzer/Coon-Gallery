@@ -14,8 +14,8 @@ class Action(val type: Int, @JvmField val items: Array<CoonItem>) {
     @JvmField var trashPending: Map<Uri, CoonItem> = HashMap()
 
     //Results (albums & gallery)
-    @JvmField var sortedAlbumsList: Boolean = false
-    @JvmField var updatedAlbums: HashSet<Album> = HashSet()
+    @JvmField var hasSortedAlbumsList: Boolean = false
+    @JvmField var modifiedAlbums: HashSet<Album> = HashSet()
     @JvmField var removedIndexesInAlbums: ArrayList<Int> = ArrayList()
     @JvmField var removedIndexesInGallery: ArrayList<Int> = ArrayList()
 

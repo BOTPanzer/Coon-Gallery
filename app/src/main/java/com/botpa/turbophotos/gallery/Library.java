@@ -7,20 +7,23 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.IntentSenderRequest;
+import androidx.appcompat.app.AlertDialog;
 import androidx.collection.ArrayMap;
 
-import com.botpa.turbophotos.R;
 import com.botpa.turbophotos.gallery.actions.Action;
 import com.botpa.turbophotos.gallery.actions.ActionError;
 import com.botpa.turbophotos.gallery.actions.ActionHelper;
 import com.botpa.turbophotos.gallery.dialogs.DialogAlbumsAdapter;
 import com.botpa.turbophotos.gallery.dialogs.DialogErrorsAdapter;
+import com.botpa.turbophotos.gallery.dialogs.DialogFoldersAdapter;
 import com.botpa.turbophotos.util.Orion;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -28,11 +31,15 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public class Library {
 
@@ -52,6 +59,8 @@ public class Library {
     public static final Album all = new Album("All");
 
     //Gallery
+    private static final Collection<File> recentlyAddedFiles = new HashSet<>(); //List of items recently added that should be ignored when refreshing to avoid duplicates
+
     public static final ArrayList<CoonItem> gallery = new ArrayList<>(); //Currently open album items (could be filtered or the same items)
 
 
@@ -151,11 +160,20 @@ public class Library {
 
             //Check items
             while (cursor.moveToNext()) {
+                //Get file
+                File file = new File(cursor.getString(columnData));
+
+                //Check if file is in recently added items
+                if (recentlyAddedFiles.contains(file)) {
+                    //Is in recently added items -> Remove it & continue
+                    recentlyAddedFiles.remove(file);
+                    continue;
+                }
+
                 //Get other info
                 long lastModified = cursor.getLong(columnLastModified);
                 long size = cursor.getLong(columnSize);
                 boolean isVideo = (Objects.equals(cursor.getString(columnMediaType), String.valueOf(MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO)));
-                File file = new File(cursor.getString(columnData));
                 boolean isTrashed = cursor.getInt(columnIsTrashed) == 1;
 
                 //Check if is trashed
@@ -233,27 +251,31 @@ public class Library {
         return album;
     }
 
-    private static Album getOrCreateAlbumFromItemFile(File file) {
+    private static Album getOrCreateAlbumFromFolder(File folder) {
         //Temp album var
         Album album;
 
-        //Get file parent path
-        File fileParent = file.getParentFile();
-        assert fileParent != null;
-        String fileParentPath = fileParent.getAbsolutePath();
+        //Get folder path
+        String folderPath = folder.getAbsolutePath();
 
         //Check if an album exists for the path
-        if (albumsMap.containsKey(fileParentPath)) {
+        if (albumsMap.containsKey(folderPath)) {
             //Album exists -> Take it
-            album = albumsMap.get(fileParentPath);
+            album = albumsMap.get(folderPath);
         } else {
             //Album does not exist -> Create it
-            album = createAlbum(fileParent, fileParent.getName());
+            album = createAlbum(folder, folder.getName());
         }
         assert album != null;
 
         //Return album
         return album;
+    }
+
+    private static Album getOrCreateAlbumFromItemFile(File file) {
+        File fileParent = file.getParentFile();
+        assert fileParent != null;
+        return getOrCreateAlbumFromFolder(fileParent);
     }
 
     private static void removeAlbum(int index) {
@@ -372,15 +394,123 @@ public class Library {
 
     //Actions (base & util)
     private static void showActionErrorsDialog(Context context, Action action) {
-        //Create albums adapter
+        //Create adapter
         DialogErrorsAdapter adapter = new DialogErrorsAdapter(context, action.errors);
 
-        //Show confirmation dialog
-        new MaterialAlertDialogBuilder(context)
+        //Create list
+        ListView list = new ListView(context);
+        list.setAdapter(adapter);
+
+        //Show dialog
+        AlertDialog dialog = new MaterialAlertDialogBuilder(context)
                 .setTitle("Errors")
-                .setAdapter(adapter, (dialog, which) -> {})
-                .setPositiveButton("Ok", (dialog, which) -> dialog.dismiss())
+                .setView(list)
+                .setPositiveButton("Ok", (dialogInterface, which) -> dialogInterface.dismiss())
                 .show();
+
+        //Add item click listener
+        list.setOnItemClickListener((parent, view, position, id) -> {
+            //Copy reason to clipboard
+            ActionError error = action.errors.get(position);
+            Orion.copyToClip(context, error.getItem().name + ": " + error.getReason());
+        });
+    }
+
+    private static void showSelectAlbumDialog(Context context, Consumer<Album> onSelect) {
+        //Create adapter
+        DialogAlbumsAdapter adapter = new DialogAlbumsAdapter(context, albums);
+
+        //Create list
+        ListView list = new ListView(context);
+        list.setAdapter(adapter);
+
+        //Show dialog
+        AlertDialog dialog = new MaterialAlertDialogBuilder(context)
+                .setTitle("Select an album")
+                .setView(list)
+                .setNeutralButton("Select folder", (dialogInterface, which) -> {
+                    //Select from folder
+                    showSelectFolderDialog(context, folder -> onSelect.accept(getOrCreateAlbumFromFolder(folder)));
+                })
+                .setNegativeButton("Cancel", (dialogInterface, which) -> dialogInterface.dismiss())
+                .show();
+
+        //Add item click listener
+        list.setOnItemClickListener((parent, view, position, id) -> {
+            //Select album
+            onSelect.accept(albums.get(position));
+
+            //Close dialog
+            dialog.dismiss();
+        });
+    }
+
+    private static void showSelectFolderDialog(Context context, Consumer<File> onSelect) {
+        //Create folders list
+        File externalStorage = Environment.getExternalStorageDirectory();
+        File imagesFolder = new File(externalStorage, "Pictures");
+        List<File> folders = Orion.listFiles(imagesFolder);
+        folders.sort((a, b) -> a.getName().compareToIgnoreCase(b.getName()));
+
+        //Create adapter
+        DialogFoldersAdapter adapter = new DialogFoldersAdapter(context, externalStorage, imagesFolder, folders);
+
+        //Create list
+        ListView list = new ListView(context);
+        list.setAdapter(adapter);
+
+        //Show dialog
+        AlertDialog dialog = new MaterialAlertDialogBuilder(context)
+                .setTitle(adapter.getCurrentFolderName())
+                .setView(list)
+                .setNeutralButton("Create folder", (dialogInterface, which) -> {
+                    //Create a new folder
+                    Toast.makeText(context, "Not implemented", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Cancel", (dialogInterface, which) -> dialogInterface.dismiss())
+                .show();
+
+        //Add listeners
+        adapter.setOnSelectListener(index -> {
+            //Select folder
+            onSelect.accept(folders.get(index));
+
+            //Close dialog
+            dialog.dismiss();
+        });
+        adapter.setOnOpenListener(index -> {
+            //Get folder
+            File folder;
+            if (index < 0) {
+                //Back button
+                folder = adapter.currentFolder.getParentFile();
+            } else {
+                //Select folder
+                folder = folders.get(index);
+            }
+
+            //Check if folder is valid
+            if (folder == null)  {
+                //Invalid folder
+                Toast.makeText(context, "Invalid folder", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            //Check if folder can be read and written to
+            if (!folder.canRead() || !folder.canWrite()) {
+                //Folder can't be read/written to
+                Toast.makeText(context, "Missing permissions to use that folder", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            //Update adapter
+            adapter.currentFolder = folder;
+            dialog.setTitle(adapter.getCurrentFolderName());
+            folders.clear();
+            folders.addAll(Orion.listFiles(folder));
+            folders.sort((a, b) -> a.getName().compareToIgnoreCase(b.getName()));
+            adapter.notifyDataSetChanged();
+        });
     }
 
     private static void performRemoveFromAll(ActionHelper helper) {
@@ -408,6 +538,7 @@ public class Library {
 
         //Remove item
         album.remove(helper.indexInAlbum);
+        action.modifiedAlbums.add(album);
 
         //Check if album needs to be deleted or sorted
         if (album.isEmpty()) {
@@ -415,7 +546,7 @@ public class Library {
             action.removedIndexesInAlbums.add(helper.indexOfAlbum);
         } else if (helper.indexInAlbum == 0) {
             //Album isn't empty & first image was deleted -> Sort albums list in case the order changed
-            action.sortedAlbumsList = true;
+            action.hasSortedAlbumsList = true;
         }
     }
 
@@ -451,12 +582,12 @@ public class Library {
                 removeAlbum(indexInAlbums);
 
                 //Album was the first -> Mark "all" as updated
-                if (indexInAlbums == 0) action.updatedAlbums.add(all);
+                if (indexInAlbums == 0) action.modifiedAlbums.add(all);
             }
         }
 
         //Check if albums list was marked as sorted
-        if (action.sortedAlbumsList) {
+        if (action.hasSortedAlbumsList) {
             //Marked as sorted -> Sort it
             sortAlbumsList();
         }
@@ -560,36 +691,31 @@ public class Library {
             //Remove from old album
             performRemoveFromAlbum(helper, action);
 
+            //Update file
+            item.file = newFile;
+
             //Add to new album
-            int newAlbumIndex = newAlbum.addSorted(item);
             item.album = newAlbum;
+            helper.indexInAlbum = newAlbum.addSorted(item);
+            action.modifiedAlbums.add(newAlbum);
 
             //Check if item was added as the album cover
-            if (newAlbumIndex == 0) {
+            if (helper.indexInAlbum == 0) {
                 //Added as the album cover -> Sort albums list in case the order changed
-                action.sortedAlbumsList = true;
+                action.hasSortedAlbumsList = true;
+
+                //Check if album is in albums list
+                if (!albums.contains(newAlbum)) {
+                    //Not in albums list -> Add it
+                    albums.add(newAlbum);
+                }
             }
         });
     }
 
     public static void moveItems(Context context, CoonItem[] items) {
-        //Create albums adapter
-        DialogAlbumsAdapter adapter = new DialogAlbumsAdapter(context, albums, R.layout.library_move_item);
-
-        //Show confirmation dialog
-        new MaterialAlertDialogBuilder(context)
-                .setTitle("Select a destination")
-                .setAdapter(adapter, (dialog, which) -> {
-                    //Move items to selected album
-                    Album newAlbum = albums.get(which);
-                    moveItemsInternal(context, items, newAlbum);
-                })
-                .setNeutralButton("Select External", (dialog, which) -> {
-                    //Select an external folder
-                    Toast.makeText(context, "Not implemented", Toast.LENGTH_SHORT).show();
-                })
-                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
-                .show();
+        //Show album selection dialog
+        showSelectAlbumDialog(context, newAlbum -> moveItemsInternal(context, items, newAlbum));
     }
 
     private static void copyItemsInternal(Context context, CoonItem[] items, Album newAlbum) {
@@ -625,6 +751,7 @@ public class Library {
                 action.errors.add(new ActionError(item, "Error while copying item file"));
                 return;
             }
+            recentlyAddedFiles.add(newFile); //Add file to recently added to prevent duplicates
 
             //Copy item metadata from old album to new album
             if (oldAlbum.hasMetadataKey(item.name)) {
@@ -636,34 +763,26 @@ public class Library {
             CoonItem newItem = new CoonItem(newFile, newAlbum, item.lastModified, item.size, item.isVideo, item.isTrashed);
 
             //Add to new album
-            int newAlbumIndex = newAlbum.addSorted(newItem);
+            int indexInAlbum = newAlbum.addSorted(newItem);
+            action.modifiedAlbums.add(newAlbum);
 
             //Check if item was added as the album cover
-            if (newAlbumIndex == 0) {
+            if (indexInAlbum == 0) {
                 //Added as the album cover -> Sort albums list in case the order changed
-                action.sortedAlbumsList = true;
+                action.hasSortedAlbumsList = true;
+
+                //Check if album is in albums list
+                if (!albums.contains(newAlbum)) {
+                    //Not in albums list -> Add it
+                    albums.add(newAlbum);
+                }
             }
         });
     }
 
     public static void copyItems(Context context, CoonItem[] items) {
-        //Create albums adapter
-        DialogAlbumsAdapter adapter = new DialogAlbumsAdapter(context, albums, R.layout.library_copy_item);
-
-        //Show confirmation dialog
-        new MaterialAlertDialogBuilder(context)
-                .setTitle("Select a destination")
-                .setAdapter(adapter, (dialog, which) -> {
-                    //Copy items to selected album
-                    Album newAlbum = albums.get(which);
-                    copyItemsInternal(context, items, newAlbum);
-                })
-                .setNeutralButton("Select External", (dialog, which) -> {
-                    //Select an external folder
-                    Toast.makeText(context, "Not implemented", Toast.LENGTH_SHORT).show();
-                })
-                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
-                .show();
+        //Show album selection dialog
+        showSelectAlbumDialog(context, newAlbum -> copyItemsInternal(context, items, newAlbum));
     }
 
     private static Map<Uri, CoonItem> prepareItemURIs(Context context, CoonItem[] items, Action action) {
@@ -836,16 +955,16 @@ public class Library {
 
             //Add to all items list
             helper.indexInAll = all.addSorted(item);
-            action.updatedAlbums.add(all);
+            action.modifiedAlbums.add(all);
 
             //Add to album
             helper.indexInAlbum = item.album.addSorted(item);
-            action.updatedAlbums.add(item.album);
+            action.modifiedAlbums.add(item.album);
 
             //Check if item was added as the album cover
             if (helper.indexInAlbum == 0) {
                 //Added as the album cover -> Sort albums list in case the order changed
-                action.sortedAlbumsList = true;
+                action.hasSortedAlbumsList = true;
 
                 //Check if album is in albums list
                 if (!albums.contains(album)) {
@@ -893,7 +1012,6 @@ public class Library {
                 //Not in the trash -> Remove from album
                 performRemoveFromAlbum(helper, action);
             }
-
         });
     }
 

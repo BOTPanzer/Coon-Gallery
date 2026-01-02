@@ -43,8 +43,6 @@ import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
-
 @SuppressLint({"SetTextI18n", "NotifyDataSetChanged"})
 public class HomeActivity extends GalleryActivity {
 
@@ -147,8 +145,8 @@ public class HomeActivity extends GalleryActivity {
         //Update horizontal item count
         updateHorizontalItemCount();
 
-        //Check albums for updates
-        refreshLibrary();
+        //Refresh albums (check for new items)
+        Library.loadLibrary(HomeActivity.this, false);
     }
 
     @Override
@@ -360,7 +358,7 @@ public class HomeActivity extends GalleryActivity {
         if (action.isOfType(Action.TYPE_NONE)) return;
 
         //Check if albums list was changed
-        if (action.sortedAlbumsList) {
+        if (action.hasSortedAlbumsList) {
             //Sorted albums list -> Notify all
             adapter.notifyDataSetChanged();
         } else {
@@ -387,9 +385,9 @@ public class HomeActivity extends GalleryActivity {
             }
 
             //Check if albums were sorted
-            if (!action.updatedAlbums.isEmpty()) {
+            if (!action.modifiedAlbums.isEmpty()) {
                 //Albums were sorted -> Notify items changed
-                for (Album album : action.updatedAlbums) {
+                for (Album album : action.modifiedAlbums) {
                     //Get album index
                     int albumIndex = adapter.getIndexFromAlbum(album);
                     if (albumIndex < 0 && !album.isEspecial()) continue;
@@ -448,23 +446,6 @@ public class HomeActivity extends GalleryActivity {
             startActivity(intent, options.toBundle());
         });
         list.setAdapter(adapter);
-    }
-
-    private void refreshLibrary() {
-        //Check albums for updates (could have new or deleted items)
-        boolean albumsWereModified = false;
-        for (Album album : Library.albums) {
-            //Check if last modified date changed
-            File imagesFolder = album.getImagesFolder();
-            if (imagesFolder == null || imagesFolder.lastModified() == album.getLastModified()) continue;
-
-            //An album was modified -> Reload activity
-            albumsWereModified = true;
-            break;
-        }
-
-        //Reload albums (reset if albums were modified)
-        Library.loadLibrary(HomeActivity.this, albumsWereModified);
     }
 
 }

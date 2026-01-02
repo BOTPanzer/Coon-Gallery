@@ -60,6 +60,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Orion {
 
@@ -403,11 +405,10 @@ public class Orion {
     }
 
     //Clipboard
-    public static void copyToClip(Activity activity, String string) {
-        ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
+    public static void copyToClip(Context context, String string) {
+        ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
         ClipData clip = ClipData.newPlainText("", string);
         clipboard.setPrimaryClip(clip);
-        //Orion.snack(activity, "Copied to Clipboard");
     }
 
     //Colors
@@ -443,6 +444,19 @@ public class Orion {
     }
 
     //Files
+    public static List<File> listFiles(File parent) {
+        //Create folders list
+        List<File> folders = new ArrayList<>();
+
+        //Get files array
+        File[] files = parent.listFiles();
+        if (files == null) return folders;
+
+        //Add folders to list
+        for (File file : files) if (file.isDirectory()) folders.add(file);
+        return folders;
+    }
+
     private static Charset detectCharset(Path path) {
         Charset charset = StandardCharsets.UTF_8;
         FileInputStream fis = null;
