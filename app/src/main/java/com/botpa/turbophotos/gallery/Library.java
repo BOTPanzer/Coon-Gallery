@@ -1100,14 +1100,4 @@ public class Library {
                 .show();
     }
 
-    //Util
-    public interface LoadingIndicator {
-
-        void search();
-        void load(String content);
-        void load(String folder, String type);
-        void hide();
-
-    }
-
 }

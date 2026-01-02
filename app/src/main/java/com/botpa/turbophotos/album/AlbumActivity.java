@@ -19,6 +19,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.botpa.turbophotos.R;
 import com.botpa.turbophotos.display.DisplayActivity;
+import com.botpa.turbophotos.gallery.LoadingIndicator;
 import com.botpa.turbophotos.gallery.actions.Action;
 import com.botpa.turbophotos.gallery.Album;
 import com.botpa.turbophotos.gallery.GalleryActivity;
@@ -87,7 +88,7 @@ public class AlbumActivity extends GalleryActivity {
     private View loadIndicator;
     private TextView loadIndicatorText;
 
-    public Library.LoadingIndicator loadingIndicator = new Library.LoadingIndicator() {
+    public LoadingIndicator loadingIndicator = new LoadingIndicator() {
         @Override
         public void search() {
             loadIndicatorText.setText("Searching...");
