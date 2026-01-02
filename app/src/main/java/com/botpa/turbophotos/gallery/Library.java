@@ -10,7 +10,13 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.textservice.TextInfo;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -18,6 +24,7 @@ import androidx.activity.result.IntentSenderRequest;
 import androidx.appcompat.app.AlertDialog;
 import androidx.collection.ArrayMap;
 
+import com.botpa.turbophotos.R;
 import com.botpa.turbophotos.gallery.actions.Action;
 import com.botpa.turbophotos.gallery.actions.ActionError;
 import com.botpa.turbophotos.gallery.actions.ActionHelper;
@@ -392,13 +399,13 @@ public class Library {
         onAction.remove(listener);
     }
 
-    //Actions (base & util)
+    //Actions (dialogs)
     private static void showActionErrorsDialog(Context context, Action action) {
-        //Create adapter
-        DialogErrorsAdapter adapter = new DialogErrorsAdapter(context, action.errors);
-
         //Create list
         ListView list = new ListView(context);
+
+        //Create adapter
+        DialogErrorsAdapter adapter = new DialogErrorsAdapter(context, action.errors);
         list.setAdapter(adapter);
 
         //Show dialog
@@ -408,7 +415,7 @@ public class Library {
                 .setPositiveButton("Ok", (dialogInterface, which) -> dialogInterface.dismiss())
                 .show();
 
-        //Add item click listener
+        //Add listeners
         list.setOnItemClickListener((parent, view, position, id) -> {
             //Copy reason to clipboard
             ActionError error = action.errors.get(position);
@@ -417,11 +424,11 @@ public class Library {
     }
 
     private static void showSelectAlbumDialog(Context context, Consumer<Album> onSelect) {
-        //Create adapter
-        DialogAlbumsAdapter adapter = new DialogAlbumsAdapter(context, albums);
-
         //Create list
         ListView list = new ListView(context);
+
+        //Create adapter
+        DialogAlbumsAdapter adapter = new DialogAlbumsAdapter(context, albums);
         list.setAdapter(adapter);
 
         //Show dialog
@@ -435,7 +442,7 @@ public class Library {
                 .setNegativeButton("Cancel", (dialogInterface, which) -> dialogInterface.dismiss())
                 .show();
 
-        //Add item click listener
+        //Add listeners
         list.setOnItemClickListener((parent, view, position, id) -> {
             //Select album
             onSelect.accept(albums.get(position));
@@ -446,6 +453,16 @@ public class Library {
     }
 
     private static void showSelectFolderDialog(Context context, Consumer<File> onSelect) {
+        //Create layout
+        View dialogLayout = LayoutInflater.from(context).inflate(R.layout.dialog_folder, null);
+
+        //Get views
+        View listLayout = dialogLayout.findViewById(R.id.listLayout);
+        ListView list = dialogLayout.findViewById(R.id.list);
+        View createLayout = dialogLayout.findViewById(R.id.createLayout);
+        EditText createInput = dialogLayout.findViewById(R.id.createInput);
+        Button create = dialogLayout.findViewById(R.id.create);
+
         //Create folders list
         File externalStorage = Environment.getExternalStorageDirectory();
         File imagesFolder = new File(externalStorage, "Pictures");
@@ -454,23 +471,17 @@ public class Library {
 
         //Create adapter
         DialogFoldersAdapter adapter = new DialogFoldersAdapter(context, externalStorage, imagesFolder, folders);
-
-        //Create list
-        ListView list = new ListView(context);
         list.setAdapter(adapter);
 
         //Show dialog
         AlertDialog dialog = new MaterialAlertDialogBuilder(context)
                 .setTitle(adapter.getCurrentFolderName())
-                .setView(list)
-                .setNeutralButton("Create folder", (dialogInterface, which) -> {
-                    //Create a new folder
-                    Toast.makeText(context, "Not implemented", Toast.LENGTH_SHORT).show();
-                })
+                .setView(dialogLayout)
+                .setNeutralButton("Create folder", null)
                 .setNegativeButton("Cancel", (dialogInterface, which) -> dialogInterface.dismiss())
                 .show();
 
-        //Add listeners
+        //Add listeners (list)
         adapter.setOnSelectListener(index -> {
             //Select folder
             onSelect.accept(folders.get(index));
@@ -511,8 +522,60 @@ public class Library {
             folders.sort((a, b) -> a.getName().compareToIgnoreCase(b.getName()));
             adapter.notifyDataSetChanged();
         });
+
+        //Add listeners (create)
+        create.setOnClickListener(view -> {
+            //Get folder name & file
+            String folderName = createInput.getText().toString().trim();
+            File folder = new File(adapter.currentFolder, folderName);
+
+            //Check if folder exists
+            if (folder.exists()) {
+                //Folder already exists
+                Toast.makeText(context, "Folder already exists", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            //Create folder
+            if (!folder.mkdir()) {
+                //Failed to create folder
+                Toast.makeText(context, "Failed to create folder", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            //Accept file
+            onSelect.accept(folder);
+
+            //Close dialog
+            dialog.dismiss();
+        });
+
+        //Add listeners (list & create)
+        Button neutralButton = dialog.getButton(AlertDialog.BUTTON_NEUTRAL);
+        neutralButton.setOnClickListener(view -> {
+            if (listLayout.getVisibility() == View.VISIBLE) {
+                //Toggle menus (show create folder)
+                listLayout.setVisibility(View.GONE);
+                createLayout.setVisibility(View.VISIBLE);
+
+                //Reset input
+                createInput.setText("");
+                createInput.requestFocus();
+
+                //Update neutral button
+                neutralButton.setText("Select folder");
+            } else {
+                //Toggle menus (show folders list)
+                listLayout.setVisibility(View.VISIBLE);
+                createLayout.setVisibility(View.GONE);
+
+                //Update neutral button
+                neutralButton.setText("Create folder");
+            }
+        });
     }
 
+    //Actions (base & util)
     private static void performRemoveFromAll(ActionHelper helper) {
         //Not in all items list
         if (helper.indexInAll == -1) return;
