@@ -18,7 +18,6 @@ import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
@@ -29,13 +28,12 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.Manifest;
 import android.widget.LinearLayout;
-import android.widget.Toast;
 
 import com.botpa.turbophotos.backup.BackupActivity;
 import com.botpa.turbophotos.album.AlbumActivity;
 import com.botpa.turbophotos.gallery.GalleryActivity;
 import com.botpa.turbophotos.settings.SettingsActivity;
-import com.botpa.turbophotos.gallery.Action;
+import com.botpa.turbophotos.gallery.actions.Action;
 import com.botpa.turbophotos.gallery.Album;
 import com.botpa.turbophotos.gallery.Library;
 import com.botpa.turbophotos.R;

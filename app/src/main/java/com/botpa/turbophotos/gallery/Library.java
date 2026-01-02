@@ -16,6 +16,11 @@ import androidx.activity.result.IntentSenderRequest;
 import androidx.collection.ArrayMap;
 
 import com.botpa.turbophotos.R;
+import com.botpa.turbophotos.gallery.actions.Action;
+import com.botpa.turbophotos.gallery.actions.ActionError;
+import com.botpa.turbophotos.gallery.actions.ActionHelper;
+import com.botpa.turbophotos.gallery.dialogs.DialogAlbumsAdapter;
+import com.botpa.turbophotos.gallery.dialogs.DialogErrorsAdapter;
 import com.botpa.turbophotos.util.Orion;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -33,24 +38,21 @@ public class Library {
 
     //Logging
     private static final String LOG_LIBRARY = "LIBRARY";
-    private static final String LOG_TRASH = "TRASH";
 
     //Events
     private static final ArrayList<RefreshEvent> onRefresh = new ArrayList<>();
     private static final ArrayList<ActionEvent> onAction = new ArrayList<>();
 
-    //Trash
-    public static final Album trash = new Album("Trash");
-
     //Albums
     private static long lastUpdate = 0;
 
-    public static final HashMap<String, Album> albumsMap = new HashMap<>(); //Uses album path as key
+    public static final HashMap<String, Album> albumsMap = new HashMap<>(); //Uses album path as key for easy finding
     public static final ArrayList<Album> albums = new ArrayList<>();
-    public static final Album all = new Album("All");                 //Album with all files
+    public static final Album trash = new Album("Trash");
+    public static final Album all = new Album("All");
 
     //Gallery
-    public static final ArrayList<CoonItem> gallery = new ArrayList<>();    //Currently open album items (can be filtered)
+    public static final ArrayList<CoonItem> gallery = new ArrayList<>(); //Currently open album items (could be filtered or the same items)
 
 
     //Library (events)

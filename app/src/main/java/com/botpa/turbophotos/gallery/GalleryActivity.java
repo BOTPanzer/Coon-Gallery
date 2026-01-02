@@ -7,6 +7,8 @@ import androidx.activity.result.IntentSenderRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.botpa.turbophotos.gallery.actions.Action;
+import com.botpa.turbophotos.gallery.actions.ActionError;
 import com.botpa.turbophotos.util.Orion;
 
 public class GalleryActivity extends AppCompatActivity {

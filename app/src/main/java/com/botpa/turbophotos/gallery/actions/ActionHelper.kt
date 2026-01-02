@@ -1,4 +1,7 @@
-package com.botpa.turbophotos.gallery
+package com.botpa.turbophotos.gallery.actions
+
+import com.botpa.turbophotos.gallery.CoonItem
+import com.botpa.turbophotos.gallery.Library
 
 class ActionHelper(@JvmField val item: CoonItem) {
 

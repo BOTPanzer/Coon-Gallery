@@ -10,10 +10,8 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -21,7 +19,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.botpa.turbophotos.R;
 import com.botpa.turbophotos.display.DisplayActivity;
-import com.botpa.turbophotos.gallery.Action;
+import com.botpa.turbophotos.gallery.actions.Action;
 import com.botpa.turbophotos.gallery.Album;
 import com.botpa.turbophotos.gallery.GalleryActivity;
 import com.botpa.turbophotos.util.BackManager;

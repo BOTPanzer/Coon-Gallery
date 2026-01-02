@@ -12,7 +12,6 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
@@ -23,7 +22,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SnapHelper;
 
 import com.botpa.turbophotos.R;
-import com.botpa.turbophotos.gallery.Action;
+import com.botpa.turbophotos.gallery.actions.Action;
 import com.botpa.turbophotos.gallery.GalleryActivity;
 import com.botpa.turbophotos.util.BackManager;
 import com.botpa.turbophotos.gallery.Library;

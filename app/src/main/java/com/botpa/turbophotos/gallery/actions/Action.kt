@@ -1,6 +1,8 @@
-package com.botpa.turbophotos.gallery
+package com.botpa.turbophotos.gallery.actions
 
 import android.net.Uri
+import com.botpa.turbophotos.gallery.Album
+import com.botpa.turbophotos.gallery.CoonItem
 
 class Action(val type: Int, @JvmField val items: Array<CoonItem>) {
 

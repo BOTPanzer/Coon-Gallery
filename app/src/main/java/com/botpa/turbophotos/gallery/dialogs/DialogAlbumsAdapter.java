@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.gallery;
+package com.botpa.turbophotos.gallery.dialogs;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -10,6 +10,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 
 import com.botpa.turbophotos.R;
+import com.botpa.turbophotos.gallery.Album;
 
 import java.util.List;
 
