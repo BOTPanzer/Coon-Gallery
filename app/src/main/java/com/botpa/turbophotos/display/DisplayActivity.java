@@ -89,6 +89,7 @@ public class DisplayActivity extends GalleryActivity {
     private View optionsMove;
     private View optionsCopy;
     private View optionsOpenOutside;
+    private View optionsSeparator;
     private View optionsTrash;
     private View optionsRestore;
     private View optionsDelete;
@@ -185,6 +186,7 @@ public class DisplayActivity extends GalleryActivity {
         optionsMove = findViewById(R.id.optionsMove);
         optionsCopy = findViewById(R.id.optionsCopy);
         optionsOpenOutside = findViewById(R.id.optionsOpen);
+        optionsSeparator = findViewById(R.id.optionsSeparator);
         optionsTrash = findViewById(R.id.optionsTrash);
         optionsRestore = findViewById(R.id.optionsRestore);
         optionsDelete = findViewById(R.id.optionsDelete);
@@ -480,16 +482,6 @@ public class DisplayActivity extends GalleryActivity {
         //Change image name
         overlayName.setText(currentItem.name);
 
-        //Prepare options menu
-        boolean isTrashed = currentItem.isTrashed;
-        optionsEdit.setVisibility(isTrashed ? View.GONE : View.VISIBLE);
-        optionsShare.setVisibility(isTrashed ? View.GONE : View.VISIBLE);
-        optionsMove.setVisibility(isTrashed ? View.GONE : View.VISIBLE);
-        optionsCopy.setVisibility(isTrashed ? View.GONE : View.VISIBLE);
-        optionsOpenOutside.setVisibility(isTrashed ? View.GONE : View.VISIBLE);
-        optionsTrash.setVisibility(isTrashed ? View.GONE : View.VISIBLE);
-        optionsRestore.setVisibility(isTrashed ? View.VISIBLE : View.GONE);
-
         //Create date text
         Date date = new Date(currentItem.lastModified * 1000);
         SimpleDateFormat formatter1 = new SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH);
@@ -576,11 +568,28 @@ public class DisplayActivity extends GalleryActivity {
         }
     }
 
+    private void toggleOption(View view, boolean show) {
+        view.setVisibility(show ? View.VISIBLE : View.GONE);
+    }
+
     private void toggleOptions(boolean show) {
         if (show) {
+            //Toggle necessary options
+            boolean isTrashed = currentItem.isTrashed;
+            toggleOption(optionsEdit, !isTrashed);
+            toggleOption(optionsShare, !isTrashed);
+            toggleOption(optionsMove, !isTrashed);
+            toggleOption(optionsCopy, !isTrashed);
+            toggleOption(optionsOpenOutside, !isTrashed);
+            toggleOption(optionsSeparator, !isTrashed);
+            toggleOption(optionsTrash, !isTrashed);
+            toggleOption(optionsRestore, isTrashed);
+
+            //Show
             Orion.showAnim(optionsLayout);
             backManager.register("displayOptions", () -> toggleOptions(false));
         } else {
+            //Hide
             Orion.hideAnim(optionsLayout);
             backManager.unregister("displayOptions");
         }

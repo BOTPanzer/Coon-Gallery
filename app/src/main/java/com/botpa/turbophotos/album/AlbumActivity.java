@@ -74,6 +74,7 @@ public class AlbumActivity extends GalleryActivity {
     private View optionsShare;
     private View optionsMove;
     private View optionsCopy;
+    private View optionsSeparator;
     private View optionsTrash;
     private View optionsRestore;
     private View optionsRestoreAll;
@@ -218,15 +219,16 @@ public class AlbumActivity extends GalleryActivity {
 
         //Options
         optionsLayout = findViewById(R.id.optionsLayout);
+        optionsEdit = findViewById(R.id.optionsEdit);
+        optionsShare = findViewById(R.id.optionsShare);
+        optionsMove = findViewById(R.id.optionsMove);
+        optionsCopy = findViewById(R.id.optionsCopy);
+        optionsSeparator = findViewById(R.id.optionsSeparator);
+        optionsTrash = findViewById(R.id.optionsTrash);
         optionsRestore = findViewById(R.id.optionsRestore);
         optionsRestoreAll = findViewById(R.id.optionsRestoreAll);
         optionsDelete = findViewById(R.id.optionsDelete);
         optionsDeleteAll = findViewById(R.id.optionsDeleteAll);
-        optionsTrash = findViewById(R.id.optionsTrash);
-        optionsShare = findViewById(R.id.optionsShare);
-        optionsEdit = findViewById(R.id.optionsEdit);
-        optionsMove = findViewById(R.id.optionsMove);
-        optionsCopy = findViewById(R.id.optionsCopy);
 
         //List
         refreshLayout = findViewById(R.id.refreshLayout);
@@ -662,6 +664,10 @@ public class AlbumActivity extends GalleryActivity {
         return selectedFiles.toArray(new CoonItem[0]);
     }
 
+    private void toggleOption(View view, boolean show) {
+        view.setVisibility(show ? View.VISIBLE : View.GONE);
+    }
+
     private void toggleOptions(boolean show) {
         if (show) {
             //Get state info
@@ -669,15 +675,16 @@ public class AlbumActivity extends GalleryActivity {
             boolean isSelectingSingle = selectedItems.size() == 1;
 
             //Toggle buttons
-            optionsEdit.setVisibility(isSelectingSingle && !inTrash ? View.VISIBLE : View.GONE);
-            optionsShare.setVisibility(isSelecting && !inTrash ? View.VISIBLE : View.GONE);
-            optionsMove.setVisibility(isSelecting && !inTrash ? View.VISIBLE : View.GONE);
-            optionsCopy.setVisibility(isSelecting && !inTrash ? View.VISIBLE : View.GONE);
-            optionsTrash.setVisibility(isSelecting && !inTrash ? View.VISIBLE : View.GONE);
-            optionsRestore.setVisibility(isSelecting && inTrash ? View.VISIBLE : View.GONE);
-            optionsRestoreAll.setVisibility(!isSelecting && inTrash ? View.VISIBLE : View.GONE);
-            optionsDelete.setVisibility(isSelecting ? View.VISIBLE : View.GONE);
-            optionsDeleteAll.setVisibility(!isSelecting && inTrash ? View.VISIBLE : View.GONE);
+            toggleOption(optionsEdit, isSelectingSingle && !inTrash);
+            toggleOption(optionsShare, isSelecting && !inTrash);
+            toggleOption(optionsMove, isSelecting && !inTrash);
+            toggleOption(optionsCopy, isSelecting && !inTrash);
+            toggleOption(optionsSeparator, !inTrash);
+            toggleOption(optionsTrash, isSelecting && !inTrash);
+            toggleOption(optionsRestore, isSelecting && inTrash);
+            toggleOption(optionsRestoreAll, !isSelecting && inTrash);
+            toggleOption(optionsDelete, isSelecting);
+            toggleOption(optionsDeleteAll, !isSelecting && inTrash);
 
             //Show
             Orion.showAnim(optionsLayout);
