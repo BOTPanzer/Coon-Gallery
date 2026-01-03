@@ -521,6 +521,7 @@ public class Library {
             folders.addAll(Orion.listFiles(folder));
             folders.sort((a, b) -> a.getName().compareToIgnoreCase(b.getName()));
             adapter.notifyDataSetChanged();
+            list.setSelectionAfterHeaderView(); //Scroll to top
         });
 
         //Add listeners (create)
