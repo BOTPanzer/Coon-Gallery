@@ -238,7 +238,7 @@ public class DisplayActivity extends GalleryActivity {
     }
 
     private void addListeners() {
-        //Info & edit
+        //Info
         overlayInfo.setOnClickListener(view -> toggleInfo(true));
 
         infoLayout.setOnClickListener(view -> toggleInfo(false));
@@ -263,6 +263,7 @@ public class DisplayActivity extends GalleryActivity {
             toggleEdit(editLayout.getVisibility() != View.VISIBLE);
         });
 
+        //Edit
         editLayout.setOnClickListener(view -> toggleEdit(false));
 
         editSave.setOnClickListener(view -> {

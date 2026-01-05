@@ -540,7 +540,7 @@ public class Orion {
         boolean success = true;
 
         try {
-            writer = new BufferedWriter(new OutputStreamWriter(Files.newOutputStream(file.toPath()), StandardCharsets.UTF_16));
+            writer = new BufferedWriter(new OutputStreamWriter(Files.newOutputStream(file.toPath()), StandardCharsets.UTF_8));
             writer.write(data);
         } catch (IOException e) {
             String message = e.getMessage();
