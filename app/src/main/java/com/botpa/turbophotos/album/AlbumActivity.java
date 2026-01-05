@@ -626,7 +626,7 @@ public class AlbumActivity extends GalleryActivity {
         if (!selectedItems.isEmpty()) {
             HashSet<Integer> temp = new HashSet<>(selectedItems);
             selectedItems.clear();
-            for (Integer index: temp) adapter.notifyItemChanged(index);
+            for (int index : temp) adapter.notifyItemChanged(index);
         }
 
         //Update navbar title

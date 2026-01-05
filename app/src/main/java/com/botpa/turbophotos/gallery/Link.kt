@@ -52,7 +52,7 @@ class Link(albumPath: String, metadataPath: String) {
         fun saveLinks() {
             //Save links
             val list = ArrayList<String>()
-            for (link in Companion.links) list.add(link.toString())
+            for (link in links) list.add(link.toString())
             Storage.putStringList("Settings.albums", list)
 
             //Restart main activity on resume
@@ -69,9 +69,8 @@ class Link(albumPath: String, metadataPath: String) {
             links.add(link)
             linksMap[key] = link
 
-            //Relink with album if it exists
-            link.album = Library.albumsMap.getOrDefault(link.albumPath, null)
-            if (link.album != null) link.album!!.updateMetadataFile(link.metadataFile)
+            //Relink with album
+            relinkWithAlbum(link)
             return true
         }
 
@@ -82,6 +81,9 @@ class Link(albumPath: String, metadataPath: String) {
             //Remove link
             val link = links.removeAt(index)
             linksMap.remove(link.albumPath)
+
+            //Update album
+            if (link.album != null) link.album!!.updateMetadataFile(null)
             return true
         }
 
@@ -90,14 +92,17 @@ class Link(albumPath: String, metadataPath: String) {
             val keyNew = newFolder.absolutePath
             if (linksMap.containsKey(keyNew)) return false
 
-            //Get link
-            val link = links[index]
+            //Get old link
+            val oldLink = links[index]
 
             //Update it
-            val keyOld = link.albumPath
-            links[index] = Link(newFolder.absolutePath, link.metadataPath)
-            linksMap[keyNew] = linksMap.get(keyOld)
-            linksMap.remove(keyOld)
+            val link = Link(newFolder.absolutePath, oldLink.metadataPath)
+            links[index] = link
+            linksMap[keyNew] = link
+            linksMap.remove(oldLink.albumPath)
+
+            //Relink with album
+            relinkWithAlbum(link)
             return true
         }
 
@@ -107,6 +112,17 @@ class Link(albumPath: String, metadataPath: String) {
 
             //Update it
             links[index] = Link(link.albumPath, newFile.absolutePath)
+
+            //Relink with album
+            relinkWithAlbum(link)
+        }
+
+        fun relinkWithAlbum(link: Link) {
+            //Update link album reference
+            link.album = Library.albumsMap.getOrDefault(link.albumPath, null)
+
+            //Update link album metadata file
+            if (link.album != null) link.album!!.updateMetadataFile(link.metadataFile)
         }
 
         //Parsing

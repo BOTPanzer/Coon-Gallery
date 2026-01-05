@@ -77,7 +77,7 @@ public class Library {
     }
 
     private static void invokeOnRefresh(boolean updated) {
-        for (RefreshEvent listener: onRefresh) listener.invoke(updated);
+        for (RefreshEvent listener : onRefresh) listener.invoke(updated);
     }
 
     public static void addOnRefreshEvent(RefreshEvent listener) {
@@ -147,7 +147,7 @@ public class Library {
             //Clear items from albums
             trash.reset();
             all.reset();
-            for (Album album: albums) album.reset();
+            for (Album album : albums) album.reset();
 
             //Albums map doesn't get cleared so that the gallery can stay on the selected album on reload :D
         }
@@ -226,7 +226,7 @@ public class Library {
         //Sort albums
         trash.sort();
         all.sort();
-        for (Album album: albums) album.sort();
+        for (Album album : albums) album.sort();
         sortAlbumsList();
 
         //Invoke on refresh
@@ -238,21 +238,15 @@ public class Library {
         //Get folder path
         String folderPath = imagesFolder != null ? imagesFolder.getAbsolutePath() : null;
 
-        //Get album link
-        Link link = Link.linksMap.getOrDefault(folderPath, null);
-        boolean hasLink = link != null;
-
-        //Get metadata file
-        File metadataFile = hasLink ? link.metadataFile : null;
-
         //Create new album
-        Album album = new Album(name, imagesFolder, metadataFile);
+        Album album = new Album(name, imagesFolder, null);
 
         //Add album to albums map
         albumsMap.put(album.getImagesPath(), album);
 
-        //Assign album to its link
-        if (hasLink) link.album = album;
+        //Get album link
+        Link link = Link.linksMap.getOrDefault(folderPath, null);
+        if (link != null) Link.Companion.relinkWithAlbum(link);
 
         //Return album
         return album;
@@ -314,7 +308,7 @@ public class Library {
         //Check album
         if (album == all) {
             //All items album -> Load metadata from all albums
-            for (Album _album: albums) loadMetadataHelper(indicator, _album);
+            for (Album _album : albums) loadMetadataHelper(indicator, _album);
         } else {
             //Normal album -> Load album metadata
             loadMetadataHelper(indicator, album);
@@ -370,7 +364,7 @@ public class Library {
         gallery.clear();
 
         //Look for items that contain the filter
-        for (CoonItem item: album.items) {
+        for (CoonItem item : album.items) {
             //No filter -> Skip check
             if (!isFiltering) {
                 gallery.add(item);
@@ -388,7 +382,7 @@ public class Library {
     }
 
     private static void invokeOnAction(Action action) {
-        for (ActionEvent listener: onAction) listener.invoke(action);
+        for (ActionEvent listener : onAction) listener.invoke(action);
     }
 
     public static void addOnActionEvent(ActionEvent listener) {
@@ -632,7 +626,7 @@ public class Library {
             action.removedIndexesInGallery.sort((a, b) -> b - a); //Sort from last to first to allow using a foreach
 
             //Remove items
-            for (int indexInGallery: action.removedIndexesInGallery) gallery.remove(indexInGallery);
+            for (int indexInGallery : action.removedIndexesInGallery) gallery.remove(indexInGallery);
         }
 
         //Check if albums were marked as removed
@@ -641,7 +635,7 @@ public class Library {
             action.removedIndexesInAlbums.sort((a, b) -> b - a); //Sort from last to first to allow using a foreach
 
             //Remove albums
-            for (int indexInAlbums: action.removedIndexesInAlbums) {
+            for (int indexInAlbums : action.removedIndexesInAlbums) {
                 //Remove album
                 removeAlbum(indexInAlbums);
 

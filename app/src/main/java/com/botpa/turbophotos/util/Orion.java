@@ -359,7 +359,7 @@ public class Orion {
         ViewCompat.setOnApplyWindowInsetsListener(view, (v, windowInsets) -> {
             //Get insets
             Insets insets = Insets.of(0, 0, 0, 0);
-            for (int type: types) insets = Insets.add(insets, windowInsets.getInsets(type)); //WindowInsetsCompat.Type.systemBars()
+            for (int type : types) insets = Insets.add(insets, windowInsets.getInsets(type)); //WindowInsetsCompat.Type.systemBars()
 
             //Run on insets changed
             //Check if animate

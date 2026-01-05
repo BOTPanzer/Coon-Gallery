@@ -82,7 +82,7 @@ public class BackupService extends Service {
 
             //Init backup items
             backupItems.clear();
-            for (Link link: Link.links) {
+            for (Link link : Link.links) {
                 //Get album & create items list
                 Album album = link.album;
                 ArrayList<CoonItem> items = new ArrayList<>();
@@ -212,16 +212,6 @@ public class BackupService extends Service {
 
                 //Send file info
                 case "requestFileInfo": {
-                    //Request index & count
-                    if (message.has("requestIndex") && message.has("requestCount")) {
-                        //Get request index & count
-                        int requestIndex = message.get("requestIndex").asInt();
-                        int requestCount = message.get("requestCount").asInt();
-
-                        //Log
-                        send("log", "Request (" + requestIndex + "/" + requestCount + ")");
-                    }
-
                     //Get album
                     int albumIndex = message.get("albumIndex").asInt();
                     ArrayList<CoonItem> album = backupItems.get(albumIndex);
@@ -232,7 +222,17 @@ public class BackupService extends Service {
                     File file = item.file;
 
                     //Log
-                    send("log", "Sending file info for: " + item.name);
+                    if (message.has("requestIndex") && message.has("requestCount")) {
+                        //Get request index & count
+                        int requestIndex = message.get("requestIndex").asInt();
+                        int requestCount = message.get("requestCount").asInt();
+
+                        //Log
+                        send("log", "(" + requestIndex + "/" + requestCount + ") Sending file info for \"" + item.name + "\"");
+                    } else {
+                        //Log
+                        send("log", "Sending file info for \"" + item.name + "\"");
+                    }
 
                     //Create message
                     ObjectNode obj = Orion.getEmptyJson();
@@ -262,15 +262,15 @@ public class BackupService extends Service {
                     CoonItem item = album.get(fileIndex);
                     File file = item.file;
 
+                    //Log
+                    send("log", "Sending file data for \"" + item.name + "\"");
+
                     //Get offset & length
                     int offset = message.get("part").asInt() * MAX_PART_SIZE;
                     int length = Math.min((int) item.size - offset, MAX_PART_SIZE);
 
                     //Send file data
                     try {
-                        //Log
-                        send("log", "Sending file data for: " + file.getName());
-
                         //Read file
                         byte[] bytes = new byte[length];
                         BufferedInputStream buffer = new BufferedInputStream(Files.newInputStream(file.toPath()));
@@ -281,10 +281,12 @@ public class BackupService extends Service {
                         //Send message
                         webSocketClient.send(bytes);
                     } catch (IOException e) {
-                        //Error sending message
+                        //Log
+                        send("log", "Error sending file data for \"" + item.name + "\"");
+
+                        //Error
                         String errorMessage = e.getMessage();
                         if (errorMessage != null) Log.e("Send file data", errorMessage);
-                        send("log", "Error sending file data");
 
                         //Send empty blob
                         webSocketClient.send(new byte[0]);
@@ -294,15 +296,13 @@ public class BackupService extends Service {
 
                 //Send metadata info
                 case "requestMetadataInfo": {
-                    //Get album
+                    //Get info
                     int albumIndex = message.get("albumIndex").asInt();
-                    Album album = Link.links.get(albumIndex).album;
-
-                    //Send metadata info
-                    File file = album.getMetadataFile();
+                    Link link = Link.links.get(albumIndex);
+                    File file = link.metadataFile;
 
                     //Log
-                    send("log", "Sending metadata info for: " + file.getName());
+                    send("log", "(" + (albumIndex + 1) + "/" + Link.links.size() + ") Sending metadata info for \"" + link.albumFolder.getName() + "\"");
 
                     //Create message
                     ObjectNode obj = Orion.getEmptyJson();
@@ -317,18 +317,18 @@ public class BackupService extends Service {
 
                 //Send metadata data
                 case "requestMetadataData": {
-                    //Get album
+                    //Get info
                     int albumIndex = message.get("albumIndex").asInt();
-                    Album album = Link.links.get(albumIndex).album;
+                    Link link = Link.links.get(albumIndex);
+                    File file = link.metadataFile;
+
+                    //Log
+                    send("log", "Sending metadata data for \"" + link.albumFolder.getName() + "\"");
 
                     //Send metadata data
-                    File file = album.getMetadataFile();
                     byte[] bytes = new byte[(int) file.length()];
                     try {
-                        //Log
-                        send("log", "Sending metadata data for: " + file.getName());
-
-                        //Read file bytes
+                        //Read file
                         BufferedInputStream buffer = new BufferedInputStream(Files.newInputStream(file.toPath()));
                         int read = buffer.read(bytes, 0, bytes.length);
                         buffer.close();
@@ -336,10 +336,12 @@ public class BackupService extends Service {
                         //Send message
                         webSocketClient.send(bytes);
                     } catch (IOException e) {
-                        //Error sending message
+                        //Log
+                        send("log", "Error sending metadata data for album " + albumIndex);
+
+                        //Error
                         String errorMessage = e.getMessage();
                         if (errorMessage != null) Log.e("Send metadata data", errorMessage);
-                        send("log", "Error sending metadata data");
 
                         //Send empty blob
                         webSocketClient.send(new byte[0]);
@@ -347,7 +349,7 @@ public class BackupService extends Service {
                     break;
                 }
 
-                //Request metadata
+                //Start requesting metadata
                 case "startMetadataRequest": {
                     requestNextMetadata(true);
                     break;
@@ -361,11 +363,13 @@ public class BackupService extends Service {
                         return;
                     }
 
-                    //Get album
+                    //Get info
                     int albumIndex = message.get("albumIndex").asInt();
-
-                    //Get last modified
                     long lastModified = message.get("lastModified").asLong();
+                    Link link = Link.links.get(albumIndex);
+
+                    //Log
+                    send("log", "(" + (albumIndex + 1) + "/" + Link.links.size() + ") Received metadata info for \"" + link.albumFolder.getName() + "\"");
 
                     //Save request
                     metadataRequest = new MetadataInfo(albumIndex, lastModified);
@@ -382,6 +386,10 @@ public class BackupService extends Service {
 
             }
         } catch (Exception e) {
+            //Log
+            send("log", "Error parsing message");
+
+            //Error
             String errorMessage = e.getMessage();
             if (errorMessage != null) Log.e("Parse message", errorMessage);
         }
@@ -391,24 +399,35 @@ public class BackupService extends Service {
         //Show notification again
         notificationManager.notify(NOTIFICATION_ID, notification);
 
-        //No request
+        //No request -> Ignore
         if (metadataRequest == null) return;
 
+        //Get info
+        int albumIndex = metadataRequest.albumIndex;
+        long lastModified = metadataRequest.lastModified;
+        Link link = Link.links.get(albumIndex);
+
+        //Log
+        send("log", "Received metadata data for \"" + link.albumFolder.getName() + "\"");
+
         //Save file
-        File file = Link.links.get(metadataRequest.albumIndex).metadataFile;
+        File file = Link.links.get(albumIndex).metadataFile;
         try {
+            //Try to save file
             BufferedOutputStream buffer = new BufferedOutputStream(Files.newOutputStream(file.toPath()));
             buffer.write(data, 0, data.length);
             buffer.close();
-            Files.setLastModifiedTime(Paths.get(file.getAbsolutePath()), FileTime.from(Instant.ofEpochMilli(metadataRequest.lastModified)));
+            Files.setLastModifiedTime(Paths.get(file.getAbsolutePath()), FileTime.from(Instant.ofEpochMilli(lastModified)));
 
             //File modified -> Should restart
             HomeActivity.reloadOnResume();
         } catch (IOException e) {
-            //Error sending message
+            //Log
+            send("log", "Album " + albumIndex + ": Error saving metadata data");
+
+            //Error
             String errorMessage = e.getMessage();
-            if (errorMessage != null) Log.e("Save metadata data", errorMessage);
-            send("log", "Error saving metadata data");
+            if (errorMessage != null) Log.e("Save metadata file", errorMessage);
         }
 
         //Request next
