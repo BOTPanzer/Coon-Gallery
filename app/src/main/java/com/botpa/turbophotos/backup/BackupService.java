@@ -210,15 +210,15 @@ public class BackupService extends Service {
             //Parse action
             switch (message.get("action").asText()) {
 
-                //Send file info
-                case "requestFileInfo": {
+                //Send item info
+                case "requestItemInfo": {
                     //Get album
                     int albumIndex = message.get("albumIndex").asInt();
                     ArrayList<CoonItem> album = backupItems.get(albumIndex);
 
                     //Get item & file
-                    int fileIndex = message.get("fileIndex").asInt();
-                    CoonItem item = album.get(fileIndex);
+                    int itemIndex = message.get("itemIndex").asInt();
+                    CoonItem item = album.get(itemIndex);
                     File file = item.file;
 
                     //Log
@@ -228,17 +228,17 @@ public class BackupService extends Service {
                         int requestCount = message.get("requestCount").asInt();
 
                         //Log
-                        send("log", "(" + requestIndex + "/" + requestCount + ") Sending file info for \"" + item.name + "\"");
+                        send("log", "(" + requestIndex + "/" + requestCount + ") Sending item info for \"" + item.name + "\"");
                     } else {
                         //Log
-                        send("log", "Sending file info for \"" + item.name + "\"");
+                        send("log", "Sending item info for \"" + item.name + "\"");
                     }
 
                     //Create message
                     ObjectNode obj = Orion.getEmptyJson();
-                    obj.put("action", "fileInfo");
+                    obj.put("action", "itemInfo");
                     obj.put("albumIndex", albumIndex);
-                    obj.put("fileIndex", fileIndex);
+                    obj.put("itemIndex", itemIndex);
                     if (file.exists()) {
                         obj.put("lastModified", item.lastModified);
                         obj.put("size", item.size);
@@ -251,19 +251,19 @@ public class BackupService extends Service {
                     break;
                 }
 
-                //Send file data
-                case "requestFileData": {
+                //Send item data
+                case "requestItemData": {
                     //Get album
                     int albumIndex = message.get("albumIndex").asInt();
                     ArrayList<CoonItem> album = backupItems.get(albumIndex);
 
                     //Get item & file
-                    int fileIndex = message.get("fileIndex").asInt();
-                    CoonItem item = album.get(fileIndex);
+                    int itemIndex = message.get("itemIndex").asInt();
+                    CoonItem item = album.get(itemIndex);
                     File file = item.file;
 
                     //Log
-                    send("log", "Sending file data for \"" + item.name + "\"");
+                    send("log", "Sending item data for \"" + item.name + "\"");
 
                     //Get offset & length
                     int offset = message.get("part").asInt() * MAX_PART_SIZE;
@@ -282,11 +282,11 @@ public class BackupService extends Service {
                         webSocketClient.send(bytes);
                     } catch (IOException e) {
                         //Log
-                        send("log", "Error sending file data for \"" + item.name + "\"");
+                        send("log", "Error sending item data for \"" + item.name + "\"");
 
                         //Error
                         String errorMessage = e.getMessage();
-                        if (errorMessage != null) Log.e("Send file data", errorMessage);
+                        if (errorMessage != null) Log.e("Send item data", errorMessage);
 
                         //Send empty blob
                         webSocketClient.send(new byte[0]);
@@ -427,7 +427,7 @@ public class BackupService extends Service {
 
             //Error
             String errorMessage = e.getMessage();
-            if (errorMessage != null) Log.e("Save metadata file", errorMessage);
+            if (errorMessage != null) Log.e("Save metadata data", errorMessage);
         }
 
         //Request next
