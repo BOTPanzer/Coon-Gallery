@@ -692,21 +692,21 @@ public class Orion {
     public static Uri getUriFromPath(Context context, String filePath) {
         //Build query args
         Bundle queryArgs = new Bundle();
-        queryArgs.putString(ContentResolver.QUERY_ARG_SQL_SELECTION, MediaStore.Images.Media.DATA + "=? ");
+        queryArgs.putString(ContentResolver.QUERY_ARG_SQL_SELECTION, MediaStore.Files.FileColumns.DATA + "=? ");
         queryArgs.putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, new String[] { filePath });
         queryArgs.putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_INCLUDE);
 
         //Create cursor
         try (Cursor cursor = context.getContentResolver().query(
                 MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL),
-                new String[] { MediaStore.Images.Media._ID },
+                new String[] { MediaStore.Files.FileColumns._ID },
                 queryArgs,
                 null
         )) {
             //Search
             if (cursor != null && cursor.moveToFirst()) {
                 int id = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID));
-                return Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, String.valueOf(id));
+                return Uri.withAppendedPath(MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL), String.valueOf(id));
             }
         } catch (Exception e) {
             //Error
