@@ -2,6 +2,13 @@
 
 Android gallery with smart search support powered by metadata files.
 
+<div align="center">
+<img src="https://raw.githubusercontent.com/BOTPanzer/Coon-Gallery/refs/heads/main/screenshots/home.png" width="24%" />
+<img src="https://raw.githubusercontent.com/BOTPanzer/Coon-Gallery/refs/heads/main/screenshots/search.png" width="24%" />
+<img src="https://raw.githubusercontent.com/BOTPanzer/Coon-Gallery/refs/heads/main/screenshots/settings.png" width="24%" />
+<img src="https://raw.githubusercontent.com/BOTPanzer/Coon-Gallery/refs/heads/main/screenshots/sync.png" width="24%" />
+</div>
+
 ## Features
 
 - Enable **smart search** with the power of **metadata files**.
