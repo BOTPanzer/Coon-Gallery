@@ -12,11 +12,9 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.textservice.TextInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -663,7 +661,7 @@ public class Library {
     //Actions (modify items)
     public static void editItem(Context context, CoonItem item) {
         //Get URI & mime type
-        Uri uri = Orion.getUriFromPath(context, item.file.getAbsolutePath());
+        Uri uri = Orion.getFileUriFromFilePath(context, item.file.getAbsolutePath());
         String mimeType = item.mimeType;
 
         //Edit
@@ -682,13 +680,13 @@ public class Library {
         if (items.length == 1) {
             //Share 1 item
             intent = new Intent(Intent.ACTION_SEND);
-            intent.putExtra(Intent.EXTRA_STREAM, Orion.getUriFromPath(context, items[0].file.getAbsolutePath()));
+            intent.putExtra(Intent.EXTRA_STREAM, Orion.getFileUriFromFilePath(context, items[0].file.getAbsolutePath()));
             intent.setType(items[0].mimeType);
         } else {
             //Share multiple items
             intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
             ArrayList<Uri> URIs = new ArrayList<>();
-            for (CoonItem item : items) URIs.add(Orion.getUriFromPath(context, item.file.getAbsolutePath()));
+            for (CoonItem item : items) URIs.add(Orion.getFileUriFromFilePath(context, item.file.getAbsolutePath()));
             intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, URIs);
             intent.setType("*/*");
         }
@@ -868,7 +866,7 @@ public class Library {
             }
 
             //Get item URI
-            Uri uri = Orion.getUriFromPath(context, item.file.getAbsolutePath());
+            Uri uri = Orion.getMediaUriFromFilePath(context, item.file.getAbsolutePath());
 
             //Check if URI is valid
             if (uri == null) {

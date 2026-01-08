@@ -194,7 +194,7 @@ public class AlbumActivity extends GalleryActivity {
         } else {
             //No name -> Check index
             int index = intent.getIntExtra("albumIndex", -1);
-            if (index < 0) {
+            if (index < 0 || index >= Library.albums.size()) {
                 finish();
                 return;
             }

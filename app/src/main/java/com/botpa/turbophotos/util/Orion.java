@@ -28,6 +28,7 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
 import android.view.inputmethod.InputMethodManager;
+import android.webkit.MimeTypeMap;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -498,10 +499,9 @@ public class Orion {
         return StandardCharsets.UTF_8; //default if unable to detect.
     }
 
-    public static String getExtension(File file) {
-        String name = file.getName();
-        int dotIndex = name.lastIndexOf(".");
-        return dotIndex == -1 ? "" : name.substring(dotIndex);
+    public static String getExtension(String path) {
+        int dotIndex = path.lastIndexOf(".");
+        return dotIndex == -1 ? "" : path.substring(dotIndex + 1);
     }
 
     public static String readFile(File file) {
@@ -689,7 +689,7 @@ public class Orion {
     }
 
     //Files: URIs
-    public static Uri getUriFromPath(Context context, String filePath) {
+    public static Uri getFileUriFromFilePath(Context context, String filePath) {
         //Build query args
         Bundle queryArgs = new Bundle();
         queryArgs.putString(ContentResolver.QUERY_ARG_SQL_SELECTION, MediaStore.Files.FileColumns.DATA + "=? ");
@@ -710,7 +710,47 @@ public class Orion {
             }
         } catch (Exception e) {
             //Error
-            Log.e("Orion.getUriFromPath", "Error querying for URI: " + e.getMessage());
+            Log.e("Orion.getFileUriFromFilePath", "Error: " + e.getMessage());
+        }
+
+        //Failed
+        return null;
+    }
+
+    public static Uri getMediaUriFromFilePath(Context context, String filePath) {
+        //Ger mime type
+        String extension = getExtension(filePath);
+        String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+
+        //Determine if the file is an image or video to select the correct table
+        Uri contentUri;
+        if (mimeType != null && mimeType.startsWith("video")) {
+            contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+        } else {
+            contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        }
+
+        //Build query args
+        Bundle queryArgs = new Bundle();
+        queryArgs.putString(ContentResolver.QUERY_ARG_SQL_SELECTION, MediaStore.Files.FileColumns.DATA + "=? ");
+        queryArgs.putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, new String[] { filePath });
+        queryArgs.putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_INCLUDE);
+
+        //Create cursor
+        try (Cursor cursor = context.getContentResolver().query(
+                contentUri,
+                new String[] { MediaStore.MediaColumns._ID },
+                queryArgs,
+                null
+        )) {
+            //Search
+            if (cursor != null && cursor.moveToFirst()) {
+                int id = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID));
+                return Uri.withAppendedPath(contentUri, String.valueOf(id));
+            }
+        } catch (Exception e) {
+            //Error
+            Log.e("Orion.getMediaUriFromFilePath", "Error: " + e.getMessage());
         }
 
         //Failed

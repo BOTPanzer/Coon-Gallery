@@ -26,7 +26,7 @@ Android gallery with smart search support powered by metadata files.
 
 ## How to Run
 
-Download the last release from the [releases](https://github.com/BOTPanzer/Coon-Gallery/releases) page.
+Download the last release from the [releases](https://github.com/BOTPanzer/Coon-Gallery/releases) page or clone the repository and build it yourself using Android Studio.
 
 ## How to Use
 
@@ -42,7 +42,7 @@ Excluding the normal gallery features, there are some new original things that C
 
 ### Sync Albums & Metadata
 
-To create **backups of your albums** and generate **metadata for their images**, you will need to connect to the [Coon Gallery](https://github.com/BOTPanzer/Coon-Gallery-PC) PC app.
+To create **backups of your albums** and generate **metadata for their images**, you will need to connect to the [PC app](https://github.com/BOTPanzer/Coon-Gallery-PC) by following these steps:
 
 1. **Find its address**
    
@@ -52,4 +52,6 @@ To create **backups of your albums** and generate **metadata for their images**,
    
    Once you have the address, open the sync service in your gallery, type it into the "Address" input and press "Connect". From here, everything is managed by your computer.
 
-# 
+3. **Sync your files**
+   
+   Once connected, you can manage what you want to sync from the PC app.
