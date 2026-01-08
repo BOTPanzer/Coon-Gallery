@@ -26,9 +26,9 @@ class SyncUserAdapter(
         //Get user from users
         val user = users[position]
 
-        //Load album folder & metadata file names
+        //Update texts
         holder.name.text = user.name
-        holder.address.text = user.address
+        holder.code.text = user.code
 
         //Add listeners
         holder.background.setOnClickListener { view: View ->
@@ -75,7 +75,7 @@ class SyncUserAdapter(
 
         var background: View = itemView.findViewById(R.id.background)
         var name: TextView = itemView.findViewById(R.id.name)
-        var address: TextView = itemView.findViewById(R.id.address)
+        var code: TextView = itemView.findViewById(R.id.code)
         var delete: View = itemView.findViewById(R.id.delete)
 
     }

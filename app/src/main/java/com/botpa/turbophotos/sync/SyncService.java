@@ -114,14 +114,14 @@ public class SyncService extends Service {
     }
 
     //Web socket
-    private void connect(String URL) {
+    private void connect(String address) {
         //Try to connect
         setStatus(STATUS_CONNECTING);
 
         //Connect
         URI uri;
         try {
-            uri = new URI("ws://" + URL);
+            uri = new URI("ws://" + address);
         } catch (URISyntaxException e) {
             setStatus(STATUS_OFFLINE);
             return;
@@ -468,10 +468,10 @@ public class SyncService extends Service {
 
         //Parse command
         switch (command) {
-            //Connect to URL
+            //Connect to address
             case "connect":
-                String url = intent.getStringExtra("value");
-                if (url != null) connect(url);
+                String address = intent.getStringExtra("value");
+                if (address != null) connect(address);
                 break;
 
             //Stop service

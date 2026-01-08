@@ -96,11 +96,11 @@
                     android:singleLine="true" />
 
                 <EditText
-                    android:id="@+id/usersAddress"
+                    android:id="@+id/usersCode"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:ems="10"
-                    android:hint="Address"
+                    android:hint="Code"
                     android:inputType="text"
                     android:singleLine="true" />
 

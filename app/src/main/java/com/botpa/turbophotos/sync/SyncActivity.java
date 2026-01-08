@@ -21,9 +21,11 @@ import java.util.List;
 public class SyncActivity extends AppCompatActivity {
 
     //Connection
-    private final int STATUS_OFFLINE = 0;
-    private final int STATUS_CONNECTING = 1;
-    private final int STATUS_ONLINE = 2;
+    private static final int STATUS_OFFLINE = 0;
+    private static final int STATUS_CONNECTING = 1;
+    private static final int STATUS_ONLINE = 2;
+
+    private static final String CODE_CHARSET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     private int connectStatus = STATUS_OFFLINE;
 
@@ -39,7 +41,7 @@ public class SyncActivity extends AppCompatActivity {
     //Views (connect)
     private View usersLayout;
     private EditText usersName;
-    private EditText usersAddress;
+    private EditText usersCode;
     private View usersConnect;
     private View usersLoading;
     private RecyclerView usersList;
@@ -89,7 +91,7 @@ public class SyncActivity extends AppCompatActivity {
         //Views (connect)
         usersLayout = findViewById(R.id.usersLayout);
         usersName = findViewById(R.id.usersName);
-        usersAddress = findViewById(R.id.usersAddress);
+        usersCode = findViewById(R.id.usersCode);
         usersConnect = findViewById(R.id.usersConnect);
         usersLoading = findViewById(R.id.usersLoading);
         usersList = findViewById(R.id.usersList);
@@ -104,7 +106,7 @@ public class SyncActivity extends AppCompatActivity {
 
     private void addListeners() {
         //Connect
-        usersAddress.setOnKeyListener((view, i, keyEvent) -> {
+        usersCode.setOnKeyListener((view, i, keyEvent) -> {
             if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
                 Orion.clearFocus(SyncActivity.this);
                 Orion.hideKeyboard(SyncActivity.this);
@@ -117,9 +119,9 @@ public class SyncActivity extends AppCompatActivity {
             //Already trying to connect
             if (connectStatus != STATUS_OFFLINE) return;
 
-            //Get address
-            String address = usersAddress.getText().toString();
-            if (address.isEmpty()) return;
+            //Get code
+            String code = usersCode.getText().toString();
+            if (code.isEmpty()) return;
 
             //Get name
             String name = usersName.getText().toString();
@@ -132,7 +134,7 @@ public class SyncActivity extends AppCompatActivity {
                     if (!user.name.equals(name)) continue;
 
                     //Update user
-                    user.address = address;
+                    user.code = code;
                     usersAdapter.notifyItemChanged(i);
                     saveUsers();
                     isSaved = true;
@@ -141,14 +143,14 @@ public class SyncActivity extends AppCompatActivity {
 
                 //Add new user
                 if (!isSaved) {
-                    users.add(0, new User(name, address));
+                    users.add(0, new User(name, code));
                     usersAdapter.notifyItemInserted(0);
                     saveUsers();
                 }
             }
 
             //Connect
-            connect(address);
+            connect(code);
         });
 
         //Logs
@@ -173,7 +175,7 @@ public class SyncActivity extends AppCompatActivity {
             saveUsers();
 
             //Connect to user
-            connect(user.address);
+            connect(user.code);
         });
 
         //Add select user listener
@@ -181,9 +183,9 @@ public class SyncActivity extends AppCompatActivity {
             //Get user
             User user = users.get(index);
 
-            //Select name & address
+            //Select user info
             usersName.setText(user.name);
-            usersAddress.setText(user.address);
+            usersCode.setText(user.code);
 
             //Hide keyboard
             Orion.hideKeyboard(SyncActivity.this);
@@ -235,13 +237,35 @@ public class SyncActivity extends AppCompatActivity {
     }
 
     //Connection
-    private void connect(String address) {
+    private static long decodeBase36(String code) {
+        long result = 0;
+        for (int i = 0; i < code.length(); i++) {
+            result = result * 36 + CODE_CHARSET.indexOf(code.charAt(i));
+        }
+        return result;
+    }
+
+    private String convertCodeToAddress(String code) {
+        long combined = decodeBase36(code.toUpperCase());
+
+        int port = (int) (combined & 0xFFFF);
+        long ipNum = combined >> 16;
+
+        String ip = String.format("%d.%d.%d.%d", (ipNum >> 24) & 0xFF, (ipNum >> 16) & 0xFF, (ipNum >> 8) & 0xFF, ipNum & 0xFF);
+
+        return ip + ":" + port;
+    }
+
+    private void connect(String code) {
         //Hide keyboard
         Orion.hideKeyboard(SyncActivity.this);
         Orion.clearFocus(SyncActivity.this);
 
         //Connect
-        send("connect", address);
+        if (code.contains(":"))
+            send("connect", code); //Code is an address
+        else
+            send("connect", convertCodeToAddress(code));
     }
 
     //Logs
@@ -332,20 +356,6 @@ public class SyncActivity extends AppCompatActivity {
     }
 
     private void send(String name, String value) {
-        Intent intent = new Intent(this, SyncService.class);
-        intent.putExtra("command", name);
-        intent.putExtra("value", value);
-        startService(intent);
-    }
-
-    private void send(String name, boolean value) {
-        Intent intent = new Intent(this, SyncService.class);
-        intent.putExtra("command", name);
-        intent.putExtra("value", value);
-        startService(intent);
-    }
-
-    private void send(String name, int value) {
         Intent intent = new Intent(this, SyncService.class);
         intent.putExtra("command", name);
         intent.putExtra("value", value);

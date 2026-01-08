@@ -44,13 +44,13 @@ Excluding the normal gallery features, there are some new original things that C
 
 To create **backups of your albums** and generate **metadata for their images**, you will need to connect to the [PC app](https://github.com/BOTPanzer/Coon-Gallery-PC) by following these steps:
 
-1. **Find its address**
+1. **Find the connection code**
    
-   To find its connection address, open it and navigate to the sync menu. There, you will find an *IP* and *PORT* in the logs, similar to *192.168.1.87:6969*. This is the address.
+   To find the connection code, open the PC app and navigate to the sync menu.
 
-2. **Connect to the address**
+2. **Connect using the code**
    
-   Once you have the address, open the sync service in your gallery, type it into the "Address" input and press "Connect". From here, everything is managed by your computer.
+   Once you have the code, open the sync service in your gallery, type it into the "Code" input and press "Connect". From here, everything is managed by your computer.
 
 3. **Sync your files**
    
