@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.backup;
+package com.botpa.turbophotos.sync;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -18,7 +18,7 @@ import com.botpa.turbophotos.util.Storage;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BackupActivity extends AppCompatActivity {
+public class SyncActivity extends AppCompatActivity {
 
     //Connection
     private final int STATUS_OFFLINE = 0;
@@ -29,17 +29,17 @@ public class BackupActivity extends AppCompatActivity {
 
     //Users
     private final List<User> users = new ArrayList<>();
-    private UserAdapter usersAdapter;
+    private SyncUserAdapter usersAdapter;
 
     //Logs
     private static final int logsMax = 200;
     private final List<String> logs = new ArrayList<>();
-    private LogAdapter logsAdapter;
+    private SyncLogAdapter logsAdapter;
 
     //Views (connect)
     private View usersLayout;
     private EditText usersName;
-    private EditText usersURL;
+    private EditText usersAddress;
     private View usersConnect;
     private View usersLoading;
     private RecyclerView usersList;
@@ -53,7 +53,7 @@ public class BackupActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.backup_screen);
+        setContentView(R.layout.sync_screen);
 
         //Get views & add listeners
         getViews();
@@ -72,7 +72,7 @@ public class BackupActivity extends AppCompatActivity {
         initEventsObserver();
 
         //Start service
-        Intent intent = new Intent(this, BackupService.class);
+        Intent intent = new Intent(this, SyncService.class);
         startService(intent);
     }
 
@@ -89,7 +89,7 @@ public class BackupActivity extends AppCompatActivity {
         //Views (connect)
         usersLayout = findViewById(R.id.usersLayout);
         usersName = findViewById(R.id.usersName);
-        usersURL = findViewById(R.id.usersURL);
+        usersAddress = findViewById(R.id.usersAddress);
         usersConnect = findViewById(R.id.usersConnect);
         usersLoading = findViewById(R.id.usersLoading);
         usersList = findViewById(R.id.usersList);
@@ -104,10 +104,10 @@ public class BackupActivity extends AppCompatActivity {
 
     private void addListeners() {
         //Connect
-        usersURL.setOnKeyListener((view, i, keyEvent) -> {
+        usersAddress.setOnKeyListener((view, i, keyEvent) -> {
             if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
-                Orion.clearFocus(BackupActivity.this);
-                Orion.hideKeyboard(BackupActivity.this);
+                Orion.clearFocus(SyncActivity.this);
+                Orion.hideKeyboard(SyncActivity.this);
                 usersConnect.performClick();
             }
             return false;
@@ -117,9 +117,9 @@ public class BackupActivity extends AppCompatActivity {
             //Already trying to connect
             if (connectStatus != STATUS_OFFLINE) return;
 
-            //Get URL
-            String URL = usersURL.getText().toString();
-            if (URL.isEmpty()) return;
+            //Get address
+            String address = usersAddress.getText().toString();
+            if (address.isEmpty()) return;
 
             //Get name
             String name = usersName.getText().toString();
@@ -132,7 +132,7 @@ public class BackupActivity extends AppCompatActivity {
                     if (!user.name.equals(name)) continue;
 
                     //Update user
-                    user.URL = URL;
+                    user.address = address;
                     usersAdapter.notifyItemChanged(i);
                     saveUsers();
                     isSaved = true;
@@ -141,14 +141,14 @@ public class BackupActivity extends AppCompatActivity {
 
                 //Add new user
                 if (!isSaved) {
-                    users.add(0, new User(name, URL));
+                    users.add(0, new User(name, address));
                     usersAdapter.notifyItemInserted(0);
                     saveUsers();
                 }
             }
 
             //Connect
-            connect(URL);
+            connect(address);
         });
 
         //Logs
@@ -158,7 +158,7 @@ public class BackupActivity extends AppCompatActivity {
     //Users
     private void initUsersList() {
         //Create adapter
-        usersAdapter = new UserAdapter(BackupActivity.this, users);
+        usersAdapter = new SyncUserAdapter(SyncActivity.this, users);
 
         //Add connect listener
         usersAdapter.setOnClickListener((view, index) -> {
@@ -173,7 +173,7 @@ public class BackupActivity extends AppCompatActivity {
             saveUsers();
 
             //Connect to user
-            connect(user.URL);
+            connect(user.address);
         });
 
         //Add select user listener
@@ -181,13 +181,13 @@ public class BackupActivity extends AppCompatActivity {
             //Get user
             User user = users.get(index);
 
-            //Select name & URL
+            //Select name & address
             usersName.setText(user.name);
-            usersURL.setText(user.URL);
+            usersAddress.setText(user.address);
 
             //Hide keyboard
-            Orion.hideKeyboard(BackupActivity.this);
-            Orion.clearFocus(BackupActivity.this);
+            Orion.hideKeyboard(SyncActivity.this);
+            Orion.clearFocus(SyncActivity.this);
         });
 
         //Add delete user listener
@@ -200,7 +200,7 @@ public class BackupActivity extends AppCompatActivity {
 
         //Add adapter to list
         usersList.setAdapter(usersAdapter);
-        usersList.setLayoutManager(new LinearLayoutManager(BackupActivity.this));
+        usersList.setLayoutManager(new LinearLayoutManager(SyncActivity.this));
     }
 
     private void loadUsers() {
@@ -208,7 +208,7 @@ public class BackupActivity extends AppCompatActivity {
         boolean needsSave = false;
 
         //Split users
-        ArrayList<String> userStrings = Storage.getStringList("Backup.users");
+        ArrayList<String> userStrings = Storage.getStringList("Sync.users");
         for (String userString: userStrings) {
             //Check if valid
             int separatorIndex = userString.indexOf("\n");
@@ -231,27 +231,27 @@ public class BackupActivity extends AppCompatActivity {
         for (User user: users) userStrings.add(user.toString());
 
         //Save list
-        Storage.putStringList("Backup.users", userStrings);
+        Storage.putStringList("Sync.users", userStrings);
     }
 
     //Connection
-    private void connect(String URL) {
+    private void connect(String address) {
         //Hide keyboard
-        Orion.hideKeyboard(BackupActivity.this);
-        Orion.clearFocus(BackupActivity.this);
+        Orion.hideKeyboard(SyncActivity.this);
+        Orion.clearFocus(SyncActivity.this);
 
         //Connect
-        send("connect", URL);
+        send("connect", address);
     }
 
     //Logs
     private void initLogsList() {
         //Create adapter
-        logsAdapter = new LogAdapter(BackupActivity.this, logs);
+        logsAdapter = new SyncLogAdapter(SyncActivity.this, logs);
 
         //Add adapter to list
         logsList.setAdapter(logsAdapter);
-        logsList.setLayoutManager(new LinearLayoutManager(BackupActivity.this, LinearLayoutManager.VERTICAL, true));
+        logsList.setLayoutManager(new LinearLayoutManager(SyncActivity.this, LinearLayoutManager.VERTICAL, true));
         logsList.setItemAnimator(null);
     }
 
@@ -272,16 +272,16 @@ public class BackupActivity extends AppCompatActivity {
 
     //Events
     private void initEventsObserver() {
-        BackupEventBus instance = BackupEventBus.getInstance();
+        SyncEventBus instance = SyncEventBus.getInstance();
         instance.getTrigger().observe(this, t -> {
-            BackupEvent e;
+            SyncEvent e;
             while ((e = instance.getEventQueue().poll()) != null) {
                 handleEvent(e);
             }
         });
     }
 
-    private void handleEvent(BackupEvent event) {
+    private void handleEvent(SyncEvent event) {
         if (event == null) return;
         String command = event.command;
 
@@ -315,7 +315,7 @@ public class BackupActivity extends AppCompatActivity {
 
             //Snack
             case "snack":
-                Orion.snack(BackupActivity.this, event.stringValue);
+                Orion.snack(SyncActivity.this, event.stringValue);
                 break;
 
             //Log
@@ -326,27 +326,27 @@ public class BackupActivity extends AppCompatActivity {
     }
 
     private void send(String name) {
-        Intent intent = new Intent(this, BackupService.class);
+        Intent intent = new Intent(this, SyncService.class);
         intent.putExtra("command", name);
         startService(intent);
     }
 
     private void send(String name, String value) {
-        Intent intent = new Intent(this, BackupService.class);
+        Intent intent = new Intent(this, SyncService.class);
         intent.putExtra("command", name);
         intent.putExtra("value", value);
         startService(intent);
     }
 
     private void send(String name, boolean value) {
-        Intent intent = new Intent(this, BackupService.class);
+        Intent intent = new Intent(this, SyncService.class);
         intent.putExtra("command", name);
         intent.putExtra("value", value);
         startService(intent);
     }
 
     private void send(String name, int value) {
-        Intent intent = new Intent(this, BackupService.class);
+        Intent intent = new Intent(this, SyncService.class);
         intent.putExtra("command", name);
         intent.putExtra("value", value);
         startService(intent);

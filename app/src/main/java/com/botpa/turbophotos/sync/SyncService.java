@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.backup;
+package com.botpa.turbophotos.sync;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -31,12 +31,12 @@ import java.time.Instant;
 import java.util.ArrayList;
 import dev.gustavoavila.websocketclient.WebSocketClient;
 
-public class BackupService extends Service {
+public class SyncService extends Service {
 
     //Notifications
     private static final int NOTIFICATION_ID = 420;
-    private static final String NOTIFICATION_CHANNEL_ID = "backup_manager";
-    private static final String NOTIFICATION_CHANNEL_NAME = "Backup manager";
+    private static final String NOTIFICATION_CHANNEL_ID = "sync_service";
+    private static final String NOTIFICATION_CHANNEL_NAME = "Sync service";
 
     private NotificationManager notificationManager;
     private Notification notification;
@@ -440,7 +440,7 @@ public class BackupService extends Service {
 
         //Create notification channel
         NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW);
-        channel.setDescription("Appears when the backup service is active");
+        channel.setDescription("Appears when the sync service is active");
         notificationManager.createNotificationChannel(channel);
 
         //Create notification
@@ -448,9 +448,9 @@ public class BackupService extends Service {
 
         builder
             .setSmallIcon(R.drawable.app_icon)
-            .setContentTitle("Backup")
-            .setContentText("The backup service is active")
-            .setContentIntent(PendingIntent.getActivity(this, 0, new Intent(this, BackupActivity.class), PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE))
+            .setContentTitle("Sync")
+            .setContentText("The sync service is active")
+            .setContentIntent(PendingIntent.getActivity(this, 0, new Intent(this, SyncActivity.class), PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE))
             .setAutoCancel(true)
             .setOngoing(true);
 
@@ -487,19 +487,19 @@ public class BackupService extends Service {
     }
 
     private void send(String name) {
-        BackupEventBus.getInstance().postEvent(name, 0); //Using int as a dummy value
+        SyncEventBus.getInstance().postEvent(name, 0); //Using int as a dummy value
     }
 
     private void send(String name, String value) {
-        BackupEventBus.getInstance().postEvent(name, value);
+        SyncEventBus.getInstance().postEvent(name, value);
     }
 
     private void send(String name, boolean value) {
-        BackupEventBus.getInstance().postEvent(name, value ? 1 : 0); //Convert boolean to int
+        SyncEventBus.getInstance().postEvent(name, value ? 1 : 0); //Convert boolean to int
     }
 
     private void send(String name, int value) {
-        BackupEventBus.getInstance().postEvent(name, value);
+        SyncEventBus.getInstance().postEvent(name, value);
     }
 
     //Metadata requests

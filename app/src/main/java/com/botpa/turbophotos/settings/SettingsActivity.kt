@@ -356,7 +356,7 @@ class SettingsActivity : ComponentActivity() {
 
                     //Description
                     Text(
-                        text = "Add albums to enable backing them up in the backup service.",
+                        text = "Add albums to enable backing them up in the sync service.",
                         textAlign = TextAlign.Center,
                         fontSize = 14.sp,
                         modifier = Modifier

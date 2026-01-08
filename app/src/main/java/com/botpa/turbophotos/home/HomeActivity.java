@@ -29,7 +29,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import android.Manifest;
 import android.widget.LinearLayout;
 
-import com.botpa.turbophotos.backup.BackupActivity;
+import com.botpa.turbophotos.sync.SyncActivity;
 import com.botpa.turbophotos.album.AlbumActivity;
 import com.botpa.turbophotos.gallery.GalleryActivity;
 import com.botpa.turbophotos.settings.SettingsActivity;
@@ -70,7 +70,7 @@ public class HomeActivity extends GalleryActivity {
     private GridLayoutManager layoutManager;
 
     //Views (navbar)
-    private View navbarBackup;
+    private View navbarSync;
     private View navbarSettings;
 
     //Views (list)
@@ -266,7 +266,7 @@ public class HomeActivity extends GalleryActivity {
     //Views
     private void loadViews() {
         //Navbar
-        navbarBackup = findViewById(R.id.navbarBackup);
+        navbarSync = findViewById(R.id.navbarSync);
         navbarSettings = findViewById(R.id.navbarSettings);
 
         //List
@@ -327,14 +327,14 @@ public class HomeActivity extends GalleryActivity {
 
     private void addListeners() {
         //Navbar
+        navbarSync.setOnClickListener(view -> {
+            //Open sync
+            startActivity(new Intent(HomeActivity.this, SyncActivity.class));
+        });
+
         navbarSettings.setOnClickListener(view -> {
             //Open settings
             startActivity(new Intent(HomeActivity.this, SettingsActivity.class));
-        });
-
-        navbarBackup.setOnClickListener(view -> {
-            //Open backup
-            startActivity(new Intent(HomeActivity.this, BackupActivity.class));
         });
 
         //List

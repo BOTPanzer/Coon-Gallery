@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.backup
+package com.botpa.turbophotos.sync
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -8,14 +8,14 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 
-class UserAdapter(
+class SyncUserAdapter(
     private val context: Context,
     private val users: List<User>
-) : RecyclerView.Adapter<UserAdapter.AlbumHolder>() {
+) : RecyclerView.Adapter<SyncUserAdapter.AlbumHolder>() {
 
     //Adapter
     override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): AlbumHolder {
-        val view = LayoutInflater.from(context).inflate(R.layout.backup_connect_item, viewGroup, false)
+        val view = LayoutInflater.from(context).inflate(R.layout.sync_connect_item, viewGroup, false)
         return AlbumHolder(view)
     }
 
@@ -28,7 +28,7 @@ class UserAdapter(
 
         //Load album folder & metadata file names
         holder.name.text = user.name
-        holder.url.text = user.URL
+        holder.address.text = user.address
 
         //Add listeners
         holder.background.setOnClickListener { view: View ->
@@ -75,7 +75,7 @@ class UserAdapter(
 
         var background: View = itemView.findViewById(R.id.background)
         var name: TextView = itemView.findViewById(R.id.name)
-        var url: TextView = itemView.findViewById(R.id.url)
+        var address: TextView = itemView.findViewById(R.id.address)
         var delete: View = itemView.findViewById(R.id.delete)
 
     }

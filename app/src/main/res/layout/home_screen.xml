@@ -94,7 +94,7 @@
                     </LinearLayout>
 
                     <androidx.cardview.widget.CardView
-                        android:id="@+id/navbarBackup"
+                        android:id="@+id/navbarSync"
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:layout_marginStart="10dp"

@@ -56,14 +56,14 @@
             android:exported="false">
         </activity>
         <activity
-            android:name=".backup.BackupActivity"
+            android:name=".sync.SyncActivity"
             android:launchMode="singleTask"
             android:exported="false">
         </activity>
 
         <!-- Services -->
         <service
-            android:name=".backup.BackupService"
+            android:name=".sync.SyncService"
             android:foregroundServiceType="dataSync"
             android:exported="false">
         </service>

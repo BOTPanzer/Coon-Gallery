@@ -1,18 +1,18 @@
-package com.botpa.turbophotos.backup;
+package com.botpa.turbophotos.sync;
 
-public class BackupEvent {
+public class SyncEvent {
 
     public final String command;
     public final String stringValue;
     public final int intValue;
 
-    public BackupEvent(String command, String value) {
+    public SyncEvent(String command, String value) {
         this.command = command;
         this.stringValue = value;
         this.intValue = 0;
     }
 
-    public BackupEvent(String command, int value) {
+    public SyncEvent(String command, int value) {
         this.command = command;
         this.stringValue = null;
         this.intValue = value;
