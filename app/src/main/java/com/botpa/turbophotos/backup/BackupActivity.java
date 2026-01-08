@@ -20,18 +20,23 @@ import java.util.List;
 
 public class BackupActivity extends AppCompatActivity {
 
+    //Connection
     private final int STATUS_OFFLINE = 0;
     private final int STATUS_CONNECTING = 1;
     private final int STATUS_ONLINE = 2;
 
-    //Connection
     private int connectStatus = STATUS_OFFLINE;
 
     //Users
     private final List<User> users = new ArrayList<>();
     private UserAdapter usersAdapter;
 
-    //Connect
+    //Logs
+    private static final int logsMax = 200;
+    private final List<String> logs = new ArrayList<>();
+    private LogAdapter logsAdapter;
+
+    //Views (connect)
     private View usersLayout;
     private EditText usersName;
     private EditText usersURL;
@@ -39,14 +44,12 @@ public class BackupActivity extends AppCompatActivity {
     private View usersLoading;
     private RecyclerView usersList;
 
-    //Logs
-    private static final int logsMax = 200;
-    private final List<String> logs = new ArrayList<>();
-    private LogAdapter logsAdapter;
-
+    //Views (logs)
     private RecyclerView logsList;
+    private View logsExit;
 
 
+    //State
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,28 +63,10 @@ public class BackupActivity extends AppCompatActivity {
         loadUsers();
 
         //Init users list
-        usersAdapter = new UserAdapter(BackupActivity.this, users);
-        usersAdapter.setOnClickListener((view, index) -> connect(users.get(index).URL));
-        usersAdapter.setOnLongClickListener((view, index) -> {
-            User user = users.get(index);
-            usersName.setText(user.name);
-            usersURL.setText(user.URL);
-            Orion.hideKeyboard(BackupActivity.this);
-            Orion.clearFocus(BackupActivity.this);
-        });
-        usersAdapter.setOnDeleteListener((view, index) -> {
-            users.remove(index);
-            usersAdapter.notifyItemRemoved(index);
-            saveUsers();
-        });
-        usersList.setAdapter(usersAdapter);
-        usersList.setLayoutManager(new LinearLayoutManager(BackupActivity.this));
+        initUsersList();
 
         //Init logs list
-        logsAdapter = new LogAdapter(BackupActivity.this, logs);
-        logsList.setAdapter(logsAdapter);
-        logsList.setLayoutManager(new LinearLayoutManager(BackupActivity.this, LinearLayoutManager.VERTICAL, true));
-        logsList.setItemAnimator(null);
+        initLogsList();
 
         //Init events observer
         initEventsObserver();
@@ -101,13 +86,17 @@ public class BackupActivity extends AppCompatActivity {
 
     //App
     private void getViews() {
+        //Views (connect)
         usersLayout = findViewById(R.id.usersLayout);
         usersName = findViewById(R.id.usersName);
         usersURL = findViewById(R.id.usersURL);
         usersConnect = findViewById(R.id.usersConnect);
         usersLoading = findViewById(R.id.usersLoading);
         usersList = findViewById(R.id.usersList);
+
+        //Views (logs)
         logsList = findViewById(R.id.logsList);
+        logsExit = findViewById(R.id.logsExit);
 
         //Insets
         Orion.addInsetsChangedListener(getWindow().getDecorView(), new int[] { WindowInsetsCompat.Type.systemBars(), WindowInsetsCompat.Type.ime() });
@@ -163,10 +152,57 @@ public class BackupActivity extends AppCompatActivity {
         });
 
         //Logs
-        findViewById(R.id.logsExit).setOnClickListener(view -> finish());
+        logsExit.setOnClickListener(view -> finish());
     }
 
     //Users
+    private void initUsersList() {
+        //Create adapter
+        usersAdapter = new UserAdapter(BackupActivity.this, users);
+
+        //Add connect listener
+        usersAdapter.setOnClickListener((view, index) -> {
+            //Get user
+            User user = users.get(index);
+
+            //Move user first in list
+            users.remove(index);
+            usersAdapter.notifyItemRemoved(index);
+            users.add(0, user);
+            usersAdapter.notifyItemInserted(0);
+            saveUsers();
+
+            //Connect to user
+            connect(user.URL);
+        });
+
+        //Add select user listener
+        usersAdapter.setOnLongClickListener((view, index) -> {
+            //Get user
+            User user = users.get(index);
+
+            //Select name & URL
+            usersName.setText(user.name);
+            usersURL.setText(user.URL);
+
+            //Hide keyboard
+            Orion.hideKeyboard(BackupActivity.this);
+            Orion.clearFocus(BackupActivity.this);
+        });
+
+        //Add delete user listener
+        usersAdapter.setOnDeleteListener((view, index) -> {
+            //Delete user
+            users.remove(index);
+            usersAdapter.notifyItemRemoved(index);
+            saveUsers();
+        });
+
+        //Add adapter to list
+        usersList.setAdapter(usersAdapter);
+        usersList.setLayoutManager(new LinearLayoutManager(BackupActivity.this));
+    }
+
     private void loadUsers() {
         //Var to check if save needed
         boolean needsSave = false;
@@ -209,6 +245,16 @@ public class BackupActivity extends AppCompatActivity {
     }
 
     //Logs
+    private void initLogsList() {
+        //Create adapter
+        logsAdapter = new LogAdapter(BackupActivity.this, logs);
+
+        //Add adapter to list
+        logsList.setAdapter(logsAdapter);
+        logsList.setLayoutManager(new LinearLayoutManager(BackupActivity.this, LinearLayoutManager.VERTICAL, true));
+        logsList.setItemAnimator(null);
+    }
+
     private void log(String log) {
         //Reached maximum size -> Remove first
         if (logs.size() >= logsMax) {
