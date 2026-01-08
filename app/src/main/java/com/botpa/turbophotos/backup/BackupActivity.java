@@ -272,49 +272,57 @@ public class BackupActivity extends AppCompatActivity {
 
     //Events
     private void initEventsObserver() {
-        BackupEventBus.getInstance().getEvent().observe(this, event -> {
-            if (event == null) return;
-            String command = event.command;
-
-            //Check command
-            switch (command) {
-                //Service started
-                case "init":
-                    log("Service started");
-                    break;
-
-                //Status changed
-                case "status":
-                    connectStatus = event.intValue;
-                    switch (connectStatus) {
-                        case STATUS_OFFLINE:
-                            log("Disconnected");
-                            usersLayout.setVisibility(View.VISIBLE);
-                            usersLoading.setVisibility(View.GONE);
-                            break;
-                        case STATUS_CONNECTING:
-                            log("Connecting...");
-                            usersLoading.setVisibility(View.VISIBLE);
-                            break;
-                        case STATUS_ONLINE:
-                            log("Connected");
-                            usersLayout.setVisibility(View.GONE);
-                            usersLoading.setVisibility(View.GONE);
-                            break;
-                    }
-                    break;
-
-                //Snack
-                case "snack":
-                    Orion.snack(BackupActivity.this, event.stringValue);
-                    break;
-
-                //Log
-                case "log":
-                    log(event.stringValue);
-                    break;
+        BackupEventBus instance = BackupEventBus.getInstance();
+        instance.getTrigger().observe(this, t -> {
+            BackupEvent e;
+            while ((e = instance.getEventQueue().poll()) != null) {
+                handleEvent(e);
             }
         });
+    }
+
+    private void handleEvent(BackupEvent event) {
+        if (event == null) return;
+        String command = event.command;
+
+        //Check command
+        switch (command) {
+            //Service started
+            case "init":
+                log("Service started");
+                break;
+
+            //Status changed
+            case "status":
+                connectStatus = event.intValue;
+                switch (connectStatus) {
+                    case STATUS_OFFLINE:
+                        log("Disconnected");
+                        usersLayout.setVisibility(View.VISIBLE);
+                        usersLoading.setVisibility(View.GONE);
+                        break;
+                    case STATUS_CONNECTING:
+                        log("Connecting...");
+                        usersLoading.setVisibility(View.VISIBLE);
+                        break;
+                    case STATUS_ONLINE:
+                        log("Connected");
+                        usersLayout.setVisibility(View.GONE);
+                        usersLoading.setVisibility(View.GONE);
+                        break;
+                }
+                break;
+
+            //Snack
+            case "snack":
+                Orion.snack(BackupActivity.this, event.stringValue);
+                break;
+
+            //Log
+            case "log":
+                log(event.stringValue);
+                break;
+        }
     }
 
     private void send(String name) {

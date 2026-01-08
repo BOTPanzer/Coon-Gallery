@@ -178,15 +178,6 @@ class SettingsActivity : ComponentActivity() {
                     Orion.snackTwo(
                         this@SettingsActivity,
                         "Do you have an already created metadata file?",
-                        "Select",
-                        {
-                            Toast.makeText(this@SettingsActivity, "Select a file to use as metadata", Toast.LENGTH_LONG).show()
-                            filePickerAction = PickerAction.SelectFile
-                            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-                            intent.addCategory(Intent.CATEGORY_OPENABLE)
-                            intent.type = "application/json"
-                            filePickerLauncher.launch(intent)
-                        },
                         "Create",
                         {
                             if (!Link.links[index].albumFolder.exists()) {
@@ -197,6 +188,15 @@ class SettingsActivity : ComponentActivity() {
                                 val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
                                 filePickerLauncher.launch(intent)
                             }
+                        },
+                        "Select",
+                        {
+                            Toast.makeText(this@SettingsActivity, "Select a file to use as metadata", Toast.LENGTH_LONG).show()
+                            filePickerAction = PickerAction.SelectFile
+                            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+                            intent.addCategory(Intent.CATEGORY_OPENABLE)
+                            intent.type = "application/json"
+                            filePickerLauncher.launch(intent)
                         },
                         Snackbar.LENGTH_INDEFINITE
                     )
