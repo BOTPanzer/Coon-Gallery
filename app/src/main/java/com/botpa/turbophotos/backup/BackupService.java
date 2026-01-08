@@ -228,7 +228,7 @@ public class BackupService extends Service {
                         int requestCount = message.get("requestCount").asInt();
 
                         //Log
-                        send("log", "(" + requestIndex + "/" + requestCount + ") Sending item info for \"" + item.name + "\"");
+                        send("log", "(" + (requestIndex + 1) + "/" + requestCount + ") Sending item info for \"" + item.name + "\"");
                     } else {
                         //Log
                         send("log", "Sending item info for \"" + item.name + "\"");
