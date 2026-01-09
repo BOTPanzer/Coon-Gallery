@@ -1,6 +1,6 @@
 # Coon Gallery
 
-Android gallery with smart search support powered by metadata files.
+Pivacy-focused Android gallery with smart search support powered by metadata files.
 
 <div align="center">
 <img src="https://raw.githubusercontent.com/BOTPanzer/Coon-Gallery/refs/heads/main/screenshots/home.png" width="24%" />
@@ -17,7 +17,7 @@ Android gallery with smart search support powered by metadata files.
 
 - Wirelessly **backup your albums** to your computer.
   
-  - Tired of cloud backups? Make local backups with the [PC app](https://github.com/BOTPanzer/Coon-Gallery-PC)!
+  - Tired of relying on the cloud? Make local backups with the [PC app](https://github.com/BOTPanzer/Coon-Gallery-PC)!
 
 - Multiple actions to **manage your albums**.
   
