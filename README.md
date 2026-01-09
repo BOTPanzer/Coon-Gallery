@@ -33,7 +33,7 @@ Android gallery with smart search support powered by metadata files.
 
 ## How to Run
 
-Download the latest release from the [releases page](https://github.com/BOTPanzer/Coon-Gallery/releases) (comming soon) or clone the repository and build it yourself using Android Studio.
+Choose wichever version you want from the [releases page](https://github.com/BOTPanzer/Coon-Gallery/releases) and download the apk or clone the repository and build it yourself using Android Studio.
 
 ## How to Use
 
