@@ -134,16 +134,16 @@ public class Library {
         );
     }
 
-    public static void loadGallery(Context context, boolean reset) {
-        loadGallery(context, reset, galleryFilter);
+    public static void loadLibrary(Context context, boolean reset) {
+        loadLibrary(context, reset, galleryFilter);
     }
 
-    public static void loadGallery(Context context, String filterType) {
+    public static void loadLibrary(Context context, String filterType) {
         //Filtering requires a reset of albums
-        loadGallery(context, true, filterType);
+        loadLibrary(context, true, filterType);
     }
 
-    private static void loadGallery(Context context, boolean reset, String filterMimeType) {
+    private static void loadLibrary(Context context, boolean reset, String filterMimeType) {
         //Save filter
         galleryFilter = filterMimeType;
 
@@ -244,7 +244,7 @@ public class Library {
         sortAlbumsList();
 
         //Invoke on refresh
-        invokeOnRefresh(itemsAdded > 0);
+        invokeOnRefresh(reset || itemsAdded > 0);
     }
 
     //Albums

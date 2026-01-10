@@ -378,7 +378,7 @@ public class AlbumActivity extends GalleryActivity {
         //List
         refreshLayout.setOnRefreshListener(() -> {
             //Reload library
-            Library.loadGallery(AlbumActivity.this, false); //Soft refresh to ONLY look for new files
+            Library.loadLibrary(AlbumActivity.this, false); //Soft refresh to ONLY look for new files
 
             //Stop refreshing
             refreshLayout.setRefreshing(false);
@@ -709,25 +709,25 @@ public class AlbumActivity extends GalleryActivity {
 
             //Update options list
             optionsItems.clear();
-            if (isSelectingSingle && !inTrash)
+            if (!inTrash && isSelectingSingle)
                 optionsItems.add(options.get(OPTIONS_EDIT));
-            if (isSelecting && !inTrash)
+            if (!inTrash && isSelecting)
                 optionsItems.add(options.get(OPTIONS_SHARE));
-            if (isSelecting && !inTrash)
+            if (!inTrash && isSelecting)
                 optionsItems.add(options.get(OPTIONS_MOVE));
-            if (isSelecting && !inTrash)
+            if (!inTrash && isSelecting)
                 optionsItems.add(options.get(OPTIONS_COPY));
             if (!inTrash)
                 optionsItems.add(options.get(OPTIONS_SEPARATOR));
-            if (isSelecting && !inTrash)
+            if (!inTrash && isSelecting)
                 optionsItems.add(options.get(OPTIONS_TRASH));
-            if (isSelecting && inTrash)
+            if (inTrash && isSelecting)
                 optionsItems.add(options.get(OPTIONS_RESTORE));
-            if (!isSelecting && inTrash)
+            if (inTrash && !isSelecting)
                 optionsItems.add(options.get(OPTIONS_RESTORE_ALL));
             if (isSelecting)
                 optionsItems.add(options.get(OPTIONS_DELETE));
-            if (!isSelecting && inTrash)
+            if (inTrash && !isSelecting)
                 optionsItems.add(options.get(OPTIONS_DELETE_ALL));
             optionsAdapter.notifyDataSetChanged();
 

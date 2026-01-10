@@ -19,6 +19,7 @@ import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
@@ -31,6 +32,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.Manifest;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 
 import com.botpa.turbophotos.gallery.options.OptionsAdapter;
 import com.botpa.turbophotos.gallery.options.OptionsItem;
@@ -45,15 +47,18 @@ import com.botpa.turbophotos.R;
 import com.botpa.turbophotos.util.BackManager;
 import com.botpa.turbophotos.util.Orion;
 import com.botpa.turbophotos.util.Storage;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import kotlin.Pair;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
 
@@ -103,6 +108,7 @@ public class HomeActivity extends GalleryActivity {
     private static final String OPTIONS_SEPARATOR = "separator";
     private static final String OPTIONS_SYNC = "sync";
     private static final String OPTIONS_SETTINGS = "settings";
+    private static final String OPTIONS_FILTER = "filter";
     private final Map<String, OptionsItem> options = new HashMap<>();
     private final List<OptionsItem> optionsItems = new ArrayList<>();
 
@@ -194,7 +200,7 @@ public class HomeActivity extends GalleryActivity {
         updateHorizontalItemCount();
 
         //Refresh albums (check for new items)
-        Library.loadGallery(HomeActivity.this, false);
+        Library.loadLibrary(HomeActivity.this, false);
     }
 
     @Override
@@ -300,7 +306,7 @@ public class HomeActivity extends GalleryActivity {
         //Load albums
         new Thread(() -> {
             //Load albums
-            Library.loadGallery(HomeActivity.this, filter);
+            Library.loadLibrary(HomeActivity.this, filter);
 
             //Show list
             runOnUiThread(() -> {
@@ -420,10 +426,40 @@ public class HomeActivity extends GalleryActivity {
             return null;
         }));
 
+        options.put(OPTIONS_FILTER, new OptionsItem(R.drawable.gallery, "Filter", () -> {
+            //Create list
+            ListView list = new ListView(HomeActivity.this);
+
+            //Create filters
+            List<HomeFilter> filters = Arrays.asList(
+                    new HomeFilter("All", "*/*"),
+                    new HomeFilter("Images", "image/*"),
+                    new HomeFilter("Videos", "video/*")
+            );
+
+            //Create adapter
+            HomeFilterAdapter adapter = new HomeFilterAdapter(HomeActivity.this, filters);
+            list.setAdapter(adapter);
+
+            //Show dialog
+            AlertDialog dialog = new MaterialAlertDialogBuilder(HomeActivity.this)
+                    .setTitle("Filters")
+                    .setView(list)
+                    .setNegativeButton("Cancel", (dialogInterface, which) -> dialogInterface.dismiss())
+                    .show();
+
+            //Add listeners
+            list.setOnItemClickListener((parent, view, position, id) -> {
+                Library.loadLibrary(HomeActivity.this, filters.get(position).getMimeType());
+                dialog.dismiss();
+            });
+            return null;
+        }));
+
         //List
         refreshLayout.setOnRefreshListener(() -> {
             //Reload library
-            Library.loadGallery(HomeActivity.this, true); //Fully refresh
+            Library.loadLibrary(HomeActivity.this, true); //Fully refresh
 
             //Stop refreshing
             refreshLayout.setRefreshing(false);
@@ -569,6 +605,8 @@ public class HomeActivity extends GalleryActivity {
             optionsItems.clear();
             optionsItems.add(options.get(OPTIONS_SYNC));
             optionsItems.add(options.get(OPTIONS_SETTINGS));
+            optionsItems.add(options.get(OPTIONS_SEPARATOR));
+            optionsItems.add(options.get(OPTIONS_FILTER));
             optionsAdapter.notifyDataSetChanged();
 
             //Show
