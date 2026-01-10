@@ -25,11 +25,15 @@ import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.Manifest;
 import android.widget.LinearLayout;
 
+import com.botpa.turbophotos.gallery.options.OptionsAdapter;
+import com.botpa.turbophotos.gallery.options.OptionsItem;
 import com.botpa.turbophotos.sync.SyncActivity;
 import com.botpa.turbophotos.album.AlbumActivity;
 import com.botpa.turbophotos.gallery.GalleryActivity;
@@ -38,11 +42,20 @@ import com.botpa.turbophotos.gallery.actions.Action;
 import com.botpa.turbophotos.gallery.Album;
 import com.botpa.turbophotos.gallery.Library;
 import com.botpa.turbophotos.R;
+import com.botpa.turbophotos.util.BackManager;
 import com.botpa.turbophotos.util.Orion;
 import com.botpa.turbophotos.util.Storage;
 import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView;
 
 import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import kotlin.Unit;
+import kotlin.jvm.functions.Function0;
 
 @SuppressLint({"SetTextI18n", "NotifyDataSetChanged"})
 public class HomeActivity extends GalleryActivity {
@@ -58,6 +71,7 @@ public class HomeActivity extends GalleryActivity {
     });
 
     //Activity
+    private BackManager backManager;
     private static boolean shouldReloadOnResume = false;
     private boolean isLoaded = false;
     private boolean skipResume = true;
@@ -79,16 +93,25 @@ public class HomeActivity extends GalleryActivity {
     private final Library.RefreshEvent onRefresh = this::manageRefresh;
     private final Library.ActionEvent onAction = this::manageAction;
 
-    //Adapters
-    private HomeAdapter adapter;
+    //Home list
     private GridLayoutManager layoutManager;
+    private HomeAdapter adapter;
+
+    //Home options
+    private static final String OPTIONS_SEPARATOR = "separator";
+    private static final String OPTIONS_SYNC = "sync";
+    private static final String OPTIONS_SETTINGS = "settings";
+    private final Map<String, OptionsItem> options = new HashMap<>();
 
     //Views (permissions)
     private View permissionLayout;
 
     //Views (navbar)
-    private View navbarSync;
-    private View navbarSettings;
+    private View navbarOptions;
+
+    //Views (options)
+    private View optionsLayout;
+    private RecyclerView optionsList;
 
     //Views (list)
     private SwipeRefreshLayout refreshLayout;
@@ -114,6 +137,9 @@ public class HomeActivity extends GalleryActivity {
 
         //Load storage
         Storage.load(HomeActivity.this);
+
+        //Init back manager
+        backManager = new BackManager(HomeActivity.this, getOnBackPressedDispatcher());
 
         //Load views & add listeners
         loadViews();
@@ -303,8 +329,11 @@ public class HomeActivity extends GalleryActivity {
         permissionLayout = findViewById(R.id.permissionLayout);
 
         //Navbar
-        navbarSync = findViewById(R.id.navbarSync);
-        navbarSettings = findViewById(R.id.navbarSettings);
+        navbarOptions = findViewById(R.id.navbarOptions);
+
+        //Options
+        optionsLayout = findViewById(R.id.optionsLayout);
+        optionsList = findViewById(R.id.optionsList);
 
         //List
         refreshLayout = findViewById(R.id.refreshLayout);
@@ -349,6 +378,9 @@ public class HomeActivity extends GalleryActivity {
                 }
         );
 
+        //Insets (options layout)
+        Orion.addInsetsChangedListener(optionsLayout, new int[] { WindowInsetsCompat.Type.systemBars() });
+
         //Insets (system bars background)
         Orion.addInsetsChangedListener(
                 systemNotificationsBar,
@@ -364,15 +396,24 @@ public class HomeActivity extends GalleryActivity {
 
     private void addListeners() {
         //Navbar
-        navbarSync.setOnClickListener(view -> {
+        navbarOptions.setOnClickListener(view -> toggleOptions(true));
+
+        //Options
+        optionsLayout.setOnClickListener(view -> toggleOptions(false));
+
+        options.put(OPTIONS_SEPARATOR, new OptionsItem());
+
+        options.put(OPTIONS_SYNC, new OptionsItem(R.drawable.backup, "Sync", () -> {
             //Open sync
             startActivity(new Intent(HomeActivity.this, SyncActivity.class));
-        });
+            return null;
+        }));
 
-        navbarSettings.setOnClickListener(view -> {
-            //Open settings
+        options.put(OPTIONS_SETTINGS, new OptionsItem(R.drawable.settings, "Settings", () -> {
+            //Open sync
             startActivity(new Intent(HomeActivity.this, SettingsActivity.class));
-        });
+            return null;
+        }));
 
         //List
         refreshLayout.setOnRefreshListener(() -> {
@@ -457,7 +498,7 @@ public class HomeActivity extends GalleryActivity {
     }
 
     private void initAdapters() {
-        //Create layout manager
+        //Create home layout manager
         layoutManager = new GridLayoutManager(HomeActivity.this, getHorizontalItemCount());
         list.setLayoutManager(layoutManager);
 
@@ -494,6 +535,43 @@ public class HomeActivity extends GalleryActivity {
             }
         });
         list.setAdapter(adapter);
+
+        //Create options layout manager
+        optionsList.setLayoutManager(new LinearLayoutManager(HomeActivity.this));
+    }
+
+    //Options
+    private void toggleOptions(boolean show) {
+        if (show) {
+            //Create options list
+            List<OptionsItem> optionsItems = new ArrayList<>();
+            optionsItems.add(options.get(OPTIONS_SYNC));
+            optionsItems.add(options.get(OPTIONS_SETTINGS));
+
+            //Create options adapter
+            OptionsAdapter optionsAdapter = new OptionsAdapter(HomeActivity.this, optionsItems);
+            optionsAdapter.setOnClickListener((view, index) -> {
+                //Get option
+                OptionsItem option = optionsItems.get(index);
+                if (option == null) return;
+
+                //Get action
+                Function0<Unit> action = option.getAction();
+                if (action == null) return;
+
+                //Invoke action
+                action.invoke();
+                toggleOptions(false);
+            });
+            optionsList.setAdapter(optionsAdapter);
+
+            //Show
+            Orion.showAnim(optionsLayout);
+            backManager.register("options", () -> toggleOptions(false));
+        } else {
+            Orion.hideAnim(optionsLayout);
+            backManager.unregister("options");
+        }
     }
 
 }

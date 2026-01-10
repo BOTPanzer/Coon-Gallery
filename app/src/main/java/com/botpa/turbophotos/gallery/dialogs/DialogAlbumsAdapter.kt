@@ -16,7 +16,7 @@ class DialogAlbumsAdapter(
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         //Inflate
-        val view: View = convertView ?: LayoutInflater.from(getContext()).inflate(R.layout.dialog_album_item, parent, false)
+        val view: View = convertView ?: LayoutInflater.from(context).inflate(R.layout.dialog_album_item, parent, false)
 
         //Get views
         val name = view.findViewById<TextView>(R.id.albumName)

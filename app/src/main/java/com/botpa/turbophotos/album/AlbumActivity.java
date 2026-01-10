@@ -18,6 +18,8 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.botpa.turbophotos.R;
@@ -26,6 +28,10 @@ import com.botpa.turbophotos.gallery.LoadingIndicator;
 import com.botpa.turbophotos.gallery.actions.Action;
 import com.botpa.turbophotos.gallery.Album;
 import com.botpa.turbophotos.gallery.GalleryActivity;
+import com.botpa.turbophotos.gallery.options.OptionsAdapter;
+import com.botpa.turbophotos.gallery.options.OptionsItem;
+import com.botpa.turbophotos.home.HomeActivity;
+import com.botpa.turbophotos.sync.SyncActivity;
 import com.botpa.turbophotos.util.BackManager;
 import com.botpa.turbophotos.gallery.Library;
 import com.botpa.turbophotos.util.Orion;
@@ -36,7 +42,13 @@ import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+
+import kotlin.Unit;
+import kotlin.jvm.functions.Function0;
 
 public class AlbumActivity extends GalleryActivity {
 
@@ -52,9 +64,22 @@ public class AlbumActivity extends GalleryActivity {
     private final Library.RefreshEvent onRefresh = this::manageRefresh;
     private final Library.ActionEvent onAction = this::manageAction;
 
-    //List adapter
+    //Album list
     private GridLayoutManager layoutManager;
     private AlbumAdapter adapter;
+
+    //Album options
+    private static final String OPTIONS_SEPARATOR = "separator";
+    private static final String OPTIONS_EDIT = "edit";
+    private static final String OPTIONS_SHARE = "share";
+    private static final String OPTIONS_MOVE = "move";
+    private static final String OPTIONS_COPY = "copy";
+    private static final String OPTIONS_TRASH = "trash";
+    private static final String OPTIONS_RESTORE = "restore";
+    private static final String OPTIONS_RESTORE_ALL = "restore_all";
+    private static final String OPTIONS_DELETE = "delete";
+    private static final String OPTIONS_DELETE_ALL = "delete_all";
+    private final Map<String, OptionsItem> options = new HashMap<>();
 
     //List album
     private boolean inTrash = false;
@@ -75,16 +100,7 @@ public class AlbumActivity extends GalleryActivity {
 
     //Views (options)
     private View optionsLayout;
-    private View optionsEdit;
-    private View optionsShare;
-    private View optionsMove;
-    private View optionsCopy;
-    private View optionsSeparator;
-    private View optionsTrash;
-    private View optionsRestore;
-    private View optionsRestoreAll;
-    private View optionsDelete;
-    private View optionsDeleteAll;
+    private RecyclerView optionsList;
 
     //Views (list)
     private SwipeRefreshLayout refreshLayout;
@@ -227,16 +243,7 @@ public class AlbumActivity extends GalleryActivity {
 
         //Options
         optionsLayout = findViewById(R.id.optionsLayout);
-        optionsEdit = findViewById(R.id.optionsEdit);
-        optionsShare = findViewById(R.id.optionsShare);
-        optionsMove = findViewById(R.id.optionsMove);
-        optionsCopy = findViewById(R.id.optionsCopy);
-        optionsSeparator = findViewById(R.id.optionsSeparator);
-        optionsTrash = findViewById(R.id.optionsTrash);
-        optionsRestore = findViewById(R.id.optionsRestore);
-        optionsRestoreAll = findViewById(R.id.optionsRestoreAll);
-        optionsDelete = findViewById(R.id.optionsDelete);
-        optionsDeleteAll = findViewById(R.id.optionsDeleteAll);
+        optionsList = findViewById(R.id.optionsList);
 
         //List
         refreshLayout = findViewById(R.id.refreshLayout);
@@ -309,80 +316,64 @@ public class AlbumActivity extends GalleryActivity {
         //Options
         optionsLayout.setOnClickListener(view -> toggleOptions(false));
 
-        optionsEdit.setOnClickListener(view -> {
-            //Close options menu
-            toggleOptions(false);
+        options.put(OPTIONS_SEPARATOR, new OptionsItem());
 
+        options.put(OPTIONS_EDIT, new OptionsItem(R.drawable.edit, "Edit", () -> {
             //Empty selection
-            if (selectedItems.size() != 1) return;
+            if (selectedItems.size() != 1) return null;
 
             //Edit
             Library.editItem(AlbumActivity.this, Library.gallery.get(selectedItems.iterator().next()));
-        });
+            return null;
+        }));
 
-        optionsShare.setOnClickListener(view -> {
-            //Close options menu
-            toggleOptions(false);
-
+        options.put(OPTIONS_SHARE, new OptionsItem(R.drawable.share, "Share", () -> {
             //Share
             Library.shareItems(AlbumActivity.this, getSelectedItems());
-        });
+            return null;
+        }));
 
-        optionsMove.setOnClickListener(view -> {
-            //Close options menu
-            toggleOptions(false);
-
+        options.put(OPTIONS_MOVE, new OptionsItem(R.drawable.move, "Move to album", () -> {
             //Move items
             Library.moveItems(AlbumActivity.this, getSelectedItems());
-        });
+            return null;
+        }));
 
-        optionsCopy.setOnClickListener(view -> {
-            //Close options menu
-            toggleOptions(false);
-
+        options.put(OPTIONS_COPY, new OptionsItem(R.drawable.copy, "Copy to album", () -> {
             //Copy items
             Library.copyItems(AlbumActivity.this, getSelectedItems());
-        });
+            return null;
+        }));
 
-        optionsTrash.setOnClickListener(view -> {
-            //Close options menu
-            toggleOptions(false);
-
+        options.put(OPTIONS_TRASH, new OptionsItem(R.drawable.delete, "Move to trash", () -> {
             //Move items to trash
             trashItems(getSelectedItems());
-        });
+            return null;
+        }));
 
-        optionsRestore.setOnClickListener(view -> {
-            //Close options menu
-            toggleOptions(false);
-
+        options.put(OPTIONS_RESTORE, new OptionsItem(R.drawable.restore, "Restore", () -> {
             //Restore items from trash
             restoreItems(getSelectedItems());
-        });
+            return null;
+        }));
 
-        optionsRestoreAll.setOnClickListener(view -> {
-            //Close options menu
-            toggleOptions(false);
-
-            //Restore all items
+        options.put(OPTIONS_RESTORE_ALL, new OptionsItem(R.drawable.restore, "Restore all", () -> {
+            //Restore all items from trash
             restoreItems(currentAlbum.items.toArray(new CoonItem[0]));
-        });
+            return null;
+        }));
 
-        optionsDelete.setOnClickListener(view -> {
-            //Close options menu
-            toggleOptions(false);
-
-            //Delete items
+        options.put(OPTIONS_DELETE, new OptionsItem(R.drawable.delete, "Delete", () -> {
+            //Delete item
             Library.deleteItems(AlbumActivity.this, getSelectedItems());
-        });
+            return null;
+        }));
 
-        optionsDeleteAll.setOnClickListener(view -> {
-            //Close options menu
-            toggleOptions(false);
-
+        options.put(OPTIONS_DELETE_ALL, new OptionsItem(R.drawable.delete, "Delete all", () -> {
             //Delete all items
             Library.deleteItems(AlbumActivity.this, currentAlbum.items.toArray(new CoonItem[0]));
-        });
+            return null;
+        }));
 
         //List
         refreshLayout.setOnRefreshListener(() -> {
@@ -462,14 +453,14 @@ public class AlbumActivity extends GalleryActivity {
     }
 
     private void initAdapters() {
-        //Create layout manager
+        //Create album layout manager
         layoutManager = new GridLayoutManager(
                 AlbumActivity.this,
                 getHorizontalItemCount()
         );
         list.setLayoutManager(layoutManager);
 
-        //Create adapter
+        //Create album adapter
         adapter = new AlbumAdapter(
                 AlbumActivity.this,
                 Library.gallery,
@@ -511,6 +502,9 @@ public class AlbumActivity extends GalleryActivity {
             //Consume click
             return true;
         });
+
+        //Create options layout manager
+        optionsList.setLayoutManager(new LinearLayoutManager(AlbumActivity.this));
     }
 
     private void loadMetadata(Album album) {
@@ -690,27 +684,51 @@ public class AlbumActivity extends GalleryActivity {
         return selectedFiles.toArray(new CoonItem[0]);
     }
 
-    private void toggleOption(View view, boolean show) {
-        view.setVisibility(show ? View.VISIBLE : View.GONE);
-    }
-
     private void toggleOptions(boolean show) {
         if (show) {
             //Get state info
             boolean isSelecting = !selectedItems.isEmpty();
             boolean isSelectingSingle = selectedItems.size() == 1;
 
-            //Toggle buttons
-            toggleOption(optionsEdit, isSelectingSingle && !inTrash);
-            toggleOption(optionsShare, isSelecting && !inTrash);
-            toggleOption(optionsMove, isSelecting && !inTrash);
-            toggleOption(optionsCopy, isSelecting && !inTrash);
-            toggleOption(optionsSeparator, !inTrash);
-            toggleOption(optionsTrash, isSelecting && !inTrash);
-            toggleOption(optionsRestore, isSelecting && inTrash);
-            toggleOption(optionsRestoreAll, !isSelecting && inTrash);
-            toggleOption(optionsDelete, isSelecting);
-            toggleOption(optionsDeleteAll, !isSelecting && inTrash);
+            //Create options list
+            List<OptionsItem> optionsItems = new ArrayList<>();
+            if (isSelectingSingle && !inTrash)
+                optionsItems.add(options.get(OPTIONS_EDIT));
+            if (isSelecting && !inTrash)
+                optionsItems.add(options.get(OPTIONS_SHARE));
+            if (isSelecting && !inTrash)
+                optionsItems.add(options.get(OPTIONS_MOVE));
+            if (isSelecting && !inTrash)
+                optionsItems.add(options.get(OPTIONS_COPY));
+            if (!inTrash)
+                optionsItems.add(options.get(OPTIONS_SEPARATOR));
+            if (isSelecting && !inTrash)
+                optionsItems.add(options.get(OPTIONS_TRASH));
+            if (isSelecting && inTrash)
+                optionsItems.add(options.get(OPTIONS_RESTORE));
+            if (!isSelecting && inTrash)
+                optionsItems.add(options.get(OPTIONS_RESTORE_ALL));
+            if (isSelecting)
+                optionsItems.add(options.get(OPTIONS_DELETE));
+            if (!isSelecting && inTrash)
+                optionsItems.add(options.get(OPTIONS_DELETE_ALL));
+
+            //Create options adapter
+            OptionsAdapter optionsAdapter = new OptionsAdapter(AlbumActivity.this, optionsItems);
+            optionsAdapter.setOnClickListener((view, index) -> {
+                //Get option
+                OptionsItem option = optionsItems.get(index);
+                if (option == null) return;
+
+                //Get action
+                Function0<Unit> action = option.getAction();
+                if (action == null) return;
+
+                //Invoke action
+                action.invoke();
+                toggleOptions(false);
+            });
+            optionsList.setAdapter(optionsAdapter);
 
             //Show
             Orion.showAnim(optionsLayout);
