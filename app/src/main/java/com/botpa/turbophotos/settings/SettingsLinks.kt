@@ -109,7 +109,7 @@ fun LinkItem(
                                     .fillMaxSize()
                             ) {
                                 Image(
-                                    painter = painterResource(R.drawable.image),
+                                    painter = painterResource(R.drawable.folder),
                                     contentDescription = "Select album folder",
                                     contentScale = ContentScale.Fit,
                                     colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimary),
@@ -158,7 +158,7 @@ fun LinkItem(
                                     .fillMaxSize()
                             ) {
                                 Image(
-                                    painter = painterResource(R.drawable.info),
+                                    painter = painterResource(R.drawable.folder),
                                     contentDescription = "Select album folder",
                                     contentScale = ContentScale.Fit,
                                     colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimary),

@@ -48,6 +48,7 @@ import com.botpa.turbophotos.theme.FONT_OPIFICIO
 import com.botpa.turbophotos.gallery.Link
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import java.io.File
 
@@ -198,7 +199,7 @@ class SettingsActivity : ComponentActivity() {
                             intent.type = "application/json"
                             filePickerLauncher.launch(intent)
                         },
-                        Snackbar.LENGTH_INDEFINITE
+                        Snackbar.LENGTH_LONG
                     )
                 }
             }
@@ -317,10 +318,10 @@ class SettingsActivity : ComponentActivity() {
 
                     //Show missing metadata icon
                     Row(
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(IntrinsicSize.Min),
-                        verticalAlignment = Alignment.CenterVertically
+                            .height(IntrinsicSize.Min)
                     ) {
                         //Name
                         Text(
@@ -355,30 +356,31 @@ class SettingsActivity : ComponentActivity() {
                     )
 
                     //Description
-                    Text(
-                        text = "Add albums to enable backing them up in the sync service.",
-                        textAlign = TextAlign.Center,
-                        fontSize = 14.sp,
+                    Button(
+                        onClick = {
+                            //Create text
+                            val text = StringBuilder()
+                            text.append("Links let you to backup your albums and enable smart search.")
+                            text.append("\n· Add an album to enable backing it up in the sync service.")
+                            text.append("\n· Add a metadata file to improve search and find things in your images.")
+
+                            //Create dialog
+                            val builder = MaterialAlertDialogBuilder(context)
+                            builder.setTitle("Links")
+                            builder.setMessage(text.toString())
+                            builder.setPositiveButton("OK") { _, _ -> }
+                            builder.show()
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 5.dp)
-                    )
-                    Text(
-                        text = "Add metadata files to improve search and find things in your images.",
-                        textAlign = TextAlign.Center,
-                        fontSize = 14.sp,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 5.dp)
-                    )
-                    Text(
-                        text = "To change where an album and its metadata are located, click on their respective icons.",
-                        textAlign = TextAlign.Center,
-                        fontSize = 14.sp,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 5.dp)
-                    )
+                            .padding(vertical = 10.dp)
+                    ) {
+                        Text(
+                            text = "Learn how links work",
+                            fontFamily = FONT_COMFORTAA,
+                            fontSize = 14.sp,
+                        )
+                    }
                 }
 
                 //Links (list)
