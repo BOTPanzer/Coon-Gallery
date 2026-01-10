@@ -18,6 +18,7 @@ import com.botpa.turbophotos.util.Storage;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("SameParameterValue")
 public class SyncActivity extends AppCompatActivity {
 
     //Connection
@@ -27,7 +28,7 @@ public class SyncActivity extends AppCompatActivity {
 
     private static final String CODE_CHARSET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-    private int connectStatus = STATUS_OFFLINE;
+    private int connectionStatus = STATUS_OFFLINE;
 
     //Users
     private final List<User> users = new ArrayList<>();
@@ -117,7 +118,7 @@ public class SyncActivity extends AppCompatActivity {
 
         usersConnect.setOnClickListener(view -> {
             //Already trying to connect
-            if (connectStatus != STATUS_OFFLINE) return;
+            if (connectionStatus != STATUS_OFFLINE) return;
 
             //Get code
             String code = usersCode.getText().toString();
@@ -210,7 +211,7 @@ public class SyncActivity extends AppCompatActivity {
         boolean needsSave = false;
 
         //Split users
-        ArrayList<String> userStrings = Storage.getStringList("Sync.users");
+        List<String> userStrings = Storage.getStringList("Sync.users");
         for (String userString: userStrings) {
             //Check if valid
             int separatorIndex = userString.indexOf("\n");
@@ -229,7 +230,7 @@ public class SyncActivity extends AppCompatActivity {
 
     private void saveUsers() {
         //Create string users
-        ArrayList<String> userStrings = new ArrayList<>();
+        List<String> userStrings = new ArrayList<>();
         for (User user: users) userStrings.add(user.toString());
 
         //Save list
@@ -262,10 +263,13 @@ public class SyncActivity extends AppCompatActivity {
         Orion.clearFocus(SyncActivity.this);
 
         //Connect
-        if (code.contains(":"))
-            send("connect", code); //Code is an address
-        else
+        if (code.contains(":")) {
+            //Code is already an IP:PORT address
+            send("connect", code);
+        } else {
+            //Code needs conversion to address
             send("connect", convertCodeToAddress(code));
+        }
     }
 
     //Logs
@@ -296,12 +300,13 @@ public class SyncActivity extends AppCompatActivity {
 
     //Events
     private void initEventsObserver() {
+        //Get instance
         SyncEventBus instance = SyncEventBus.getInstance();
-        instance.getTrigger().observe(this, t -> {
-            SyncEvent e;
-            while ((e = instance.getEventQueue().poll()) != null) {
-                handleEvent(e);
-            }
+
+        //Observe
+        instance.trigger.observe(this, t -> {
+            SyncEvent event;
+            while ((event = instance.eventQueue.poll()) != null) handleEvent(event);
         });
     }
 
@@ -318,8 +323,8 @@ public class SyncActivity extends AppCompatActivity {
 
             //Status changed
             case "status":
-                connectStatus = event.intValue;
-                switch (connectStatus) {
+                connectionStatus = event.valueInt;
+                switch (connectionStatus) {
                     case STATUS_OFFLINE:
                         log("Disconnected");
                         usersLayout.setVisibility(View.VISIBLE);
@@ -339,25 +344,25 @@ public class SyncActivity extends AppCompatActivity {
 
             //Snack
             case "snack":
-                Orion.snack(SyncActivity.this, event.stringValue);
+                Orion.snack(SyncActivity.this, event.valueString);
                 break;
 
             //Log
             case "log":
-                log(event.stringValue);
+                log(event.valueString);
                 break;
         }
     }
 
-    private void send(String name) {
+    private void send(String command) {
         Intent intent = new Intent(this, SyncService.class);
-        intent.putExtra("command", name);
+        intent.putExtra("command", command);
         startService(intent);
     }
 
-    private void send(String name, String value) {
+    private void send(String command, String value) {
         Intent intent = new Intent(this, SyncService.class);
-        intent.putExtra("command", name);
+        intent.putExtra("command", command);
         intent.putExtra("value", value);
         startService(intent);
     }

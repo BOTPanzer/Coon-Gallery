@@ -8,7 +8,6 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
-import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import com.botpa.turbophotos.R;
 import com.botpa.turbophotos.home.HomeActivity;
@@ -29,8 +28,11 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.List;
+
 import dev.gustavoavila.websocketclient.WebSocketClient;
 
+@SuppressWarnings("SameParameterValue")
 public class SyncService extends Service {
 
     //Notifications
@@ -47,7 +49,6 @@ public class SyncService extends Service {
     public static final int STATUS_ONLINE = 2;
 
     public static WebSocketClient webSocketClient;
-    private static int connectStatus = STATUS_OFFLINE;
 
     //Files
     private static final int MAX_PART_SIZE = 10000000;
@@ -60,10 +61,9 @@ public class SyncService extends Service {
     private MetadataInfo metadataRequest;
 
     //Albums
-    private final ArrayList<ArrayList<CoonItem>> backupItems = new ArrayList<>();
+    private final List<List<CoonItem>> backupItems = new ArrayList<>();
 
 
-    @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return null;
@@ -85,7 +85,7 @@ public class SyncService extends Service {
             for (Link link : Link.links) {
                 //Get album & create items list
                 Album album = link.album;
-                ArrayList<CoonItem> items = new ArrayList<>();
+                List<CoonItem> items = new ArrayList<>();
 
                 //Add items if album exists
                 if (album != null) items.addAll(album.items);
@@ -114,6 +114,11 @@ public class SyncService extends Service {
     }
 
     //Web socket
+    private void setStatus(int status) {
+        //Send status
+        send("status", status);
+    }
+
     private void connect(String address) {
         //Try to connect
         setStatus(STATUS_CONNECTING);
@@ -139,7 +144,7 @@ public class SyncService extends Service {
                 ArrayNode albumsJsonArray = Orion.getEmptyJsonArray();
                 for (int i = 0; i < backupItems.size(); i++) {
                     //Get items
-                    ArrayList<CoonItem> items = backupItems.get(i);
+                    List<CoonItem> items = backupItems.get(i);
 
                     //Create items list
                     String[] itemsArray = new String[items.size()];
@@ -191,11 +196,6 @@ public class SyncService extends Service {
         webSocketClient.connect();
     }
 
-    private void setStatus(int status) {
-        connectStatus = status;
-        send("status", connectStatus);
-    }
-
     private void parseStringMessage(String messageString) {
         //Show notification again
         notificationManager.notify(NOTIFICATION_ID, notification);
@@ -221,7 +221,7 @@ public class SyncService extends Service {
                 case "requestItemInfo": {
                     //Get album
                     int albumIndex = message.get("albumIndex").asInt();
-                    ArrayList<CoonItem> album = backupItems.get(albumIndex);
+                    List<CoonItem> album = backupItems.get(albumIndex);
 
                     //Get item & file
                     int itemIndex = message.get("itemIndex").asInt();
@@ -252,7 +252,7 @@ public class SyncService extends Service {
                 case "requestItemData": {
                     //Get album
                     int albumIndex = message.get("albumIndex").asInt();
-                    ArrayList<CoonItem> album = backupItems.get(albumIndex);
+                    List<CoonItem> album = backupItems.get(albumIndex);
 
                     //Get item & file
                     int itemIndex = message.get("itemIndex").asInt();
@@ -486,20 +486,19 @@ public class SyncService extends Service {
         }
     }
 
-    private void send(String name) {
-        SyncEventBus.getInstance().postEvent(name, 0); //Using int as a dummy value
+    private void send(String command) {
+        //Send event
+        SyncEventBus.getInstance().postEvent(command);
     }
 
-    private void send(String name, String value) {
-        SyncEventBus.getInstance().postEvent(name, value);
+    private void send(String command, String value) {
+        //Send event
+        SyncEventBus.getInstance().postEvent(command, value);
     }
 
-    private void send(String name, boolean value) {
-        SyncEventBus.getInstance().postEvent(name, value ? 1 : 0); //Convert boolean to int
-    }
-
-    private void send(String name, int value) {
-        SyncEventBus.getInstance().postEvent(name, value);
+    private void send(String command, int value) {
+        //Send event
+        SyncEventBus.getInstance().postEvent(command, value);
     }
 
     //Metadata requests

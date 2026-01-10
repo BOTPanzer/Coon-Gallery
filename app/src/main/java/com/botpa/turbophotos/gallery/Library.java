@@ -65,7 +65,7 @@ public class Library {
 
     //Gallery
     private static final Collection<File> recentlyAddedFiles = new HashSet<>(); //List of items recently added that should be ignored when refreshing to avoid duplicates
-    private static String galleryFilter = "*/*";
+    private static String galleryFilter = "*/*"; //Mime type
 
     public static final ArrayList<CoonItem> gallery = new ArrayList<>(); //Currently open album items (could be filtered or the same items)
 
@@ -857,8 +857,8 @@ public class Library {
         showSelectAlbumDialog(context, newAlbum -> copyItemsInternal(context, items, newAlbum));
     }
 
-    private static HashMap<Uri, CoonItem> prepareItemURIs(Context context, CoonItem[] items, Action action) {
-        HashMap<Uri, CoonItem> pendingItems = new HashMap<>();
+    private static Map<Uri, CoonItem> prepareItemURIs(Context context, CoonItem[] items, Action action) {
+        Map<Uri, CoonItem> pendingItems = new HashMap<>();
         for (CoonItem item : items) {
             //Check if item is already trashed
             switch (action.getType()) {

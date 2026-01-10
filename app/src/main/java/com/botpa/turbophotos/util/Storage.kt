@@ -19,7 +19,7 @@ object Storage {
     }
 
     //String list
-    @JvmStatic fun getStringList(key: String): ArrayList<String> {
+    @JvmStatic fun getStringList(key: String): List<String> {
         val list = ArrayList<String>()
         if (isLoaded) {
             val listString = preferences.getString(key, null)
@@ -28,7 +28,7 @@ object Storage {
         return list
     }
 
-    @JvmStatic fun putStringList(key: String, value: ArrayList<String>) {
+    @JvmStatic fun putStringList(key: String, value: List<String>) {
         if (isLoaded) preferences.edit { putString(key, if (value.isEmpty()) null else value.joinToString(LIST_SPLIT)) }
     }
 
