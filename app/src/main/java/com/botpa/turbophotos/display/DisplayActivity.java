@@ -67,6 +67,8 @@ public class DisplayActivity extends GalleryActivity {
     private CoonItem currentItem = null;
 
     //Options
+    private final Map<String, OptionsItem> options = new HashMap<>();
+    private final List<OptionsItem> optionsItems = new ArrayList<>();
     private static final String OPTIONS_SEPARATOR = "separator";
     private static final String OPTIONS_EDIT = "edit";
     private static final String OPTIONS_SHARE = "share";
@@ -75,8 +77,6 @@ public class DisplayActivity extends GalleryActivity {
     private static final String OPTIONS_TRASH = "trash";
     private static final String OPTIONS_RESTORE = "restore";
     private static final String OPTIONS_DELETE = "delete";
-    private final Map<String, OptionsItem> options = new HashMap<>();
-    private final List<OptionsItem> optionsItems = new ArrayList<>();
 
     private OptionsAdapter optionsAdapter;
 

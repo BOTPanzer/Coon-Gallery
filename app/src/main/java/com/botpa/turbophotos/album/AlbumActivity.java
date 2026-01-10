@@ -66,6 +66,8 @@ public class AlbumActivity extends GalleryActivity {
     private AlbumAdapter adapter;
 
     //Options
+    private final Map<String, OptionsItem> options = new HashMap<>();
+    private final List<OptionsItem> optionsItems = new ArrayList<>();
     private static final String OPTIONS_SEPARATOR = "separator";
     private static final String OPTIONS_EDIT = "edit";
     private static final String OPTIONS_SHARE = "share";
@@ -76,8 +78,6 @@ public class AlbumActivity extends GalleryActivity {
     private static final String OPTIONS_RESTORE_ALL = "restore_all";
     private static final String OPTIONS_DELETE = "delete";
     private static final String OPTIONS_DELETE_ALL = "delete_all";
-    private final Map<String, OptionsItem> options = new HashMap<>();
-    private final List<OptionsItem> optionsItems = new ArrayList<>();
 
     private OptionsAdapter optionsAdapter;
 

@@ -857,8 +857,8 @@ public class Library {
         showSelectAlbumDialog(context, newAlbum -> copyItemsInternal(context, items, newAlbum));
     }
 
-    private static Map<Uri, CoonItem> prepareItemURIs(Context context, CoonItem[] items, Action action) {
-        Map<Uri, CoonItem> pendingItems = new ArrayMap<>();
+    private static HashMap<Uri, CoonItem> prepareItemURIs(Context context, CoonItem[] items, Action action) {
+        HashMap<Uri, CoonItem> pendingItems = new HashMap<>();
         for (CoonItem item : items) {
             //Check if item is already trashed
             switch (action.getType()) {

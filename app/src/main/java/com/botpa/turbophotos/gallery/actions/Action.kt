@@ -11,13 +11,13 @@ class Action(val type: Int, @JvmField val items: Array<CoonItem>) {
 
     //Results (trash)
     @JvmField var trashAction: Int = TRASH_NONE
-    @JvmField var trashPending: Map<Uri, CoonItem> = HashMap()
+    @JvmField var trashPending: MutableMap<Uri, CoonItem> = HashMap()
 
     //Results (albums & gallery)
     @JvmField var hasSortedAlbumsList: Boolean = false
-    @JvmField var modifiedAlbums: HashSet<Album> = HashSet()
-    @JvmField var removedIndexesInAlbums: ArrayList<Int> = ArrayList()
-    @JvmField var removedIndexesInGallery: ArrayList<Int> = ArrayList()
+    @JvmField var modifiedAlbums: MutableSet<Album> = HashSet()
+    @JvmField var removedIndexesInAlbums: MutableList<Int> = ArrayList()
+    @JvmField var removedIndexesInGallery: MutableList<Int> = ArrayList()
 
 
     //Action

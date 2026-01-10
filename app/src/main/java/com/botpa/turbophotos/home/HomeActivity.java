@@ -105,12 +105,12 @@ public class HomeActivity extends GalleryActivity {
     private HomeAdapter adapter;
 
     //Options
+    private final Map<String, OptionsItem> options = new HashMap<>();
+    private final List<OptionsItem> optionsItems = new ArrayList<>();
     private static final String OPTIONS_SEPARATOR = "separator";
     private static final String OPTIONS_SYNC = "sync";
     private static final String OPTIONS_SETTINGS = "settings";
     private static final String OPTIONS_FILTER = "filter";
-    private final Map<String, OptionsItem> options = new HashMap<>();
-    private final List<OptionsItem> optionsItems = new ArrayList<>();
 
     private OptionsAdapter optionsAdapter;
 
