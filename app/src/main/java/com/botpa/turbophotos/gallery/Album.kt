@@ -10,13 +10,13 @@ class Album(val name: String, val imagesFolder: File?, var metadataFile: File?) 
 
     //Album info
     @JvmField var metadata: ObjectNode? = null
-    @JvmField val items: ArrayList<CoonItem> = ArrayList()
+    @JvmField val items: MutableList<CoonItem> = ArrayList()
 
     val isEspecial: Boolean = imagesFolder == null
 
-    var lastModified: Long = if (imagesFolder == null) 0 else imagesFolder.lastModified()
-    val imagesPath: String = if (imagesFolder == null) "" else imagesFolder.absolutePath
-    val metadataPath: String = if (metadataFile == null) "" else metadataFile!!.absolutePath
+    var lastModified: Long = imagesFolder?.lastModified() ?: 0
+    val imagesPath: String = imagesFolder?.absolutePath ?: ""
+    val metadataPath: String = metadataFile?.absolutePath ?: ""
 
 
     //Util

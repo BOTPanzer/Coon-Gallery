@@ -29,7 +29,7 @@ class Link(albumPath: String, metadataPath: String) {
         var linksLoaded: Boolean = false
 
         @JvmField val links = mutableStateListOf<Link>()
-        @JvmField val linksMap: HashMap<String, Link?> = HashMap<String, Link?>()
+        @JvmField val linksMap: MutableMap<String, Link?> = HashMap<String, Link?>()
 
 
         //Loading & saving list

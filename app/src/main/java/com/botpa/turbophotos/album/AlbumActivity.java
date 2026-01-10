@@ -13,6 +13,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -42,9 +43,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-
-import kotlin.Unit;
-import kotlin.jvm.functions.Function0;
+import java.util.Set;
 
 @SuppressLint({"SetTextI18n", "NotifyDataSetChanged"})
 public class AlbumActivity extends GalleryActivity {
@@ -84,7 +83,7 @@ public class AlbumActivity extends GalleryActivity {
     //List album
     private boolean inTrash = false;
     private Album currentAlbum = null;
-    private final HashSet<Integer> selectedItems = new HashSet<>();
+    private final Set<Integer> selectedItems = new HashSet<>();
 
     //Views (navbar)
     private View navbarLayout;
@@ -118,7 +117,7 @@ public class AlbumActivity extends GalleryActivity {
         }
 
         @Override
-        public void load(String content) {
+        public void load(@NonNull String content) {
             runOnUiThread(() -> {
                 loadIndicatorText.setText("Loading " + content + "...");
                 loadIndicator.setVisibility(View.VISIBLE);
@@ -126,7 +125,7 @@ public class AlbumActivity extends GalleryActivity {
         }
 
         @Override
-        public void load(String folder, String type) {
+        public void load(@NonNull String folder, @NonNull String type) {
             runOnUiThread(() -> {
                 loadIndicatorText.setText("Loading \"" + folder + "\" " + type + "...");
                 loadIndicator.setVisibility(View.VISIBLE);
@@ -320,59 +319,50 @@ public class AlbumActivity extends GalleryActivity {
 
         options.put(OPTIONS_EDIT, new OptionsItem(R.drawable.edit, "Edit", () -> {
             //Empty selection
-            if (selectedItems.size() != 1) return null;
+            if (selectedItems.size() != 1) return;
 
             //Edit
             Library.editItem(AlbumActivity.this, Library.gallery.get(selectedItems.iterator().next()));
-            return null;
         }));
 
         options.put(OPTIONS_SHARE, new OptionsItem(R.drawable.share, "Share", () -> {
             //Share
             Library.shareItems(AlbumActivity.this, getSelectedItems());
-            return null;
         }));
 
         options.put(OPTIONS_MOVE, new OptionsItem(R.drawable.move, "Move to album", () -> {
             //Move items
             Library.moveItems(AlbumActivity.this, getSelectedItems());
-            return null;
         }));
 
         options.put(OPTIONS_COPY, new OptionsItem(R.drawable.copy, "Copy to album", () -> {
             //Copy items
             Library.copyItems(AlbumActivity.this, getSelectedItems());
-            return null;
         }));
 
         options.put(OPTIONS_TRASH, new OptionsItem(R.drawable.delete, "Move to trash", () -> {
             //Move items to trash
             trashItems(getSelectedItems());
-            return null;
         }));
 
         options.put(OPTIONS_RESTORE, new OptionsItem(R.drawable.restore, "Restore", () -> {
             //Restore items from trash
             restoreItems(getSelectedItems());
-            return null;
         }));
 
         options.put(OPTIONS_RESTORE_ALL, new OptionsItem(R.drawable.restore, "Restore all", () -> {
             //Restore all items from trash
             restoreItems(currentAlbum.items.toArray(new CoonItem[0]));
-            return null;
         }));
 
         options.put(OPTIONS_DELETE, new OptionsItem(R.drawable.delete, "Delete", () -> {
             //Delete item
             Library.deleteItems(AlbumActivity.this, getSelectedItems());
-            return null;
         }));
 
         options.put(OPTIONS_DELETE_ALL, new OptionsItem(R.drawable.delete, "Delete all", () -> {
             //Delete all items
             Library.deleteItems(AlbumActivity.this, currentAlbum.items.toArray(new CoonItem[0]));
-            return null;
         }));
 
         //List
@@ -454,10 +444,7 @@ public class AlbumActivity extends GalleryActivity {
 
     private void initAdapters() {
         //Init album layout manager
-        layoutManager = new GridLayoutManager(
-                AlbumActivity.this,
-                getHorizontalItemCount()
-        );
+        layoutManager = new GridLayoutManager(AlbumActivity.this, getHorizontalItemCount());
         list.setLayoutManager(layoutManager);
 
         //Init album adapter
@@ -514,11 +501,11 @@ public class AlbumActivity extends GalleryActivity {
             if (option == null) return;
 
             //Get action
-            Function0<Unit> action = option.getAction();
+            Runnable action = option.getAction();
             if (action == null) return;
 
             //Invoke action
-            action.invoke();
+            action.run();
             toggleOptions(false);
         });
         optionsList.setAdapter(optionsAdapter);

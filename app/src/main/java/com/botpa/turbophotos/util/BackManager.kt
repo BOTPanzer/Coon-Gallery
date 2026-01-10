@@ -6,8 +6,8 @@ import androidx.lifecycle.LifecycleOwner
 
 class BackManager(owner: LifecycleOwner, dispatcher: OnBackPressedDispatcher) {
 
-    private val onBackPressedFunctions = HashMap<String, Runnable>()
-    private val onBackPressedOrder = ArrayList<String>()
+    private val onBackPressedFunctions: MutableMap<String, Runnable> = HashMap()
+    private val onBackPressedOrder: MutableList<String> = ArrayList()
     private val onBackPressed: OnBackPressedCallback = object : OnBackPressedCallback(false) {
         override fun handleOnBackPressed() {
             //Get function name
@@ -44,4 +44,5 @@ class BackManager(owner: LifecycleOwner, dispatcher: OnBackPressedDispatcher) {
         //Toggle back button
         onBackPressed.isEnabled = onBackPressedOrder.isNotEmpty()
     }
+
 }

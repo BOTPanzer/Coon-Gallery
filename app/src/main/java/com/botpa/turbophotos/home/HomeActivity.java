@@ -58,10 +58,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import kotlin.Pair;
-import kotlin.Unit;
-import kotlin.jvm.functions.Function0;
-
 @SuppressLint({"SetTextI18n", "NotifyDataSetChanged"})
 public class HomeActivity extends GalleryActivity {
 
@@ -417,13 +413,11 @@ public class HomeActivity extends GalleryActivity {
         options.put(OPTIONS_SYNC, new OptionsItem(R.drawable.backup, "Sync", () -> {
             //Open sync
             startActivity(new Intent(HomeActivity.this, SyncActivity.class));
-            return null;
         }));
 
         options.put(OPTIONS_SETTINGS, new OptionsItem(R.drawable.settings, "Settings", () -> {
             //Open sync
             startActivity(new Intent(HomeActivity.this, SettingsActivity.class));
-            return null;
         }));
 
         options.put(OPTIONS_FILTER, new OptionsItem(R.drawable.gallery, "Filter", () -> {
@@ -453,7 +447,6 @@ public class HomeActivity extends GalleryActivity {
                 Library.loadLibrary(HomeActivity.this, filters.get(position).getMimeType());
                 dialog.dismiss();
             });
-            return null;
         }));
 
         //List
@@ -588,11 +581,11 @@ public class HomeActivity extends GalleryActivity {
             if (option == null) return;
 
             //Get action
-            Function0<Unit> action = option.getAction();
+            Runnable action = option.getAction();
             if (action == null) return;
 
             //Invoke action
-            action.invoke();
+            action.run();
             toggleOptions(false);
         });
         optionsList.setAdapter(optionsAdapter);

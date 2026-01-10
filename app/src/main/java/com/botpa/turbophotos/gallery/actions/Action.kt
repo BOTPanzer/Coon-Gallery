@@ -7,7 +7,7 @@ import com.botpa.turbophotos.gallery.CoonItem
 class Action(val type: Int, @JvmField val items: Array<CoonItem>) {
 
     //Errors
-    @JvmField var errors: ArrayList<ActionError> = ArrayList()
+    @JvmField var errors: MutableList<ActionError> = ArrayList()
 
     //Results (trash)
     @JvmField var trashAction: Int = TRASH_NONE

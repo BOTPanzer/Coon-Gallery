@@ -44,9 +44,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import kotlin.Unit;
-import kotlin.jvm.functions.Function0;
-
 @SuppressLint({"SetTextI18n", "NotifyDataSetChanged"})
 public class DisplayActivity extends GalleryActivity {
 
@@ -61,7 +58,7 @@ public class DisplayActivity extends GalleryActivity {
     private DisplayAdapter adapter;
 
     //List items
-    private final ArrayList<CoonItem> displayItems = new ArrayList<>();
+    private final List<CoonItem> displayItems = new ArrayList<>();
     private int currentIndexInGallery = -1;
     private int currentIndexInDisplay = -1;
     private CoonItem currentItem = null;
@@ -331,43 +328,36 @@ public class DisplayActivity extends GalleryActivity {
         options.put(OPTIONS_EDIT, new OptionsItem(R.drawable.edit, "Edit", () -> {
             //Edit
             Library.editItem(DisplayActivity.this, currentItem);
-            return null;
         }));
 
         options.put(OPTIONS_SHARE, new OptionsItem(R.drawable.share, "Share", () -> {
             //Share
             Library.shareItems(DisplayActivity.this, new CoonItem[] { currentItem });
-            return null;
         }));
 
         options.put(OPTIONS_MOVE, new OptionsItem(R.drawable.move, "Move to album", () -> {
             //Move items
             Library.moveItems(DisplayActivity.this, new CoonItem[]{ currentItem });
-            return null;
         }));
 
         options.put(OPTIONS_COPY, new OptionsItem(R.drawable.copy, "Copy to album", () -> {
             //Copy items
             Library.copyItems(DisplayActivity.this, new CoonItem[]{ currentItem });
-            return null;
         }));
 
         options.put(OPTIONS_TRASH, new OptionsItem(R.drawable.delete, "Move to trash", () -> {
             //Move to trash
             trashItems(new CoonItem[] { currentItem });
-            return null;
         }));
 
         options.put(OPTIONS_RESTORE, new OptionsItem(R.drawable.restore, "Restore", () -> {
             //Restore from trash
             restoreItems(new CoonItem[] { currentItem });
-            return null;
         }));
 
         options.put(OPTIONS_DELETE, new OptionsItem(R.drawable.delete, "Delete", () -> {
             //Delete item
             Library.deleteItems(DisplayActivity.this, new CoonItem[] { currentItem });
-            return null;
         }));
     }
 
@@ -468,11 +458,11 @@ public class DisplayActivity extends GalleryActivity {
             if (option == null) return;
 
             //Get action
-            Function0<Unit> action = option.getAction();
+            Runnable action = option.getAction();
             if (action == null) return;
 
             //Invoke action
-            action.invoke();
+            action.run();
             toggleOptions(false);
         });
         optionsList.setAdapter(optionsAdapter);

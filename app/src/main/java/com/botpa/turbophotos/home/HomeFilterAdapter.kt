@@ -17,11 +17,11 @@ class HomeFilterAdapter(
         //Inflate
         val view: View = convertView ?: LayoutInflater.from(context).inflate(R.layout.home_filter_item, parent, false)
 
-        //Get item
-        val item = getItem(position)
-
         //Get views
         val name = view.findViewById<TextView>(R.id.filterName)
+
+        //Get item
+        val item = getItem(position)
 
         //Update name
         if (item != null) name.text = item.name
