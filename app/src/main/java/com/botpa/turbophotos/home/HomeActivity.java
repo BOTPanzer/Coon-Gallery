@@ -605,8 +605,10 @@ public class HomeActivity extends GalleryActivity {
             optionsItems.clear();
             optionsItems.add(options.get(OPTIONS_SYNC));
             optionsItems.add(options.get(OPTIONS_SETTINGS));
-            optionsItems.add(options.get(OPTIONS_SEPARATOR));
-            optionsItems.add(options.get(OPTIONS_FILTER));
+            if (!isPicking) {
+                optionsItems.add(options.get(OPTIONS_SEPARATOR));
+                optionsItems.add(options.get(OPTIONS_FILTER));
+            }
             optionsAdapter.notifyDataSetChanged();
 
             //Show
