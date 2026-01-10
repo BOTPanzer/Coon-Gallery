@@ -15,14 +15,14 @@ class CoonItem(
     @JvmField var file: File,               //The file in storage
     @JvmField var album: Album,             //The album of the item
     @JvmField var lastModified: Long,       //Timestamp of the last time the file was modified (in seconds)
+    @JvmField var mimeType: String,         //The type and format of the file
     @JvmField var size: Long,               //The size of the file in bytes
-    @JvmField var isVideo: Boolean,         //If the item is a video
-    @JvmField var isTrashed: Boolean,       //If the item is in the trash
+    @JvmField var isTrashed: Boolean,       //If the file is in the trash
 ) : Comparable<CoonItem> {
 
     //Item info
     @JvmField var name: String = file.name
-    @JvmField var mimeType: String = if (isVideo) "video/*" else "image/*"
+    @JvmField var isVideo: Boolean = mimeType.startsWith("video/")
 
 
     //Helpers

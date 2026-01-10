@@ -1,6 +1,7 @@
 package com.botpa.turbophotos.home;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.ActivityOptions;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -61,6 +62,19 @@ public class HomeActivity extends GalleryActivity {
     private boolean isLoaded = false;
     private boolean skipResume = true;
 
+    //Activity (external item picker)
+    private boolean isPicking = false; //An app requested to select an item
+    private final ActivityResultLauncher<Intent> pickerLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    Intent data = result.getData();
+                    setResult(Activity.RESULT_OK, data);
+                    finish();
+                }
+            }
+    );
+
     //Events
     private final Library.RefreshEvent onRefresh = this::manageRefresh;
     private final Library.ActionEvent onAction = this::manageAction;
@@ -68,6 +82,9 @@ public class HomeActivity extends GalleryActivity {
     //Adapters
     private HomeAdapter adapter;
     private GridLayoutManager layoutManager;
+
+    //Views (permissions)
+    private View permissionLayout;
 
     //Views (navbar)
     private View navbarSync;
@@ -146,7 +163,7 @@ public class HomeActivity extends GalleryActivity {
         updateHorizontalItemCount();
 
         //Refresh albums (check for new items)
-        Library.loadLibrary(HomeActivity.this, false);
+        Library.loadGallery(HomeActivity.this, false);
     }
 
     @Override
@@ -169,7 +186,8 @@ public class HomeActivity extends GalleryActivity {
             permissionWrite = true;
             findViewById(R.id.permissionWrite).setAlpha(0.5f);
         }
-        if (ContextCompat.checkSelfPermission(HomeActivity.this, Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(HomeActivity.this, Manifest.permission.READ_MEDIA_VIDEO) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(HomeActivity.this, Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(HomeActivity.this, Manifest.permission.READ_MEDIA_VIDEO) == PackageManager.PERMISSION_GRANTED) {
             permissionMedia = true;
             findViewById(R.id.permissionMedia).setAlpha(0.5f);
         }
@@ -181,13 +199,13 @@ public class HomeActivity extends GalleryActivity {
         //Check if permissions are granted
         if (permissionWrite && permissionMedia && permissionNotifications) {
             //Hide permission layout
-            findViewById(R.id.permissionLayout).setVisibility(View.GONE);
+            permissionLayout.setVisibility(View.GONE);
 
             //Init activity
             initActivity();
         } else {
             //Show permission layout
-            findViewById(R.id.permissionLayout).setVisibility(View.VISIBLE);
+            permissionLayout.setVisibility(View.VISIBLE);
 
             //Add request permission button listeners
             findViewById(R.id.permissionWrite).setOnClickListener(view -> {
@@ -229,13 +247,29 @@ public class HomeActivity extends GalleryActivity {
         //Init adapters
         initAdapters();
 
+        //Library state
+        String filter;
+
+        //Check intent
+        Intent intent = getIntent();
+        String action = intent.getAction();
+        if (Intent.ACTION_GET_CONTENT.equals(action) || Intent.ACTION_PICK.equals(action)) {
+            //An app requested to select an item
+            isPicking = true;
+            filter = intent.getType();
+        } else {
+            //Regular open
+            isPicking = false;
+            filter = "*/*";
+        }
+
         //Hide list
         list.setVisibility(View.GONE);
 
         //Load albums
         new Thread(() -> {
             //Load albums
-            Library.loadLibrary(HomeActivity.this, true);
+            Library.loadGallery(HomeActivity.this, filter);
 
             //Show list
             runOnUiThread(() -> {
@@ -265,6 +299,9 @@ public class HomeActivity extends GalleryActivity {
 
     //Views
     private void loadViews() {
+        //Permissions
+        permissionLayout = findViewById(R.id.permissionLayout);
+
         //Navbar
         navbarSync = findViewById(R.id.navbarSync);
         navbarSettings = findViewById(R.id.navbarSettings);
@@ -340,7 +377,7 @@ public class HomeActivity extends GalleryActivity {
         //List
         refreshLayout.setOnRefreshListener(() -> {
             //Reload library
-            Library.loadLibrary(HomeActivity.this, true); //Fully refresh
+            Library.loadGallery(HomeActivity.this, true); //Fully refresh
 
             //Stop refreshing
             refreshLayout.setRefreshing(false);
@@ -349,8 +386,10 @@ public class HomeActivity extends GalleryActivity {
 
     //Events
     private void manageRefresh(boolean updated) {
-        //Refresh list
-        if (updated) adapter.notifyDataSetChanged();
+        runOnUiThread(() -> {
+            //Refresh list
+            if (updated) adapter.notifyDataSetChanged();
+        });
     }
 
     private void manageAction(Action action) {
@@ -434,7 +473,7 @@ public class HomeActivity extends GalleryActivity {
                     0, 0 //Starting size
             );
 
-            //Open album
+            //Prepare intent info
             Intent intent = new Intent(HomeActivity.this, AlbumActivity.class);
             if (album == Library.trash) {
                 intent.putExtra("albumName", "trash");
@@ -443,7 +482,16 @@ public class HomeActivity extends GalleryActivity {
             } else {
                 intent.putExtra("albumIndex", Library.albums.indexOf(album));
             }
-            startActivity(intent, options.toBundle());
+
+            //Open album
+            if (isPicking) {
+                //External item picker
+                intent.putExtra("isPicking", true);
+                pickerLauncher.launch(intent);
+            } else {
+                //Regular open
+                startActivity(intent, options.toBundle());
+            }
         });
         list.setAdapter(adapter);
     }

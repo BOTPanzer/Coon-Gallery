@@ -1,5 +1,6 @@
 package com.botpa.turbophotos.album;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
@@ -12,6 +13,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -41,6 +44,9 @@ public class AlbumActivity extends GalleryActivity {
     private BackManager backManager;
     private boolean isSearching = false;
     private boolean hasLoadedMetadata = false;
+
+    //Activity (external item picker)
+    private boolean isPicking = false; //An app requested to select an item
 
     //Events
     private final Library.RefreshEvent onRefresh = this::manageRefresh;
@@ -177,6 +183,9 @@ public class AlbumActivity extends GalleryActivity {
             finish();
             return;
         }
+
+        //Update is picking
+        isPicking = intent.getBooleanExtra("isPicking", false);
 
         //Check if intent has album name or index
         if (intent.hasExtra("albumName")) {
@@ -378,7 +387,7 @@ public class AlbumActivity extends GalleryActivity {
         //List
         refreshLayout.setOnRefreshListener(() -> {
             //Reload library
-            Library.loadLibrary(AlbumActivity.this, false); //Soft refresh to ONLY look for new files
+            Library.loadGallery(AlbumActivity.this, false); //Soft refresh to ONLY look for new files
 
             //Stop refreshing
             refreshLayout.setRefreshing(false);
@@ -401,14 +410,16 @@ public class AlbumActivity extends GalleryActivity {
 
     //Events
     private void manageRefresh(boolean updated) {
-        //Nothing updated
-        if (!updated) return;
+        runOnUiThread(() -> {
+            //Nothing updated
+            if (!updated) return;
 
-        //Unselect all
-        unselectAll();
+            //Unselect all
+            unselectAll();
 
-        //Refresh list
-        selectAlbum(currentAlbum);
+            //Refresh list
+            selectAlbum(currentAlbum);
+        });
     }
 
     private void manageAction(Action action) {
@@ -477,10 +488,20 @@ public class AlbumActivity extends GalleryActivity {
                 //Selecting -> Toggle selected
                 toggleSelected(index);
             } else {
-                //Not selecting -> Open display
-                Intent intent = new Intent(AlbumActivity.this, DisplayActivity.class);
-                intent.putExtra("index", index);
-                startActivity(intent);
+                //Not selecting -> Check action
+                if (isPicking) {
+                    //Pick item
+                    Intent resultIntent = new Intent();
+                    resultIntent.setData(Orion.getFileUriFromFilePath(AlbumActivity.this, Library.gallery.get(index).file.getAbsolutePath()));
+                    resultIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    setResult(RESULT_OK, resultIntent);
+                    finish();
+                } else {
+                    //Open display
+                    Intent intent = new Intent(AlbumActivity.this, DisplayActivity.class);
+                    intent.putExtra("index", index);
+                    startActivity(intent);
+                }
             }
         });
         adapter.setOnLongClickListener((view, index) -> {

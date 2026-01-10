@@ -21,6 +21,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.IntentSenderRequest;
 import androidx.appcompat.app.AlertDialog;
 import androidx.collection.ArrayMap;
+import androidx.core.content.MimeTypeFilter;
 
 import com.botpa.turbophotos.R;
 import com.botpa.turbophotos.gallery.actions.Action;
@@ -42,7 +43,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -65,11 +65,12 @@ public class Library {
 
     //Gallery
     private static final Collection<File> recentlyAddedFiles = new HashSet<>(); //List of items recently added that should be ignored when refreshing to avoid duplicates
+    private static String galleryFilter = "*/*";
 
     public static final ArrayList<CoonItem> gallery = new ArrayList<>(); //Currently open album items (could be filtered or the same items)
 
 
-    //Library (events)
+    //Gallery (events)
     public interface RefreshEvent {
         void invoke(boolean updated);
     }
@@ -86,7 +87,7 @@ public class Library {
         onRefresh.remove(listener);
     }
 
-    //Library (load/refresh)
+    //Gallery (load/refresh)
     private static Cursor getMediaCursor(Context context) {
         //Get content resolver
         ContentResolver contentResolver = context.getContentResolver();
@@ -94,7 +95,7 @@ public class Library {
         //Create projection
         String[] projection = {
                 MediaStore.Files.FileColumns.DATE_MODIFIED,
-                MediaStore.Files.FileColumns.MEDIA_TYPE,
+                MediaStore.Files.FileColumns.MIME_TYPE,
                 MediaStore.Files.FileColumns.SIZE,
                 MediaStore.Files.FileColumns.DATA,
                 MediaStore.Files.FileColumns.IS_TRASHED
@@ -133,7 +134,19 @@ public class Library {
         );
     }
 
-    public static void loadLibrary(Context context, boolean reset) {
+    public static void loadGallery(Context context, boolean reset) {
+        loadGallery(context, reset, galleryFilter);
+    }
+
+    public static void loadGallery(Context context, String filterType) {
+        //Filtering requires a reset of albums
+        loadGallery(context, true, filterType);
+    }
+
+    private static void loadGallery(Context context, boolean reset, String filterMimeType) {
+        //Save filter
+        galleryFilter = filterMimeType;
+
         //Load links & trash
         Link.Companion.loadLinks(reset);
 
@@ -158,8 +171,8 @@ public class Library {
 
             //Get columns for query
             int columnLastModified = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATE_MODIFIED);
+            int columnMimeType = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.MIME_TYPE);
             int columnSize = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.SIZE);
-            int columnMediaType = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.MEDIA_TYPE);
             int columnData = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATA);
             int columnIsTrashed = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.IS_TRASHED);
 
@@ -175,22 +188,25 @@ public class Library {
                     continue;
                 }
 
+                //Get type & apply filter
+                String mimeType = cursor.getString(columnMimeType);
+                if (!MimeTypeFilter.matches(mimeType, filterMimeType)) continue;
+
                 //Get other info
                 long lastModified = cursor.getLong(columnLastModified);
                 long size = cursor.getLong(columnSize);
-                boolean isVideo = (Objects.equals(cursor.getString(columnMediaType), String.valueOf(MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO)));
                 boolean isTrashed = cursor.getInt(columnIsTrashed) == 1;
 
                 //Check if is trashed
                 if (isTrashed) {
                     //Trashed -> Create item with trash as album
-                    CoonItem item = new CoonItem(file, trash, lastModified, size, isVideo, true);
+                    CoonItem item = new CoonItem(file, trash, lastModified, mimeType, size, true);
 
                     //Add to trash
                     trash.add(item);
                 } else {
                     //Not trashed -> Create item with normal album
-                    CoonItem item = new CoonItem(file, getOrCreateAlbumFromItemFile(file), lastModified, size, isVideo, false);
+                    CoonItem item = new CoonItem(file, getOrCreateAlbumFromItemFile(file), lastModified, mimeType, size, false);
 
                     //Add to all items list & its album
                     all.add(item);
@@ -816,7 +832,7 @@ public class Library {
             }
 
             //Create new item
-            CoonItem newItem = new CoonItem(newFile, newAlbum, item.lastModified, item.size, item.isVideo, item.isTrashed);
+            CoonItem newItem = new CoonItem(newFile, newAlbum, item.lastModified, item.mimeType, item.size, item.isTrashed);
 
             //Add to new album
             int indexInAlbum = newAlbum.addSorted(newItem);
