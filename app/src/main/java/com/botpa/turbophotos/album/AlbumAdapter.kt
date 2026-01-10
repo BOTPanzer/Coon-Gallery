@@ -14,8 +14,8 @@ import com.google.android.material.card.MaterialCardView
 
 class AlbumAdapter(
     private val context: Context,
-    private val items: ArrayList<CoonItem>,
-    private val selected: HashSet<Int>,
+    private val items: List<CoonItem>,
+    private val selected: Set<Int>,
     var showMissingMetadataIcon: Boolean
 ) : RecyclerView.Adapter<AlbumAdapter.GalleryHolder>() {
 

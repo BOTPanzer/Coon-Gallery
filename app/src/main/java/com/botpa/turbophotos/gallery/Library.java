@@ -502,7 +502,7 @@ public class Library {
             File folder;
             if (index < 0) {
                 //Back button
-                folder = adapter.currentFolder.getParentFile();
+                folder = adapter.getCurrentFolderParent();
             } else {
                 //Select folder
                 folder = folders.get(index);
@@ -523,7 +523,7 @@ public class Library {
             }
 
             //Update adapter
-            adapter.currentFolder = folder;
+            adapter.setCurrentFolder(folder);
             dialog.setTitle(adapter.getCurrentFolderName());
             folders.clear();
             folders.addAll(Orion.listFiles(folder));
@@ -536,7 +536,7 @@ public class Library {
         create.setOnClickListener(view -> {
             //Get folder name & file
             String folderName = createInput.getText().toString().trim();
-            File folder = new File(adapter.currentFolder, folderName);
+            File folder = new File(adapter.getCurrentFolderPath(), folderName);
 
             //Check if folder exists
             if (folder.exists()) {

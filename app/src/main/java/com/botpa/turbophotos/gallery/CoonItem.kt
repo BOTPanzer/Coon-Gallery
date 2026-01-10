@@ -9,6 +9,7 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.resource.bitmap.BitmapTransitionOptions
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
+import com.bumptech.glide.signature.ObjectKey
 import java.io.File
 
 class CoonItem(
@@ -43,29 +44,18 @@ class CoonItem(
             imageView.scaleType = ImageView.ScaleType.CENTER
 
             //Load item preview
-            val requestBuilder = Glide.with(context).asBitmap().sizeMultiplier(if (item.isVideo) 0.1f else 0.2f)
             Glide.with(context)
                 .asBitmap()
                 .load(item.file.absolutePath)
-                .thumbnail(requestBuilder)
+                .signature(ObjectKey(item.lastModified)) //Reread from disk if cache was updated
                 .transition(BitmapTransitionOptions.withCrossFade())
                 .listener(object : RequestListener<Bitmap> {
-                    override fun onLoadFailed(
-                        e: GlideException?,
-                        model: Any?,
-                        target: Target<Bitmap>,
-                        isFirstResource: Boolean
-                    ): Boolean {
+
+                    override fun onLoadFailed(e: GlideException?, model: Any, target: Target<Bitmap>, isFirstResource: Boolean): Boolean {
                         return false
                     }
 
-                    override fun onResourceReady(
-                        resource: Bitmap,
-                        model: Any,
-                        target: Target<Bitmap>?,
-                        dataSource: DataSource,
-                        isFirstResource: Boolean
-                    ): Boolean {
+                    override fun onResourceReady(resource: Bitmap, model: Any, target: Target<Bitmap>, dataSource: DataSource, isFirstResource: Boolean): Boolean {
                         //Update scale type
                         imageView.scaleType = ImageView.ScaleType.CENTER_CROP
                         return false

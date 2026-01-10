@@ -8,10 +8,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.CoonItem
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.BitmapTransitionOptions
+import com.bumptech.glide.signature.ObjectKey
 
 class DisplayAdapter(
     private val context: Context,
-    private val images: ArrayList<CoonItem>
+    private val items: List<CoonItem>
 ) : RecyclerView.Adapter<DisplayAdapter.DisplayHolder>() {
 
     //Adapter
@@ -24,14 +26,18 @@ class DisplayAdapter(
         //Get holder position
         val position = holder.bindingAdapterPosition
 
-        //Get image from images
-        val image = images[position]
+        //Get item
+        val item = items[position]
 
         //Load image in imageview
-        Glide.with(context).asBitmap().load(image.file.absolutePath).into(holder.image)
+        Glide.with(context)
+            .asBitmap()
+            .load(item.file.absolutePath)
+            .signature(ObjectKey(item.lastModified))
+            .into(holder.image)
 
         //Toggle play video button
-        holder.play.visibility = if (image.isVideo) View.VISIBLE else View.GONE
+        holder.play.visibility = if (item.isVideo) View.VISIBLE else View.GONE
 
         //Click listener
         holder.image.setOnClick {
@@ -52,7 +58,7 @@ class DisplayAdapter(
     }
 
     override fun getItemCount(): Int {
-        return images.size
+        return items.size
     }
 
     //Listeners

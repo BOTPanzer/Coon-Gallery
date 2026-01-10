@@ -16,7 +16,7 @@ import com.botpa.turbophotos.gallery.CoonItem
 @SuppressLint("SetTextI18n")
 class HomeAdapter(
     private val context: Context,
-    private val albums: ArrayList<Album>
+    private val albums: List<Album>
 ) : RecyclerView.Adapter<HomeAdapter.AlbumHolder>() {
 
     //Adapter

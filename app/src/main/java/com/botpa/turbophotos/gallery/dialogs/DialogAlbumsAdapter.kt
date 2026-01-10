@@ -11,8 +11,8 @@ import com.botpa.turbophotos.gallery.Album
 
 class DialogAlbumsAdapter(
     context: Context,
-    albums: MutableList<Album?>
-) : ArrayAdapter<Album?>(context, 0, albums) {
+    albums: MutableList<Album>
+) : ArrayAdapter<Album>(context, 0, albums) {
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         //Inflate
@@ -25,7 +25,9 @@ class DialogAlbumsAdapter(
         val album = getItem(position)
 
         //Update name
-        if (album != null) name.text = album.name
+        if (album != null) {
+            name.text = album.name
+        }
 
         return view
     }

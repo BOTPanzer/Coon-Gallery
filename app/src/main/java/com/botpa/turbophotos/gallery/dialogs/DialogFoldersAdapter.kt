@@ -12,9 +12,11 @@ import com.botpa.turbophotos.R
 import java.io.File
 
 class DialogFoldersAdapter(
-    context: Context, private val externalStorage: File?, //Folder
-    @JvmField var currentFolder: File, folders: MutableList<File?>
-) : ArrayAdapter<File?>(context, 0, folders) {
+    context: Context,
+    private val externalStorage: File,
+    private var currentFolder: File,
+    folders: MutableList<File>
+) : ArrayAdapter<File>(context, 0, folders) {
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         //Inflate
@@ -32,14 +34,14 @@ class DialogFoldersAdapter(
         if (index < 0) {
             //Back button
             icon.setImageResource(R.drawable.back)
-            name.setText("Back")
-            select.setVisibility(View.GONE)
+            name.text = "Back"
+            select.visibility = View.GONE
         } else {
             //Folder
             icon.setImageResource(R.drawable.folder)
             val folder = getItem(position - 1)
-            if (folder != null) name.setText(folder.getName())
-            select.setVisibility(View.VISIBLE)
+            if (folder != null) name.text = folder.name
+            select.visibility = View.VISIBLE
         }
 
         //Add listeners
@@ -60,7 +62,14 @@ class DialogFoldersAdapter(
 
     val positionOffset: Int get() = 1
 
-    val currentFolderName: String get() = if (currentFolder == externalStorage) "External storage" else currentFolder.getName()
+    //Current folder
+    val currentFolderName: String get() = if (currentFolder == externalStorage) "External storage" else currentFolder.name
+    val currentFolderPath: String get() = currentFolder.absolutePath
+    val currentFolderParent: File? get() = currentFolder.parentFile
+
+    fun setCurrentFolder(folder: File) {
+        currentFolder = folder
+    }
 
     //Listeners
     interface Listener {

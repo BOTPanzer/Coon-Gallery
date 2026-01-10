@@ -11,8 +11,8 @@ import com.botpa.turbophotos.gallery.actions.ActionError
 
 class DialogErrorsAdapter(
     context: Context,
-    errors: MutableList<ActionError?>
-) : ArrayAdapter<ActionError?>(context, 0, errors) {
+    errors: MutableList<ActionError>
+) : ArrayAdapter<ActionError>(context, 0, errors) {
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         //Inflate
@@ -25,9 +25,8 @@ class DialogErrorsAdapter(
         //Get error
         val error = getItem(position)
 
-        //Update name & reason texts
+        //Update item name & reason
         if (error != null) {
-            //Update item name & reason
             name.text = error.item.name
             reason.text = error.reason
         }
