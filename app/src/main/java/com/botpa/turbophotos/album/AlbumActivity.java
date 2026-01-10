@@ -1,6 +1,6 @@
 package com.botpa.turbophotos.album;
 
-import android.app.Activity;
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
@@ -13,8 +13,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -30,8 +28,6 @@ import com.botpa.turbophotos.gallery.Album;
 import com.botpa.turbophotos.gallery.GalleryActivity;
 import com.botpa.turbophotos.gallery.options.OptionsAdapter;
 import com.botpa.turbophotos.gallery.options.OptionsItem;
-import com.botpa.turbophotos.home.HomeActivity;
-import com.botpa.turbophotos.sync.SyncActivity;
 import com.botpa.turbophotos.util.BackManager;
 import com.botpa.turbophotos.gallery.Library;
 import com.botpa.turbophotos.util.Orion;
@@ -50,6 +46,7 @@ import java.util.Map;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
 
+@SuppressLint({"SetTextI18n", "NotifyDataSetChanged"})
 public class AlbumActivity extends GalleryActivity {
 
     //Activity
@@ -64,11 +61,11 @@ public class AlbumActivity extends GalleryActivity {
     private final Library.RefreshEvent onRefresh = this::manageRefresh;
     private final Library.ActionEvent onAction = this::manageAction;
 
-    //Album list
+    //List
     private GridLayoutManager layoutManager;
     private AlbumAdapter adapter;
 
-    //Album options
+    //Options
     private static final String OPTIONS_SEPARATOR = "separator";
     private static final String OPTIONS_EDIT = "edit";
     private static final String OPTIONS_SHARE = "share";
@@ -80,6 +77,9 @@ public class AlbumActivity extends GalleryActivity {
     private static final String OPTIONS_DELETE = "delete";
     private static final String OPTIONS_DELETE_ALL = "delete_all";
     private final Map<String, OptionsItem> options = new HashMap<>();
+    private final List<OptionsItem> optionsItems = new ArrayList<>();
+
+    private OptionsAdapter optionsAdapter;
 
     //List album
     private boolean inTrash = false;
@@ -453,14 +453,14 @@ public class AlbumActivity extends GalleryActivity {
     }
 
     private void initAdapters() {
-        //Create album layout manager
+        //Init album layout manager
         layoutManager = new GridLayoutManager(
                 AlbumActivity.this,
                 getHorizontalItemCount()
         );
         list.setLayoutManager(layoutManager);
 
-        //Create album adapter
+        //Init album adapter
         adapter = new AlbumAdapter(
                 AlbumActivity.this,
                 Library.gallery,
@@ -503,8 +503,25 @@ public class AlbumActivity extends GalleryActivity {
             return true;
         });
 
-        //Create options layout manager
+        //Init options layout manager
         optionsList.setLayoutManager(new LinearLayoutManager(AlbumActivity.this));
+
+        //Init options adapter
+        optionsAdapter = new OptionsAdapter(AlbumActivity.this, optionsItems);
+        optionsAdapter.setOnClickListener((view, index) -> {
+            //Get option
+            OptionsItem option = optionsItems.get(index);
+            if (option == null) return;
+
+            //Get action
+            Function0<Unit> action = option.getAction();
+            if (action == null) return;
+
+            //Invoke action
+            action.invoke();
+            toggleOptions(false);
+        });
+        optionsList.setAdapter(optionsAdapter);
     }
 
     private void loadMetadata(Album album) {
@@ -690,8 +707,8 @@ public class AlbumActivity extends GalleryActivity {
             boolean isSelecting = !selectedItems.isEmpty();
             boolean isSelectingSingle = selectedItems.size() == 1;
 
-            //Create options list
-            List<OptionsItem> optionsItems = new ArrayList<>();
+            //Update options list
+            optionsItems.clear();
             if (isSelectingSingle && !inTrash)
                 optionsItems.add(options.get(OPTIONS_EDIT));
             if (isSelecting && !inTrash)
@@ -712,28 +729,13 @@ public class AlbumActivity extends GalleryActivity {
                 optionsItems.add(options.get(OPTIONS_DELETE));
             if (!isSelecting && inTrash)
                 optionsItems.add(options.get(OPTIONS_DELETE_ALL));
-
-            //Create options adapter
-            OptionsAdapter optionsAdapter = new OptionsAdapter(AlbumActivity.this, optionsItems);
-            optionsAdapter.setOnClickListener((view, index) -> {
-                //Get option
-                OptionsItem option = optionsItems.get(index);
-                if (option == null) return;
-
-                //Get action
-                Function0<Unit> action = option.getAction();
-                if (action == null) return;
-
-                //Invoke action
-                action.invoke();
-                toggleOptions(false);
-            });
-            optionsList.setAdapter(optionsAdapter);
+            optionsAdapter.notifyDataSetChanged();
 
             //Show
             Orion.showAnim(optionsLayout);
             backManager.register("options", () -> toggleOptions(false));
         } else {
+            //Hide
             Orion.hideAnim(optionsLayout);
             backManager.unregister("options");
         }

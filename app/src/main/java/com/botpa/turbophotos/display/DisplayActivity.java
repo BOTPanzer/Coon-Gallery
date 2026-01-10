@@ -1,5 +1,6 @@
 package com.botpa.turbophotos.display;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.net.Uri;
@@ -23,7 +24,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SnapHelper;
 
 import com.botpa.turbophotos.R;
-import com.botpa.turbophotos.album.AlbumActivity;
 import com.botpa.turbophotos.gallery.actions.Action;
 import com.botpa.turbophotos.gallery.GalleryActivity;
 import com.botpa.turbophotos.gallery.options.OptionsAdapter;
@@ -47,6 +47,7 @@ import java.util.Map;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
 
+@SuppressLint({"SetTextI18n", "NotifyDataSetChanged"})
 public class DisplayActivity extends GalleryActivity {
 
     //Activity
@@ -55,27 +56,29 @@ public class DisplayActivity extends GalleryActivity {
     //Events
     private final Library.ActionEvent onAction = this::manageAction;
 
-    //Display list
+    //List
     private DisplayLayoutManager layoutManager;
     private DisplayAdapter adapter;
-
-    //Display options
-    private static final String OPTIONS_SEPARATOR = "separator";
-    private static final String OPTIONS_EDIT = "edit";
-    private static final String OPTIONS_SHARE = "share";
-    private static final String OPTIONS_MOVE = "move";
-    private static final String OPTIONS_COPY = "copy";
-    private static final String OPTIONS_OPEN_OUTSIDE = "open_outside";
-    private static final String OPTIONS_TRASH = "trash";
-    private static final String OPTIONS_RESTORE = "restore";
-    private static final String OPTIONS_DELETE = "delete";
-    private final Map<String, OptionsItem> options = new HashMap<>();
 
     //List items
     private final ArrayList<CoonItem> displayItems = new ArrayList<>();
     private int currentIndexInGallery = -1;
     private int currentIndexInDisplay = -1;
     private CoonItem currentItem = null;
+
+    //Options
+    private static final String OPTIONS_SEPARATOR = "separator";
+    private static final String OPTIONS_EDIT = "edit";
+    private static final String OPTIONS_SHARE = "share";
+    private static final String OPTIONS_MOVE = "move";
+    private static final String OPTIONS_COPY = "copy";
+    private static final String OPTIONS_TRASH = "trash";
+    private static final String OPTIONS_RESTORE = "restore";
+    private static final String OPTIONS_DELETE = "delete";
+    private final Map<String, OptionsItem> options = new HashMap<>();
+    private final List<OptionsItem> optionsItems = new ArrayList<>();
+
+    private OptionsAdapter optionsAdapter;
 
     //Views (list)
     private RecyclerView list;
@@ -333,14 +336,6 @@ public class DisplayActivity extends GalleryActivity {
             return null;
         }));
 
-        options.put(OPTIONS_OPEN_OUTSIDE, new OptionsItem(R.drawable.open, "Open outside", () -> {
-            //Open outside
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setDataAndType(Uri.parse(currentItem.file.getAbsolutePath()), currentItem.mimeType);
-            startActivity(intent);
-            return null;
-        }));
-
         options.put(OPTIONS_TRASH, new OptionsItem(R.drawable.delete, "Move to trash", () -> {
             //Move to trash
             trashItems(new CoonItem[] { currentItem });
@@ -383,12 +378,12 @@ public class DisplayActivity extends GalleryActivity {
 
     //Display
     private void initAdapters() {
-        //Create display layout manager
+        //Init display layout manager
         layoutManager = new DisplayLayoutManager(DisplayActivity.this);
         layoutManager.setOrientation(RecyclerView.HORIZONTAL);
         list.setLayoutManager(layoutManager);
 
-        //Create display adapter
+        //Init display adapter
         adapter = new DisplayAdapter(DisplayActivity.this, displayItems);
         list.setAdapter(adapter);
 
@@ -446,8 +441,25 @@ public class DisplayActivity extends GalleryActivity {
             }
         });
 
-        //Create options layout manager
+        //Init options layout manager
         optionsList.setLayoutManager(new LinearLayoutManager(DisplayActivity.this));
+
+        //Init options adapter
+        optionsAdapter = new OptionsAdapter(DisplayActivity.this, optionsItems);
+        optionsAdapter.setOnClickListener((view, index) -> {
+            //Get option
+            OptionsItem option = optionsItems.get(index);
+            if (option == null) return;
+
+            //Get action
+            Function0<Unit> action = option.getAction();
+            if (action == null) return;
+
+            //Invoke action
+            action.invoke();
+            toggleOptions(false);
+        });
+        optionsList.setAdapter(optionsAdapter);
     }
 
     private void selectItem(int index) {
@@ -568,11 +580,11 @@ public class DisplayActivity extends GalleryActivity {
 
     private void toggleOptions(boolean show) {
         if (show) {
-            //Toggle necessary options
+            //Get state info
             boolean isTrashed = currentItem.isTrashed;
 
-            //Create options list
-            List<OptionsItem> optionsItems = new ArrayList<>();
+            //Update options list
+            optionsItems.clear();
             if (!isTrashed)
                 optionsItems.add(options.get(OPTIONS_EDIT));
             if (!isTrashed)
@@ -582,31 +594,13 @@ public class DisplayActivity extends GalleryActivity {
             if (!isTrashed)
                 optionsItems.add(options.get(OPTIONS_COPY));
             if (!isTrashed)
-                optionsItems.add(options.get(OPTIONS_OPEN_OUTSIDE));
-            if (!isTrashed)
                 optionsItems.add(options.get(OPTIONS_SEPARATOR));
             if (!isTrashed)
                 optionsItems.add(options.get(OPTIONS_TRASH));
             if (isTrashed)
                 optionsItems.add(options.get(OPTIONS_RESTORE));
             optionsItems.add(options.get(OPTIONS_DELETE));
-
-            //Create options adapter
-            OptionsAdapter optionsAdapter = new OptionsAdapter(DisplayActivity.this, optionsItems);
-            optionsAdapter.setOnClickListener((view, index) -> {
-                //Get option
-                OptionsItem option = optionsItems.get(index);
-                if (option == null) return;
-
-                //Get action
-                Function0<Unit> action = option.getAction();
-                if (action == null) return;
-
-                //Invoke action
-                action.invoke();
-                toggleOptions(false);
-            });
-            optionsList.setAdapter(optionsAdapter);
+            optionsAdapter.notifyDataSetChanged();
 
             //Show
             Orion.showAnim(optionsLayout);

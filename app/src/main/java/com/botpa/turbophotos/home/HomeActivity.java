@@ -81,11 +81,13 @@ public class HomeActivity extends GalleryActivity {
     private final ActivityResultLauncher<Intent> pickerLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
-                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                    Intent data = result.getData();
-                    setResult(Activity.RESULT_OK, data);
-                    finish();
-                }
+                //Check if result is valid
+                if (result.getResultCode() != Activity.RESULT_OK || result.getData() == null) return;
+
+                //Return result
+                Intent data = result.getData();
+                setResult(Activity.RESULT_OK, data);
+                finish();
             }
     );
 
@@ -93,15 +95,18 @@ public class HomeActivity extends GalleryActivity {
     private final Library.RefreshEvent onRefresh = this::manageRefresh;
     private final Library.ActionEvent onAction = this::manageAction;
 
-    //Home list
+    //List
     private GridLayoutManager layoutManager;
     private HomeAdapter adapter;
 
-    //Home options
+    //Options
     private static final String OPTIONS_SEPARATOR = "separator";
     private static final String OPTIONS_SYNC = "sync";
     private static final String OPTIONS_SETTINGS = "settings";
     private final Map<String, OptionsItem> options = new HashMap<>();
+    private final List<OptionsItem> optionsItems = new ArrayList<>();
+
+    private OptionsAdapter optionsAdapter;
 
     //Views (permissions)
     private View permissionLayout;
@@ -498,7 +503,7 @@ public class HomeActivity extends GalleryActivity {
     }
 
     private void initAdapters() {
-        //Create home layout manager
+        //Init home layout manager
         layoutManager = new GridLayoutManager(HomeActivity.this, getHorizontalItemCount());
         list.setLayoutManager(layoutManager);
 
@@ -536,39 +541,41 @@ public class HomeActivity extends GalleryActivity {
         });
         list.setAdapter(adapter);
 
-        //Create options layout manager
+        //Init options layout manager
         optionsList.setLayoutManager(new LinearLayoutManager(HomeActivity.this));
+
+        //Init options adapter
+        optionsAdapter = new OptionsAdapter(HomeActivity.this, optionsItems);
+        optionsAdapter.setOnClickListener((view, index) -> {
+            //Get option
+            OptionsItem option = optionsItems.get(index);
+            if (option == null) return;
+
+            //Get action
+            Function0<Unit> action = option.getAction();
+            if (action == null) return;
+
+            //Invoke action
+            action.invoke();
+            toggleOptions(false);
+        });
+        optionsList.setAdapter(optionsAdapter);
     }
 
     //Options
     private void toggleOptions(boolean show) {
         if (show) {
-            //Create options list
-            List<OptionsItem> optionsItems = new ArrayList<>();
+            //Update options list
+            optionsItems.clear();
             optionsItems.add(options.get(OPTIONS_SYNC));
             optionsItems.add(options.get(OPTIONS_SETTINGS));
-
-            //Create options adapter
-            OptionsAdapter optionsAdapter = new OptionsAdapter(HomeActivity.this, optionsItems);
-            optionsAdapter.setOnClickListener((view, index) -> {
-                //Get option
-                OptionsItem option = optionsItems.get(index);
-                if (option == null) return;
-
-                //Get action
-                Function0<Unit> action = option.getAction();
-                if (action == null) return;
-
-                //Invoke action
-                action.invoke();
-                toggleOptions(false);
-            });
-            optionsList.setAdapter(optionsAdapter);
+            optionsAdapter.notifyDataSetChanged();
 
             //Show
             Orion.showAnim(optionsLayout);
             backManager.register("options", () -> toggleOptions(false));
         } else {
+            //Hide
             Orion.hideAnim(optionsLayout);
             backManager.unregister("options");
         }
