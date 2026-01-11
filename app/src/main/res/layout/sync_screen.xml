@@ -25,7 +25,7 @@
                 android:fontFamily="@font/opificio_bold_rounded"
                 android:text="Sync"
                 android:textColor="?attr/colorOnSurface"
-                android:textSize="16sp" />
+                android:textSize="18sp" />
 
         </LinearLayout>
 

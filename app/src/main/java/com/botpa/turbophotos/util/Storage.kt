@@ -19,7 +19,7 @@ object Storage {
     }
 
     //String list
-    @JvmStatic fun getStringList(key: String): List<String> {
+    @JvmStatic fun getStringList(key: String): MutableList<String> {
         val list = ArrayList<String>()
         if (isInit) {
             val listString = preferences.getString(key, null)
@@ -28,7 +28,7 @@ object Storage {
         return list
     }
 
-    @JvmStatic fun putStringList(key: String, value: List<String>) {
+    @JvmStatic fun putStringList(key: String, value: MutableList<String>) {
         if (isInit) preferences.edit { putString(key, if (value.isEmpty()) null else value.joinToString(LIST_SPLIT)) }
     }
 

@@ -186,7 +186,6 @@ class AlbumActivity : GalleryActivity() {
         Library.addOnActionEvent(onAction)
 
         //Init components
-        Storage.init(this@AlbumActivity)
         backManager = BackManager(this@AlbumActivity, onBackPressedDispatcher)
         initViews()
         initListeners()

@@ -161,7 +161,6 @@ class DisplayActivity : GalleryActivity() {
         Library.addOnActionEvent(onAction)
 
         //Init components
-        Storage.init(this@DisplayActivity)
         backManager = BackManager(this@DisplayActivity, onBackPressedDispatcher)
         initViews()
         initListeners()
@@ -584,7 +583,7 @@ class DisplayActivity : GalleryActivity() {
                 }
             }
             text = info.toString()
-        } catch (ignored: Exception) {
+        } catch (_: Exception) {
             //Error while parsing JSON
         }
 

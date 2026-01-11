@@ -197,7 +197,7 @@ class HomeActivity : GalleryActivity() {
     override fun onResume() {
         super.onResume()
 
-        //Not init
+        //Home not init
         if (!isInit) return
 
         //Reload
@@ -485,7 +485,7 @@ class HomeActivity : GalleryActivity() {
 
         optionSync = OptionsItem(R.drawable.backup, "Sync") {
             //Not loaded
-            if (isLibraryLoaded) return@OptionsItem
+            if (!isLibraryLoaded) return@OptionsItem
 
             //Open sync
             startActivity(Intent(this@HomeActivity, SyncActivity::class.java))
@@ -493,7 +493,7 @@ class HomeActivity : GalleryActivity() {
 
         optionSettings = OptionsItem(R.drawable.settings, "Settings") {
             //Not loaded
-            if (isLibraryLoaded) return@OptionsItem
+            if (!isLibraryLoaded) return@OptionsItem
 
             //Open sync
             startActivity(Intent(this@HomeActivity, SettingsActivity::class.java))
