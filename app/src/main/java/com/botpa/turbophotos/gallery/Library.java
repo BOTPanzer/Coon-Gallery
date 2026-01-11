@@ -10,28 +10,17 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.IntentSenderRequest;
-import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.MimeTypeFilter;
 
-import com.botpa.turbophotos.R;
 import com.botpa.turbophotos.gallery.actions.Action;
 import com.botpa.turbophotos.gallery.actions.ActionError;
 import com.botpa.turbophotos.gallery.actions.ActionHelper;
 import com.botpa.turbophotos.gallery.dialogs.DialogAlbums;
-import com.botpa.turbophotos.gallery.dialogs.DialogAlbumsAdapter;
 import com.botpa.turbophotos.gallery.dialogs.DialogErrors;
-import com.botpa.turbophotos.gallery.dialogs.DialogErrorsAdapter;
 import com.botpa.turbophotos.gallery.dialogs.DialogFolders;
-import com.botpa.turbophotos.gallery.dialogs.DialogFoldersAdapter;
 import com.botpa.turbophotos.util.Orion;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -89,7 +78,7 @@ public class Library {
         onRefresh.remove(listener);
     }
 
-    //Gallery (load/refresh)
+    //Gallery (sort/load/refresh)
     private static Cursor getMediaCursor(Context context) {
         //Get content resolver
         ContentResolver contentResolver = context.getContentResolver();
@@ -106,8 +95,8 @@ public class Library {
         //Create selection
         String selection =
                 MediaStore.Files.FileColumns.DATE_ADDED + " > ? AND (" +
-                MediaStore.Files.FileColumns.MEDIA_TYPE + "= ? OR " +
-                MediaStore.Files.FileColumns.MEDIA_TYPE + "= ?)";
+                        MediaStore.Files.FileColumns.MEDIA_TYPE + "= ? OR " +
+                        MediaStore.Files.FileColumns.MEDIA_TYPE + "= ?)";
 
         //Create selection args
         String[] selectionArgs = {
@@ -134,6 +123,22 @@ public class Library {
                 //Cancellation signal
                 null
         );
+    }
+
+    public static void sortLibrary() {
+        //Sort albums
+        sortLibrary(true);
+    }
+
+    private static void sortLibrary(boolean refresh) {
+        //Sort albums
+        trash.sort();
+        all.sort();
+        for (Album album : albums) album.sort();
+        sortAlbumsList();
+
+        //Invoke on refresh
+        invokeOnRefresh(refresh);
     }
 
     public static void loadLibrary(Context context, boolean reset) {
@@ -240,13 +245,7 @@ public class Library {
         }
 
         //Sort albums
-        trash.sort();
-        all.sort();
-        for (Album album : albums) album.sort();
-        sortAlbumsList();
-
-        //Invoke on refresh
-        invokeOnRefresh(reset || itemsAdded > 0);
+        sortLibrary(reset || itemsAdded > 0);
     }
 
     //Albums

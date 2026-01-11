@@ -31,6 +31,19 @@ class CoonItem(
         return album.hasMetadataKey(name)
     }
 
+    fun updateLastModified(): Boolean {
+        //Check if current item was modified
+        val newLastModified: Long = file.lastModified() / 1000 //To seconds
+        if (newLastModified != lastModified) {
+            //Was updated
+            lastModified = newLastModified
+            return true
+        } else {
+            //Wasn't updated
+            return false
+        }
+    }
+
     override fun compareTo(other: CoonItem): Int {
         return lastModified.compareTo(other.lastModified)
     }

@@ -154,11 +154,10 @@ public class DisplayActivity extends GalleryActivity {
         if (currentItem == null) return;
 
         //Check if current item was modified
-        long lastModified = currentItem.file.lastModified();
-        if (currentItem.lastModified != lastModified) {
-            //Item was modified -> Update & refresh display
-            currentItem.lastModified = lastModified;
+        if (currentItem.updateLastModified()) {
+            //Item was modified -> Refresh display & sort library
             adapter.notifyItemChanged(currentIndexInDisplay);
+            Library.sortLibrary();
         }
     }
 
