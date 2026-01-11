@@ -153,21 +153,19 @@ public class AlbumActivity extends GalleryActivity {
         //Enable HDR
         getWindow().setColorMode(ActivityInfo.COLOR_MODE_HDR);
 
-        //Load storage
-        Storage.load(AlbumActivity.this);
-
-        //Init back manager
-        backManager = new BackManager(AlbumActivity.this, getOnBackPressedDispatcher());
-
         //Add events
         Library.addOnRefreshEvent(onRefresh);
         Library.addOnActionEvent(onAction);
 
-        //Load views & add listeners
-        loadViews();
-        addListeners();
+        //Init storage
+        Storage.init(AlbumActivity.this);
 
-        //Init adapters
+        //Init back manager
+        backManager = new BackManager(AlbumActivity.this, getOnBackPressedDispatcher());
+
+        //Init components
+        initViews();
+        initListeners();
         initAdapters();
 
         //Init activity
@@ -227,7 +225,7 @@ public class AlbumActivity extends GalleryActivity {
     }
 
     //Views
-    private void loadViews() {
+    private void initViews() {
         //Navbar
         navbarLayout = findViewById(R.id.navbarLayout);
         navbarTitle = findViewById(R.id.navbarTitle);
@@ -306,7 +304,7 @@ public class AlbumActivity extends GalleryActivity {
         );
     }
 
-    private void addListeners() {
+    private void initListeners() {
         //Navbar
         navbarSearch.setOnClickListener(view -> showSearchLayout(true));
 

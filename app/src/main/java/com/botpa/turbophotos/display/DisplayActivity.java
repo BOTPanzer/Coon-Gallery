@@ -118,20 +118,18 @@ public class DisplayActivity extends GalleryActivity {
         //Enable HDR
         getWindow().setColorMode(ActivityInfo.COLOR_MODE_HDR);
 
-        //Load storage
-        Storage.load(DisplayActivity.this);
+        //Add events
+        Library.addOnActionEvent(onAction);
+
+        //Init storage
+        Storage.init(DisplayActivity.this);
 
         //Init back manager
         backManager = new BackManager(DisplayActivity.this, getOnBackPressedDispatcher());
 
-        //Add events
-        Library.addOnActionEvent(onAction);
-
-        //Load views & add listeners
-        loadViews();
-        addListeners();
-
-        //Init adapters
+        //Init components
+        initViews();
+        initListeners();
         initAdapters();
 
         //Init activity
@@ -179,7 +177,7 @@ public class DisplayActivity extends GalleryActivity {
     }
 
     //Views
-    private void loadViews() {
+    private void initViews() {
         //Views (list)
         list = findViewById(R.id.list);
 
@@ -258,7 +256,7 @@ public class DisplayActivity extends GalleryActivity {
         Orion.addInsetsChangedListener(optionsLayout, new int[] { WindowInsetsCompat.Type.systemBars() });
     }
 
-    private void addListeners() {
+    private void initListeners() {
         //Overlay
         overlayInfo.setOnClickListener(view -> toggleInfo(true));
 

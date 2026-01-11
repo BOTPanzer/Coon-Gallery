@@ -62,8 +62,8 @@ class SettingsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        //Load storage
-        Storage.load(this@SettingsActivity)
+        //Init storage
+        Storage.init(this@SettingsActivity)
 
         //Edging
         enableEdgeToEdge()
