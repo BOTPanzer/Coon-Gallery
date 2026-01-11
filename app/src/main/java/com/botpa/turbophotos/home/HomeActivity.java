@@ -31,6 +31,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.Manifest;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.botpa.turbophotos.gallery.options.OptionsAdapter;
 import com.botpa.turbophotos.gallery.options.OptionsItem;
@@ -56,6 +57,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @SuppressLint({"SetTextI18n", "NotifyDataSetChanged"})
 public class HomeActivity extends GalleryActivity {
@@ -113,6 +115,7 @@ public class HomeActivity extends GalleryActivity {
     private View permissionLayout;
 
     //Views (navbar)
+    private TextView navbarSubtitle;
     private View navbarOptions;
 
     //Views (options)
@@ -300,6 +303,10 @@ public class HomeActivity extends GalleryActivity {
 
         //Load albums
         new Thread(() -> {
+            //Add events
+            Library.addOnRefreshEvent(onRefresh);
+            Library.addOnActionEvent(onAction);
+
             //Load albums
             Library.loadLibrary(HomeActivity.this, filter);
 
@@ -314,10 +321,6 @@ public class HomeActivity extends GalleryActivity {
                 //Reload albums list
                 adapter.notifyDataSetChanged();
             });
-
-            //Add events
-            Library.addOnRefreshEvent(onRefresh);
-            Library.addOnActionEvent(onAction);
 
             //Mark as loaded
             isLoaded = true;
@@ -335,6 +338,7 @@ public class HomeActivity extends GalleryActivity {
         permissionLayout = findViewById(R.id.permissionLayout);
 
         //Navbar
+        navbarSubtitle = findViewById(R.id.navbarSubtitle);
         navbarOptions = findViewById(R.id.navbarOptions);
 
         //Options
@@ -425,7 +429,7 @@ public class HomeActivity extends GalleryActivity {
             startActivity(new Intent(HomeActivity.this, SettingsActivity.class));
         }));
 
-        options.put(OPTIONS_FILTER, new OptionsItem(R.drawable.gallery_image, "Filter", () -> {
+        options.put(OPTIONS_FILTER, new OptionsItem(R.drawable.filter, "Filters", () -> {
             //Create filters list
             List<Filter> filters = Arrays.asList(
                     new Filter(R.drawable.gallery_all, "All items", "*/*"),
@@ -450,8 +454,14 @@ public class HomeActivity extends GalleryActivity {
     //Events
     private void manageRefresh(boolean updated) {
         runOnUiThread(() -> {
+            //Didn't update
+            if (!updated) return;
+
             //Refresh list
-            if (updated) adapter.notifyDataSetChanged();
+            adapter.notifyDataSetChanged();
+
+            //Update subtitle
+            updateSubtitle();
         });
     }
 
@@ -577,6 +587,36 @@ public class HomeActivity extends GalleryActivity {
             toggleOptions(false);
         });
         optionsList.setAdapter(optionsAdapter);
+    }
+
+    private void updateSubtitle() {
+        //Check if a filter is applied
+        String filter = Library.galleryFilter;
+        boolean isFiltered = !filter.equals("*/*");
+        navbarSubtitle.setVisibility(isFiltered ? View.VISIBLE : View.GONE);
+        if (!isFiltered) return;
+
+        //Parse filter & update subtitle
+        String[] parts = filter.split("/");
+        String type = parts[0];
+        String format = parts[1];
+        StringBuilder subtitle = new StringBuilder("Showing only ");
+        switch (type) {
+            case "image":
+                subtitle.append("images ");
+                break;
+            case "video":
+                subtitle.append("videos ");
+                break;
+            default:
+                subtitle.append("custom ");
+        }
+        if (!format.equals("*")) {
+            subtitle.append("(");
+            subtitle.append(format);
+            subtitle.append(")");
+        }
+        navbarSubtitle.setText(subtitle.toString());
     }
 
     //Options
