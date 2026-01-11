@@ -19,7 +19,7 @@ open class GalleryActivity : AppCompatActivity() {
         if (result.resultCode != RESULT_OK) {
             //Action failed or was cancelled -> Add errors
             for (item in action.trashPending.values) {
-                action.errors.add(ActionError(item, "Trash operation failed"))
+                action.errors.add(ActionError(item, "Trash operation failed."))
             }
 
             //Empty pending items

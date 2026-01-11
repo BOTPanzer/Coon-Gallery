@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.sync
+package com.botpa.turbophotos.sync.logs
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -8,10 +8,10 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 
-class SyncLogAdapter(
+class LogAdapter(
     private val context: Context,
     private val logs: List<String>
-) : RecyclerView.Adapter<SyncLogAdapter.LogHolder>() {
+) : RecyclerView.Adapter<LogAdapter.LogHolder>() {
 
     //Adapter
     override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): LogHolder {

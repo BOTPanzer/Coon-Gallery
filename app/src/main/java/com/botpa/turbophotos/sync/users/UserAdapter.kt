@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.sync
+package com.botpa.turbophotos.sync.users
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -8,10 +8,10 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 
-class SyncUserAdapter(
+class UserAdapter(
     private val context: Context,
     private val users: List<User>
-) : RecyclerView.Adapter<SyncUserAdapter.AlbumHolder>() {
+) : RecyclerView.Adapter<UserAdapter.AlbumHolder>() {
 
     //Adapter
     override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): AlbumHolder {

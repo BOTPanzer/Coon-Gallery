@@ -19,7 +19,6 @@ import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
@@ -32,10 +31,11 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.Manifest;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 
 import com.botpa.turbophotos.gallery.options.OptionsAdapter;
 import com.botpa.turbophotos.gallery.options.OptionsItem;
+import com.botpa.turbophotos.home.filters.DialogFilters;
+import com.botpa.turbophotos.home.filters.Filter;
 import com.botpa.turbophotos.sync.SyncActivity;
 import com.botpa.turbophotos.album.AlbumActivity;
 import com.botpa.turbophotos.gallery.GalleryActivity;
@@ -47,7 +47,6 @@ import com.botpa.turbophotos.R;
 import com.botpa.turbophotos.util.BackManager;
 import com.botpa.turbophotos.util.Orion;
 import com.botpa.turbophotos.util.Storage;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView;
 
 import org.jetbrains.annotations.NotNull;
@@ -411,42 +410,31 @@ public class HomeActivity extends GalleryActivity {
         options.put(OPTIONS_SEPARATOR, new OptionsItem());
 
         options.put(OPTIONS_SYNC, new OptionsItem(R.drawable.backup, "Sync", () -> {
+            //Not loaded
+            if (isLoaded) return;
+
             //Open sync
             startActivity(new Intent(HomeActivity.this, SyncActivity.class));
         }));
 
         options.put(OPTIONS_SETTINGS, new OptionsItem(R.drawable.settings, "Settings", () -> {
+            //Not loaded
+            if (isLoaded) return;
+
             //Open sync
             startActivity(new Intent(HomeActivity.this, SettingsActivity.class));
         }));
 
-        options.put(OPTIONS_FILTER, new OptionsItem(R.drawable.gallery, "Filter", () -> {
-            //Create list
-            ListView list = new ListView(HomeActivity.this);
-
-            //Create filters
-            List<HomeFilter> filters = Arrays.asList(
-                    new HomeFilter("All", "*/*"),
-                    new HomeFilter("Images", "image/*"),
-                    new HomeFilter("Videos", "video/*")
+        options.put(OPTIONS_FILTER, new OptionsItem(R.drawable.gallery_image, "Filter", () -> {
+            //Create filters list
+            List<Filter> filters = Arrays.asList(
+                    new Filter(R.drawable.gallery_all, "All items", "*/*"),
+                    new Filter(R.drawable.gallery_image, "Only images", "image/*"),
+                    new Filter(R.drawable.gallery_video, "Only videos", "video/*")
             );
 
-            //Create adapter
-            HomeFilterAdapter adapter = new HomeFilterAdapter(HomeActivity.this, filters);
-            list.setAdapter(adapter);
-
-            //Show dialog
-            AlertDialog dialog = new MaterialAlertDialogBuilder(HomeActivity.this)
-                    .setTitle("Filters")
-                    .setView(list)
-                    .setNegativeButton("Cancel", (dialogInterface, which) -> dialogInterface.dismiss())
-                    .show();
-
-            //Add listeners
-            list.setOnItemClickListener((parent, view, position, id) -> {
-                Library.loadLibrary(HomeActivity.this, filters.get(position).getMimeType());
-                dialog.dismiss();
-            });
+            //Create dialog
+            new DialogFilters(HomeActivity.this, filters).show();
         }));
 
         //List

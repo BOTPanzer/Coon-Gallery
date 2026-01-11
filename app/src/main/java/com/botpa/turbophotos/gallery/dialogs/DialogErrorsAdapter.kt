@@ -11,12 +11,12 @@ import com.botpa.turbophotos.gallery.actions.ActionError
 
 class DialogErrorsAdapter(
     context: Context,
-    errors: MutableList<ActionError>
+    errors: List<ActionError>
 ) : ArrayAdapter<ActionError>(context, 0, errors) {
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         //Inflate
-        val view: View = convertView ?: LayoutInflater.from(context).inflate(R.layout.dialog_error_item, parent, false)
+        val view: View = convertView ?: LayoutInflater.from(context).inflate(R.layout.dialog_errors_item, parent, false)
 
         //Get views
         val name = view.findViewById<TextView>(R.id.failItem)

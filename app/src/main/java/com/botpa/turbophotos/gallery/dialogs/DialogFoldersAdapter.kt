@@ -15,12 +15,12 @@ class DialogFoldersAdapter(
     context: Context,
     private val externalStorage: File,
     private var currentFolder: File,
-    folders: MutableList<File>
+    folders: List<File>
 ) : ArrayAdapter<File>(context, 0, folders) {
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         //Inflate
-        val view: View = convertView ?: LayoutInflater.from(context).inflate(R.layout.dialog_folder_item, parent, false)
+        val view: View = convertView ?: LayoutInflater.from(context).inflate(R.layout.dialog_folders_item, parent, false)
 
         //Get views
         val icon = view.findViewById<ImageView>(R.id.folderIcon)
@@ -72,7 +72,7 @@ class DialogFoldersAdapter(
     }
 
     //Listeners
-    interface Listener {
+    fun interface Listener {
         fun invoke(index: Int)
     }
 

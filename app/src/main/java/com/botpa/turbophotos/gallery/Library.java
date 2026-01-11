@@ -20,15 +20,17 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.IntentSenderRequest;
 import androidx.appcompat.app.AlertDialog;
-import androidx.collection.ArrayMap;
 import androidx.core.content.MimeTypeFilter;
 
 import com.botpa.turbophotos.R;
 import com.botpa.turbophotos.gallery.actions.Action;
 import com.botpa.turbophotos.gallery.actions.ActionError;
 import com.botpa.turbophotos.gallery.actions.ActionHelper;
+import com.botpa.turbophotos.gallery.dialogs.DialogAlbums;
 import com.botpa.turbophotos.gallery.dialogs.DialogAlbumsAdapter;
+import com.botpa.turbophotos.gallery.dialogs.DialogErrors;
 import com.botpa.turbophotos.gallery.dialogs.DialogErrorsAdapter;
+import com.botpa.turbophotos.gallery.dialogs.DialogFolders;
 import com.botpa.turbophotos.gallery.dialogs.DialogFoldersAdapter;
 import com.botpa.turbophotos.util.Orion;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -408,180 +410,25 @@ public class Library {
     }
 
     //Actions (dialogs)
-    private static void showActionErrorsDialog(Context context, Action action) {
-        //Create list
-        ListView list = new ListView(context);
-
-        //Create adapter
-        DialogErrorsAdapter adapter = new DialogErrorsAdapter(context, action.errors);
-        list.setAdapter(adapter);
-
-        //Show dialog
-        AlertDialog dialog = new MaterialAlertDialogBuilder(context)
-                .setTitle("Errors")
-                .setView(list)
-                .setPositiveButton("Ok", (dialogInterface, which) -> dialogInterface.dismiss())
-                .show();
-
-        //Add listeners
-        list.setOnItemClickListener((parent, view, position, id) -> {
-            //Copy reason to clipboard
-            ActionError error = action.errors.get(position);
-            Orion.copyToClip(context, error.getItem().name + ": " + error.getReason());
-        });
+    public static void showActionErrorsDialog(Context context, Action action) {
+        //Create dialog
+        new DialogErrors(context, action.errors).show();
     }
 
-    private static void showSelectAlbumDialog(Context context, Consumer<Album> onSelect) {
-        //Create list
-        ListView list = new ListView(context);
-
-        //Create adapter
-        DialogAlbumsAdapter adapter = new DialogAlbumsAdapter(context, albums);
-        list.setAdapter(adapter);
-
-        //Show dialog
-        AlertDialog dialog = new MaterialAlertDialogBuilder(context)
-                .setTitle("Select an album")
-                .setView(list)
-                .setNeutralButton("Select folder", (dialogInterface, which) -> {
-                    //Select from folder
-                    showSelectFolderDialog(context, folder -> onSelect.accept(getOrCreateAlbumFromFolder(folder)));
-                })
-                .setNegativeButton("Cancel", (dialogInterface, which) -> dialogInterface.dismiss())
-                .show();
-
-        //Add listeners
-        list.setOnItemClickListener((parent, view, position, id) -> {
-            //Select album
-            onSelect.accept(albums.get(position));
-
-            //Close dialog
-            dialog.dismiss();
-        });
+    public static void showSelectAlbumDialog(Context context, Consumer<Album> onSelect) {
+        //Create dialog
+        new DialogAlbums(context, albums, onSelect, (folder) -> onSelect.accept(getOrCreateAlbumFromFolder(folder))).show();
     }
 
-    private static void showSelectFolderDialog(Context context, Consumer<File> onSelect) {
-        //Create layout
-        View dialogLayout = LayoutInflater.from(context).inflate(R.layout.dialog_folder, null);
-
-        //Get views
-        View listLayout = dialogLayout.findViewById(R.id.listLayout);
-        ListView list = dialogLayout.findViewById(R.id.list);
-        View createLayout = dialogLayout.findViewById(R.id.createLayout);
-        EditText createInput = dialogLayout.findViewById(R.id.createInput);
-        Button create = dialogLayout.findViewById(R.id.create);
-
+    public static void showSelectFolderDialog(Context context, Consumer<File> onSelect) {
         //Create folders list
         File externalStorage = Environment.getExternalStorageDirectory();
         File imagesFolder = new File(externalStorage, "Pictures");
         List<File> folders = Orion.listFiles(imagesFolder);
         folders.sort((a, b) -> a.getName().compareToIgnoreCase(b.getName()));
 
-        //Create adapter
-        DialogFoldersAdapter adapter = new DialogFoldersAdapter(context, externalStorage, imagesFolder, folders);
-        list.setAdapter(adapter);
-
-        //Show dialog
-        AlertDialog dialog = new MaterialAlertDialogBuilder(context)
-                .setTitle(adapter.getCurrentFolderName())
-                .setView(dialogLayout)
-                .setNeutralButton("Create folder", null)
-                .setNegativeButton("Cancel", (dialogInterface, which) -> dialogInterface.dismiss())
-                .show();
-
-        //Add listeners (list)
-        adapter.setOnSelectListener(index -> {
-            //Select folder
-            onSelect.accept(folders.get(index));
-
-            //Close dialog
-            dialog.dismiss();
-        });
-        adapter.setOnOpenListener(index -> {
-            //Get folder
-            File folder;
-            if (index < 0) {
-                //Back button
-                folder = adapter.getCurrentFolderParent();
-            } else {
-                //Select folder
-                folder = folders.get(index);
-            }
-
-            //Check if folder is valid
-            if (folder == null)  {
-                //Invalid folder
-                Toast.makeText(context, "Invalid folder", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            //Check if folder can be read and written to
-            if (!folder.canRead() || !folder.canWrite()) {
-                //Folder can't be read/written to
-                Toast.makeText(context, "Missing permissions to use that folder", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            //Update adapter
-            adapter.setCurrentFolder(folder);
-            dialog.setTitle(adapter.getCurrentFolderName());
-            folders.clear();
-            folders.addAll(Orion.listFiles(folder));
-            folders.sort((a, b) -> a.getName().compareToIgnoreCase(b.getName()));
-            adapter.notifyDataSetChanged();
-            list.setSelectionAfterHeaderView(); //Scroll to top
-        });
-
-        //Add listeners (create)
-        create.setOnClickListener(view -> {
-            //Get folder name & file
-            String folderName = createInput.getText().toString().trim();
-            File folder = new File(adapter.getCurrentFolderPath(), folderName);
-
-            //Check if folder exists
-            if (folder.exists()) {
-                //Folder already exists
-                Toast.makeText(context, "Folder already exists", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            //Create folder
-            if (!folder.mkdir()) {
-                //Failed to create folder
-                Toast.makeText(context, "Failed to create folder", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            //Accept file
-            onSelect.accept(folder);
-
-            //Close dialog
-            dialog.dismiss();
-        });
-
-        //Add listeners (list & create)
-        Button neutralButton = dialog.getButton(AlertDialog.BUTTON_NEUTRAL);
-        neutralButton.setOnClickListener(view -> {
-            if (listLayout.getVisibility() == View.VISIBLE) {
-                //Toggle menus (show create folder)
-                listLayout.setVisibility(View.GONE);
-                createLayout.setVisibility(View.VISIBLE);
-
-                //Reset input
-                createInput.setText("");
-                createInput.requestFocus();
-
-                //Update neutral button
-                neutralButton.setText("Select folder");
-            } else {
-                //Toggle menus (show folders list)
-                listLayout.setVisibility(View.VISIBLE);
-                createLayout.setVisibility(View.GONE);
-
-                //Update neutral button
-                neutralButton.setText("Create folder");
-            }
-        });
+        //Create dialog
+        new DialogFolders(context, externalStorage, imagesFolder, folders, onSelect).show();
     }
 
     //Actions (base & util)
@@ -714,14 +561,14 @@ public class Library {
             //Check new album
             if (newAlbum == null) {
                 //Invalid destination
-                action.errors.add(new ActionError(item, "Invalid destination"));
+                action.errors.add(new ActionError(item, "Invalid destination."));
                 return;
             }
 
             //Check if in trash
             if (item.isTrashed) {
                 //Item is in trash
-                action.errors.add(new ActionError(item, "Item is in the trash"));
+                action.errors.add(new ActionError(item, "Item is in the trash."));
                 return;
             }
 
@@ -731,7 +578,7 @@ public class Library {
             //Check if can move
             if (oldAlbum == newAlbum) {
                 //Already in the destination album
-                action.errors.add(new ActionError(item, "Item is already in the destination album"));
+                action.errors.add(new ActionError(item, "Item is already in the destination album."));
                 return;
             }
 
@@ -739,7 +586,7 @@ public class Library {
             File newFile = new File(newAlbum.getImagesPath(), item.name);
             if (!Orion.moveFile(item.file, newFile)) {
                 //Failed to move file
-                action.errors.add(new ActionError(item, "Error while moving item file"));
+                action.errors.add(new ActionError(item, "Error while moving item file."));
                 return;
             }
 
@@ -795,14 +642,14 @@ public class Library {
             //Check new album
             if (newAlbum == null) {
                 //Invalid destination
-                action.errors.add(new ActionError(item, "Invalid destination"));
+                action.errors.add(new ActionError(item, "Invalid destination."));
                 return;
             }
 
             //Check if in trash
             if (item.isTrashed) {
                 //Item is in trash
-                action.errors.add(new ActionError(item, "Item is in the trash"));
+                action.errors.add(new ActionError(item, "Item is in the trash."));
                 return;
             }
 
@@ -812,7 +659,7 @@ public class Library {
             //Check if can move
             if (oldAlbum == newAlbum) {
                 //Already in the destination album
-                action.errors.add(new ActionError(item, "Item is already in the destination album"));
+                action.errors.add(new ActionError(item, "Item is already in the destination album."));
                 return;
             }
 
@@ -820,7 +667,7 @@ public class Library {
             File newFile = new File(newAlbum.getImagesPath(), item.name);
             if (!Orion.cloneFile(context, item.file, newFile)) {
                 //Failed to copy file
-                action.errors.add(new ActionError(item, "Error while copying item file"));
+                action.errors.add(new ActionError(item, "Error while copying item file."));
                 return;
             }
             recentlyAddedFiles.add(newFile); //Add file to recently added to prevent duplicates
@@ -868,7 +715,7 @@ public class Library {
                     if (!item.isTrashed) break;
 
                     //Trashed
-                    action.errors.add(new ActionError(item, "Item is already in the trash"));
+                    action.errors.add(new ActionError(item, "Item is already in the trash."));
                     continue;
 
                 //Check if item is not trashed
@@ -877,7 +724,7 @@ public class Library {
                     if (item.isTrashed) break;
 
                     //Not trashed
-                    action.errors.add(new ActionError(item, "Item is not in the trash"));
+                    action.errors.add(new ActionError(item, "Item is not in the trash."));
                     continue;
             }
 
@@ -887,7 +734,7 @@ public class Library {
             //Check if URI is valid
             if (uri == null) {
                 //Not valid
-                action.errors.add(new ActionError(item, "Invalid item URI"));
+                action.errors.add(new ActionError(item, "Invalid item URI."));
                 continue;
             }
 
@@ -932,7 +779,7 @@ public class Library {
             File newFile = new File(newFilePath == null ? "" : newFilePath);
             if (!newFile.exists()) {
                 //New file does not exist -> Something failed
-                action.errors.add(new ActionError(item, "New file does not exist"));
+                action.errors.add(new ActionError(item, "New file does not exist."));
                 continue;
             }
 
@@ -1000,7 +847,7 @@ public class Library {
             File newFile = new File(newFilePath == null ? "" : newFilePath);
             if (!newFile.exists()) {
                 //New file does not exist -> Something failed
-                action.errors.add(new ActionError(item, "New file does not exist"));
+                action.errors.add(new ActionError(item, "New file does not exist."));
                 continue;
             }
 
@@ -1055,7 +902,7 @@ public class Library {
             //Delete item file
             if (!Orion.deleteFile(item.file)) {
                 //Failed to delete file
-                action.errors.add(new ActionError(item, "Error while deleting item file"));
+                action.errors.add(new ActionError(item, "Error while deleting item file."));
                 return;
             }
 

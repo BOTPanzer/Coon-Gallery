@@ -1,0 +1,53 @@
+package com.botpa.turbophotos.gallery.dialogs
+
+import android.content.Context
+import android.widget.ListView
+import com.botpa.turbophotos.R
+import com.botpa.turbophotos.gallery.Album
+import com.botpa.turbophotos.gallery.Library
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import java.io.File
+import java.util.function.Consumer
+
+class DialogAlbums(context: Context, private val albums: List<Album>, private val onSelectAlbum: Consumer<Album>, private val onSelectFolder: Consumer<File>) : CustomDialog(context, R.layout.dialog_albums) {
+
+    //Views
+    private lateinit var list: ListView
+
+    //Adapter
+    private lateinit var adapter: DialogAlbumsAdapter
+
+
+    //Init
+    override fun initViews() {
+        //Init views
+        list = root.findViewById(R.id.list)
+
+        //Init adapter
+        adapter = DialogAlbumsAdapter(context, albums)
+        list.adapter = adapter
+    }
+
+    override fun initDialog(builder: MaterialAlertDialogBuilder): MaterialAlertDialogBuilder {
+        //Init dialog
+        return builder
+            .setTitle("Select an album")
+            .setNegativeButton("Cancel", null)
+            .setNeutralButton("Select folder",{ dialogInterface, which ->
+                //Select from folder
+                Library.showSelectFolderDialog(context, { folder -> onSelectFolder.accept(folder) });
+            })
+    }
+
+    override fun initListeners() {
+        //Add listeners
+        list.setOnItemClickListener { parent, view, position, id ->
+            //Select album
+            onSelectAlbum.accept(albums.get(position))
+
+            //Close dialog
+            dialog.dismiss()
+        }
+    }
+
+}

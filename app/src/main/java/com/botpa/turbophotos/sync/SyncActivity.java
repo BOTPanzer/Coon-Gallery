@@ -12,6 +12,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.botpa.turbophotos.R;
+import com.botpa.turbophotos.sync.logs.LogAdapter;
+import com.botpa.turbophotos.sync.users.User;
+import com.botpa.turbophotos.sync.users.UserAdapter;
 import com.botpa.turbophotos.util.Orion;
 import com.botpa.turbophotos.util.Storage;
 
@@ -32,12 +35,12 @@ public class SyncActivity extends AppCompatActivity {
 
     //Users
     private final List<User> users = new ArrayList<>();
-    private SyncUserAdapter usersAdapter;
+    private UserAdapter usersAdapter;
 
     //Logs
     private static final int logsMax = 200;
     private final List<String> logs = new ArrayList<>();
-    private SyncLogAdapter logsAdapter;
+    private LogAdapter logsAdapter;
 
     //Views (connect)
     private View usersLayout;
@@ -161,7 +164,7 @@ public class SyncActivity extends AppCompatActivity {
     //Users
     private void initUsersList() {
         //Create adapter
-        usersAdapter = new SyncUserAdapter(SyncActivity.this, users);
+        usersAdapter = new UserAdapter(SyncActivity.this, users);
 
         //Add connect listener
         usersAdapter.setOnClickListener((view, index) -> {
@@ -275,7 +278,7 @@ public class SyncActivity extends AppCompatActivity {
     //Logs
     private void initLogsList() {
         //Create adapter
-        logsAdapter = new SyncLogAdapter(SyncActivity.this, logs);
+        logsAdapter = new LogAdapter(SyncActivity.this, logs);
 
         //Add adapter to list
         logsList.setAdapter(logsAdapter);

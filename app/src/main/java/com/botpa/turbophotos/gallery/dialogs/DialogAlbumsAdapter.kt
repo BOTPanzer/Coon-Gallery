@@ -11,12 +11,12 @@ import com.botpa.turbophotos.gallery.Album
 
 class DialogAlbumsAdapter(
     context: Context,
-    albums: MutableList<Album>
+    albums: List<Album>
 ) : ArrayAdapter<Album>(context, 0, albums) {
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         //Inflate
-        val view: View = convertView ?: LayoutInflater.from(context).inflate(R.layout.dialog_album_item, parent, false)
+        val view: View = convertView ?: LayoutInflater.from(context).inflate(R.layout.dialog_albums_item, parent, false)
 
         //Get views
         val name = view.findViewById<TextView>(R.id.albumName)
