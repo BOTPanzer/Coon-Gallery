@@ -68,8 +68,8 @@ class HomeActivity : GalleryActivity() {
     private var isInit = false
 
     //Events
-    private val onRefresh = RefreshEvent { updated: Boolean -> this.manageRefresh(updated) }
-    private val onAction = Library.ActionEvent { action: Action -> this.manageAction(action) }
+    private val onRefresh = RefreshEvent { updated -> this.manageRefresh(updated) }
+    private val onAction = Library.ActionEvent { action -> this.manageAction(action) }
 
     //Item picker for external apps
     private var isPicking = false //An app requested to pick an item
@@ -105,7 +105,6 @@ class HomeActivity : GalleryActivity() {
     private lateinit var refreshLayout: SwipeRefreshLayout
     private lateinit var homeList: FastScrollRecyclerView
 
-
       /*$$$$$              /$$     /$$
      /$$__  $$            | $$    |__/
     | $$  \ $$  /$$$$$$  /$$$$$$   /$$  /$$$$$$  /$$$$$$$   /$$$$$$$
@@ -128,7 +127,6 @@ class HomeActivity : GalleryActivity() {
 
     private lateinit var optionsLayout: View
     private lateinit var optionsList: RecyclerView
-
 
       /*$$$$$    /$$     /$$
      /$$__  $$  | $$    | $$
@@ -174,13 +172,9 @@ class HomeActivity : GalleryActivity() {
         Library.addOnRefreshEvent(onRefresh)
         Library.addOnActionEvent(onAction)
 
-        //Init storage
-        Storage.init(this@HomeActivity)
-
-        //Init back manager
-        backManager = BackManager(this@HomeActivity, onBackPressedDispatcher)
-
         //Init components
+        Storage.init(this@HomeActivity)
+        backManager = BackManager(this@HomeActivity, onBackPressedDispatcher)
         initViews()
         initListeners()
         initAdapters()
@@ -586,7 +580,6 @@ class HomeActivity : GalleryActivity() {
         optionsList.setAdapter(optionsAdapter)
     }
 
-
       /*$$$$$              /$$     /$$
      /$$__  $$            | $$    |__/
     | $$  \ $$  /$$$$$$  /$$$$$$   /$$  /$$$$$$  /$$$$$$$   /$$$$$$$
@@ -621,7 +614,6 @@ class HomeActivity : GalleryActivity() {
         }
     }
 
-
       /*$$$$$    /$$     /$$
      /$$__  $$  | $$    | $$
     | $$  \ $$ /$$$$$$  | $$$$$$$   /$$$$$$   /$$$$$$
@@ -631,7 +623,7 @@ class HomeActivity : GalleryActivity() {
     |  $$$$$$/  |  $$$$/| $$  | $$|  $$$$$$$| $$
      \______/    \___/  |__/  |__/ \_______/|_*/
 
-    //List item count
+    //List grid
     private val horizontalItemCount: Int get() {
         val isHorizontal = getResources().configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
         val metrics = getResources().displayMetrics
@@ -669,7 +661,7 @@ class HomeActivity : GalleryActivity() {
             "video" -> subtitle.append("videos ")
             else -> subtitle.append("custom ")
         }
-        if (format != "*") subtitle.append("(${format})")
+        if (format != "*") subtitle.append("($format)")
         navbarSubtitle.text = subtitle.toString()
     }
 

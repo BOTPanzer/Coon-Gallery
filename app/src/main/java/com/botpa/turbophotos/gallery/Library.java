@@ -336,7 +336,7 @@ public class Library {
         if (item.name.toLowerCase().contains(filter)) return true;
 
         //Get metadata
-        ObjectNode metadata = item.album.getMetadataKey(item.name);
+        ObjectNode metadata = item.getMetadata();
         if (metadata == null) return false;
 
         //Check caption

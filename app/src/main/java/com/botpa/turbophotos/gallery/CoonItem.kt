@@ -10,6 +10,7 @@ import com.bumptech.glide.load.resource.bitmap.BitmapTransitionOptions
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.signature.ObjectKey
+import com.fasterxml.jackson.databind.node.ObjectNode
 import java.io.File
 
 class CoonItem(
@@ -26,11 +27,16 @@ class CoonItem(
     @JvmField var isVideo: Boolean = mimeType.startsWith("video/")
 
 
-    //Helpers
+    //Metadata
     fun hasMetadata(): Boolean {
         return album.hasMetadataKey(name)
     }
 
+    fun getMetadata(): ObjectNode? {
+        return album.getMetadataKey(name)
+    }
+
+    //Helpers
     fun updateLastModified(): Boolean {
         //Check if current item was modified
         val newLastModified: Long = file.lastModified() / 1000 //To seconds

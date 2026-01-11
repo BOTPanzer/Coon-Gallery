@@ -44,7 +44,7 @@ open class GalleryActivity : AppCompatActivity() {
 
 
     //Trash functions
-    protected fun trashItems(itemsToTrash: Array<CoonItem?>?) {
+    protected fun trashItems(itemsToTrash: Array<CoonItem>) {
         //Check if trash has a pending action
         if (trashAction != null) {
             //Trash has pending action -> Return
@@ -55,7 +55,7 @@ open class GalleryActivity : AppCompatActivity() {
         }
     }
 
-    protected fun restoreItems(itemsToRestore: Array<CoonItem?>?) {
+    protected fun restoreItems(itemsToRestore: Array<CoonItem>) {
         //Check if trash has a pending action
         if (trashAction != null) {
             //Trash has pending action -> Return
