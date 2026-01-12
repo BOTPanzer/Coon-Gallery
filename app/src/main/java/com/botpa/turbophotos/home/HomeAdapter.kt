@@ -30,7 +30,10 @@ class HomeAdapter(
         val album = getAlbumFromIndex(position)
 
         //Load album cover
-        if (album.isNotEmpty()) CoonItem.load(context, holder.image, album.get(0))
+        if (album.isEmpty())
+            holder.image.setImageDrawable(null)
+        else
+            CoonItem.load(context, holder.image, album.get(0))
 
         //Update icons
         holder.isTrash.visibility = if (album == Library.trash) View.VISIBLE else View.GONE
