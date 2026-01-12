@@ -361,7 +361,7 @@ class HomeActivity : GalleryActivity() {
             homeAdapter.notifyDataSetChanged()
 
             //Update subtitle
-            updateSubtitle()
+            updateNavbarSubtitle()
         }
     }
 
@@ -643,8 +643,8 @@ class HomeActivity : GalleryActivity() {
         }
     }
 
-    //Subtitle
-    private fun updateSubtitle() {
+    //Navbar
+    private fun updateNavbarSubtitle() {
         //Check if a filter is applied
         val filter = Library.galleryFilter
         val isFiltered = filter != "*/*"

@@ -5,10 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
-import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.gallery.CoonItem
 import com.google.android.material.card.MaterialCardView
 
@@ -48,39 +46,10 @@ class AlbumAdapter(
             holder.imageCard.scaleX = 1.0f
             holder.imageCard.scaleY = 1.0f
         }
-
-        //Add click listeners
-        holder.background.setOnClickListener { view: View ->
-            onClickListener?.onClick(view, holder.bindingAdapterPosition)
-        }
-
-        holder.background.setOnLongClickListener { view: View ->
-            onLongClickListener?.onLongClick(view, holder.bindingAdapterPosition) ?: true   //Return true when no long click listener
-        }
     }
 
     override fun getItemCount(): Int {
         return items.size
-    }
-
-    //Listeners
-    private var onClickListener: OnClickListener? = null
-    private var onLongClickListener: OnLongClickListener? = null
-
-    fun interface OnClickListener {
-        fun onClick(view: View, index: Int)
-    }
-
-    fun interface OnLongClickListener {
-        fun onLongClick(view: View, index: Int): Boolean
-    }
-
-    fun setOnClickListener(onClickListener: OnClickListener?) {
-        this.onClickListener = onClickListener
-    }
-
-    fun setOnLongClickListener(onLongClickListener: OnLongClickListener?) {
-        this.onLongClickListener = onLongClickListener
     }
 
     //Holder

@@ -420,6 +420,32 @@ class AlbumActivity : GalleryActivity() {
             refreshLayout.isRefreshing = false
         }
 
+        albumList.addOnItemTouchListener(DragSelectTouchListener(
+            this@AlbumActivity,
+            albumList,
+            onSelectRange = { from, to, min, max ->
+                //Select range items
+                selectRange(from..to)
+
+                //Deselect extra items
+                if (min < from) deselectRange(min..(from - 1))
+                if (max > to) deselectRange((to + 1)..max)
+            },
+            onSingleTap = { position ->
+                if (selectedItems.isNotEmpty()) {
+                    //Toggle item
+                    toggleSelected(position)
+                } else {
+                    //Open item
+                    openItem(position)
+                }
+            },
+            onDragSelectingChanged = { isDragSelecting ->
+                //Disable swipe refresh layout when drag selecting
+                refreshLayout.requestDisallowInterceptTouchEvent(isDragSelecting)
+            }
+        ))
+
         //Search
         searchInput.setOnKeyListener { view: View, i: Int, keyEvent: KeyEvent ->
             if (keyEvent.keyCode == KeyEvent.KEYCODE_ENTER) {
@@ -443,38 +469,6 @@ class AlbumActivity : GalleryActivity() {
         //Init album adapter
         albumAdapter = AlbumAdapter(this@AlbumActivity, Library.gallery, selectedItems, Storage.getBool("Settings.albumShowMissingMetadataIcon", false))
         albumList.setAdapter(albumAdapter)
-
-        //Add adapter listeners
-        albumAdapter.setOnClickListener { view: View, index: Int ->
-            //Loading metadata -> Return
-            if (!isMetadataLoaded) return@setOnClickListener
-
-            //Check if selecting
-            if (!selectedItems.isEmpty()) {
-                //Selecting -> Toggle selected
-                toggleSelected(index)
-            } else {
-                //Not selecting -> Check action
-                if (isPicking) {
-                    //Pick item
-                    val resultIntent = Intent()
-                    resultIntent.data = Orion.getFileUriFromFilePath(this@AlbumActivity, Library.gallery[index].file.absolutePath)
-                    resultIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                    setResult(RESULT_OK, resultIntent)
-                    finish()
-                } else {
-                    //Open display
-                    val intent = Intent(this@AlbumActivity, DisplayActivity::class.java)
-                    intent.putExtra("index", index)
-                    startActivity(intent)
-                }
-            }
-        }
-        albumAdapter.setOnLongClickListener { view: View, index: Int ->
-            //Toggle item selected
-            toggleSelected(index)
-            true
-        }
 
         //Init options layout manager
         optionsList.setLayoutManager(LinearLayoutManager(this@AlbumActivity))
@@ -504,12 +498,30 @@ class AlbumActivity : GalleryActivity() {
         inTrash = (album == Library.trash)
         navbarOptions.visibility = if (inTrash) View.VISIBLE else View.GONE
 
-        //Change navbar title
-        navbarTitle.text = album.name
+        //Update navbar title
+        updateNavbarTitle()
 
         //Load album
         loadMetadata(album)
         filterItems()
+    }
+
+    //Items
+    private fun openItem(index: Int) {
+        //Check action
+        if (isPicking) {
+            //Pick item
+            val resultIntent = Intent()
+            resultIntent.data = Orion.getFileUriFromFilePath(this@AlbumActivity, Library.gallery[index].file.absolutePath)
+            resultIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            setResult(RESULT_OK, resultIntent)
+            finish()
+        } else {
+            //Open display
+            val intent = Intent(this@AlbumActivity, DisplayActivity::class.java)
+            intent.putExtra("index", index)
+            startActivity(intent)
+        }
     }
 
       /*$$$$$              /$$     /$$
@@ -611,38 +623,66 @@ class AlbumActivity : GalleryActivity() {
         }.start()
     }
 
+    //Navbar
+    private fun updateNavbarTitle() {
+        //Update navbar title
+        navbarTitle.text = "${currentAlbum.name}${if (selectedItems.isEmpty()) "" else " (${selectedItems.size} selected)"}"
+    }
+
     //Selection
+    private fun selectRange(range: IntRange) {
+        //Ignore if range is empty
+        if (range.isEmpty()) return
+
+        //Check if its the first item to be selected
+        if (selectedItems.isEmpty()) {
+            //Add back event
+            backManager.register("selected") { this.unselectAll() }
+
+            //Show options button
+            if (!inTrash) navbarOptions.visibility = View.VISIBLE
+        }
+
+        //Select items & update adapter
+        val selected = ArrayList<Int>()
+        for (index in range) if (selectedItems.add(index)) selected.add(index)
+        for (index in selected) albumAdapter.notifyItemChanged(index)
+
+        //Update navbar title
+        updateNavbarTitle()
+    }
+
+    private fun deselectRange(range: IntRange) {
+        //Ignore if range is empty
+        if (range.isEmpty()) return
+
+        //Deselect items & update adapter
+        val deselected = ArrayList<Int>()
+        for (index in range) if (selectedItems.remove(index)) deselected.add(index)
+        for (index in deselected) albumAdapter.notifyItemChanged(index)
+
+        //Check if no more items are selected
+        if (selectedItems.isEmpty()) {
+            //Add back event
+            backManager.register("selected") { this.unselectAll() }
+
+            //Show options button
+            if (!inTrash) navbarOptions.visibility = View.VISIBLE
+        }
+
+        //Update navbar title
+        updateNavbarTitle()
+    }
+
     private fun toggleSelected(index: Int) {
         //Check if item is selected
         if (selectedItems.contains(index)) {
-            //Remove item
-            selectedItems.remove(index)
-
-            //No more selected items
-            if (selectedItems.isEmpty()) {
-                //Remove back event
-                backManager.unregister("selected")
-
-                //Hide options button
-                if (!inTrash) navbarOptions.visibility = View.GONE
-            }
+            //Deselect item
+            deselectRange(index..index)
         } else {
-            //First item to be selected
-            if (selectedItems.isEmpty()) {
-                //Add back event
-                backManager.register("selected") { this.unselectAll() }
-
-                //Show options button
-                if (!inTrash) navbarOptions.visibility = View.VISIBLE
-            }
-
-            //Add item
-            selectedItems.add(index)
+            //Select item
+            selectRange(index..index)
         }
-        albumAdapter.notifyItemChanged(index)
-
-        //Update navbar title
-        navbarTitle.text = "${currentAlbum.name}${if (selectedItems.isEmpty()) "" else " (" + selectedItems.size + " selected)"}"
     }
 
     private fun unselectAll() {
@@ -660,7 +700,7 @@ class AlbumActivity : GalleryActivity() {
         }
 
         //Update navbar title
-        navbarTitle.text = currentAlbum.name
+        updateNavbarTitle()
     }
 
     //Items & search
