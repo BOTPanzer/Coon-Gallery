@@ -84,12 +84,15 @@ class SettingsActivity : ComponentActivity() {
         val context = LocalContext.current
         val activity = this
 
+        //App settings
+        var appModifyMetadata by remember { mutableStateOf(Storage.getBool(SettingsPairs.APP_AUTOMATIC_METADATA_MODIFICATION)) }
+
         //Home settings
-        var homeItemsPerRow by remember { mutableFloatStateOf(Storage.getInt("Settings.homeItemsPerRow", 2).toFloat()) }
+        var homeItemsPerRow by remember { mutableFloatStateOf(Storage.getInt(SettingsPairs.HOME_ITEMS_PER_ROW).toFloat()) }
 
         //Album settings
-        var albumItemsPerRow by remember { mutableFloatStateOf(Storage.getInt("Settings.albumItemsPerRow", 3).toFloat()) }
-        var albumShowMissingMetadataIcon by remember { mutableStateOf(Storage.getBool("Settings.albumShowMissingMetadataIcon", false)) }
+        var albumItemsPerRow by remember { mutableFloatStateOf(Storage.getInt(SettingsPairs.ALBUM_ITEMS_PER_ROW).toFloat()) }
+        var albumShowMissingMetadataIcon by remember { mutableStateOf(Storage.getBool(SettingsPairs.ALBUM_SHOW_MISSING_METADATA_ICON)) }
 
         //Link item file picker actions
         var filePickerIndex by remember { mutableIntStateOf(-1) }
@@ -101,8 +104,7 @@ class SettingsActivity : ComponentActivity() {
             //Parse result
             try {
                 //Parse file path from URI
-                val path = Orion.getPathFromUri_DocumentProvider(context, result.data!!.data)
-                if (path == null) throw Exception("Path was null")
+                val path = Orion.getPathFromUri_DocumentProvider(context, result.data!!.data) ?: throw Exception("Path was null")
                 val file = File(path)
 
                 //Update the link based on the action
@@ -239,13 +241,52 @@ class SettingsActivity : ComponentActivity() {
                 item {
                     //Title
                     Text(
-                        text = "Home Screen",
+                        text = "App",
                         textAlign = TextAlign.Center,
                         fontFamily = FONT_OPIFICIO,
                         fontSize = 18.sp,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 10.dp)
+                    )
+
+                    //Automatic metadata modification
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(IntrinsicSize.Min)
+                    ) {
+                        //Name
+                        Text(
+                            text = "Automatic metadata modification",
+                            fontSize = 14.sp,
+                            modifier = Modifier
+                                .weight(1.5f)
+                        )
+
+                        //Value
+                        Switch(
+                            checked = appModifyMetadata,
+                            onCheckedChange = { isChecked ->
+                                appModifyMetadata = isChecked
+                                Storage.putBool(SettingsPairs.APP_AUTOMATIC_METADATA_MODIFICATION.key, isChecked)
+                            }
+                        )
+                    }
+                }
+
+                //Home screen
+                item {
+                    //Title
+                    Text(
+                        text = "Home Screen",
+                        textAlign = TextAlign.Center,
+                        fontFamily = FONT_OPIFICIO,
+                        fontSize = 18.sp,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 30.dp, bottom = 10.dp)
                     )
 
                     //Items per row
@@ -267,7 +308,7 @@ class SettingsActivity : ComponentActivity() {
                         Slider(
                             value = homeItemsPerRow,
                             onValueChange = { newValue -> homeItemsPerRow = newValue },
-                            onValueChangeFinished = { Storage.putInt("Settings.homeItemsPerRow", homeItemsPerRow.toInt()) },
+                            onValueChangeFinished = { Storage.putInt(SettingsPairs.HOME_ITEMS_PER_ROW.key, homeItemsPerRow.toInt()) },
                             valueRange = 1f..5f,
                             steps = 3,
                             modifier = Modifier
@@ -308,7 +349,7 @@ class SettingsActivity : ComponentActivity() {
                         Slider(
                             value = albumItemsPerRow,
                             onValueChange = { newValue -> albumItemsPerRow = newValue },
-                            onValueChangeFinished = { Storage.putInt("Settings.albumItemsPerRow", albumItemsPerRow.toInt()) },
+                            onValueChangeFinished = { Storage.putInt(SettingsPairs.ALBUM_ITEMS_PER_ROW.key, albumItemsPerRow.toInt()) },
                             valueRange = 1f..5f,
                             steps = 3,
                             modifier = Modifier
@@ -336,7 +377,7 @@ class SettingsActivity : ComponentActivity() {
                             checked = albumShowMissingMetadataIcon,
                             onCheckedChange = { isChecked ->
                                 albumShowMissingMetadataIcon = isChecked
-                                Storage.putBool("Settings.albumShowMissingMetadataIcon", isChecked)
+                                Storage.putBool(SettingsPairs.ALBUM_SHOW_MISSING_METADATA_ICON.key, isChecked)
                             }
                         )
                     }

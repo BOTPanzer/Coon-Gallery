@@ -21,7 +21,9 @@ import com.botpa.turbophotos.gallery.actions.ActionHelper;
 import com.botpa.turbophotos.gallery.dialogs.DialogAlbums;
 import com.botpa.turbophotos.gallery.dialogs.DialogErrors;
 import com.botpa.turbophotos.gallery.dialogs.DialogFolders;
+import com.botpa.turbophotos.settings.SettingsPairs;
 import com.botpa.turbophotos.util.Orion;
+import com.botpa.turbophotos.util.Storage;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -596,7 +598,7 @@ public class Library {
             performRemoveFromGallery(helper, action);
 
             //Move item metadata from old album to new album
-            if (oldAlbum.hasMetadataKey(item.name)) {
+            if (oldAlbum.hasMetadataKey(item.name) && Storage.getBool(SettingsPairs.APP_AUTOMATIC_METADATA_MODIFICATION)) {
                 //Copy metadata to new album
                 newAlbum.setMetadataKey(item.name, oldAlbum.getMetadataKey(item.name));
                 newAlbum.saveMetadata();
@@ -672,7 +674,7 @@ public class Library {
             recentlyAddedFiles.add(newFile); //Add file to recently added to prevent duplicates
 
             //Copy item metadata from old album to new album
-            if (oldAlbum.hasMetadataKey(item.name)) {
+            if (oldAlbum.hasMetadataKey(item.name) && Storage.getBool(SettingsPairs.APP_AUTOMATIC_METADATA_MODIFICATION)) {
                 newAlbum.setMetadataKey(item.name, oldAlbum.getMetadataKey(item.name));
                 newAlbum.saveMetadata();
             }
@@ -910,7 +912,7 @@ public class Library {
             ActionHelper helper = action.getHelper(item);
 
             //Delete item metadata from album
-            if (album.hasMetadataKey(item.name)) {
+            if (album.hasMetadataKey(item.name) && Storage.getBool(SettingsPairs.APP_AUTOMATIC_METADATA_MODIFICATION)) {
                 album.removeMetadataKey(item.name);
                 album.saveMetadata();
             }
