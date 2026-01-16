@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import android.widget.HorizontalScrollView
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 
@@ -29,6 +30,7 @@ import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.actions.Action
 import com.botpa.turbophotos.gallery.options.OptionsAdapter
 import com.botpa.turbophotos.gallery.options.OptionsItem
+import com.botpa.turbophotos.gallery.views.ZoomableLayout
 import com.botpa.turbophotos.util.BackManager
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Orion.ResizeHeightAnimation
@@ -433,7 +435,7 @@ class DisplayActivity : GalleryActivity() {
         displayList.setAdapter(displayAdapter)
 
         //Add adapter listeners
-        displayAdapter.setOnClickListener { view: ZoomableImageView, index: Int ->
+        displayAdapter.setOnClickListener { zoom: ZoomableLayout, image: ImageView, index: Int ->
             if (overlayLayout.isVisible) {
                 Orion.hideAnim(overlayLayout)
                 toggleSystemUI(false)
@@ -442,15 +444,15 @@ class DisplayActivity : GalleryActivity() {
                 toggleSystemUI(true)
             }
         }
-        displayAdapter.setOnZoomChangedListener { view: ZoomableImageView, index: Int ->
+        displayAdapter.setOnZoomChangedListener { zoom: ZoomableLayout, image: ImageView, index: Int ->
             //Enable scrolling only if not zoomed and one finger is over
-            displayLayoutManager.setScrollEnabled(view.zoom <= 1 && view.pointers <= 1)
+            displayLayoutManager.setScrollEnabled(zoom.zoom <= 1 && zoom.pointers <= 1)
         }
-        displayAdapter.setOnPointersChangedListener { view: ZoomableImageView, index: Int ->
+        displayAdapter.setOnPointersChangedListener { zoom: ZoomableLayout, image: ImageView, index: Int ->
             //Enable scrolling only if not zoomed and one finger is over
-            displayLayoutManager.setScrollEnabled(view.zoom <= 1 && view.pointers <= 1)
+            displayLayoutManager.setScrollEnabled(zoom.zoom <= 1 && zoom.pointers <= 1)
         }
-        displayAdapter.setOnPlayListener { view: ZoomableImageView, index: Int ->
+        displayAdapter.setOnPlayListener { zoom: ZoomableLayout, image: ImageView, index: Int ->
             //Play video outside
             val intent = Intent(Intent.ACTION_VIEW)
             intent.setDataAndType(currentItem.file.absolutePath.toUri(), currentItem.mimeType)

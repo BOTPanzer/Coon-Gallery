@@ -44,6 +44,8 @@ dependencies {
     implementation(libs.appcompat)
     implementation(libs.activity)
     implementation(libs.lifecycle.livedata.ktx)
+
+    //Glide
     implementation(libs.glide)
 
     //Layout

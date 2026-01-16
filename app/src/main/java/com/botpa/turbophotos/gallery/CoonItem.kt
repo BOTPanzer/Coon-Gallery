@@ -2,11 +2,15 @@ package com.botpa.turbophotos.gallery
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.drawable.Animatable
+import android.graphics.drawable.Drawable
 import android.widget.ImageView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.resource.bitmap.BitmapTransitionOptions
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.signature.ObjectKey
@@ -58,30 +62,35 @@ class CoonItem(
     companion object {
 
         //Load item preview into ImageView
-        fun load(context: Context, imageView: ImageView, item: CoonItem) {
+        fun load(context: Context, imageView: ImageView, item: CoonItem, highestQuality: Boolean = false) {
             //Reset image scale type (due to a bug HDR does not load, but idk why changing scale type fixes it)
             imageView.scaleType = ImageView.ScaleType.CENTER
 
-            //Load item preview
-            Glide.with(context)
-                .asBitmap()
+            //Create request
+            var request = Glide.with(context)
                 .load(item.file.absolutePath)
                 .signature(ObjectKey(item.lastModified)) //Reread from disk if cache was updated
-                .transition(BitmapTransitionOptions.withCrossFade())
-                .listener(object : RequestListener<Bitmap> {
+                .transition(DrawableTransitionOptions.withCrossFade())
+                .listener(object : RequestListener<Drawable> {
 
-                    override fun onLoadFailed(e: GlideException?, model: Any, target: Target<Bitmap>, isFirstResource: Boolean): Boolean {
+                    override fun onLoadFailed(e: GlideException?, model: Any, target: Target<Drawable>, isFirstResource: Boolean): Boolean {
                         return false
                     }
 
-                    override fun onResourceReady(resource: Bitmap, model: Any, target: Target<Bitmap>, dataSource: DataSource, isFirstResource: Boolean): Boolean {
+                    override fun onResourceReady(resource: Drawable, model: Any, target: Target<Drawable>, dataSource: DataSource, isFirstResource: Boolean): Boolean {
                         //Update scale type
                         imageView.scaleType = ImageView.ScaleType.CENTER_CROP
                         return false
                     }
 
                 })
-                .into(imageView)
+            if (highestQuality) {
+                request = request
+                    .override(Target.SIZE_ORIGINAL) //Force the highest quality possible
+            }
+
+            //Load item
+            request.into(imageView)
         }
 
     }

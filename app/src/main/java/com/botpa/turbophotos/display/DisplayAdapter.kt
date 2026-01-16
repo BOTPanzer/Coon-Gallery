@@ -1,13 +1,24 @@
 package com.botpa.turbophotos.display
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.drawable.Animatable
+import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.CoonItem
+import com.botpa.turbophotos.gallery.views.ZoomableLayout
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.load.resource.bitmap.BitmapTransitionOptions
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.signature.ObjectKey
 
 class DisplayAdapter(
@@ -28,31 +39,27 @@ class DisplayAdapter(
         //Get item
         val item = items[position]
 
-        //Load image in imageview
-        Glide.with(context)
-            .asBitmap()
-            .load(item.file.absolutePath)
-            .signature(ObjectKey(item.lastModified))
-            .into(holder.image)
+        //Load image
+        CoonItem.load(context, holder.image, item, true)
 
         //Toggle play video button
         holder.play.visibility = if (item.isVideo) View.VISIBLE else View.GONE
 
         //Click listener
-        holder.image.setOnClick {
-            onClickListener?.onItemClick(holder.image, holder.bindingAdapterPosition)
+        holder.zoom.setOnClick {
+            onClickListener?.onItemClick(holder.zoom, holder.image, holder.bindingAdapterPosition)
         }
 
-        holder.image.setOnZoomChanged {
-            onZoomChangedListener?.onItemClick(holder.image, holder.bindingAdapterPosition)
+        holder.zoom.setOnZoomChanged {
+            onZoomChangedListener?.onItemClick(holder.zoom, holder.image, holder.bindingAdapterPosition)
         }
 
-        holder.image.setOnPointersChanged {
-            onPointersChangedListener?.onItemClick(holder.image, holder.bindingAdapterPosition)
+        holder.zoom.setOnPointersChanged {
+            onPointersChangedListener?.onItemClick(holder.zoom, holder.image, holder.bindingAdapterPosition)
         }
 
         holder.play.setOnClickListener {
-            onPlayListener?.onItemClick(holder.image, holder.bindingAdapterPosition)
+            onPlayListener?.onItemClick(holder.zoom, holder.image, holder.bindingAdapterPosition)
         }
     }
 
@@ -67,7 +74,7 @@ class DisplayAdapter(
     private var onPlayListener: Listener? = null
 
     fun interface Listener {
-        fun onItemClick(view: ZoomableImageView, index: Int)
+        fun onItemClick(zoom: ZoomableLayout, image: ImageView, index: Int)
     }
 
     fun setOnClickListener(onClickListener: Listener?) {
@@ -90,7 +97,8 @@ class DisplayAdapter(
     class DisplayHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         var background: View = itemView.findViewById(R.id.background)
-        var image: ZoomableImageView = itemView.findViewById(R.id.image)
+        var zoom: ZoomableLayout = itemView.findViewById(R.id.zoom)
+        var image: ImageView = itemView.findViewById(R.id.image)
         var play: View = itemView.findViewById(R.id.play)
 
     }
