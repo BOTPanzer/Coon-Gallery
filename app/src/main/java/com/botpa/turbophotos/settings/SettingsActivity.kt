@@ -8,6 +8,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
+import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -44,6 +45,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.botpa.turbophotos.R
@@ -60,8 +62,8 @@ import java.io.File
 @OptIn(ExperimentalMaterial3Api::class)
 class SettingsActivity : ComponentActivity() {
 
-    //Links
-    private enum class PickerAction { SelectFolder, SelectFile, CreateFile }
+    //View model
+    private val viewModel: SettingsViewModel by viewModels()
 
     //App
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -76,100 +78,39 @@ class SettingsActivity : ComponentActivity() {
         //Content
         setContent {
             CoonTheme {
-                SettingsLayout()
+                SettingsLayout(viewModel)
             }
         }
     }
 
     //Layout
-    @Preview
     @Composable
-    private fun SettingsLayout() {
+    private fun SettingsLayout(viewModel: SettingsViewModel) {
         //Get useful stuff
         val context = LocalContext.current
         val activity = this
         val uriHandler = LocalUriHandler.current
 
-        //App settings
-        var appModifyMetadata by remember { mutableStateOf(Storage.getBool(SettingsPairs.APP_AUTOMATIC_METADATA_MODIFICATION)) }
-
-        //Home settings
-        var homeItemsPerRow by remember { mutableFloatStateOf(Storage.getInt(SettingsPairs.HOME_ITEMS_PER_ROW).toFloat()) }
-
-        //Album settings
-        var albumItemsPerRow by remember { mutableFloatStateOf(Storage.getInt(SettingsPairs.ALBUM_ITEMS_PER_ROW).toFloat()) }
-        var albumShowMissingMetadataIcon by remember { mutableStateOf(Storage.getBool(SettingsPairs.ALBUM_SHOW_MISSING_METADATA_ICON)) }
-
-        //Link item file picker actions
-        var filePickerIndex by remember { mutableIntStateOf(-1) }
-        var filePickerAction by remember { mutableStateOf(PickerAction.SelectFolder) }
+        //Links file picker
         val filePickerLauncher = rememberLauncherForActivityResult(StartActivityForResult()) { result ->
             //Bad result
             if (result.resultCode != RESULT_OK || result.data == null) return@rememberLauncherForActivityResult
 
-            //Parse result
-            try {
-                //Parse file path from URI
-                val path = Orion.getFilePathFromDocumentProviderUri(context, result.data!!.data) ?: throw Exception("Path was null")
-                val file = File(path)
-
-                //Update the link based on the action
-                val link = Link.links[filePickerIndex]
-                when (filePickerAction) {
-                    //Select folder
-                    PickerAction.SelectFolder -> {
-                        val updated = Link.updateLinkFolder(filePickerIndex, file)
-                        if (!updated) {
-                            Orion.snack(this@SettingsActivity, "Album already exists")
-                            return@rememberLauncherForActivityResult
-                        }
-                    }
-
-                    //Select file
-                    PickerAction.SelectFile -> {
-                        //Update link with selected file
-                        Link.updateLinkFile(filePickerIndex, file)
-                    }
-
-                    //Create file
-                    PickerAction.CreateFile -> {
-                        //Create file based in album name
-                        var metadataFile: File
-                        var name: String
-                        var i = 0
-                        do {
-                            name = "${
-                                link.albumFolder.name.lowercase().replace(" ", "-")
-                            }${if (i > 0) " ($i)" else ""}.metadata.json"
-                            metadataFile = File(file.absolutePath + "/" + name)
-                            i++
-                        } while (metadataFile.exists())
-                        Orion.writeFile(metadataFile, "{}")
-
-                        //Update link with created file
-                        Link.updateLinkFile(filePickerIndex, metadataFile)
-                    }
-                }
-
-                //Save links
-                Link.saveLinks()
-            } catch (e: Exception) {
-                //Feedback toast
-                Toast.makeText(context, e.toString(), Toast.LENGTH_LONG).show()
-            }
+            //Handle result
+            viewModel.handleFileResult(result.data!!.data, context, activity)
         }
 
-        //Link item actions
+        //Links item actions
         val onChooseFolder = remember<(Int) -> Unit> {
             { index ->
                 //Save link index
-                filePickerIndex = index
+                viewModel.filePickerIndex = index
 
                 //Feedback toast
-                Toast.makeText(this@SettingsActivity, "Select a folder to use as album", Toast.LENGTH_LONG).show()
+                Toast.makeText(activity, "Select a folder to use as album", Toast.LENGTH_LONG).show()
 
                 //Ask for a folder
-                filePickerAction = PickerAction.SelectFolder
+                viewModel.filePickerAction = SettingsViewModel.PickerAction.SelectFolder
                 val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
                 filePickerLauncher.launch(intent)
             }
@@ -178,30 +119,30 @@ class SettingsActivity : ComponentActivity() {
             { index, link ->
                 //Check if album folder exists
                 if (!link.albumFolder.exists()) {
-                    Toast.makeText(this@SettingsActivity, "Add an album folder first", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(activity, "Add an album folder first", Toast.LENGTH_SHORT).show()
                 } else {
                     //Save link index
-                    filePickerIndex = index
+                    viewModel.filePickerIndex = index
 
                     //Check action
                     Orion.snackTwo(
-                        this@SettingsActivity,
+                        activity,
                         "Choose a metadata file action",
                         "Create",
                         {
                             if (!Link.links[index].albumFolder.exists()) {
-                                Toast.makeText(this@SettingsActivity, "Add an album folder first", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(activity, "Add an album folder first", Toast.LENGTH_SHORT).show()
                             } else {
-                                Toast.makeText(this@SettingsActivity,"Select a folder to create the album metadata file", Toast.LENGTH_LONG).show()
-                                filePickerAction = PickerAction.CreateFile
+                                Toast.makeText(activity,"Select a folder to create the album metadata file", Toast.LENGTH_LONG).show()
+                                viewModel.filePickerAction = SettingsViewModel.PickerAction.CreateFile
                                 val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
                                 filePickerLauncher.launch(intent)
                             }
                         },
                         "Select",
                         {
-                            Toast.makeText(this@SettingsActivity, "Select a file to use as metadata", Toast.LENGTH_LONG).show()
-                            filePickerAction = PickerAction.SelectFile
+                            Toast.makeText(activity, "Select a file to use as metadata", Toast.LENGTH_LONG).show()
+                            viewModel.filePickerAction = SettingsViewModel.PickerAction.SelectFile
                             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
                             intent.addCategory(Intent.CATEGORY_OPENABLE)
                             intent.type = "application/json"
@@ -258,11 +199,8 @@ class SettingsActivity : ComponentActivity() {
                             ) {
                                 //Value
                                 Switch(
-                                    checked = appModifyMetadata,
-                                    onCheckedChange = { isChecked ->
-                                        appModifyMetadata = isChecked
-                                        Storage.putBool(SettingsPairs.APP_AUTOMATIC_METADATA_MODIFICATION.key, isChecked)
-                                    }
+                                    checked = viewModel.appModifyMetadata,
+                                    onCheckedChange = { isChecked -> viewModel.updateAppModifyMetadata(isChecked) }
                                 )
                             }
                         }
@@ -279,19 +217,14 @@ class SettingsActivity : ComponentActivity() {
                         SettingsItems {
                             //Items per row
                             SettingsItem(
-                                title = "Items per row · ${homeItemsPerRow.toInt()}",
+                                title = "Items per row · ${viewModel.homeItemsPerRow.toInt()}",
                                 description = "The amount of albums to show per home screen row."
                             ) {
                                 //Value
                                 Slider(
-                                    value = homeItemsPerRow,
-                                    onValueChange = { newValue -> homeItemsPerRow = newValue },
-                                    onValueChangeFinished = {
-                                        Storage.putInt(
-                                            SettingsPairs.HOME_ITEMS_PER_ROW.key,
-                                            homeItemsPerRow.toInt()
-                                        )
-                                    },
+                                    value = viewModel.homeItemsPerRow,
+                                    onValueChange = { newValue -> viewModel.updateHomeItemsPerRow(newValue) },
+                                    onValueChangeFinished = { viewModel.saveHomeItemsPerRow() },
                                     valueRange = 1f..5f,
                                     steps = 3,
                                     modifier = Modifier
@@ -312,19 +245,14 @@ class SettingsActivity : ComponentActivity() {
                         SettingsItems {
                             //Items per row
                             SettingsItem(
-                                title = "Items per row · ${albumItemsPerRow.toInt()}",
+                                title = "Items per row · ${viewModel.albumItemsPerRow.toInt()}",
                                 description = "The amount of images/videos to show per album screen row."
                             ) {
                                 //Value
                                 Slider(
-                                    value = albumItemsPerRow,
-                                    onValueChange = { newValue -> albumItemsPerRow = newValue },
-                                    onValueChangeFinished = {
-                                        Storage.putInt(
-                                            SettingsPairs.ALBUM_ITEMS_PER_ROW.key,
-                                            albumItemsPerRow.toInt()
-                                        )
-                                    },
+                                    value = viewModel.albumItemsPerRow,
+                                    onValueChange = { newValue -> viewModel.updateAlbumItemsPerRow(newValue) },
+                                    onValueChangeFinished = { viewModel.saveAlbumItemsPerRow() },
                                     valueRange = 1f..5f,
                                     steps = 3,
                                     modifier = Modifier
@@ -342,14 +270,8 @@ class SettingsActivity : ComponentActivity() {
                             ) {
                                 //Value
                                 Switch(
-                                    checked = albumShowMissingMetadataIcon,
-                                    onCheckedChange = { isChecked ->
-                                        albumShowMissingMetadataIcon = isChecked
-                                        Storage.putBool(
-                                            SettingsPairs.ALBUM_SHOW_MISSING_METADATA_ICON.key,
-                                            isChecked
-                                        )
-                                    }
+                                    checked = viewModel.albumShowMissingMetadataIcon,
+                                    onCheckedChange = { isChecked -> viewModel.updateAlbumShowMissingMetadataIcon(isChecked) }
                                 )
                             }
                         }
