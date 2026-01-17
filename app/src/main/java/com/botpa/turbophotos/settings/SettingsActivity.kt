@@ -104,7 +104,7 @@ class SettingsActivity : ComponentActivity() {
             //Parse result
             try {
                 //Parse file path from URI
-                val path = Orion.getPathFromUri_DocumentProvider(context, result.data!!.data) ?: throw Exception("Path was null")
+                val path = Orion.getFilePathFromDocumentProviderUri(context, result.data!!.data) ?: throw Exception("Path was null")
                 val file = File(path)
 
                 //Update the link based on the action

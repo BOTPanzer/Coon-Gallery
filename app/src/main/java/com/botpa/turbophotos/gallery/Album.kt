@@ -9,8 +9,8 @@ class Album(val name: String, val imagesFolder: File?, var metadataFile: File?) 
     constructor(name: String) : this(name, null, null)
 
     //Album info
-    @JvmField var metadata: ObjectNode? = null
     @JvmField val items: MutableList<CoonItem> = ArrayList()
+    @JvmField var metadata: ObjectNode? = null
 
     val isEspecial: Boolean = imagesFolder == null
 

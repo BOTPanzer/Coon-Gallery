@@ -757,7 +757,7 @@ public class Orion {
         return null;
     }
 
-    public static String getPathFromUri(Context context, Uri uri) {
+    public static String getFilePathFromMediaUri(Context context, Uri uri) {
         //Build query args
         Bundle queryArgs = new Bundle();
         queryArgs.putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_INCLUDE);
@@ -786,7 +786,7 @@ public class Orion {
         return null;
     }
 
-    public static String getPathFromUri_DocumentProvider(Context context, Uri uri) {
+    public static String getFilePathFromDocumentProviderUri(Context context, Uri uri) {
         String path = null;
 
         //IDK, I copied this lol

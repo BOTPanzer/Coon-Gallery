@@ -53,6 +53,7 @@ public class Library {
 
     public static final HashMap<String, Album> albumsMap = new HashMap<>(); //Uses album path as key for easy finding
     public static final ArrayList<Album> albums = new ArrayList<>();
+    public static final Map<Album, Integer> trashMap = new HashMap<>(); //A map to store the amount of trashed items in each album
     public static final Album trash = new Album("Trash");
     public static final Album all = new Album("All");
 
@@ -207,15 +208,16 @@ public class Library {
                 boolean isTrashed = cursor.getInt(columnIsTrashed) == 1;
 
                 //Check if is trashed
+                Album album = getOrCreateAlbumFromItemFile(file);
                 if (isTrashed) {
                     //Trashed -> Create item with trash as album
                     CoonItem item = new CoonItem(file, trash, lastModified, mimeType, size, true);
 
                     //Add to trash
-                    trash.add(item);
+                    addItemToTrash(item, album);
                 } else {
                     //Not trashed -> Create item with normal album
-                    CoonItem item = new CoonItem(file, getOrCreateAlbumFromItemFile(file), lastModified, mimeType, size, false);
+                    CoonItem item = new CoonItem(file, album, lastModified, mimeType, size, false);
 
                     //Add to all items list & its album
                     all.add(item);
@@ -297,13 +299,46 @@ public class Library {
     }
 
     private static void removeAlbum(int index) {
-        //Remove album
+        //Remove album from albums list
         Album album = albums.remove(index);
-        albumsMap.remove(album.getImagesPath());
+
+        //Check if trash contains items from this album
+        if (!trashMap.containsKey(album)) {
+            //No items from this album in trash -> Remove album completely
+            albumsMap.remove(album.getImagesPath());
+        }
     }
 
     private static void sortAlbumsList() {
         albums.sort((a1, a2) -> Long.compare(a2.get(0).lastModified, a1.get(0).lastModified));
+    }
+
+    //Trash
+    private static void addItemToTrash(CoonItem item, Album originalAlbum) {
+        //Add to trash
+        trash.addSorted(item);
+        trashMap.put(originalAlbum, trashMap.getOrDefault(originalAlbum, 0) + 1);
+    }
+
+    private static void removeItemFromTrash(int itemIndex, Album originalAlbum) {
+        //Remove from trash
+        trash.remove(itemIndex);
+
+        //Calculate new trash amount
+        int newTrashAmount = trashMap.getOrDefault(originalAlbum, 0) - 1;
+        if (newTrashAmount <= 0) {
+            //No more items from this album in trash -> Remove album from trash
+            trashMap.remove(originalAlbum);
+
+            //Check if original album still has items
+            if (originalAlbum.isEmpty()) {
+                //Is empty -> Remove album completely
+                albumsMap.remove(originalAlbum.getImagesPath());
+            }
+        } else {
+            //Update trash amount
+            trashMap.put(originalAlbum, newTrashAmount);
+        }
     }
 
     //Metadata
@@ -470,6 +505,15 @@ public class Library {
         }
     }
 
+    private static void performRemoveFromTrash(ActionHelper helper, Action action, Album originalAlbum) {
+        //Not in album
+        if (helper.indexInAlbum == -1) return;
+
+        //Remove item
+        removeItemFromTrash(helper.indexInAlbum, originalAlbum);
+        action.trashAction = trash.isEmpty() ? Action.TRASH_REMOVED : Action.TRASH_UPDATED;
+    }
+
     private static void performAction(Context context, int type, CoonItem[] items, BiConsumer<Action, CoonItem> onPerformAction) {
         //Create action
         Action action = new Action(type, items);
@@ -597,17 +641,6 @@ public class Library {
             //Remove from gallery items list
             performRemoveFromGallery(helper, action);
 
-            //Move item metadata from old album to new album
-            if (oldAlbum.hasMetadataKey(item.name) && Storage.getBool(SettingsPairs.APP_AUTOMATIC_METADATA_MODIFICATION)) {
-                //Copy metadata to new album
-                newAlbum.setMetadataKey(item.name, oldAlbum.getMetadataKey(item.name));
-                newAlbum.saveMetadata();
-
-                //Remove metadata from old album
-                oldAlbum.removeMetadataKey(item.name);
-                oldAlbum.saveMetadata();
-            }
-
             //Remove from old album
             performRemoveFromAlbum(helper, action);
 
@@ -629,6 +662,17 @@ public class Library {
                     //Not in albums list -> Add it
                     albums.add(newAlbum);
                 }
+            }
+
+            //Move item metadata from old album to new album
+            if (oldAlbum.hasMetadataKey(item.name) && Storage.getBool(SettingsPairs.APP_AUTOMATIC_METADATA_MODIFICATION)) {
+                //Copy metadata to new album
+                newAlbum.setMetadataKey(item.name, oldAlbum.getMetadataKey(item.name));
+                newAlbum.saveMetadata();
+
+                //Remove metadata from old album
+                oldAlbum.removeMetadataKey(item.name);
+                oldAlbum.saveMetadata();
             }
         });
     }
@@ -673,12 +717,6 @@ public class Library {
             }
             recentlyAddedFiles.add(newFile); //Add file to recently added to prevent duplicates
 
-            //Copy item metadata from old album to new album
-            if (oldAlbum.hasMetadataKey(item.name) && Storage.getBool(SettingsPairs.APP_AUTOMATIC_METADATA_MODIFICATION)) {
-                newAlbum.setMetadataKey(item.name, oldAlbum.getMetadataKey(item.name));
-                newAlbum.saveMetadata();
-            }
-
             //Create new item
             CoonItem newItem = new CoonItem(newFile, newAlbum, item.lastModified, item.mimeType, item.size, item.isTrashed);
 
@@ -696,6 +734,12 @@ public class Library {
                     //Not in albums list -> Add it
                     albums.add(newAlbum);
                 }
+            }
+
+            //Copy item metadata from old album to new album
+            if (oldAlbum.hasMetadataKey(item.name) && Storage.getBool(SettingsPairs.APP_AUTOMATIC_METADATA_MODIFICATION)) {
+                newAlbum.setMetadataKey(item.name, oldAlbum.getMetadataKey(item.name));
+                newAlbum.saveMetadata();
             }
         });
     }
@@ -776,7 +820,7 @@ public class Library {
             CoonItem item = entry.getValue();
 
             //Get new item file
-            String newFilePath = Orion.getPathFromUri(context, uri);
+            String newFilePath = Orion.getFilePathFromMediaUri(context, uri);
             File newFile = new File(newFilePath == null ? "" : newFilePath);
             if (!newFile.exists()) {
                 //New file does not exist -> Something failed
@@ -784,10 +828,11 @@ public class Library {
                 continue;
             }
 
-            //Get action helper
+            //Get original album & action helper
+            Album originalAlbum = item.album;
             ActionHelper helper = action.getHelper(item);
 
-            //Remove from all items list
+            //Remove from all
             performRemoveFromAll(helper);
 
             //Remove from gallery items list
@@ -802,7 +847,7 @@ public class Library {
             item.isTrashed = true;
 
             //Add item to trash album
-            trash.addSorted(item);
+            addItemToTrash(item, originalAlbum);
             if (action.trashAction == Action.TRASH_NONE) {
                 //First change to trash this action -> Check if trash was added to list or just updated
                 action.trashAction = trash.size() == 1 ? Action.TRASH_ADDED : Action.TRASH_UPDATED;
@@ -844,7 +889,7 @@ public class Library {
             CoonItem item = entry.getValue();
 
             //Get new item file
-            String newFilePath = Orion.getPathFromUri(context, uri);
+            String newFilePath = Orion.getFilePathFromMediaUri(context, uri);
             File newFile = new File(newFilePath == null ? "" : newFilePath);
             if (!newFile.exists()) {
                 //New file does not exist -> Something failed
@@ -852,25 +897,19 @@ public class Library {
                 continue;
             }
 
-            //Get action helper
+            //Get original album & action helper
+            Album originalAlbum = getOrCreateAlbumFromItemFile(newFile);
             ActionHelper helper = action.getHelper(item);
 
-            //Check if item is in trash
-            if (helper.indexInAlbum != -1) {
-                //Is present -> Remove it
-                trash.remove(helper.indexInAlbum);
-                action.trashAction = trash.isEmpty() ? Action.TRASH_REMOVED : Action.TRASH_UPDATED;
-            }
+            //Remove from trash
+            performRemoveFromTrash(helper, action, originalAlbum);
 
             //Remove from gallery items list
             performRemoveFromGallery(helper, action);
 
-            //Get original album
-            Album album = getOrCreateAlbumFromItemFile(newFile);
-
             //Update item
             item.file = newFile;
-            item.album = album;
+            item.album = originalAlbum;
             item.isTrashed = false;
 
             //Add to all items list
@@ -887,9 +926,9 @@ public class Library {
                 action.hasSortedAlbumsList = true;
 
                 //Check if album is in albums list
-                if (!albums.contains(album)) {
+                if (!albums.contains(originalAlbum)) {
                     //Not in albums list -> Add it
-                    albums.add(album);
+                    albums.add(originalAlbum);
                 }
             }
         }
@@ -907,30 +946,35 @@ public class Library {
                 return;
             }
 
-            //Get album & action helper
-            Album album = item.album;
+            //Get action helper
             ActionHelper helper = action.getHelper(item);
 
-            //Delete item metadata from album
-            if (album.hasMetadataKey(item.name) && Storage.getBool(SettingsPairs.APP_AUTOMATIC_METADATA_MODIFICATION)) {
-                album.removeMetadataKey(item.name);
-                album.saveMetadata();
-            }
-
-            //Remove from all items list
+            //Remove from all
             performRemoveFromAll(helper);
 
             //Remove from gallery items list
             performRemoveFromGallery(helper, action);
 
-            //Check if item is in the trash
+            //Check if item is in the trash to remove it & get its album
+            Album album;
             if (item.isTrashed) {
-                //In the trash -> Remove it
-                trash.remove(helper.indexInAlbum);
-                action.trashAction = trash.isEmpty() ? Action.TRASH_REMOVED : Action.TRASH_UPDATED;
+                //Get original album (before being trashed)
+                album = getOrCreateAlbumFromItemFile(item.file);
+
+                //Remove item from trash
+                performRemoveFromTrash(helper, action, album);
             } else {
-                //Not in the trash -> Remove from album
+                //Get item album
+                album = item.album;
+
+                //Remove from album
                 performRemoveFromAlbum(helper, action);
+            }
+
+            //Delete item metadata from album
+            if (album.hasMetadataKey(item.name) && Storage.getBool(SettingsPairs.APP_AUTOMATIC_METADATA_MODIFICATION)) {
+                album.removeMetadataKey(item.name);
+                album.saveMetadata();
             }
         });
     }
