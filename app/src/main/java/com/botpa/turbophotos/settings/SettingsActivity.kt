@@ -8,21 +8,22 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
-import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
@@ -37,11 +38,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.botpa.turbophotos.R
 import com.botpa.turbophotos.theme.CoonTheme
 import com.botpa.turbophotos.theme.FONT_COMFORTAA
 import com.botpa.turbophotos.theme.FONT_OPIFICIO
@@ -80,9 +85,10 @@ class SettingsActivity : ComponentActivity() {
     @Preview
     @Composable
     private fun SettingsLayout() {
-        //Get context & activity
+        //Get useful stuff
         val context = LocalContext.current
         val activity = this
+        val uriHandler = LocalUriHandler.current
 
         //App settings
         var appModifyMetadata by remember { mutableStateOf(Storage.getBool(SettingsPairs.APP_AUTOMATIC_METADATA_MODIFICATION)) }
@@ -180,7 +186,7 @@ class SettingsActivity : ComponentActivity() {
                     //Check action
                     Orion.snackTwo(
                         this@SettingsActivity,
-                        "Do you have an already created metadata file?",
+                        "Choose a metadata file action",
                         "Create",
                         {
                             if (!Link.links[index].albumFolder.exists()) {
@@ -221,7 +227,7 @@ class SettingsActivity : ComponentActivity() {
                         Text(
                             text = "Settings",
                             fontFamily = FONT_OPIFICIO,
-                            fontSize = 18.sp,
+                            fontSize = 20.sp,
                         )
                     },
                     modifier = Modifier
@@ -237,206 +243,184 @@ class SettingsActivity : ComponentActivity() {
                     .padding(it)
                     .padding(horizontal = 20.dp)
             ) {
-                //Home screen
+                //App
                 item {
-                    //Title
-                    Text(
-                        text = "App",
-                        textAlign = TextAlign.Center,
-                        fontFamily = FONT_OPIFICIO,
-                        fontSize = 18.sp,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 10.dp)
-                    )
+                    SettingsGroup {
+                        //Title
+                        SettingsTitle("App")
 
-                    //Automatic metadata modification
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(IntrinsicSize.Min)
-                    ) {
-                        //Name
-                        Text(
-                            text = "Automatic metadata modification",
-                            fontSize = 14.sp,
-                            modifier = Modifier
-                                .weight(1.5f)
-                        )
-
-                        //Value
-                        Switch(
-                            checked = appModifyMetadata,
-                            onCheckedChange = { isChecked ->
-                                appModifyMetadata = isChecked
-                                Storage.putBool(SettingsPairs.APP_AUTOMATIC_METADATA_MODIFICATION.key, isChecked)
+                        //Items
+                        SettingsItems {
+                            //Automatic metadata modification
+                            SettingsItem(
+                                title = "Metadata modification",
+                                description = "Modify album metadata automatically when moving, copying or deleting items from an album."
+                            ) {
+                                //Value
+                                Switch(
+                                    checked = appModifyMetadata,
+                                    onCheckedChange = { isChecked ->
+                                        appModifyMetadata = isChecked
+                                        Storage.putBool(SettingsPairs.APP_AUTOMATIC_METADATA_MODIFICATION.key, isChecked)
+                                    }
+                                )
                             }
-                        )
+                        }
                     }
                 }
 
                 //Home screen
                 item {
-                    //Title
-                    Text(
-                        text = "Home Screen",
-                        textAlign = TextAlign.Center,
-                        fontFamily = FONT_OPIFICIO,
-                        fontSize = 18.sp,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 30.dp, bottom = 10.dp)
-                    )
+                    SettingsGroup {
+                        //Title
+                        SettingsTitle("Home Screen")
 
-                    //Items per row
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(IntrinsicSize.Min)
-                    ) {
-                        //Name
-                        Text(
-                            text = "Items per row · ${homeItemsPerRow.toInt()}",
-                            fontSize = 14.sp,
-                            modifier = Modifier
-                                .weight(1.5f)
-                        )
-
-                        //Value
-                        Slider(
-                            value = homeItemsPerRow,
-                            onValueChange = { newValue -> homeItemsPerRow = newValue },
-                            onValueChangeFinished = { Storage.putInt(SettingsPairs.HOME_ITEMS_PER_ROW.key, homeItemsPerRow.toInt()) },
-                            valueRange = 1f..5f,
-                            steps = 3,
-                            modifier = Modifier
-                                .weight(1f)
-                        )
+                        //Items
+                        SettingsItems {
+                            //Items per row
+                            SettingsItem(
+                                title = "Items per row · ${homeItemsPerRow.toInt()}",
+                                description = "The amount of albums to show per home screen row."
+                            ) {
+                                //Value
+                                Slider(
+                                    value = homeItemsPerRow,
+                                    onValueChange = { newValue -> homeItemsPerRow = newValue },
+                                    onValueChangeFinished = {
+                                        Storage.putInt(
+                                            SettingsPairs.HOME_ITEMS_PER_ROW.key,
+                                            homeItemsPerRow.toInt()
+                                        )
+                                    },
+                                    valueRange = 1f..5f,
+                                    steps = 3,
+                                    modifier = Modifier
+                                        .weight(0.5f)
+                                )
+                            }
+                        }
                     }
                 }
 
                 //Albums screen
                 item {
-                    //Title
-                    Text(
-                        text = "Album Screen",
-                        textAlign = TextAlign.Center,
-                        fontFamily = FONT_OPIFICIO,
-                        fontSize = 18.sp,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 30.dp, bottom = 10.dp)
-                    )
+                    SettingsGroup {
+                        //Title
+                        SettingsTitle("Album Screen")
 
-                    //Items per row
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(IntrinsicSize.Min)
-                    ) {
-                        //Name
-                        Text(
-                            text = "Items per row · ${albumItemsPerRow.toInt()}",
-                            fontSize = 14.sp,
-                            modifier = Modifier
-                                .weight(1.5f)
-                        )
-
-                        //Value
-                        Slider(
-                            value = albumItemsPerRow,
-                            onValueChange = { newValue -> albumItemsPerRow = newValue },
-                            onValueChangeFinished = { Storage.putInt(SettingsPairs.ALBUM_ITEMS_PER_ROW.key, albumItemsPerRow.toInt()) },
-                            valueRange = 1f..5f,
-                            steps = 3,
-                            modifier = Modifier
-                                .weight(1f)
-                        )
-                    }
-
-                    //Show missing metadata icon
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(IntrinsicSize.Min)
-                    ) {
-                        //Name
-                        Text(
-                            text = "Show missing metadata icon",
-                            fontSize = 14.sp,
-                            modifier = Modifier
-                                .weight(1.5f)
-                        )
-
-                        //Value
-                        Switch(
-                            checked = albumShowMissingMetadataIcon,
-                            onCheckedChange = { isChecked ->
-                                albumShowMissingMetadataIcon = isChecked
-                                Storage.putBool(SettingsPairs.ALBUM_SHOW_MISSING_METADATA_ICON.key, isChecked)
+                        //Items
+                        SettingsItems {
+                            //Items per row
+                            SettingsItem(
+                                title = "Items per row · ${albumItemsPerRow.toInt()}",
+                                description = "The amount of images/videos to show per album screen row."
+                            ) {
+                                //Value
+                                Slider(
+                                    value = albumItemsPerRow,
+                                    onValueChange = { newValue -> albumItemsPerRow = newValue },
+                                    onValueChangeFinished = {
+                                        Storage.putInt(
+                                            SettingsPairs.ALBUM_ITEMS_PER_ROW.key,
+                                            albumItemsPerRow.toInt()
+                                        )
+                                    },
+                                    valueRange = 1f..5f,
+                                    steps = 3,
+                                    modifier = Modifier
+                                        .weight(0.5f)
+                                )
                             }
-                        )
+
+                            //Divider
+                            SettingsDivider()
+
+                            //Show missing metadata icon
+                            SettingsItem(
+                                title = "Show missing metadata icon",
+                                description = "Show an icon on items without a metadata key if their album has metadata."
+                            ) {
+                                //Value
+                                Switch(
+                                    checked = albumShowMissingMetadataIcon,
+                                    onCheckedChange = { isChecked ->
+                                        albumShowMissingMetadataIcon = isChecked
+                                        Storage.putBool(
+                                            SettingsPairs.ALBUM_SHOW_MISSING_METADATA_ICON.key,
+                                            isChecked
+                                        )
+                                    }
+                                )
+                            }
+                        }
                     }
                 }
 
-                //Links (title & description)
+                //Links
                 item {
-                    //Title
-                    Text(
-                        text = "Albums & Metadata Links",
-                        textAlign = TextAlign.Center,
-                        fontFamily = FONT_OPIFICIO,
-                        fontSize = 18.sp,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 30.dp)
-                    )
+                    SettingsGroup {
+                        //Title & description
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        ) {
+                            //Title
+                            SettingsTitle(
+                                title = "Albums & Metadata Links",
+                                modifier = Modifier
+                                    .weight(1f)
+                            )
 
-                    //Description
-                    Button(
-                        onClick = {
-                            //Create text
-                            val text = StringBuilder()
-                            text.append("Links let you to backup your albums and enable smart search.")
-                            text.append("\n· Add an album to enable backing it up in the sync service.")
-                            text.append("\n· Add a metadata file to improve search and find things in your images.")
+                            //Description
+                            Button(
+                                onClick = {
+                                    //Create text
+                                    val text = StringBuilder()
+                                    text.append("Links let you to backup your albums and enable smart search.")
+                                    text.append("\n· Add an album to enable backing it up in the sync service.")
+                                    text.append("\n· Add a metadata file to improve search and find things in your images.")
 
-                            //Create dialog
-                            val builder = MaterialAlertDialogBuilder(context)
-                            builder.setTitle("Links")
-                            builder.setMessage(text.toString())
-                            builder.setPositiveButton("OK") { _, _ -> }
-                            builder.show()
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 10.dp)
-                    ) {
-                        Text(
-                            text = "Learn how links work",
-                            fontFamily = FONT_COMFORTAA,
-                            fontSize = 14.sp,
-                        )
-                    }
-                }
+                                    //Create dialog
+                                    val builder = MaterialAlertDialogBuilder(context)
+                                    builder.setTitle("Links")
+                                    builder.setMessage(text.toString())
+                                    builder.setPositiveButton("OK") { _, _ -> }
+                                    builder.show()
+                                },
+                                contentPadding = PaddingValues(0.dp),
+                                modifier = Modifier
+                                    .size(40.dp)
+                            ) {
+                                Image(
+                                    painter = painterResource(R.drawable.info),
+                                    contentDescription = "Links info",
+                                    contentScale = ContentScale.Fit,
+                                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimary),
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                )
+                            }
+                        }
 
-                //Links (list)
-                itemsIndexed(Link.links) { index, link ->
-                    LinkItem(
-                        index = index,
-                        link = link,
-                        onChooseFolder = onChooseFolder,
-                        onChooseFile = onChooseFile,
-                        onDelete = onDelete
-                    )
-                }
+                        //Items
+                        SettingsItems {
+                            Link.links.forEachIndexed { index, link ->
+                                //Add item
+                                LinkItem(
+                                    index = index,
+                                    link = link,
+                                    onChooseFolder = onChooseFolder,
+                                    onChooseFile = onChooseFile,
+                                    onDelete = onDelete
+                                )
 
-                //Links (add link button)
-                item {
+                                //Add divider between items
+                                if (index < Link.links.size - 1) SettingsDivider()
+                            }
+                        }
+
+                        //Add link button
                         Button(
                             onClick = {
                                 //Create & try to add new link
@@ -455,10 +439,73 @@ class SettingsActivity : ComponentActivity() {
                             Text(
                                 text = "Add link",
                                 fontFamily = FONT_COMFORTAA,
-                                fontSize = 14.sp,
+                                fontSize = 14.sp
                             )
                         }
                     }
+                }
+
+                //Credits
+                item {
+                    SettingsGroup {
+                        //Title
+                        SettingsTitle("Credits")
+
+                        //Items
+                        SettingsItems {
+                            //Portfolio
+                            SettingsItem(
+                                title = "Portfolio",
+                                description = "Check out the things I make!"
+                            ) {
+                                Button(
+                                    onClick = {
+                                        uriHandler.openUri("https://botpa.vercel.app/")
+                                    },
+                                    contentPadding = PaddingValues(0.dp),
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                ) {
+                                    Image(
+                                        painter = painterResource(R.drawable.app_icon),
+                                        contentDescription = "Portfolio",
+                                        contentScale = ContentScale.Fit,
+                                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimary),
+                                        modifier = Modifier
+                                            .size(24.dp)
+                                    )
+                                }
+                            }
+
+                            //Divider
+                            SettingsDivider()
+
+                            //Github
+                            SettingsItem(
+                                title = "Github",
+                                description = "Check it out for updates."
+                            ) {
+                                Button(
+                                    onClick = {
+                                        uriHandler.openUri("https://github.com/BOTPanzer/Coon-Gallery")
+                                    },
+                                    contentPadding = PaddingValues(0.dp),
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                ) {
+                                    Image(
+                                        painter = painterResource(R.drawable.github),
+                                        contentDescription = "Github",
+                                        contentScale = ContentScale.Fit,
+                                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimary),
+                                        modifier = Modifier
+                                            .size(24.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
