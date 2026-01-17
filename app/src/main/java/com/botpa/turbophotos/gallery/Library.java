@@ -480,16 +480,13 @@ public class Library {
         //Not in gallery items list
         if (helper.indexInGallery == -1) return;
 
-        //Mark it as removed (will get removed in performAction())
+        //Mark it as removed (will get removed in evaluateAction())
         action.removedIndexesInGallery.add(helper.indexInGallery);
     }
 
-    private static void performRemoveFromAlbum(ActionHelper helper, Action action) {
+    private static void performRemoveFromAlbum(ActionHelper helper, Action action, Album album) {
         //Not in album
         if (helper.indexInAlbum == -1) return;
-
-        //Get album
-        Album album = helper.item.album;
 
         //Remove item
         album.remove(helper.indexInAlbum);
@@ -497,7 +494,7 @@ public class Library {
 
         //Check if album needs to be deleted or sorted
         if (album.isEmpty()) {
-            //Album is empty -> Mark it as removed (will get removed in performAction())
+            //Album is empty -> Mark it as removed (will get removed in evaluateAction())
             action.removedIndexesInAlbums.add(helper.indexOfAlbum);
         } else if (helper.indexInAlbum == 0) {
             //Album isn't empty & first image was deleted -> Sort albums list in case the order changed
@@ -603,25 +600,25 @@ public class Library {
 
     private static void moveItemsInternal(Context context, CoonItem[] items, Album newAlbum) {
         performAction(context, Action.TYPE_MOVE, items, (action, item) -> {
-            //Check new album
+            //Check if new album is valid
             if (newAlbum == null) {
                 //Invalid destination
                 action.errors.add(new ActionError(item, "Invalid destination."));
                 return;
             }
 
-            //Check if in trash
+            //Check if item is in trash
             if (item.isTrashed) {
                 //Item is in trash
                 action.errors.add(new ActionError(item, "Item is in the trash."));
                 return;
             }
 
-            //Get album
+            //Get old album
             Album oldAlbum = item.album;
 
-            //Check if can move
-            if (oldAlbum == newAlbum) {
+            //Check if item is being moved to the same album
+            if (newAlbum == oldAlbum) {
                 //Already in the destination album
                 action.errors.add(new ActionError(item, "Item is already in the destination album."));
                 return;
@@ -638,17 +635,17 @@ public class Library {
             //Get action helper
             ActionHelper helper = action.getHelper(item);
 
-            //Remove from gallery items list
+            //Remove item from gallery items list
             performRemoveFromGallery(helper, action);
 
-            //Remove from old album
-            performRemoveFromAlbum(helper, action);
+            //Remove item from old album
+            performRemoveFromAlbum(helper, action, oldAlbum);
 
-            //Update file
+            //Update item
             item.file = newFile;
-
-            //Add to new album
             item.album = newAlbum;
+
+            //Add item to new album
             helper.indexInAlbum = newAlbum.addSorted(item);
             action.modifiedAlbums.add(newAlbum);
 
@@ -684,14 +681,14 @@ public class Library {
 
     private static void copyItemsInternal(Context context, CoonItem[] items, Album newAlbum) {
         performAction(context, Action.TYPE_COPY, items, (action, item) -> {
-            //Check new album
+            //Check if new album is valid
             if (newAlbum == null) {
                 //Invalid destination
                 action.errors.add(new ActionError(item, "Invalid destination."));
                 return;
             }
 
-            //Check if in trash
+            //Check if item is in trash
             if (item.isTrashed) {
                 //Item is in trash
                 action.errors.add(new ActionError(item, "Item is in the trash."));
@@ -701,8 +698,8 @@ public class Library {
             //Get old album
             Album oldAlbum = item.album;
 
-            //Check if can move
-            if (oldAlbum == newAlbum) {
+            //Check if item is being moved to the same album
+            if (newAlbum == oldAlbum) {
                 //Already in the destination album
                 action.errors.add(new ActionError(item, "Item is already in the destination album."));
                 return;
@@ -720,7 +717,7 @@ public class Library {
             //Create new item
             CoonItem newItem = new CoonItem(newFile, newAlbum, item.lastModified, item.mimeType, item.size, item.isTrashed);
 
-            //Add to new album
+            //Add item to new album
             int indexInAlbum = newAlbum.addSorted(newItem);
             action.modifiedAlbums.add(newAlbum);
 
@@ -832,15 +829,6 @@ public class Library {
             Album originalAlbum = item.album;
             ActionHelper helper = action.getHelper(item);
 
-            //Remove from all
-            performRemoveFromAll(helper);
-
-            //Remove from gallery items list
-            performRemoveFromGallery(helper, action);
-
-            //Remove from album
-            performRemoveFromAlbum(helper, action);
-
             //Update item
             item.file = newFile;
             item.album = trash;
@@ -852,6 +840,15 @@ public class Library {
                 //First change to trash this action -> Check if trash was added to list or just updated
                 action.trashAction = trash.size() == 1 ? Action.TRASH_ADDED : Action.TRASH_UPDATED;
             }
+
+            //Remove item from all
+            performRemoveFromAll(helper);
+
+            //Remove item from gallery items list
+            performRemoveFromGallery(helper, action);
+
+            //Remove item from album
+            performRemoveFromAlbum(helper, action, originalAlbum); //Remove from album after adding to trash cause, if both trash & album are empty, the album gets removed from albumsMap
         }
 
         //Evaluate action
@@ -901,24 +898,16 @@ public class Library {
             Album originalAlbum = getOrCreateAlbumFromItemFile(newFile);
             ActionHelper helper = action.getHelper(item);
 
-            //Remove from trash
-            performRemoveFromTrash(helper, action, originalAlbum);
-
-            //Remove from gallery items list
-            performRemoveFromGallery(helper, action);
-
             //Update item
             item.file = newFile;
             item.album = originalAlbum;
             item.isTrashed = false;
 
-            //Add to all items list
+            //Add to all & original album
             helper.indexInAll = all.addSorted(item);
             action.modifiedAlbums.add(all);
-
-            //Add to album
-            helper.indexInAlbum = item.album.addSorted(item);
-            action.modifiedAlbums.add(item.album);
+            helper.indexInAlbum = originalAlbum.addSorted(item);
+            action.modifiedAlbums.add(originalAlbum);
 
             //Check if item was added as the album cover
             if (helper.indexInAlbum == 0) {
@@ -931,6 +920,12 @@ public class Library {
                     albums.add(originalAlbum);
                 }
             }
+
+            //Remove item from gallery items list
+            performRemoveFromGallery(helper, action);
+
+            //Remove item from trash
+            performRemoveFromTrash(helper, action, originalAlbum); //Remove from trash after adding to album cause, if both trash & album are empty, the album gets removed from albumsMap
         }
 
         //Evaluate action
@@ -949,10 +944,10 @@ public class Library {
             //Get action helper
             ActionHelper helper = action.getHelper(item);
 
-            //Remove from all
+            //Remove item from all
             performRemoveFromAll(helper);
 
-            //Remove from gallery items list
+            //Remove item from gallery items list
             performRemoveFromGallery(helper, action);
 
             //Check if item is in the trash to remove it & get its album
@@ -967,8 +962,8 @@ public class Library {
                 //Get item album
                 album = item.album;
 
-                //Remove from album
-                performRemoveFromAlbum(helper, action);
+                //Remove item from album
+                performRemoveFromAlbum(helper, action, album);
             }
 
             //Delete item metadata from album
