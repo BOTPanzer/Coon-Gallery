@@ -33,7 +33,7 @@ class DialogErrors(context: Context, private val errors: List<ActionError>) : Cu
         //Init dialog
         return builder
             .setTitle("Errors")
-            .setPositiveButton("Ok", null)
+            .setPositiveButton("Close", null)
     }
 
     override fun initListeners() {

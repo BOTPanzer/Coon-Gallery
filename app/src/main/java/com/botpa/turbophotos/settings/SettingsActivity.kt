@@ -94,10 +94,10 @@ class SettingsActivity : ComponentActivity() {
         //Links file picker
         val filePickerLauncher = rememberLauncherForActivityResult(StartActivityForResult()) { result ->
             //Bad result
-            if (result.resultCode != RESULT_OK || result.data == null) return@rememberLauncherForActivityResult
+            if (result.resultCode != RESULT_OK || result.data == null || result.data!!.data == null) return@rememberLauncherForActivityResult
 
             //Handle result
-            viewModel.handleFileResult(result.data!!.data, context, activity)
+            viewModel.handleFileResult(result.data!!.data!!, context, activity)
         }
 
         //Links item actions
@@ -307,7 +307,7 @@ class SettingsActivity : ComponentActivity() {
                                     val builder = MaterialAlertDialogBuilder(context)
                                     builder.setTitle("Links")
                                     builder.setMessage(text.toString())
-                                    builder.setPositiveButton("OK") { _, _ -> }
+                                    builder.setPositiveButton("Close") { _, _ -> }
                                     builder.show()
                                 },
                                 contentPadding = PaddingValues(0.dp),

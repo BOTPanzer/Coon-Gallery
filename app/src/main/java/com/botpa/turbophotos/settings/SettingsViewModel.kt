@@ -68,10 +68,8 @@ class SettingsViewModel : ViewModel() {
     }
 
     //Link item file picker actions
-    fun handleFileResult(uri: Uri?, context: Context, activity: Activity) {
-        if (uri == null) return
+    fun handleFileResult(uri: Uri, context: Context, activity: Activity) {
         viewModelScope.launch(Dispatchers.IO) {
-            //Parse result
             try {
                 //Parse file path from URI
                 val path = Orion.getFilePathFromDocumentProviderUri(context, uri) ?: throw Exception("Path was null")
@@ -102,10 +100,8 @@ class SettingsViewModel : ViewModel() {
                         var name: String
                         var i = 0
                         do {
-                            name = "${
-                                link.albumFolder.name.lowercase().replace(" ", "-")
-                            }${if (i > 0) " ($i)" else ""}.metadata.json"
-                            metadataFile = File(file.absolutePath + "/" + name)
+                            name = "${link.albumFolder.name.lowercase().replace(" ", "-")}${if (i > 0) " ($i)" else ""}.json"
+                            metadataFile = File("${file.absolutePath}/${name}")
                             i++
                         } while (metadataFile.exists())
                         Orion.writeFile(metadataFile, "{}")

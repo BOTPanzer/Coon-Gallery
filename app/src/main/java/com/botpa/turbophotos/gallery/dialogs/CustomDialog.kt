@@ -27,7 +27,7 @@ open class CustomDialog(protected val context: Context, private val resource: In
     //Show
     fun show() {
         //Init root
-        root = LayoutInflater.from(context).inflate(resource, null);
+        root = LayoutInflater.from(context).inflate(resource, null)
 
         //Init views
         initViews()
