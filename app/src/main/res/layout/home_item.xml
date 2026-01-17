@@ -68,7 +68,7 @@
                                 <ImageView
                                     android:layout_width="14dp"
                                     android:layout_height="14dp"
-                                    app:srcCompat="@drawable/delete" />
+                                    app:srcCompat="@drawable/trash" />
                             </LinearLayout>
 
                         </androidx.cardview.widget.CardView>

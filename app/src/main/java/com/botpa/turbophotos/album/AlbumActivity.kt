@@ -396,7 +396,7 @@ class AlbumActivity : GalleryActivity() {
             Library.copyItems(this@AlbumActivity, getSelectedItems())
         }
 
-        optionTrash = OptionsItem(R.drawable.delete, "Move to trash") {
+        optionTrash = OptionsItem(R.drawable.trash, "Move to trash") {
             //Move items to trash
             trashItems(getSelectedItems())
         }

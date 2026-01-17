@@ -34,7 +34,6 @@ import com.botpa.turbophotos.gallery.views.ZoomableLayout
 import com.botpa.turbophotos.util.BackManager
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Orion.ResizeHeightAnimation
-import com.botpa.turbophotos.util.Storage
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
@@ -414,7 +413,7 @@ class DisplayActivity : GalleryActivity() {
             Library.copyItems(this@DisplayActivity, arrayOf<CoonItem?>(currentItem))
         }
 
-        optionTrash = OptionsItem(R.drawable.delete, "Move to trash") {
+        optionTrash = OptionsItem(R.drawable.trash, "Move to trash") {
             //Move to trash
             trashItems(arrayOf(currentItem))
         }
