@@ -92,6 +92,7 @@ class DisplayActivity : GalleryActivity() {
     private lateinit var optionsAdapter: OptionsAdapter
 
     private val optionSeparator: OptionsItem = OptionsItem()
+    private lateinit var optionRename: OptionsItem
     private lateinit var optionEdit: OptionsItem
     private lateinit var optionShare: OptionsItem
     private lateinit var optionMove: OptionsItem
@@ -388,6 +389,11 @@ class DisplayActivity : GalleryActivity() {
         //Options
         optionsLayout.setOnClickListener { view: View -> toggleOptions(false) }
 
+        optionRename = OptionsItem(R.drawable.rename, "Rename") {
+            //Rename
+            Library.renameItem(this@DisplayActivity, currentItem)
+        }
+
         optionEdit = OptionsItem(R.drawable.edit, "Edit") {
             //Edit
             Library.editItem(this@DisplayActivity, currentItem)
@@ -616,13 +622,17 @@ class DisplayActivity : GalleryActivity() {
 
             //Update options list
             options.clear()
-            if (!isTrashed) options.add(optionEdit)
-            if (!isTrashed) options.add(optionShare)
-            if (!isTrashed) options.add(optionMove)
-            if (!isTrashed) options.add(optionCopy)
-            if (!isTrashed) options.add(optionSeparator)
-            if (!isTrashed) options.add(optionTrash)
-            if (isTrashed) options.add(optionRestore)
+            if (!isTrashed) {
+                options.add(optionRename)
+                options.add(optionEdit)
+                options.add(optionShare)
+                options.add(optionMove)
+                options.add(optionCopy)
+                options.add(optionSeparator)
+                options.add(optionTrash)
+            } else {
+                options.add(optionRestore)
+            }
             options.add(optionDelete)
             optionsAdapter.notifyDataSetChanged()
 

@@ -40,6 +40,7 @@ class Action(val type: Int, @JvmField val items: Array<CoonItem>) {
         const val TYPE_RESTORE:     Int = 3
         const val TYPE_MOVE:        Int = 4
         const val TYPE_COPY:        Int = 5
+        const val TYPE_RENAME:      Int = 6
 
         //Trash action
         const val TRASH_NONE:       Int = 0

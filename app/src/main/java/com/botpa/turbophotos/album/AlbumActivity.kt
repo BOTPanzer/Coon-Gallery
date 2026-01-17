@@ -93,6 +93,7 @@ class AlbumActivity : GalleryActivity() {
     private lateinit var optionsAdapter: OptionsAdapter
 
     private val optionSeparator: OptionsItem = OptionsItem()
+    private lateinit var optionRename: OptionsItem
     private lateinit var optionEdit: OptionsItem
     private lateinit var optionShare: OptionsItem
     private lateinit var optionMove: OptionsItem
@@ -364,8 +365,16 @@ class AlbumActivity : GalleryActivity() {
         //Options
         optionsLayout.setOnClickListener { view: View -> toggleOptions(false) }
 
+        optionRename = OptionsItem(R.drawable.rename, "Rename") {
+            //Only allow 1 selection
+            if (selectedItems.size != 1) return@OptionsItem
+
+            //Rename
+            Library.renameItem(this@AlbumActivity, Library.gallery[selectedItems.iterator().next()])
+        }
+
         optionEdit = OptionsItem(R.drawable.edit, "Edit") {
-            //Empty selection
+            //Only allow 1 selection
             if (selectedItems.size != 1) return@OptionsItem
 
             //Edit
@@ -551,6 +560,7 @@ class AlbumActivity : GalleryActivity() {
 
             //Update options list
             options.clear()
+            if (!inTrash && isSelectingSingle) options.add(optionRename)
             if (!inTrash && isSelectingSingle) options.add(optionEdit)
             if (!inTrash && isSelecting) options.add(optionShare)
             if (!inTrash && isSelecting) options.add(optionMove)

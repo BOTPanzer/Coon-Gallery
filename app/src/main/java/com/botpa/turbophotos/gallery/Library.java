@@ -1,5 +1,6 @@
 package com.botpa.turbophotos.gallery;
 
+import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -10,6 +11,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.IntentSenderRequest;
@@ -21,6 +23,7 @@ import com.botpa.turbophotos.gallery.actions.ActionHelper;
 import com.botpa.turbophotos.gallery.dialogs.DialogAlbums;
 import com.botpa.turbophotos.gallery.dialogs.DialogErrors;
 import com.botpa.turbophotos.gallery.dialogs.DialogFolders;
+import com.botpa.turbophotos.gallery.dialogs.DialogInput;
 import com.botpa.turbophotos.settings.SettingsPairs;
 import com.botpa.turbophotos.util.Orion;
 import com.botpa.turbophotos.util.Storage;
@@ -467,6 +470,13 @@ public class Library {
         new DialogFolders(context, externalStorage, imagesFolder, folders, onSelect).show();
     }
 
+    public static DialogInput showTextInputDialog(Context context, String hint, Consumer<String> onConfirm) {
+        //Create dialog
+        DialogInput dialog =new DialogInput(context, "Rename", hint, onConfirm);
+        dialog.show();
+        return dialog;
+    }
+
     //Actions (base & util)
     private static void performRemoveFromAll(ActionHelper helper) {
         //Not in all items list
@@ -564,6 +574,62 @@ public class Library {
     }
 
     //Actions (modify items)
+    public static void renameItem(Context context, CoonItem item) {
+        //Check if item is in trash
+        if (item.isTrashed) return;
+
+        //Get item name & extension
+        String oldCompleteName = item.name;
+        String extension = Orion.getExtension(oldCompleteName);
+        String name = extension.isEmpty() ? oldCompleteName : oldCompleteName.substring(0, oldCompleteName.length() - (extension.length() + 1));
+
+        //Create action
+        Action action = new Action(Action.TYPE_RENAME, new CoonItem[] { item });
+
+        //Ask for a new name
+        DialogInput dialog = showTextInputDialog(context, "New name", (newName) -> {
+            //Get new complete name
+            String newCompleteName = newName.trim() + "." + extension;
+
+            //Check if name changed
+            if (newCompleteName.equals(item.name)) return;
+
+            //Get new file
+            File newFile = new File(item.album.getImagesFolder(), newCompleteName);
+
+            //Check if new file already exists
+            if (newFile.exists()) {
+                action.errors.add(new ActionError(item, "A file named \"" + newName + "\" already exists."));
+                evaluateAction(context, action);
+                return;
+            }
+
+            //Rename file
+            boolean renamed = item.file.renameTo(newFile);
+            if (!renamed) {
+                action.errors.add(new ActionError(item, "Failed to rename file."));
+                evaluateAction(context, action);
+                return;
+            }
+
+            //Update item
+            item.name = newCompleteName;
+            item.file = newFile;
+
+            //Copy item metadata to new key
+            Album album = item.album;
+            if (album.hasMetadataKey(oldCompleteName) && Storage.getBool(SettingsPairs.APP_AUTOMATIC_METADATA_MODIFICATION)) {
+                album.setMetadataKey(newCompleteName, album.getMetadataKey(oldCompleteName));
+                album.removeMetadataKey(oldCompleteName);
+                album.saveMetadata();
+            }
+
+            //Evaluate rename
+            evaluateAction(context, action);
+        });
+        dialog.setText(name);
+    }
+
     public static void editItem(Context context, CoonItem item) {
         //Get URI & mime type
         Uri uri = Orion.getFileUriFromFilePath(context, item.file.getAbsolutePath());
