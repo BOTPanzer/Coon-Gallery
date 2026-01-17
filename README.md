@@ -1,6 +1,6 @@
 # Coon Gallery
 
-Pivacy-focused Android gallery with smart search support powered by metadata files.
+Privacy-focused Android gallery with smart search support powered by metadata files.
 
 <div align="center">
 <img src="https://raw.githubusercontent.com/BOTPanzer/Coon-Gallery/refs/heads/main/screenshots/home.png" width="24%" />
