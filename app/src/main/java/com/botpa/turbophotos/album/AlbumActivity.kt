@@ -264,6 +264,13 @@ class AlbumActivity : GalleryActivity() {
         //No action
         if (action.isOfType(Action.TYPE_NONE)) return
 
+        //Renamed file
+        if (action.isOfType(Action.TYPE_RENAME)) {
+            //Unselect item
+            unselectAll()
+            return
+        }
+
         //Check if gallery is empty
         if (Library.gallery.isEmpty()) {
             //Is empty -> Close display

@@ -7,13 +7,12 @@ import com.botpa.turbophotos.gallery.Album
 import com.botpa.turbophotos.gallery.Library
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.io.File
-import java.util.function.Consumer
 
 class DialogAlbums(
     context: Context,
     private val albums: List<Album>,
-    private val onSelectAlbum: Consumer<Album>,
-    private val onSelectFolder: Consumer<File>
+    private val onSelectAlbum: (Album) -> Unit,
+    private val onSelectFolder: (File) -> Unit
 ) : CustomDialog(context, R.layout.dialog_albums) {
 
     //Views
@@ -44,7 +43,7 @@ class DialogAlbums(
             .setNegativeButton("Cancel", null)
             .setNeutralButton("Select folder",{ dialogInterface, which ->
                 //Select from folder
-                Library.showSelectFolderDialog(context, { folder -> onSelectFolder.accept(folder) });
+                Library.showSelectFolderDialog(context, { folder -> onSelectFolder(folder) })
             })
     }
 
@@ -52,7 +51,7 @@ class DialogAlbums(
         //Select albums
         list.setOnItemClickListener { parent, view, position, id ->
             //Select album
-            onSelectAlbum.accept(albums.get(position))
+            onSelectAlbum(albums[position])
 
             //Close dialog
             dialog.dismiss()

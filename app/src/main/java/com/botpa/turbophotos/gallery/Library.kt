@@ -32,8 +32,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 import java.io.File
 import java.util.Locale
-import java.util.function.BiConsumer
-import java.util.function.Consumer
 
 import kotlin.Array
 import kotlin.Boolean
@@ -459,17 +457,12 @@ object Library {
         DialogErrors(context, action.errors).buildAndShow()
     }
 
-    fun showSelectAlbumDialog(context: Context, onSelect: Consumer<Album>) {
+    fun showSelectAlbumDialog(context: Context, onSelect: (Album) -> Unit) {
         //Create dialog
-        DialogAlbums(
-            context,
-            albums,
-            onSelect,
-            { folder: File -> onSelect.accept(getOrCreateAlbumFromFolder(folder)) }
-        ).buildAndShow()
+        DialogAlbums(context, albums, onSelect, { folder: File -> onSelect(getOrCreateAlbumFromFolder(folder)) }).buildAndShow()
     }
 
-    fun showSelectFolderDialog(context: Context, onSelect: Consumer<File>) {
+    fun showSelectFolderDialog(context: Context, onSelect: (File) -> Unit) {
         //Create folders list
         val externalStorage = Environment.getExternalStorageDirectory()
         val imagesFolder = File(externalStorage, "Pictures")
@@ -524,12 +517,12 @@ object Library {
         action.trashAction = if (trash.isEmpty()) Action.TRASH_REMOVED else Action.TRASH_UPDATED
     }
 
-    private fun performAction(context: Context, type: Int, items: Array<CoonItem>, onPerformAction: BiConsumer<Action, CoonItem>) {
+    private fun performAction(context: Context, type: Int, items: Array<CoonItem>, onPerformAction: (Action, CoonItem) -> Unit) {
         //Create action
         val action = Action(type, items)
 
         //Perform action for each item
-        for (item in items) onPerformAction.accept(action, item)
+        for (item in items) onPerformAction(action, item)
 
         //Evaluate action
         evaluateAction(context, action)

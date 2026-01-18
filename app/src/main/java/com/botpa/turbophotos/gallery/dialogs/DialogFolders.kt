@@ -12,14 +12,13 @@ import com.botpa.turbophotos.R
 import com.botpa.turbophotos.util.Orion
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.io.File
-import java.util.function.Consumer
 
 class DialogFolders(
     context: Context,
     private val externalStorage: File,
     private val currentFolder: File,
     private val folders: MutableList<File>,
-    private val onSelect: Consumer<File>
+    private val onSelect: (File) -> Unit
 ) : CustomDialog(context, R.layout.dialog_folders) {
 
     //Views
@@ -69,7 +68,7 @@ class DialogFolders(
         //List (select & open a folder)
         adapter.setOnSelectListener { index ->
             //Select folder
-            onSelect.accept(folders.get(index))
+            onSelect(folders[index])
 
             //Close dialog
             dialog.dismiss()
@@ -77,13 +76,12 @@ class DialogFolders(
 
         adapter.setOnOpenListener { index ->
             //Get folder
-            val folder: File?
-            if (index < 0) {
+            val folder = if (index < 0) {
                 //Back button
-                folder = adapter.currentFolderParent
+                adapter.currentFolderParent
             } else {
                 //Select folder
-                folder = folders.get(index)
+                folders[index]
             }
 
             //Check if folder is valid
@@ -96,11 +94,7 @@ class DialogFolders(
             //Check if folder can be read and written to
             if (!folder.canRead() || !folder.canWrite()) {
                 //Folder can't be read/written to
-                Toast.makeText(
-                    context,
-                    "Missing permissions to use that folder",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(context, "Missing permissions to use that folder", Toast.LENGTH_SHORT).show()
                 return@setOnOpenListener
             }
 
@@ -109,7 +103,7 @@ class DialogFolders(
             dialog.setTitle(adapter.currentFolderName)
             folders.clear()
             folders.addAll(Orion.listFiles(folder))
-            folders.sortWith(Comparator { a: File?, b: File? -> a!!.name.compareTo(b!!.name, ignoreCase = true) })
+            folders.sortWith(Comparator { a: File, b: File -> a.name.compareTo(b.name, ignoreCase = true) })
             adapter.notifyDataSetChanged()
             list.setSelectionAfterHeaderView() //Scroll to top
         }
@@ -117,7 +111,7 @@ class DialogFolders(
         //Create a folder
         createButton.setOnClickListener { view ->
             //Get folder name & file
-            val folderName: String = createInput.getText().toString().trim()
+            val folderName: String = createInput.text.toString().trim()
             val folder: File = File(adapter.currentFolderPath, folderName)
 
             //Check if folder exists
@@ -135,7 +129,7 @@ class DialogFolders(
             }
 
             //Accept file
-            onSelect.accept(folder)
+            onSelect(folder)
 
             //Close dialog
             dialog.dismiss()
