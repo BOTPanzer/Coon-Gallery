@@ -27,6 +27,7 @@ import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.CoonItem
 import com.botpa.turbophotos.gallery.GalleryActivity
 import com.botpa.turbophotos.gallery.Library
+import com.botpa.turbophotos.gallery.Library.ActionEvent
 import com.botpa.turbophotos.gallery.actions.Action
 import com.botpa.turbophotos.gallery.options.OptionsAdapter
 import com.botpa.turbophotos.gallery.options.OptionsItem
@@ -62,7 +63,7 @@ class DisplayActivity : GalleryActivity() {
     private var isInit = false
 
     //Events
-    private val onAction = Library.ActionEvent { action -> this.manageAction(action) }
+    private val onAction = ActionEvent { action -> this.manageAction(action) }
 
     //List
     private lateinit var displayLayoutManager: DisplayLayoutManager
@@ -400,17 +401,17 @@ class DisplayActivity : GalleryActivity() {
 
         optionShare = OptionsItem(R.drawable.share, "Share") {
             //Share
-            Library.shareItems(this@DisplayActivity, arrayOf<CoonItem?>(currentItem))
+            Library.shareItems(this@DisplayActivity, arrayOf(currentItem))
         }
 
         optionMove = OptionsItem(R.drawable.move, "Move to album") {
             //Move items
-            Library.moveItems(this@DisplayActivity, arrayOf<CoonItem?>(currentItem))
+            Library.moveItems(this@DisplayActivity, arrayOf(currentItem))
         }
 
         optionCopy = OptionsItem(R.drawable.copy, "Copy to album") {
             //Copy items
-            Library.copyItems(this@DisplayActivity, arrayOf<CoonItem?>(currentItem))
+            Library.copyItems(this@DisplayActivity, arrayOf(currentItem))
         }
 
         optionTrash = OptionsItem(R.drawable.trash, "Move to trash") {
@@ -425,7 +426,7 @@ class DisplayActivity : GalleryActivity() {
 
         optionDelete = OptionsItem(R.drawable.delete, "Delete") {
             //Delete item
-            Library.deleteItems(this@DisplayActivity, arrayOf<CoonItem?>(currentItem))
+            Library.deleteItems(this@DisplayActivity, arrayOf(currentItem))
         }
     }
 

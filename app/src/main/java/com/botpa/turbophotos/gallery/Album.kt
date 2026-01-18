@@ -14,7 +14,6 @@ class Album(val name: String, val imagesFolder: File?, var metadataFile: File?) 
 
     val isEspecial: Boolean = imagesFolder == null
 
-    var lastModified: Long = imagesFolder?.lastModified() ?: 0
     val imagesPath: String = imagesFolder?.absolutePath ?: ""
     val metadataPath: String = metadataFile?.absolutePath ?: ""
 
@@ -31,7 +30,6 @@ class Album(val name: String, val imagesFolder: File?, var metadataFile: File?) 
 
     fun reset() {
         items.clear()
-        lastModified = imagesFolder?.lastModified() ?: 0
     }
 
     fun size(): Int {

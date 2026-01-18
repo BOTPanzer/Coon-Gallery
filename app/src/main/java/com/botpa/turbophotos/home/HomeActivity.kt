@@ -37,6 +37,7 @@ import com.botpa.turbophotos.gallery.Album
 import com.botpa.turbophotos.gallery.GalleryActivity
 import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.Library.RefreshEvent
+import com.botpa.turbophotos.gallery.Library.ActionEvent
 import com.botpa.turbophotos.gallery.actions.Action
 import com.botpa.turbophotos.gallery.options.OptionsAdapter
 import com.botpa.turbophotos.gallery.options.OptionsItem
@@ -70,7 +71,7 @@ class HomeActivity : GalleryActivity() {
 
     //Events
     private val onRefresh = RefreshEvent { updated -> this.manageRefresh(updated) }
-    private val onAction = Library.ActionEvent { action -> this.manageAction(action) }
+    private val onAction = ActionEvent { action -> this.manageAction(action) }
 
     //Item picker for external apps
     private var isPicking = false //An app requested to pick an item
@@ -317,13 +318,13 @@ class HomeActivity : GalleryActivity() {
         homeList.visibility = View.GONE
 
         //Check intent
-        val filter: String?
+        val filter: String
         val intent = getIntent()
         val action = intent.action
         if (action == Intent.ACTION_GET_CONTENT || action == Intent.ACTION_PICK) {
             //An app requested to select an item
             isPicking = true
-            filter = intent.type
+            filter = intent.type ?: "*/*"
         } else {
             //Regular open
             isPicking = false

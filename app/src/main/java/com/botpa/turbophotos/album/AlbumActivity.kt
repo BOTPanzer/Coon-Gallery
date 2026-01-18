@@ -27,6 +27,7 @@ import com.botpa.turbophotos.gallery.CoonItem
 import com.botpa.turbophotos.gallery.GalleryActivity
 import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.Library.RefreshEvent
+import com.botpa.turbophotos.gallery.Library.ActionEvent
 import com.botpa.turbophotos.gallery.LoadingIndicator
 import com.botpa.turbophotos.gallery.actions.Action
 import com.botpa.turbophotos.gallery.options.OptionsAdapter
@@ -60,7 +61,7 @@ class AlbumActivity : GalleryActivity() {
 
     //Events
     private val onRefresh = RefreshEvent { updated -> this.manageRefresh(updated) }
-    private val onAction = Library.ActionEvent { action -> this.manageAction(action) }
+    private val onAction = ActionEvent { action -> this.manageAction(action) }
 
     //Item picker for external apps
     private var isPicking = false //An app requested to pick an item
@@ -418,7 +419,7 @@ class AlbumActivity : GalleryActivity() {
 
         optionDeleteAll = OptionsItem(R.drawable.delete, "Delete all") {
             //Delete all items
-            Library.deleteItems(this@AlbumActivity, currentAlbum.items.toTypedArray<CoonItem?>())
+            Library.deleteItems(this@AlbumActivity, currentAlbum.items.toTypedArray<CoonItem>())
         }
 
         //List
@@ -613,7 +614,7 @@ class AlbumActivity : GalleryActivity() {
     }
 
     //Metadata
-    private fun loadMetadata(album: Album?) {
+    private fun loadMetadata(album: Album) {
         //Start loading
         isMetadataLoaded = false
 

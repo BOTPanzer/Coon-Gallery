@@ -29,10 +29,10 @@ open class GalleryActivity : AppCompatActivity() {
         //Action successful
         if (action.isOfType(Action.TYPE_TRASH)) {
             //Trash items
-            Library.onTrashItemsResult(this, trashAction)
+            Library.onTrashItemsResult(this, action)
         } else if (action.isOfType(Action.TYPE_RESTORE)) {
             //Restore items
-            Library.onRestoreItemsResult(this, trashAction)
+            Library.onRestoreItemsResult(this, action)
         } else {
             //Trash action type isn't valid
             Orion.snack(this, "Trash action type isn't valid")
