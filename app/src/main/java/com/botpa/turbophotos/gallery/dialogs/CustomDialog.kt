@@ -16,6 +16,8 @@ open class CustomDialog(protected val context: Context, private val resource: In
 
 
     //Init
+    protected open fun onInitStart() {}
+
     protected open fun initDialog(builder: MaterialAlertDialogBuilder): MaterialAlertDialogBuilder {
         return builder
     }
@@ -24,10 +26,15 @@ open class CustomDialog(protected val context: Context, private val resource: In
 
     protected open fun initListeners() {}
 
+    protected open fun onInitEnd() {}
+
     //Show
-    fun show() {
+    fun buildAndShow() {
         //Init root
         root = LayoutInflater.from(context).inflate(resource, null)
+
+        //Start
+        onInitStart()
 
         //Init views
         initViews()
@@ -37,6 +44,9 @@ open class CustomDialog(protected val context: Context, private val resource: In
 
         //Init listeners
         initListeners()
+
+        //End
+        onInitEnd()
     }
 
 }

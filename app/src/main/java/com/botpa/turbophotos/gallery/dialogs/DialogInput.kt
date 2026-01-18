@@ -2,11 +2,17 @@ package com.botpa.turbophotos.gallery.dialogs
 
 import android.content.Context
 import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
 import com.botpa.turbophotos.R
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import java.util.function.Consumer
 
-class DialogInput(context: Context, private val title: String, private val hint: String, private val onConfirm: Consumer<String>) : CustomDialog(context, R.layout.dialog_input) {
+class DialogInput(
+    context: Context,
+    private val title: String,
+    private val hint: String,
+    private val onValidate: (String) -> Boolean,
+    private val onConfirm: (String) -> Unit
+) : CustomDialog(context, R.layout.dialog_input) {
 
     //Views
     private lateinit var input: EditText
@@ -26,10 +32,24 @@ class DialogInput(context: Context, private val title: String, private val hint:
         return builder
             .setTitle(title)
             .setNegativeButton("Cancel", null)
-            .setPositiveButton("Confirm", { dialog, which ->
-                //Accept input
-                onConfirm.accept(input.text.toString())
-            })
+            .setPositiveButton("Confirm", null)
+    }
+
+    override fun initListeners() {
+        //Rename (adding listener like this prevent the button from dismissing the dialog)
+        val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+        positiveButton.setOnClickListener { view ->
+            //Get input value
+            val value = input.text.toString().trim()
+
+            //Check if value is valid
+            val isValid = onValidate(value)
+            if (!isValid) return@setOnClickListener
+
+            //Accept input
+            onConfirm(value)
+            dialog.dismiss()
+        }
     }
 
     //Util

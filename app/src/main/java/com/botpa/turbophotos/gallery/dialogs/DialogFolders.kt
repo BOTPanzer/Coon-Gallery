@@ -14,7 +14,13 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.io.File
 import java.util.function.Consumer
 
-class DialogFolders(context: Context, private val externalStorage: File, private val currentFolder: File, private val folders: MutableList<File>, private val onSelect: Consumer<File>) : CustomDialog(context, R.layout.dialog_folders) {
+class DialogFolders(
+    context: Context,
+    private val externalStorage: File,
+    private val currentFolder: File,
+    private val folders: MutableList<File>,
+    private val onSelect: Consumer<File>
+) : CustomDialog(context, R.layout.dialog_folders) {
 
     //Views
     private lateinit var listLayout: View
@@ -27,11 +33,18 @@ class DialogFolders(context: Context, private val externalStorage: File, private
     private lateinit var adapter: DialogFoldersAdapter
 
     //Text
-    private val TEXT_CREATE: String = "Create folder"
-    private val TEXT_SELECT: String = "Select folder"
+    companion object {
+        private const val TEXT_CREATE: String = "Create folder"
+        private const val TEXT_SELECT: String = "Select folder"
+    }
 
 
     //Init
+    override fun onInitStart() {
+        //Init adapter
+        adapter = DialogFoldersAdapter(context, externalStorage, currentFolder, folders)
+    }
+
     override fun initViews() {
         //Init views
         listLayout = root.findViewById(R.id.listLayout)
@@ -40,8 +53,7 @@ class DialogFolders(context: Context, private val externalStorage: File, private
         createInput = root.findViewById(R.id.createInput)
         createButton = root.findViewById(R.id.createButton)
 
-        //Init adapter
-        adapter = DialogFoldersAdapter(context, externalStorage, currentFolder, folders)
+        //Assign adapter to list
         list.adapter = adapter
     }
 
@@ -54,7 +66,7 @@ class DialogFolders(context: Context, private val externalStorage: File, private
     }
 
     override fun initListeners() {
-        //Add listeners (list)
+        //List (select & open a folder)
         adapter.setOnSelectListener { index ->
             //Select folder
             onSelect.accept(folders.get(index))
@@ -102,7 +114,7 @@ class DialogFolders(context: Context, private val externalStorage: File, private
             list.setSelectionAfterHeaderView() //Scroll to top
         }
 
-        //Add listeners (create)
+        //Create a folder
         createButton.setOnClickListener { view ->
             //Get folder name & file
             val folderName: String = createInput.getText().toString().trim()
@@ -129,7 +141,7 @@ class DialogFolders(context: Context, private val externalStorage: File, private
             dialog.dismiss()
         }
 
-        //Add listeners (toggle list & create)
+        //Toggle list & create menus (adding listener like this prevent the button from dismissing the dialog)
         val neutralButton = dialog.getButton(AlertDialog.BUTTON_NEUTRAL)
         neutralButton.setOnClickListener { view ->
             if (listLayout.isVisible) {

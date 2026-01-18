@@ -9,7 +9,12 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.io.File
 import java.util.function.Consumer
 
-class DialogAlbums(context: Context, private val albums: List<Album>, private val onSelectAlbum: Consumer<Album>, private val onSelectFolder: Consumer<File>) : CustomDialog(context, R.layout.dialog_albums) {
+class DialogAlbums(
+    context: Context,
+    private val albums: List<Album>,
+    private val onSelectAlbum: Consumer<Album>,
+    private val onSelectFolder: Consumer<File>
+) : CustomDialog(context, R.layout.dialog_albums) {
 
     //Views
     private lateinit var list: ListView
@@ -19,12 +24,16 @@ class DialogAlbums(context: Context, private val albums: List<Album>, private va
 
 
     //Init
+    override fun onInitStart() {
+        //Init adapter
+        adapter = DialogAlbumsAdapter(context, albums)
+    }
+
     override fun initViews() {
         //Init views
         list = root.findViewById(R.id.list)
 
-        //Init adapter
-        adapter = DialogAlbumsAdapter(context, albums)
+        //Assign adapter to list
         list.adapter = adapter
     }
 
@@ -40,7 +49,7 @@ class DialogAlbums(context: Context, private val albums: List<Album>, private va
     }
 
     override fun initListeners() {
-        //Add listeners
+        //Select albums
         list.setOnItemClickListener { parent, view, position, id ->
             //Select album
             onSelectAlbum.accept(albums.get(position))

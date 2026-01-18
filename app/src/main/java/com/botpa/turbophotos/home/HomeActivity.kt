@@ -509,7 +509,7 @@ class HomeActivity : GalleryActivity() {
             )
 
             //Create dialog
-            DialogFilters(this@HomeActivity, filters).show()
+            DialogFilters(this@HomeActivity, filters).buildAndShow()
         }
 
         //List

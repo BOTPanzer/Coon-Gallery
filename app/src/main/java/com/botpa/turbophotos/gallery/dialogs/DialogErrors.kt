@@ -1,16 +1,16 @@
 package com.botpa.turbophotos.gallery.dialogs
 
 import android.content.Context
-import android.view.View
-import android.widget.AdapterView
-import android.widget.AdapterView.OnItemClickListener
 import android.widget.ListView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.actions.ActionError
 import com.botpa.turbophotos.util.Orion
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
-class DialogErrors(context: Context, private val errors: List<ActionError>) : CustomDialog(context, R.layout.dialog_errors) {
+class DialogErrors(
+    context: Context,
+    private val errors: List<ActionError>
+) : CustomDialog(context, R.layout.dialog_errors) {
 
     //Views
     private lateinit var list: ListView
@@ -20,12 +20,16 @@ class DialogErrors(context: Context, private val errors: List<ActionError>) : Cu
 
 
     //Init
+    override fun onInitStart() {
+        //Init adapter
+        adapter = DialogErrorsAdapter(context, errors)
+    }
+
     override fun initViews() {
         //Init views
         list = root.findViewById(R.id.list)
 
-        //Init adapter
-        adapter = DialogErrorsAdapter(context, errors)
+        //Assign adapter to list
         list.adapter = adapter
     }
 
@@ -37,7 +41,7 @@ class DialogErrors(context: Context, private val errors: List<ActionError>) : Cu
     }
 
     override fun initListeners() {
-        //Add listeners
+        //Copy errors
         list.setOnItemClickListener { parent, view, position, id ->
             //Copy reason to clipboard
             val error: ActionError = errors[position]
