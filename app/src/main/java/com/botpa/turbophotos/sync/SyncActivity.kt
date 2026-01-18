@@ -1,207 +1,370 @@
 package com.botpa.turbophotos.sync
 
+import android.R
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.view.KeyEvent
-import android.view.View
-import android.widget.EditText
-
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.WindowInsetsCompat
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Observer
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-
-import com.botpa.turbophotos.R
+import com.botpa.turbophotos.gallery.views.Group
+import com.botpa.turbophotos.gallery.views.GroupDivider
+import com.botpa.turbophotos.gallery.views.GroupItems
+import com.botpa.turbophotos.gallery.views.GroupTitle
+import com.botpa.turbophotos.gallery.views.Layout
+import com.botpa.turbophotos.gallery.views.groupItemPaddingHorizontal
+import com.botpa.turbophotos.gallery.views.groupItemPaddingVertical
+import com.botpa.turbophotos.settings.SettingsPairs
 import com.botpa.turbophotos.sync.SyncEventBus.Companion.instance
-import com.botpa.turbophotos.sync.logs.LogAdapter
-import com.botpa.turbophotos.sync.users.User
-import com.botpa.turbophotos.sync.users.UserAdapter
+import com.botpa.turbophotos.sync.User
+import com.botpa.turbophotos.theme.CoonTheme
+import com.botpa.turbophotos.theme.FONT_COMFORTAA
+import com.botpa.turbophotos.theme.FONT_POPPINS
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
-
 import java.util.Locale
 
-@SuppressWarnings("SameParameterValue")
-class SyncActivity : AppCompatActivity() {
+class SyncActivity : ComponentActivity() {
 
-    //Status
-    private var connectionStatus: Int = SyncService.STATUS_OFFLINE
-
-    //Users
-    private val users: MutableList<User> = ArrayList()
-    private lateinit var usersAdapter: UserAdapter
-
-    private lateinit var usersLayout: View
-    private lateinit var usersName: EditText
-    private lateinit var usersCode: EditText
-    private lateinit var usersConnect: View
-    private lateinit var usersLoading: View
-    private lateinit var usersList: RecyclerView
+    //View model
+    private val view: SyncViewModel by viewModels()
 
     //Logs
-    private val logs: MutableList<String> = ArrayList()
     private val logsMax = 500
-    private lateinit var logsAdapter: LogAdapter
-
-    private lateinit var logsList: RecyclerView
-    private lateinit var logsExit: View
 
 
-    //State
+    //App
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.sync_screen)
+
+        //Init storage
+        Storage.init(this@SyncActivity)
+
+        //Edging
+        enableEdgeToEdge()
 
         //Load users
         loadUsers()
 
         //Init components
-        initViews()
-        initListeners()
-        initUsersList()
-        initLogsList()
         initEventsObserver()
 
-        //Start service
-        val intent = Intent(this, SyncService::class.java)
-        startService(intent)
+        //Content
+        setContent {
+            CoonTheme {
+                SettingsLayout()
+            }
+        }
     }
 
     override fun onDestroy() {
+        super.onDestroy()
+
         //Close service
         send("stop")
-
-        super.onDestroy()
     }
 
-    private fun initViews() {
-        //Views (users)
-        usersLayout = findViewById  (R.id.usersLayout)
-        usersName = findViewById    (R.id.usersName)
-        usersCode = findViewById    (R.id.usersCode)
-        usersConnect = findViewById (R.id.usersConnect)
-        usersLoading = findViewById (R.id.usersLoading)
-        usersList = findViewById    (R.id.usersList)
-
-        //Views (logs)
-        logsList = findViewById (R.id.logsList)
-        logsExit = findViewById (R.id.logsExit)
-
-        //Insets
-        Orion.addInsetsChangedListener(
-            window.decorView,
-            intArrayOf( WindowInsetsCompat.Type.systemBars(), WindowInsetsCompat.Type.ime())
-        )
-    }
-
-    private fun initListeners() {
-        //Connect
-        usersCode.setOnKeyListener { view: View, i: Int, keyEvent: KeyEvent ->
-            if (keyEvent.keyCode == KeyEvent.KEYCODE_ENTER) {
-                Orion.clearFocus(this@SyncActivity)
-                Orion.hideKeyboard(this@SyncActivity)
-                usersConnect.performClick()
+    //Layout
+    @Composable
+    private fun SettingsLayout() {
+        Layout("Sync") {
+            when (view.connectionStatus) {
+                SyncService.STATUS_OFFLINE -> ConnectLayout(it, this, false)
+                SyncService.STATUS_CONNECTING -> ConnectLayout(it, this, true)
+                SyncService.STATUS_ONLINE -> LogsLayout(it)
             }
-            false
         }
+    }
 
-        usersConnect.setOnClickListener { view: View ->
-            //Already trying to connect
-            if (connectionStatus != SyncService.STATUS_OFFLINE) return@setOnClickListener
-
-            //Get code
-            val code = usersCode.text.toString()
-            if (code.isEmpty()) return@setOnClickListener
-
-            //Get name
-            val name = usersName.text.toString()
-            if (!name.isEmpty()) {
-                //Check if name is saved
-                var isSaved = false
-                for (i in users.indices) {
-                    //Get user
-                    val user = users[i]
-                    if (user.name != name) continue
-
-                    //Update user
-                    user.code = code
-                    usersAdapter.notifyItemChanged(i)
-                    saveUsers()
-                    isSaved = true
-                    break
-                }
-
-                //Add new user
-                if (!isSaved) {
-                    users.add(0, User(name, code))
-                    usersAdapter.notifyItemInserted(0)
-                    saveUsers()
-                }
-            }
+    @Composable
+    private fun ConnectLayout(it: PaddingValues, activity: Activity, connecting: Boolean) {
+        //Layout
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(it)
+                .padding(horizontal = 20.dp)
+                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
+        ) {
+            //Spacer to center content
+            Spacer(modifier = Modifier.weight(1f))
 
             //Connect
-            connect(code)
-        }
+            Group {
+                //Title
+                GroupTitle("Connect")
 
-        //Logs
-        logsExit.setOnClickListener { view: View -> finish() }
+                //Items
+                GroupItems {
+                    //Name input
+                    TextField(
+                        value = view.connectName,
+                        label = { Text("Name (optional)") },
+                        maxLines = 1,
+                        onValueChange = { newValue: String -> view.connectName = newValue },
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            disabledContainerColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    )
+
+                    //Divider
+                    GroupDivider()
+
+                    //Code input
+                    TextField(
+                        value = view.connectCode,
+                        label = { Text("Code") },
+                        maxLines = 1,
+                        onValueChange = { newValue: String -> view.connectCode = newValue },
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            disabledContainerColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    )
+                }
+
+                //Connect button & connecting indicator
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(IntrinsicSize.Min)
+                        .padding(top = 10.dp)
+                ) {
+                    //Connect button
+                    Button(
+                        onClick = {
+                            //Already trying to connect
+                            if (view.connectionStatus != SyncService.STATUS_OFFLINE) return@Button
+
+                            //Check if code is valid
+                            if (view.connectCode.isEmpty()) return@Button
+
+                            //Check if name should get saved
+                            if (!view.connectName.isEmpty()) {
+                                //Check if name is saved
+                                var isSaved = false
+                                for (i in view.users.indices) {
+                                    //Get user
+                                    val user = view.users[i]
+                                    if (user.name != view.connectName) continue
+
+                                    //Update user
+                                    user.code = view.connectCode
+                                    saveUsers()
+                                    isSaved = true
+                                    break
+                                }
+
+                                //Add new user
+                                if (!isSaved) {
+                                    view.users.add(0, User(view.connectName, view.connectCode))
+                                    saveUsers()
+                                }
+                            }
+
+                            //Connect
+                            connect(view.connectCode)
+                        },
+                        modifier = Modifier
+                            .weight(1.0f)
+                    ) {
+                        Text(
+                            text = "Connect",
+                            fontFamily = FONT_COMFORTAA,
+                            fontSize = 14.sp
+                        )
+                    }
+
+                    //Connecting indicator
+                    if (connecting) {
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.secondary,
+                            trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                            strokeWidth = 4.dp,
+                            modifier = Modifier
+                                .padding(start = 10.dp)
+                                .size(40.dp)
+                        )
+                    }
+                }
+            }
+
+            //Users
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            ) {
+                item {
+                    Group {
+                        //Title
+                        GroupTitle("Users")
+
+                        //Items
+                        GroupItems {
+                            if (view.users.isEmpty()) {
+                                //Empty users message
+                                Text(
+                                    text = "There are no saved users",
+                                    modifier = Modifier
+                                        .padding(horizontal = groupItemPaddingHorizontal, vertical = groupItemPaddingVertical)
+                                )
+                            } else {
+                                view.users.forEachIndexed { index, user ->
+                                    //Add item
+                                    UserItem(
+                                        index = index,
+                                        user = user,
+                                        onConnect = { index, user ->
+                                            //Move user first in list
+                                            view.users.removeAt(index)
+                                            view.users.add(0, user)
+                                            saveUsers()
+
+                                            //Connect to user
+                                            connect(user.code)
+                                        },
+                                        onSelect = { index, user ->
+                                            //Select user info
+                                            view.connectName = user.name
+                                            view.connectCode = user.code
+
+                                            //Hide keyboard
+                                            Orion.hideKeyboard(activity)
+                                            Orion.clearFocus(activity)
+                                        },
+                                        onDelete = { index ->
+                                            //Delete user
+                                            view.users.removeAt(index)
+                                            saveUsers()
+                                        }
+                                    )
+
+                                    //Add divider between items
+                                    if (index < view.users.size - 1) GroupDivider()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            //Spacer to center content
+            Spacer(modifier = Modifier.weight(1f))
+        }
     }
 
-    //Users
-    private fun initUsersList() {
-        //Create adapter
-        usersAdapter = UserAdapter(this@SyncActivity, users)
+    @Composable
+    private fun LogsLayout(it: PaddingValues) {
+        //List stuff
+        val listState = rememberLazyListState()
 
-        //Add connect listener
-        usersAdapter.setOnClickListener { view: View, index: Int ->
-            //Get user
-            val user = users[index]
-
-            //Move user first in list
-            users.removeAt(index)
-            usersAdapter.notifyItemRemoved(index)
-            users.add(0, user)
-            usersAdapter.notifyItemInserted(0)
-            saveUsers()
-
-            //Connect to user
-            connect(user.code)
+        LaunchedEffect(Unit) {
+            view.scrollRequest.collect {
+                listState.animateScrollToItem(0)
+            }
         }
 
-        //Add select user listener
-        usersAdapter.setOnLongClickListener { view: View, index: Int ->
-            //Get user
-            val user = users[index]
+        //Layout
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(it)
+                .padding(horizontal = 20.dp)
+                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
+        ) {
+            //Logs
+            LazyColumn(
+                state = listState,
+                reverseLayout = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            ) {
+                itemsIndexed(view.logs) { index, log ->
+                    //Add log
+                    Text(
+                        text = log,
+                        fontFamily = FONT_POPPINS,
+                        fontSize = 14.sp,
+                        modifier = Modifier
+                            .padding(vertical = 5.dp)
+                    )
+                }
+            }
 
-            //Select user info
-            usersName.setText(user.name)
-            usersCode.setText(user.code)
-
-            //Hide keyboard
-            Orion.hideKeyboard(this@SyncActivity)
-            Orion.clearFocus(this@SyncActivity)
+            //Exit button
+            Button(
+                onClick = { finish() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 10.dp)
+            ) {
+                Text(
+                    text = "Exit",
+                    fontFamily = FONT_COMFORTAA,
+                    fontSize = 14.sp
+                )
+            }
         }
-
-        //Add delete user listener
-        usersAdapter.setOnDeleteListener { view: View, index: Int ->
-            //Delete user
-            users.removeAt(index)
-            usersAdapter.notifyItemRemoved(index)
-            saveUsers()
-        }
-
-        //Add adapter to list
-        usersList.setAdapter(usersAdapter)
-        usersList.setLayoutManager(LinearLayoutManager(this@SyncActivity))
     }
 
+    //Connect & Users
     private fun loadUsers() {
         //Var to check if save needed
         var needsSave = false
 
         //Split users
-        val userStrings: MutableList<String> = Storage.getStringList("Sync.users")
+        val userStrings: MutableList<String> = Storage.getStringList(SettingsPairs.SYNC_USERS_KEY)
         for (userString in userStrings) {
             //Check if valid
             val separatorIndex = userString.indexOf("\n")
@@ -211,7 +374,7 @@ class SyncActivity : AppCompatActivity() {
             }
 
             //Add user
-            users.add(
+            view.users.add(
                 User(
                     userString.substring(0, separatorIndex),
                     userString.substring(separatorIndex + 1)
@@ -226,16 +389,16 @@ class SyncActivity : AppCompatActivity() {
     private fun saveUsers() {
         //Create string users
         val userStrings: MutableList<String> = ArrayList()
-        for (user in users) userStrings.add(user.toString())
+        for (user in view.users) userStrings.add(user.toString())
 
         //Save list
-        Storage.putStringList("Sync.users", userStrings)
+        Storage.putStringList(SettingsPairs.SYNC_USERS_KEY, userStrings)
     }
 
     private fun decodeBase36(code: String): Long {
-        val CODE_CHARSET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        val codeCharset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         var result: Long = 0
-        for (i in 0..<code.length) result = result * 36 + CODE_CHARSET.indexOf(code[i])
+        for (i in 0..<code.length) result = result * 36 + codeCharset.indexOf(code[i])
         return result
     }
 
@@ -246,6 +409,7 @@ class SyncActivity : AppCompatActivity() {
         val ipNum = combined shr 16
 
         val ip = String.format(
+            Locale.US,
             "%d.%d.%d.%d",
             (ipNum shr 24) and 0xFFL,
             (ipNum shr 16) and 0xFFL,
@@ -272,29 +436,15 @@ class SyncActivity : AppCompatActivity() {
     }
 
     //Logs
-    private fun initLogsList() {
-        //Create adapter
-        logsAdapter = LogAdapter(this@SyncActivity, logs)
-
-        //Add adapter to list
-        logsList.setAdapter(logsAdapter)
-        logsList.setLayoutManager(LinearLayoutManager(this@SyncActivity, LinearLayoutManager.VERTICAL, true))
-        logsList.setItemAnimator(null)
-    }
-
     private fun log(log: String) {
         //Reached maximum size -> Remove first
-        if (logs.size >= logsMax) {
-            logs.removeAt(logs.size - 1)
-            logsAdapter.notifyItemRemoved(logs.size - 1)
-        }
+        if (view.logs.size >= logsMax) view.logs.removeAt(view.logs.size - 1)
 
         //Add new log
-        logs.add(0, log)
-        logsAdapter.notifyItemInserted(0)
+        view.logs.add(0, log)
 
         //Scroll to bottom
-        logsList.scrollToPosition(0)
+        view.requestScrollToBottom()
     }
 
     //Events
@@ -303,36 +453,25 @@ class SyncActivity : AppCompatActivity() {
         val instance = instance
 
         //Observe
-        instance.trigger.observe(this, Observer { t: Boolean? ->
+        instance.trigger.observe(this, Observer { t: Boolean ->
             var event: SyncEvent?
             while ((instance.eventQueue.poll().also { event = it }) != null) handleEvent(event)
         })
     }
 
     private fun handleEvent(event: SyncEvent?) {
-        if (event == null) return
-        val command = event.command
+        //Get command
+        val command = event?.command ?: return
 
         //Check command
         when (command) {
             "init" -> log("Service started")
             "status" -> {
-                connectionStatus = event.valueInt
-                when (connectionStatus) {
-                    SyncService.STATUS_OFFLINE -> {
-                        log("Disconnected")
-                        usersLayout.visibility = View.VISIBLE
-                        usersLoading.visibility = View.GONE
-                    }
-                    SyncService.STATUS_CONNECTING -> {
-                        log("Connecting...")
-                        usersLoading.visibility = View.VISIBLE
-                    }
-                    SyncService.STATUS_ONLINE -> {
-                        log("Connected")
-                        usersLayout.visibility = View.GONE
-                        usersLoading.visibility = View.GONE
-                    }
+                view.connectionStatus = event.valueInt
+                when (view.connectionStatus) {
+                    SyncService.STATUS_OFFLINE -> log("Disconnected")
+                    SyncService.STATUS_CONNECTING -> log("Connecting...")
+                    SyncService.STATUS_ONLINE -> log("Connected")
                 }
             }
             "snack" -> Orion.snack(this@SyncActivity, event.valueString)

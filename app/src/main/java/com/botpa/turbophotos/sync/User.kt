@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.sync.users
+package com.botpa.turbophotos.sync
 
 class User(@JvmField var name: String, @JvmField var code: String) {
 

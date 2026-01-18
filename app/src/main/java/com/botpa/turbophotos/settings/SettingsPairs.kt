@@ -14,4 +14,7 @@ object SettingsPairs {
     @JvmField public val ALBUM_ITEMS_PER_ROW: StoragePair<Int> = StoragePair("Settings.albumItemsPerRow", 3)
     @JvmField public val ALBUM_SHOW_MISSING_METADATA_ICON: StoragePair<Boolean> = StoragePair("Settings.albumShowMissingMetadataIcon", false)
 
+    //Sync
+    @JvmField public val SYNC_USERS_KEY: String = "Sync.users"
+
 }

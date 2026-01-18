@@ -2,7 +2,6 @@ package com.botpa.turbophotos.settings
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -14,11 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,29 +30,24 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Link
+import com.botpa.turbophotos.gallery.views.groupItemPaddingHorizontal
+import com.botpa.turbophotos.gallery.views.groupItemPaddingVertical
 import com.botpa.turbophotos.theme.FONT_OPIFICIO
 import com.botpa.turbophotos.theme.FONT_POPPINS
 
-//Basic components
+//Settings
 @Composable
-fun SettingsTitle(title: String, modifier: Modifier = Modifier) {
-    Text(
-        text = title,
-        fontFamily = FONT_OPIFICIO,
-        fontWeight = FontWeight.Bold,
-        fontSize = 18.sp,
-        modifier = modifier
-    )
-}
-
-@Composable
-fun SettingsItem(title: String, description: String? = null, content: @Composable RowScope.() -> Unit) {
+fun SettingsItem(
+    title: String,
+    description: String? = null,
+    content: @Composable RowScope.() -> Unit
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
             .defaultMinSize(minHeight = 50.dp)
-            .padding(horizontal = 15.dp, vertical = 10.dp)
+            .padding(horizontal = groupItemPaddingHorizontal, vertical = groupItemPaddingVertical)
     ) {
         //Title & description
         Column(
@@ -87,37 +77,7 @@ fun SettingsItem(title: String, description: String? = null, content: @Composabl
     }
 }
 
-@Composable
-fun SettingsItems(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
-        shape = RoundedCornerShape(15.dp), // This clips everything inside
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(top = 10.dp)
-    ) {
-        Column {
-            content()
-        }
-    }
-}
-
-@Composable
-fun SettingsGroup(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
-    Column(
-        modifier = modifier
-            .padding(top = 20.dp, bottom = 10.dp)
-    ) {
-        content()
-    }
-}
-
-@Composable
-fun SettingsDivider() {
-    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
-}
-
-//Link item
+//Links
 @Composable
 fun LinkItem(
     index: Int,
@@ -132,7 +92,7 @@ fun LinkItem(
         modifier = modifier
             .fillMaxWidth()
             .height(IntrinsicSize.Max)
-            .padding(horizontal = 15.dp, vertical = 10.dp)
+            .padding(horizontal = groupItemPaddingHorizontal, vertical = groupItemPaddingVertical)
     ) {
         //Content
         Column(
@@ -254,7 +214,6 @@ fun LinkItem(
     }
 }
 
-//Preview for the link item with default values
 @Preview
 @Composable
 fun LinkItemPreview() {
