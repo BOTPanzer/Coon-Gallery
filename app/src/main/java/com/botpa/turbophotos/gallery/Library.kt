@@ -19,7 +19,6 @@ import com.botpa.turbophotos.gallery.Link.Companion.loadLinks
 import com.botpa.turbophotos.gallery.Link.Companion.relinkWithAlbum
 import com.botpa.turbophotos.gallery.actions.Action
 import com.botpa.turbophotos.gallery.actions.ActionError
-import com.botpa.turbophotos.gallery.actions.ActionHelper
 import com.botpa.turbophotos.gallery.dialogs.DialogAlbums
 import com.botpa.turbophotos.gallery.dialogs.DialogErrors
 import com.botpa.turbophotos.gallery.dialogs.DialogFolders
@@ -50,24 +49,37 @@ object Library {
     private val onRefresh = ArrayList<RefreshEvent>()
     private val onAction = ArrayList<ActionEvent>()
 
-    //Albums
+    //Library
+    private val recentlyAddedFiles: MutableCollection<File> = HashSet() //Recently added items that should be ignored when refreshing to avoid duplicates
     private var lastUpdate: Long = 0
 
-    val albumsMap: MutableMap<String, Album> = HashMap() //Uses album path as key for easy finding
-    val albums: MutableList<Album> = ArrayList()
-    val trashMap: MutableMap<Album, Int> = HashMap() //A map to store the amount of trashed items in each album
-    val trash: Album = Album("Trash")
-    val all: Album = Album("All")
-
-    //Gallery
-    private val recentlyAddedFiles: MutableCollection<File> = HashSet() //List of items recently added that should be ignored when refreshing to avoid duplicates
-
-    val gallery: MutableList<CoonItem> = ArrayList() //Currently open album items (could be filtered or the same items)
-    var galleryFilter: String = "*/*" //Mime type used to filter the gallery
+    var libraryFilter: String = "*/*" //Mime type used to filter the library
         private set
 
+    //Albums
+    private val _albumsMap: MutableMap<String, Album> = HashMap() //Uses album path as key for easy finding
+    private val _albums: MutableList<Album> = ArrayList()
 
-    //Gallery (events)
+    val all: Album = Album("All")
+
+    val albumsMap: Map<String, Album>
+        get() = _albumsMap
+    val albums: List<Album>
+        get() = _albums
+
+    //Trash
+    private val trashMap: MutableMap<Album, Int> = HashMap() //Stores the amount of trashed items in each album
+
+    val trash: Album = Album("Trash")
+
+    //Gallery
+    private val _gallery: MutableList<CoonItem> = ArrayList() //Currently open album items (could be filtered)
+
+    val gallery: List<CoonItem>
+        get() = _gallery
+
+
+    //Library (events)
     private fun invokeOnRefresh(updated: Boolean) {
         for (listener in onRefresh) listener.invoke(updated)
     }
@@ -84,7 +96,7 @@ object Library {
         onRefresh.remove(listener)
     }
 
-    //Gallery (sort/load/refresh)
+    //Library (sort/load/refresh)
     private fun getMediaCursor(context: Context): Cursor {
         //Get content resolver
         val contentResolver = context.contentResolver
@@ -149,7 +161,7 @@ object Library {
 
     private fun loadLibrary(context: Context, reset: Boolean, filterMimeType: String) {
         //Save filter
-        galleryFilter = filterMimeType
+        libraryFilter = filterMimeType
 
         //Load links & trash
         loadLinks(reset)
@@ -186,9 +198,9 @@ object Library {
                     //Get file
                     val file = File(cursor.getString(columnData))
 
-                    //Check if file is in recently added items
+                    //Check if file is marked as recently added
                     if (recentlyAddedFiles.contains(file)) {
-                        //Is in recently added items -> Remove it & continue
+                        //Is recently added -> Unmark it & continue
                         recentlyAddedFiles.remove(file)
                         continue
                     }
@@ -228,8 +240,8 @@ object Library {
         }
 
         //Remove unused albums & fill albums list
-        albums.clear()
-        val iterator = albumsMap.entries.iterator()
+        _albums.clear()
+        val iterator = _albumsMap.entries.iterator()
         while (iterator.hasNext()) {
             //Get album
             val album = iterator.next().value
@@ -240,7 +252,7 @@ object Library {
                 iterator.remove()
             } else {
                 //Not empty -> Add it to albums list
-                albums.add(album)
+                _albums.add(album)
             }
         }
 
@@ -249,7 +261,7 @@ object Library {
     }
 
     fun loadLibrary(context: Context, reset: Boolean) {
-        loadLibrary(context, reset, galleryFilter)
+        loadLibrary(context, reset, libraryFilter)
     }
 
     fun loadLibrary(context: Context, filterType: String) {
@@ -266,7 +278,7 @@ object Library {
         val album = Album(name, imagesFolder, null)
 
         //Add album to albums map
-        albumsMap[album.imagesPath] = album
+        _albumsMap[album.imagesPath] = album
 
         //Get album link
         val link = Link.linksMap.getOrDefault(folderPath, null)
@@ -307,17 +319,17 @@ object Library {
 
     private fun removeAlbum(index: Int) {
         //Remove album from albums list
-        val album = albums.removeAt(index)
+        val album = _albums.removeAt(index)
 
         //Check if trash contains items from this album
         if (!trashMap.containsKey(album)) {
             //No items from this album in trash -> Remove album completely
-            albumsMap.remove(album.imagesPath)
+            _albumsMap.remove(album.imagesPath)
         }
     }
 
     private fun sortAlbumsList() {
-        albums.sortByDescending { it.get(0).lastModified }
+        _albums.sortByDescending { it.get(0).lastModified }
     }
 
     //Trash
@@ -341,7 +353,7 @@ object Library {
             //Check if original album still has items
             if (originalAlbum.isEmpty()) {
                 //Is empty -> Remove album completely
-                albumsMap.remove(originalAlbum.imagesPath)
+                _albumsMap.remove(originalAlbum.imagesPath)
             }
         } else {
             //Update trash amount
@@ -420,18 +432,18 @@ object Library {
         val isFiltering = !filter.isEmpty()
 
         //Clear items list
-        gallery.clear()
+        _gallery.clear()
 
         //Look for items that contain the filter
         for (item in album.items) {
             //No filter -> Skip check
             if (!isFiltering) {
-                gallery.add(item)
+                _gallery.add(item)
                 continue
             }
 
             //Check if json contains filter
-            if (filterItem(item, filter)) gallery.add(item)
+            if (filterItem(item, filter)) _gallery.add(item)
         }
     }
 
@@ -475,47 +487,68 @@ object Library {
     }
 
     //Actions (base & util)
-    private fun performRemoveFromAll(helper: ActionHelper) {
+    private fun performRemoveFromAll(action: Action, indexInAll: Int) {
         //Not in all items list
-        if (helper.indexInAll == -1) return
+        if (indexInAll == -1) return
 
         //Remove item
-        all.remove(helper.indexInAll)
+        all.remove(indexInAll)
+        action.modifiedAlbums.add(all)
     }
 
-    private fun performRemoveFromGallery(helper: ActionHelper, action: Action) {
+    private fun performRemoveFromGallery(action: Action, indexInGallery: Int) {
         //Not in gallery items list
-        if (helper.indexInGallery == -1) return
+        if (indexInGallery == -1) return
 
         //Mark it as removed (will get removed in evaluateAction())
-        action.removedIndexesInGallery.add(helper.indexInGallery)
+        action.removedIndexesInGallery.add(indexInGallery)
     }
 
-    private fun performRemoveFromAlbum(helper: ActionHelper, action: Action, album: Album) {
+    private fun performRemoveFromAlbum(action: Action, indexInAlbum: Int, indexOfAlbum: Int, album: Album) {
         //Not in album
-        if (helper.indexInAlbum == -1) return
+        if (indexInAlbum == -1) return
 
         //Remove item
-        album.remove(helper.indexInAlbum)
+        album.remove(indexInAlbum)
         action.modifiedAlbums.add(album)
 
         //Check if album needs to be deleted or sorted
         if (album.isEmpty()) {
             //Album is empty -> Mark it as removed (will get removed in evaluateAction())
-            action.removedIndexesInAlbums.add(helper.indexOfAlbum)
-        } else if (helper.indexInAlbum == 0) {
+            action.removedIndexesInAlbums.add(indexOfAlbum)
+        } else if (indexInAlbum == 0) {
             //Album isn't empty & first image was deleted -> Sort albums list in case the order changed
             action.hasSortedAlbumsList = true
         }
     }
 
-    private fun performRemoveFromTrash(helper: ActionHelper, action: Action, originalAlbum: Album) {
+    private fun performRemoveFromTrash(action: Action, indexInTrash: Int, originalAlbum: Album) {
         //Not in album
-        if (helper.indexInTrash == -1) return
+        if (indexInTrash == -1) return
 
         //Remove item
-        removeItemFromTrash(helper.indexInTrash, originalAlbum)
+        removeItemFromTrash(indexInTrash, originalAlbum)
         action.trashAction = if (trash.isEmpty()) Action.TRASH_REMOVED else Action.TRASH_UPDATED
+    }
+
+    private fun performCheckForAlbumChanges(action: Action, indexInAlbum: Int, album: Album) {
+        //Check if item was added as the album cover
+        if (indexInAlbum == 0) {
+            //Added as the album cover -> Sort albums list in case the order changed
+            action.hasSortedAlbumsList = true
+
+            //Check if album is in albums list
+            if (!albums.contains(album)) {
+                //Not in albums list -> Add it
+                _albums.add(album)
+            }
+        }
+    }
+
+    private fun performAddToAlbum(action: Action, item: CoonItem, album: Album): Int {
+        val indexInAlbum = album.addSorted(item)
+        action.modifiedAlbums.add(album)
+        return indexInAlbum
     }
 
     private fun performAction(context: Context, type: Int, items: Array<CoonItem>, onPerformAction: (Action, CoonItem) -> Unit) {
@@ -536,7 +569,7 @@ object Library {
             action.removedIndexesInGallery.sortByDescending { it } //Sort from last to first to allow using a foreach
 
             //Remove items
-            for (indexInGallery in action.removedIndexesInGallery) gallery.removeAt(indexInGallery)
+            for (indexInGallery in action.removedIndexesInGallery) _gallery.removeAt(indexInGallery)
         }
 
         //Check if albums were marked as removed
@@ -701,7 +734,7 @@ object Library {
         performAction(context, Action.TYPE_MOVE, items) { action: Action, item: CoonItem ->
             //Check if item is in trash
             if (item.isTrashed) {
-                //Item is in trash
+                //Item is in trash -> Error
                 action.errors.add(ActionError(item, "Item is in the trash."))
                 return@performAction
             }
@@ -711,7 +744,7 @@ object Library {
 
             //Check if item is being moved to the same album
             if (newAlbum == oldAlbum) {
-                //Already in the destination album
+                //Already in the destination album -> Error
                 action.errors.add(ActionError(item, "Item is already in the destination album."))
                 return@performAction
             }
@@ -719,7 +752,7 @@ object Library {
             //Move item file
             val newFile = File(newAlbum.imagesPath, item.name)
             if (!Orion.moveFile(item.file, newFile)) {
-                //Failed to move file
+                //Failed to move file -> Error
                 action.errors.add(ActionError(item, "Error while moving item file."))
                 return@performAction
             }
@@ -727,31 +760,19 @@ object Library {
             //Get action helper
             val helper = action.getHelper(item)
 
-            //Remove item from gallery items list
-            performRemoveFromGallery(helper, action)
-
-            //Remove item from old album
-            performRemoveFromAlbum(helper, action, oldAlbum)
+            //Remove item from gallery & old album
+            performRemoveFromGallery(action, helper.indexInGallery)
+            performRemoveFromAlbum(action, helper.indexInAlbum, helper.indexOfAlbum, oldAlbum)
 
             //Update item
             item.file = newFile
             item.album = newAlbum
 
             //Add item to new album
-            helper.indexInAlbum = newAlbum.addSorted(item)
-            action.modifiedAlbums.add(newAlbum)
+            helper.indexInAlbum = performAddToAlbum(action, item, newAlbum)
 
-            //Check if item was added as the album cover
-            if (helper.indexInAlbum == 0) {
-                //Added as the album cover -> Sort albums list in case the order changed
-                action.hasSortedAlbumsList = true
-
-                //Check if album is in albums list
-                if (!albums.contains(newAlbum)) {
-                    //Not in albums list -> Add it
-                    albums.add(newAlbum)
-                }
-            }
+            //Check for album changes
+            performCheckForAlbumChanges(action, helper.indexInAlbum, newAlbum)
 
             //Move item metadata from old album to new album
             if (oldAlbum.hasMetadataKey(item.name) && getBool(SettingsPairs.APP_AUTOMATIC_METADATA_MODIFICATION)) {
@@ -775,7 +796,7 @@ object Library {
         performAction(context, Action.TYPE_COPY, items) { action: Action, item: CoonItem ->
             //Check if item is in trash
             if (item.isTrashed) {
-                //Item is in trash
+                //Item is in trash -> Error
                 action.errors.add(ActionError(item, "Item is in the trash."))
                 return@performAction
             }
@@ -785,7 +806,7 @@ object Library {
 
             //Check if item is being moved to the same album
             if (newAlbum == oldAlbum) {
-                //Already in the destination album
+                //Already in the destination album -> Error
                 action.errors.add(ActionError(item, "Item is already in the destination album."))
                 return@performAction
             }
@@ -793,37 +814,20 @@ object Library {
             //Copy item file
             val newFile = File(newAlbum.imagesPath, item.name)
             if (!Orion.cloneFile(context, item.file, newFile)) {
-                //Failed to copy file
+                //Failed to copy file -> Error
                 action.errors.add(ActionError(item, "Error while copying item file."))
                 return@performAction
             }
-            recentlyAddedFiles.add(newFile) //Add file to recently added to prevent duplicates
+            recentlyAddedFiles.add(newFile) //Mark file as recently added to prevent duplicates on refresh
 
             //Create new item
-            val newItem = CoonItem(
-                newFile,
-                newAlbum,
-                item.lastModified,
-                item.mimeType,
-                item.size,
-                item.isTrashed
-            )
+            val newItem = CoonItem(newFile, newAlbum, item.lastModified, item.mimeType, item.size, item.isTrashed)
 
             //Add item to new album
-            val indexInAlbum = newAlbum.addSorted(newItem)
-            action.modifiedAlbums.add(newAlbum)
+            val indexInAlbum = performAddToAlbum(action, newItem, newAlbum)
 
-            //Check if item was added as the album cover
-            if (indexInAlbum == 0) {
-                //Added as the album cover -> Sort albums list in case the order changed
-                action.hasSortedAlbumsList = true
-
-                //Check if album is in albums list
-                if (!albums.contains(newAlbum)) {
-                    //Not in albums list -> Add it
-                    albums.add(newAlbum)
-                }
-            }
+            //Check for album changes
+            performCheckForAlbumChanges(action, indexInAlbum, newAlbum)
 
             //Copy item metadata from old album to new album
             if (oldAlbum.hasMetadataKey(item.name) && getBool(SettingsPairs.APP_AUTOMATIC_METADATA_MODIFICATION)) {
@@ -911,9 +915,14 @@ object Library {
 
             //Get new item file
             val newFilePath = Orion.getFilePathFromMediaUri(context, uri)
-            val newFile = File(newFilePath ?: "")
+            if (newFilePath == null) {
+                //New file path is invalid -> Error
+                action.errors.add(ActionError(item, "Could not resolve file path."))
+                continue
+            }
+            val newFile = File(newFilePath)
             if (!newFile.exists()) {
-                //New file does not exist -> Something failed
+                //New file does not exist -> Error
                 action.errors.add(ActionError(item, "New file does not exist."))
                 continue
             }
@@ -934,14 +943,10 @@ object Library {
                 action.trashAction = if (trash.size() == 1) Action.TRASH_ADDED else Action.TRASH_UPDATED
             }
 
-            //Remove item from all
-            performRemoveFromAll(helper)
-
-            //Remove item from gallery items list
-            performRemoveFromGallery(helper, action)
-
-            //Remove item from album
-            performRemoveFromAlbum(helper, action, originalAlbum) //Remove from album after adding to trash cause, if both trash & album are empty, the album gets removed from albumsMap
+            //Remove item from all, gallery & album
+            performRemoveFromAll(action, helper.indexInAll)
+            performRemoveFromGallery(action, helper.indexInGallery)
+            performRemoveFromAlbum(action, helper.indexInAlbum, helper.indexOfAlbum, originalAlbum) //Remove from album after adding to trash cause, if both trash & album are empty, the album gets removed from albumsMap
         }
 
         //Evaluate action
@@ -980,9 +985,14 @@ object Library {
 
             //Get new item file
             val newFilePath = Orion.getFilePathFromMediaUri(context, uri)
-            val newFile = File(newFilePath ?: "")
+            if (newFilePath == null) {
+                //New file path is invalid -> Error
+                action.errors.add(ActionError(item, "Could not resolve file path."))
+                continue
+            }
+            val newFile = File(newFilePath)
             if (!newFile.exists()) {
-                //New file does not exist -> Something failed
+                //New file does not exist -> Error
                 action.errors.add(ActionError(item, "New file does not exist."))
                 continue
             }
@@ -997,28 +1007,15 @@ object Library {
             item.isTrashed = false
 
             //Add to all & original album
-            helper.indexInAll = all.addSorted(item)
-            action.modifiedAlbums.add(all)
-            helper.indexInAlbum = originalAlbum.addSorted(item)
-            action.modifiedAlbums.add(originalAlbum)
+            helper.indexInAll = performAddToAlbum(action, item, all)
+            helper.indexInAlbum = performAddToAlbum(action, item, originalAlbum)
 
-            //Check if item was added as the album cover
-            if (helper.indexInAlbum == 0) {
-                //Added as the album cover -> Sort albums list in case the order changed
-                action.hasSortedAlbumsList = true
+            //Check for album changes
+            performCheckForAlbumChanges(action, helper.indexInAlbum, originalAlbum)
 
-                //Check if album is in albums list
-                if (!albums.contains(originalAlbum)) {
-                    //Not in albums list -> Add it
-                    albums.add(originalAlbum)
-                }
-            }
-
-            //Remove item from gallery items list
-            performRemoveFromGallery(helper, action)
-
-            //Remove item from trash
-            performRemoveFromTrash(helper, action, originalAlbum) //Remove from trash after adding to album cause, if both trash & album are empty, the album gets removed from albumsMap
+            //Remove item from gallery & trash
+            performRemoveFromGallery(action, helper.indexInGallery)
+            performRemoveFromTrash(action, helper.indexInTrash, originalAlbum) //Remove from trash after adding to album cause, if both trash & album are empty, the album gets removed from albumsMap
         }
 
         //Evaluate action
@@ -1029,7 +1026,7 @@ object Library {
         performAction(context, Action.TYPE_DELETE, items) { action: Action, item: CoonItem ->
             //Delete item file
             if (!Orion.deleteFile(item.file)) {
-                //Failed to delete file
+                //Failed to delete file -> Error
                 action.errors.add(ActionError(item, "Error while deleting item file."))
                 return@performAction
             }
@@ -1037,26 +1034,18 @@ object Library {
             //Get action helper
             val helper = action.getHelper(item)
 
-            //Remove item from all
-            performRemoveFromAll(helper)
+            //Remove item from all & gallery
+            performRemoveFromAll(action, helper.indexInAll)
+            performRemoveFromGallery(action, helper.indexInGallery)
 
-            //Remove item from gallery items list
-            performRemoveFromGallery(helper, action)
-
-            //Check if item is in the trash to remove it & get its album
+            //Get item album & remove item from it
             val album: Album
             if (item.isTrashed) {
-                //Get original album (before being trashed)
-                album = getOrCreateAlbumFromItemFile(item.file)
-
-                //Remove item from trash
-                performRemoveFromTrash(helper, action, album)
+                album = getOrCreateAlbumFromItemFile(item.file) //Get original album (before getting trashed)
+                performRemoveFromTrash(action, helper.indexInTrash, album)
             } else {
-                //Get item album
                 album = item.album
-
-                //Remove item from album
-                performRemoveFromAlbum(helper, action, album)
+                performRemoveFromAlbum(action, helper.indexInAlbum, helper.indexOfAlbum, album)
             }
 
             //Delete item metadata from album

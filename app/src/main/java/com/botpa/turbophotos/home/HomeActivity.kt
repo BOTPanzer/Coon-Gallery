@@ -647,8 +647,8 @@ class HomeActivity : GalleryActivity() {
 
     //Navbar
     private fun updateNavbarSubtitle() {
-        //Check if a filter is applied
-        val filter = Library.galleryFilter
+        //Check if a filter is applied & toggle subtitle
+        val filter = Library.libraryFilter
         val isFiltered = filter != "*/*"
         navbarSubtitle.visibility = if (isFiltered) View.VISIBLE else View.GONE
         if (!isFiltered) return
