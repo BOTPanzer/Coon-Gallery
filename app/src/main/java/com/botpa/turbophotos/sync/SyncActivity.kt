@@ -1,21 +1,20 @@
 package com.botpa.turbophotos.sync
 
-import android.R
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,7 +22,6 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -36,14 +34,13 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Observer
+
 import com.botpa.turbophotos.gallery.views.Group
 import com.botpa.turbophotos.gallery.views.GroupDivider
 import com.botpa.turbophotos.gallery.views.GroupItems
@@ -53,12 +50,12 @@ import com.botpa.turbophotos.gallery.views.groupItemPaddingHorizontal
 import com.botpa.turbophotos.gallery.views.groupItemPaddingVertical
 import com.botpa.turbophotos.settings.SettingsPairs
 import com.botpa.turbophotos.sync.SyncEventBus.Companion.instance
-import com.botpa.turbophotos.sync.User
 import com.botpa.turbophotos.theme.CoonTheme
 import com.botpa.turbophotos.theme.FONT_COMFORTAA
 import com.botpa.turbophotos.theme.FONT_POPPINS
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
+
 import java.util.Locale
 
 class SyncActivity : ComponentActivity() {
@@ -123,9 +120,6 @@ class SyncActivity : ComponentActivity() {
                 .padding(horizontal = 20.dp)
                 .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
         ) {
-            //Spacer to center content
-            Spacer(modifier = Modifier.weight(1f))
-
             //Connect
             Group {
                 //Title
@@ -297,9 +291,6 @@ class SyncActivity : ComponentActivity() {
                     }
                 }
             }
-
-            //Spacer to center content
-            Spacer(modifier = Modifier.weight(1f))
         }
     }
 
