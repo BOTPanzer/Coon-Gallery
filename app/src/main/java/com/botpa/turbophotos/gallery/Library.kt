@@ -321,10 +321,11 @@ object Library {
     }
 
     //Trash
-    private fun addItemToTrash(item: CoonItem, originalAlbum: Album) {
+    private fun addItemToTrash(item: CoonItem, originalAlbum: Album): Int {
         //Add to trash
-        trash.addSorted(item)
+        val index = trash.addSorted(item)
         trashMap[originalAlbum] = trashMap.getOrDefault(originalAlbum, 0) + 1
+        return index
     }
 
     private fun removeItemFromTrash(itemIndex: Int, originalAlbum: Album) {
@@ -510,10 +511,10 @@ object Library {
 
     private fun performRemoveFromTrash(helper: ActionHelper, action: Action, originalAlbum: Album) {
         //Not in album
-        if (helper.indexInAlbum == -1) return
+        if (helper.indexInTrash == -1) return
 
         //Remove item
-        removeItemFromTrash(helper.indexInAlbum, originalAlbum)
+        removeItemFromTrash(helper.indexInTrash, originalAlbum)
         action.trashAction = if (trash.isEmpty()) Action.TRASH_REMOVED else Action.TRASH_UPDATED
     }
 
@@ -837,27 +838,28 @@ object Library {
         showSelectAlbumDialog(context, { newAlbum: Album -> copyItemsInternal(context, items, newAlbum) })
     }
 
-    private fun prepareItemURIs(context: Context?, items: Array<CoonItem>, action: Action): MutableMap<Uri, CoonItem> {
+    private fun prepareItemURIs(context: Context, action: Action): MutableMap<Uri, CoonItem> {
+        //Pending items map
         val pendingItems: MutableMap<Uri, CoonItem> = HashMap()
-        for (item in items) {
+
+        //Get item URIs
+        for (item in action.items) {
             //Check if item is already trashed
             when (action.type) {
                 Action.TYPE_TRASH -> {
-                    //Not trashed
-                    if (!item.isTrashed) break
-
-                    //Trashed
-                    action.errors.add(ActionError(item, "Item is already in the trash."))
-                    continue
+                    //Item is trashed
+                    if (item.isTrashed) {
+                        action.errors.add(ActionError(item, "Item is already in the trash."))
+                        continue
+                    }
                 }
 
                 Action.TYPE_RESTORE -> {
-                    //Trashed
-                    if (item.isTrashed) break
-
-                    //Not trashed
-                    action.errors.add(ActionError(item, "Item is not in the trash."))
-                    continue
+                    //Item is not trashed
+                    if (!item.isTrashed) {
+                        action.errors.add(ActionError(item, "Item is not in the trash."))
+                        continue
+                    }
                 }
             }
 
@@ -882,7 +884,7 @@ object Library {
         val action = Action(Action.TYPE_TRASH, items)
 
         //Get item URIs
-        action.trashPending = prepareItemURIs(activity, items, action)
+        action.trashPending = prepareItemURIs(activity, action)
 
         //Check if there are any pending items
         if (action.trashPending.isEmpty()) {
@@ -925,8 +927,8 @@ object Library {
             item.album = trash
             item.isTrashed = true
 
-            //Add item to trash album
-            addItemToTrash(item, originalAlbum)
+            //Add item to trash
+            helper.indexInTrash = addItemToTrash(item, originalAlbum)
             if (action.trashAction == Action.TRASH_NONE) {
                 //First change to trash this action -> Check if trash was added to list or just updated
                 action.trashAction = if (trash.size() == 1) Action.TRASH_ADDED else Action.TRASH_UPDATED
@@ -951,7 +953,7 @@ object Library {
         val action = Action(Action.TYPE_RESTORE, items)
 
         //Get item URIs
-        action.trashPending = prepareItemURIs(activity, items, action)
+        action.trashPending = prepareItemURIs(activity, action)
 
         //Check if there are any pending items
         if (action.trashPending.isEmpty()) {
