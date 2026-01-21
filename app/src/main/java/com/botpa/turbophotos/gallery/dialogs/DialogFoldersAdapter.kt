@@ -34,7 +34,7 @@ class DialogFoldersAdapter(
         if (index < 0) {
             //Back button
             icon.setImageResource(R.drawable.back)
-            name.text = "Back"
+            name.text = "Previous folder"
             select.visibility = View.GONE
         } else {
             //Folder

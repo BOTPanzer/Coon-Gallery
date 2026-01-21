@@ -23,7 +23,6 @@ import com.botpa.turbophotos.gallery.dialogs.DialogAlbums
 import com.botpa.turbophotos.gallery.dialogs.DialogErrors
 import com.botpa.turbophotos.gallery.dialogs.DialogFolders
 import com.botpa.turbophotos.gallery.dialogs.DialogInput
-import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage.getBool
 
@@ -476,14 +475,8 @@ object Library {
     }
 
     fun showSelectFolderDialog(context: Context, onSelect: (File) -> Unit) {
-        //Create folders list
-        val externalStorage = Environment.getExternalStorageDirectory()
-        val imagesFolder = File(externalStorage, "Pictures")
-        val folders = Orion.listFiles(imagesFolder)
-        folders.sortBy { it.name.lowercase() }
-
         //Create dialog
-        DialogFolders(context, externalStorage, imagesFolder, folders, onSelect).buildAndShow()
+        DialogFolders(context, null, onSelect).buildAndShow()
     }
 
     //Actions (base & util)

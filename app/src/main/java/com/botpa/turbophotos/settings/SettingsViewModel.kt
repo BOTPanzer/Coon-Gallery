@@ -11,15 +11,12 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.botpa.turbophotos.gallery.Link
 import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.home.HomeActivity
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
 import com.fasterxml.jackson.databind.node.ObjectNode
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.io.File
 
 class SettingsViewModel : ViewModel() {
@@ -35,10 +32,10 @@ class SettingsViewModel : ViewModel() {
     var albumShowMissingMetadataIcon by  mutableStateOf(Storage.getBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON))
 
     //Links
-    enum class LinkPickerAction { SelectFolder, SelectFile, CreateFile }
+    enum class LinkPickerAction { SelectFile, CreateFile }
 
     var linkFilePickerIndex by  mutableIntStateOf(-1)
-    var linkFilePickerAction by mutableStateOf(LinkPickerAction.SelectFolder)
+    var linkFilePickerAction by mutableStateOf(LinkPickerAction.SelectFile)
 
 
     //App settings
@@ -182,55 +179,44 @@ class SettingsViewModel : ViewModel() {
     }
 
     //Links
-    fun handleLinkFileResult(uri: Uri, context: Context, activity: Activity) {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                //Parse file path from URI
-                val path = Orion.getFilePathFromDocumentProviderUri(context, uri) ?: throw Exception("Path was null")
-                val file = File(path)
+    fun handleLinkFileResult(uri: Uri, context: Context) {
+        try {
+            //Parse file path from URI
+            val path = Orion.getFilePathFromDocumentProviderUri(context, uri) ?: throw Exception("Path was null")
+            val file = File(path)
 
-                //Update the link based on the action
-                val link = Link.links[linkFilePickerIndex]
-                when (linkFilePickerAction) {
-                    //Select folder
-                    LinkPickerAction.SelectFolder -> {
-                        val updated = Link.updateLinkFolder(linkFilePickerIndex, file)
-                        if (!updated) {
-                            Orion.snack(activity, "Album already exists")
-                            return@launch
-                        }
-                    }
-
-                    //Select file
-                    LinkPickerAction.SelectFile -> {
-                        //Update link with selected file
-                        Link.updateLinkFile(linkFilePickerIndex, file)
-                    }
-
-                    //Create file
-                    LinkPickerAction.CreateFile -> {
-                        //Create file based in album name
-                        var metadataFile: File
-                        var name: String
-                        var i = 0
-                        do {
-                            name = "${link.albumFolder.name.lowercase().replace(" ", "-")}${if (i > 0) " ($i)" else ""}.json"
-                            metadataFile = File("${file.absolutePath}/${name}")
-                            i++
-                        } while (metadataFile.exists())
-                        Orion.writeFile(metadataFile, "{}")
-
-                        //Update link with created file
-                        Link.updateLinkFile(linkFilePickerIndex, metadataFile)
-                    }
+            //Update the link based on the action
+            val link = Link.links[linkFilePickerIndex]
+            when (linkFilePickerAction) {
+                //Select file
+                LinkPickerAction.SelectFile -> {
+                    //Update link with selected file
+                    Link.updateLinkFile(linkFilePickerIndex, file)
                 }
 
-                //Save links
-                Link.saveLinks()
-            } catch (e: Exception) {
-                //Feedback toast
-                Toast.makeText(context, e.toString(), Toast.LENGTH_LONG).show()
+                //Create file
+                LinkPickerAction.CreateFile -> {
+                    //Create file based in album name
+                    var metadataFile: File
+                    var name: String
+                    var i = 0
+                    do {
+                        name = "${link.albumFolder.name.lowercase().replace(" ", "-")}${if (i > 0) " ($i)" else ""}.json"
+                        metadataFile = File("${file.absolutePath}/${name}")
+                        i++
+                    } while (metadataFile.exists())
+                    Orion.writeFile(metadataFile, "{}")
+
+                    //Update link with created file
+                    Link.updateLinkFile(linkFilePickerIndex, metadataFile)
+                }
             }
+
+            //Save links
+            Link.saveLinks()
+        } catch (e: Exception) {
+            //Error parsing file
+            Toast.makeText(context, "Error parsing file: ${e.toString()}.", Toast.LENGTH_LONG).show()
         }
     }
 

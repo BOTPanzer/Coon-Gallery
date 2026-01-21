@@ -1,6 +1,7 @@
 package com.botpa.turbophotos.gallery.dialogs
 
 import android.content.Context
+import android.os.Environment
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
@@ -15,9 +16,7 @@ import java.io.File
 
 class DialogFolders(
     context: Context,
-    private val externalStorage: File,
-    private val currentFolder: File,
-    private val folders: MutableList<File>,
+    private val startingFolder: File? = null,
     private val onSelect: (File) -> Unit
 ) : CustomDialog(context, R.layout.dialog_folders) {
 
@@ -31,6 +30,11 @@ class DialogFolders(
     //Adapter
     private lateinit var adapter: DialogFoldersAdapter
 
+    //Folders
+    private lateinit var currentFolder: File
+    private val externalStorage: File = Environment.getExternalStorageDirectory()
+    private val folders: MutableList<File> = ArrayList()
+
     //Text
     companion object {
         private const val TEXT_CREATE: String = "Create folder"
@@ -40,8 +44,15 @@ class DialogFolders(
 
     //Init
     override fun onInitStart() {
+        //Init current folder
+        currentFolder = startingFolder ?: File(externalStorage, "Pictures")
+
         //Init adapter
         adapter = DialogFoldersAdapter(context, externalStorage, currentFolder, folders)
+
+        //Init folders list
+        folders.addAll(Orion.listFiles(currentFolder))
+        folders.sortBy { it.name.lowercase() }
     }
 
     override fun initViews() {
@@ -59,7 +70,7 @@ class DialogFolders(
     override fun initDialog(builder: MaterialAlertDialogBuilder): MaterialAlertDialogBuilder {
         //Init dialog
         return builder
-            .setTitle("Select a folder")
+            .setTitle(adapter.currentFolderName)
             .setNeutralButton(TEXT_CREATE, null)
             .setNegativeButton("Cancel", null)
     }
@@ -103,7 +114,7 @@ class DialogFolders(
             dialog.setTitle(adapter.currentFolderName)
             folders.clear()
             folders.addAll(Orion.listFiles(folder))
-            folders.sortWith(Comparator { a: File, b: File -> a.name.compareTo(b.name, ignoreCase = true) })
+            folders.sortBy { it.name.lowercase() }
             adapter.notifyDataSetChanged()
             list.setSelectionAfterHeaderView() //Scroll to top
         }

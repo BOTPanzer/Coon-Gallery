@@ -3,11 +3,10 @@ package com.botpa.turbophotos.sync
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
@@ -38,7 +37,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Observer
-
+import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.gallery.views.Group
 import com.botpa.turbophotos.gallery.views.GroupDivider
 import com.botpa.turbophotos.gallery.views.GroupItems
@@ -46,17 +45,15 @@ import com.botpa.turbophotos.gallery.views.GroupTitle
 import com.botpa.turbophotos.gallery.views.Layout
 import com.botpa.turbophotos.gallery.views.groupItemPaddingHorizontal
 import com.botpa.turbophotos.gallery.views.groupItemPaddingVertical
-import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.sync.SyncEventBus.Companion.instance
 import com.botpa.turbophotos.theme.CoonTheme
 import com.botpa.turbophotos.theme.FONT_COMFORTAA
 import com.botpa.turbophotos.theme.FONT_POPPINS
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
-
 import java.util.Locale
 
-class SyncActivity : ComponentActivity() {
+class SyncActivity : AppCompatActivity() {
 
     //View model
     private val view: SyncViewModel by viewModels()

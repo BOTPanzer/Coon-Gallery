@@ -3,12 +3,12 @@ package com.botpa.turbophotos.settings
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.sp
 import com.botpa.turbophotos.BuildConfig
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Link
+import com.botpa.turbophotos.gallery.dialogs.DialogFolders
 import com.botpa.turbophotos.gallery.views.Group
 import com.botpa.turbophotos.gallery.views.GroupDivider
 import com.botpa.turbophotos.gallery.views.GroupItems
@@ -46,10 +47,9 @@ import com.botpa.turbophotos.theme.FONT_COMFORTAA
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.snackbar.Snackbar
 
 @OptIn(ExperimentalMaterial3Api::class)
-class SettingsActivity : ComponentActivity() {
+class SettingsActivity : AppCompatActivity() {
 
     //View model
     private val view: SettingsViewModel by viewModels()
@@ -112,22 +112,20 @@ class SettingsActivity : ComponentActivity() {
             if (result.resultCode != RESULT_OK || result.data == null || result.data!!.data == null) return@rememberLauncherForActivityResult
 
             //Handle result
-            view.handleLinkFileResult(result.data!!.data!!, context, activity)
+            view.handleLinkFileResult(result.data!!.data!!, context)
         }
 
         //Links actions
         val onChooseLinkFolder = remember<(Int) -> Unit> {
             { index ->
-                //Save link index
-                view.linkFilePickerIndex = index
+                //Show select folder dialog
+                DialogFolders(activity) { file ->
+                    val updated = Link.updateLinkFolder(index, file)
+                    if (!updated) Orion.snack(activity, "Album already exists")
+                }.buildAndShow()
 
                 //Feedback toast
                 Toast.makeText(activity, "Select a folder to use as album.", Toast.LENGTH_LONG).show()
-
-                //Ask for a folder
-                view.linkFilePickerAction = SettingsViewModel.LinkPickerAction.SelectFolder
-                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-                linksFilePickerLauncher.launch(intent)
             }
         }
         val onChooseLinkFile = remember<(Int, Link) -> Unit> {
@@ -139,32 +137,31 @@ class SettingsActivity : ComponentActivity() {
                     //Save link index
                     view.linkFilePickerIndex = index
 
-                    //Check action
-                    Orion.snackTwo(
-                        activity,
-                        "Choose a metadata file action",
-                        "Create",
-                        {
-                            if (!Link.links[index].albumFolder.exists()) {
-                                Toast.makeText(activity, "Add an album folder first.", Toast.LENGTH_SHORT).show()
-                            } else {
-                                Toast.makeText(activity,"Select a folder to create the album metadata file.", Toast.LENGTH_LONG).show()
-                                view.linkFilePickerAction = SettingsViewModel.LinkPickerAction.CreateFile
-                                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-                                linksFilePickerLauncher.launch(intent)
-                            }
-                        },
-                        "Select",
-                        {
-                            Toast.makeText(activity, "Select a file to use as metadata.", Toast.LENGTH_LONG).show()
-                            view.linkFilePickerAction = SettingsViewModel.LinkPickerAction.SelectFile
-                            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-                            intent.addCategory(Intent.CATEGORY_OPENABLE)
-                            intent.type = "application/json"
-                            linksFilePickerLauncher.launch(intent)
-                        },
-                        Snackbar.LENGTH_LONG
-                    )
+                    //Create dialog
+                    val builder = MaterialAlertDialogBuilder(context)
+                    builder.setTitle("Metadata file")
+                    builder.setMessage("Would you like to create a new file or select an already existing one?")
+                    builder.setNegativeButton("Create") { _, _ ->
+                        //Ask for a folder
+                        view.linkFilePickerAction = SettingsViewModel.LinkPickerAction.CreateFile
+                        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+                        linksFilePickerLauncher.launch(intent)
+
+                        //Feedback toast
+                        Toast.makeText(activity,"Select a folder to create the file inside.", Toast.LENGTH_LONG).show()
+                    }
+                    builder.setPositiveButton("Select") { _, _ ->
+                        //Ask for a file
+                        view.linkFilePickerAction = SettingsViewModel.LinkPickerAction.SelectFile
+                        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+                        intent.addCategory(Intent.CATEGORY_OPENABLE)
+                        intent.type = "application/json"
+                        linksFilePickerLauncher.launch(intent)
+
+                        //Feedback toast
+                        Toast.makeText(activity, "Select a file to use as metadata.", Toast.LENGTH_LONG).show()
+                    }
+                    builder.show()
                 }
             }
         }
@@ -332,7 +329,7 @@ class SettingsActivity : ComponentActivity() {
                                     val builder = MaterialAlertDialogBuilder(context)
                                     builder.setTitle("Links")
                                     builder.setMessage(text.toString())
-                                    builder.setPositiveButton("Close") { _, _ -> }
+                                    builder.setPositiveButton("Close", null)
                                     builder.show()
                                 },
                                 painter = painterResource(R.drawable.info),
