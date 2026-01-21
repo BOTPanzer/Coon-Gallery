@@ -489,7 +489,7 @@ class HomeActivity : GalleryActivity() {
         //Options
         optionsLayout.setOnClickListener { view: View -> toggleOptions(false) }
 
-        optionSync = OptionsItem(R.drawable.backup, "Sync") {
+        optionSync = OptionsItem(R.drawable.sync, "Sync") {
             //Not loaded
             if (!isLibraryLoaded) return@OptionsItem
 

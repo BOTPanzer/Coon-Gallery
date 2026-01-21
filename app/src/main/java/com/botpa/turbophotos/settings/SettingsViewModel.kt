@@ -39,6 +39,14 @@ class SettingsViewModel : ViewModel() {
 
 
     //App settings
+    fun backupSettings(activity: Activity) {
+        Orion.snack(activity, "Backup (not implemented)")
+    }
+
+    fun restoreSettings(activity: Activity) {
+        Orion.snack(activity, "Restore (not implemented)")
+    }
+
     fun updateAppModifyMetadata(isChecked: Boolean) {
         appModifyMetadata = isChecked
         Storage.putBool(SettingsPairs.APP_AUTOMATIC_METADATA_MODIFICATION.key, isChecked)

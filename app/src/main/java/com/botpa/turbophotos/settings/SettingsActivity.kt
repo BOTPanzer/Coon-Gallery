@@ -9,8 +9,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import androidx.activity.viewModels
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -18,12 +16,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -31,19 +27,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.botpa.turbophotos.BuildConfig
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Link
 import com.botpa.turbophotos.gallery.views.Group
 import com.botpa.turbophotos.gallery.views.GroupDivider
 import com.botpa.turbophotos.gallery.views.GroupItems
 import com.botpa.turbophotos.gallery.views.GroupTitle
+import com.botpa.turbophotos.gallery.views.IconButton
 import com.botpa.turbophotos.gallery.views.Layout
 import com.botpa.turbophotos.theme.CoonTheme
 import com.botpa.turbophotos.theme.FONT_COMFORTAA
@@ -171,6 +167,31 @@ class SettingsActivity : ComponentActivity() {
 
                         //Items
                         GroupItems {
+                            //Backup
+                            SettingsItem(
+                                title = "Backup",
+                                description = "Create or load a backup of your settings."
+                            ) {
+                                //Backup
+                                IconButton(
+                                    onClick = { view.backupSettings(activity) },
+                                    painter = painterResource(R.drawable.backup_create),
+                                    contentDescription = "Backup"
+                                )
+
+                                //Restore
+                                IconButton(
+                                    onClick = { view.restoreSettings(activity) },
+                                    painter = painterResource(R.drawable.backup_restore),
+                                    contentDescription = "Restore",
+                                    modifier = Modifier
+                                        .padding(start = 10.dp)
+                                )
+                            }
+
+                            //Divider
+                            GroupDivider()
+
                             //Automatic metadata modification
                             SettingsItem(
                                 title = "Metadata modification",
@@ -274,7 +295,7 @@ class SettingsActivity : ComponentActivity() {
                             )
 
                             //Description
-                            Button(
+                            IconButton(
                                 onClick = {
                                     //Create text
                                     val text = StringBuilder()
@@ -289,19 +310,9 @@ class SettingsActivity : ComponentActivity() {
                                     builder.setPositiveButton("Close") { _, _ -> }
                                     builder.show()
                                 },
-                                contentPadding = PaddingValues(0.dp),
-                                modifier = Modifier
-                                    .size(40.dp)
-                            ) {
-                                Image(
-                                    painter = painterResource(R.drawable.info),
-                                    contentDescription = "Links info",
-                                    contentScale = ContentScale.Fit,
-                                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimary),
-                                    modifier = Modifier
-                                        .size(24.dp)
-                                )
-                            }
+                                painter = painterResource(R.drawable.info),
+                                contentDescription = "Links info"
+                            )
                         }
 
                         //Items
@@ -346,36 +357,35 @@ class SettingsActivity : ComponentActivity() {
                     }
                 }
 
-                //Credits
+                //About
                 item {
                     Group {
                         //Title
-                        GroupTitle("Credits")
+                        GroupTitle("About")
 
                         //Items
                         GroupItems {
-                            //Portfolio
+                            //Version
                             SettingsItem(
-                                title = "Portfolio",
-                                description = "Check out the things I make!"
+                                title = "Version",
+                                description = "Coon Gallery v${BuildConfig.VERSION_NAME}"
+                            ) {}
+
+                            //Divider
+                            GroupDivider()
+
+                            //Developer
+                            SettingsItem(
+                                title = "Developer",
+                                description = "Click to see the things I make!"
                             ) {
-                                Button(
+                                IconButton(
                                     onClick = {
                                         uriHandler.openUri("https://botpa.vercel.app/")
                                     },
-                                    contentPadding = PaddingValues(0.dp),
-                                    modifier = Modifier
-                                        .size(40.dp)
-                                ) {
-                                    Image(
-                                        painter = painterResource(R.drawable.app_icon),
-                                        contentDescription = "Portfolio",
-                                        contentScale = ContentScale.Fit,
-                                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimary),
-                                        modifier = Modifier
-                                            .size(24.dp)
-                                    )
-                                }
+                                    painter = painterResource(R.drawable.open),
+                                    contentDescription = "Portfolio"
+                                )
                             }
 
                             //Divider
@@ -384,25 +394,15 @@ class SettingsActivity : ComponentActivity() {
                             //Github
                             SettingsItem(
                                 title = "Github",
-                                description = "Check it out for updates."
+                                description = "Click to check for updates!"
                             ) {
-                                Button(
+                                IconButton(
                                     onClick = {
                                         uriHandler.openUri("https://github.com/BOTPanzer/Coon-Gallery")
                                     },
-                                    contentPadding = PaddingValues(0.dp),
-                                    modifier = Modifier
-                                        .size(40.dp)
-                                ) {
-                                    Image(
-                                        painter = painterResource(R.drawable.github),
-                                        contentDescription = "Github",
-                                        contentScale = ContentScale.Fit,
-                                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimary),
-                                        modifier = Modifier
-                                            .size(24.dp)
-                                    )
-                                }
+                                    painter = painterResource(R.drawable.open),
+                                    contentDescription = "Github"
+                                )
                             }
                         }
                     }

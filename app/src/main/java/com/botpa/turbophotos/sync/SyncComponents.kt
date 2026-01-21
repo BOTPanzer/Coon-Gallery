@@ -1,33 +1,25 @@
 package com.botpa.turbophotos.sync
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.botpa.turbophotos.R
+import com.botpa.turbophotos.gallery.views.IconButton
 import com.botpa.turbophotos.gallery.views.groupItemPaddingHorizontal
 import com.botpa.turbophotos.gallery.views.groupItemPaddingVertical
-import com.botpa.turbophotos.sync.User
 import com.botpa.turbophotos.theme.FONT_OPIFICIO
 
 //Users
@@ -80,22 +72,12 @@ fun UserItem(
         }
 
         //Delete button
-        Button(
+        IconButton(
             onClick = { onDelete(index) },
-            contentPadding = PaddingValues(0.dp),
+            painter = painterResource(R.drawable.clear),
+            contentDescription = "Delete user",
             modifier = Modifier
-                .width(40.dp)
                 .fillMaxHeight()
-        ) {
-            Image(
-                painter = painterResource(R.drawable.clear),
-                contentDescription = "Delete user",
-                contentScale = ContentScale.Fit,
-                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimary),
-                modifier = Modifier
-                    .size(24.dp)
-                    .fillMaxHeight()
-            )
-        }
+        )
     }
 }

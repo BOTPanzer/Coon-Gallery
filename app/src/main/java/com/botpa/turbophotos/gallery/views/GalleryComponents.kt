@@ -1,5 +1,7 @@
 package com.botpa.turbophotos.gallery.views
 
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
@@ -12,8 +14,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,11 +29,17 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.botpa.turbophotos.R
 import com.botpa.turbophotos.theme.FONT_OPIFICIO
+import com.botpa.turbophotos.util.Orion
 
 //General
 @OptIn(ExperimentalMaterial3Api::class)
@@ -96,4 +106,24 @@ fun GroupItems(modifier: Modifier = Modifier, content: @Composable ColumnScope.(
 @Composable
 fun GroupDivider() {
     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+}
+
+//Buttons
+@Composable
+fun IconButton(onClick: () -> Unit, painter: Painter, contentDescription: String, modifier: Modifier = Modifier) {
+    Button(
+        onClick = onClick,
+        contentPadding = PaddingValues(0.dp),
+        modifier = modifier
+            .size(40.dp)
+    ) {
+        Image(
+            painter = painter,
+            contentDescription = contentDescription,
+            contentScale = ContentScale.Fit,
+            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimary),
+            modifier = Modifier
+                .size(24.dp)
+        )
+    }
 }

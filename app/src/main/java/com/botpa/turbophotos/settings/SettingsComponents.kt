@@ -1,9 +1,7 @@
 package com.botpa.turbophotos.settings
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.defaultMinSize
@@ -11,17 +9,11 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -30,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Link
+import com.botpa.turbophotos.gallery.views.IconButton
 import com.botpa.turbophotos.gallery.views.groupItemPaddingHorizontal
 import com.botpa.turbophotos.gallery.views.groupItemPaddingVertical
 import com.botpa.turbophotos.theme.FONT_OPIFICIO
@@ -120,22 +113,11 @@ fun LinkItem(
                     .padding(bottom = 5.dp)
             ) {
                 //Select button
-                Button(
+                IconButton(
                     onClick = { onChooseFolder(index) },
-                    contentPadding = PaddingValues(0.dp),
-                    modifier = Modifier
-                        .size(40.dp)
-                ) {
-                    Image(
-                        painter = painterResource(R.drawable.folder),
-                        contentDescription = "Select album folder",
-                        contentScale = ContentScale.Fit,
-                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimary),
-                        modifier = Modifier
-                            .size(24.dp)
-                            .fillMaxHeight()
-                    )
-                }
+                    painter = painterResource(R.drawable.folder),
+                    contentDescription = "Select album folder"
+                )
 
                 //Name
                 val hasAlbum = link.albumFolder.name != ""
@@ -160,22 +142,11 @@ fun LinkItem(
                     .padding(bottom = 5.dp)
             ) {
                 //Select button
-                Button(
+                IconButton(
                     onClick = { onChooseFile(index, link) },
-                    contentPadding = PaddingValues(0.dp),
-                    modifier = Modifier
-                        .size(40.dp)
-                ) {
-                    Image(
-                        painter = painterResource(R.drawable.folder),
-                        contentDescription = "Select metadata file",
-                        contentScale = ContentScale.Fit,
-                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimary),
-                        modifier = Modifier
-                            .size(24.dp)
-                            .fillMaxHeight()
-                    )
-                }
+                    painter = painterResource(R.drawable.folder),
+                    contentDescription = "Select metadata file"
+                )
 
                 //Name
                 val hasMetadata = link.metadataFile.name != ""
@@ -194,23 +165,13 @@ fun LinkItem(
         }
 
         //Delete button
-        Button(
+        IconButton(
             onClick = { onDelete(index) },
-            contentPadding = PaddingValues(0.dp),
+            painter = painterResource(R.drawable.clear),
+            contentDescription = "Delete link",
             modifier = Modifier
-                .width(40.dp)
                 .fillMaxHeight()
-        ) {
-            Image(
-                painter = painterResource(R.drawable.clear),
-                contentDescription = "Delete link",
-                contentScale = ContentScale.Fit,
-                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimary),
-                modifier = Modifier
-                    .size(24.dp)
-                    .fillMaxHeight()
-            )
-        }
+        )
     }
 }
 
