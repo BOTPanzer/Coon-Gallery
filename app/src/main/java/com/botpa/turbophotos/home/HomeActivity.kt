@@ -44,7 +44,7 @@ import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.home.filters.DialogFilters
 import com.botpa.turbophotos.home.filters.Filter
 import com.botpa.turbophotos.settings.SettingsActivity
-import com.botpa.turbophotos.settings.SettingsPairs
+import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.sync.SyncActivity
 import com.botpa.turbophotos.util.BackManager
 import com.botpa.turbophotos.util.Orion
@@ -642,7 +642,7 @@ class HomeActivity : GalleryActivity() {
         val ratio = (metrics.widthPixels.toFloat() / metrics.heightPixels.toFloat())
 
         //Get size for portrait
-        val size = Storage.getInt(SettingsPairs.HOME_ITEMS_PER_ROW)
+        val size = Storage.getInt(StoragePairs.HOME_ITEMS_PER_ROW)
 
         //Return size for current orientation
         return if (isHorizontal) (size * ratio).toInt() else size

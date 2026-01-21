@@ -634,6 +634,10 @@ public class Orion {
         return writeFile(file, json.toString());
     }
 
+    public static boolean writeJsonPretty(File file, ObjectNode json) {
+        return writeFile(file, json.toPrettyString());
+    }
+
     public static ObjectNode loadJson(File file) {
         //Check if file exists and has content before trying to parse
         if (file == null || !file.exists() || file.length() == 0) return objectMapper.createObjectNode();

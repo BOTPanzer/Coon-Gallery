@@ -8,14 +8,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
@@ -48,7 +46,7 @@ import com.botpa.turbophotos.gallery.views.GroupTitle
 import com.botpa.turbophotos.gallery.views.Layout
 import com.botpa.turbophotos.gallery.views.groupItemPaddingHorizontal
 import com.botpa.turbophotos.gallery.views.groupItemPaddingVertical
-import com.botpa.turbophotos.settings.SettingsPairs
+import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.sync.SyncEventBus.Companion.instance
 import com.botpa.turbophotos.theme.CoonTheme
 import com.botpa.turbophotos.theme.FONT_COMFORTAA
@@ -355,7 +353,7 @@ class SyncActivity : ComponentActivity() {
         var needsSave = false
 
         //Split users
-        val userStrings: MutableList<String> = Storage.getStringList(SettingsPairs.SYNC_USERS_KEY)
+        val userStrings: MutableList<String> = Storage.getStringList(StoragePairs.SYNC_USERS_KEY)
         for (userString in userStrings) {
             //Check if valid
             val separatorIndex = userString.indexOf("\n")
@@ -383,7 +381,7 @@ class SyncActivity : ComponentActivity() {
         for (user in view.users) userStrings.add(user.toString())
 
         //Save list
-        Storage.putStringList(SettingsPairs.SYNC_USERS_KEY, userStrings)
+        Storage.putStringList(StoragePairs.SYNC_USERS_KEY, userStrings)
     }
 
     private fun decodeBase36(code: String): Long {

@@ -2,6 +2,7 @@ package com.botpa.turbophotos.gallery
 
 import androidx.compose.runtime.mutableStateListOf
 import com.botpa.turbophotos.home.HomeActivity
+import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.util.Storage
 import java.io.File
 
@@ -43,7 +44,7 @@ class Link(albumPath: String, metadataPath: String) {
             linksMap.clear()
 
             //Get links from storage (as strings)
-            val linksUnparsed = Storage.getStringList("Settings.albums")
+            val linksUnparsed = Storage.getStringList(StoragePairs.LIBRARY_LINKS_KEY)
 
             //Parse links
             for (string in linksUnparsed) addLink(parse(string))
@@ -53,7 +54,7 @@ class Link(albumPath: String, metadataPath: String) {
             //Save links
             val list = ArrayList<String>()
             for (link in links) list.add(link.toString())
-            Storage.putStringList("Settings.albums", list)
+            Storage.putStringList(StoragePairs.LIBRARY_LINKS_KEY, list)
 
             //Restart main activity on resume
             HomeActivity.reloadOnResume()

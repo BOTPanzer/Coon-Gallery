@@ -33,7 +33,7 @@ import com.botpa.turbophotos.gallery.LoadingIndicator
 import com.botpa.turbophotos.gallery.actions.Action
 import com.botpa.turbophotos.gallery.options.OptionsAdapter
 import com.botpa.turbophotos.gallery.options.OptionsItem
-import com.botpa.turbophotos.settings.SettingsPairs
+import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.util.BackManager
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
@@ -488,7 +488,7 @@ class AlbumActivity : GalleryActivity() {
         albumList.setLayoutManager(albumLayoutManager)
 
         //Init album adapter
-        albumAdapter = AlbumAdapter(this@AlbumActivity, Library.gallery, selectedItems, Storage.getBool(SettingsPairs.ALBUM_SHOW_MISSING_METADATA_ICON))
+        albumAdapter = AlbumAdapter(this@AlbumActivity, Library.gallery, selectedItems, Storage.getBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON))
         albumList.setAdapter(albumAdapter)
 
         //Init home fast scroller
@@ -616,7 +616,7 @@ class AlbumActivity : GalleryActivity() {
         val ratio = (metrics.widthPixels.toFloat() / metrics.heightPixels.toFloat())
 
         //Get size for portrait
-        val size = Storage.getInt(SettingsPairs.ALBUM_ITEMS_PER_ROW)
+        val size = Storage.getInt(StoragePairs.ALBUM_ITEMS_PER_ROW)
 
         //Return size for current orientation
         return if (isHorizontal) (size * ratio).toInt() else size

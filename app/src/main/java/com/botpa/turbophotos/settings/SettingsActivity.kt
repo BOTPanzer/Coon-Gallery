@@ -81,38 +81,63 @@ class SettingsActivity : ComponentActivity() {
         val activity = this
         val uriHandler = LocalUriHandler.current
 
-        //Links file picker
-        val filePickerLauncher = rememberLauncherForActivityResult(StartActivityForResult()) { result ->
+        //Backup file picker
+        val backupFilePickerLauncher = rememberLauncherForActivityResult(StartActivityForResult()) { result ->
             //Bad result
             if (result.resultCode != RESULT_OK || result.data == null || result.data!!.data == null) return@rememberLauncherForActivityResult
 
             //Handle result
-            view.handleFileResult(result.data!!.data!!, context, activity)
+            view.restoreSettings(result.data!!.data!!, context, activity)
         }
 
-        //Links item actions
-        val onChooseFolder = remember<(Int) -> Unit> {
-            { index ->
-                //Save link index
-                view.filePickerIndex = index
-
-                //Feedback toast
-                Toast.makeText(activity, "Select a folder to use as album", Toast.LENGTH_LONG).show()
-
-                //Ask for a folder
-                view.filePickerAction = SettingsViewModel.PickerAction.SelectFolder
-                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-                filePickerLauncher.launch(intent)
+        //Backup actions
+        val onCreateBackup = remember {
+            {
+                view.backupSettings(context)
             }
         }
-        val onChooseFile = remember<(Int, Link) -> Unit> {
+        val onChooseBackupFile = remember {
+            {
+                Toast.makeText(activity, "Select a backup file to restore.", Toast.LENGTH_LONG).show()
+                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+                intent.addCategory(Intent.CATEGORY_OPENABLE)
+                intent.type = "application/json"
+                backupFilePickerLauncher.launch(intent)
+            }
+        }
+
+        //Links file picker
+        val linksFilePickerLauncher = rememberLauncherForActivityResult(StartActivityForResult()) { result ->
+            //Bad result
+            if (result.resultCode != RESULT_OK || result.data == null || result.data!!.data == null) return@rememberLauncherForActivityResult
+
+            //Handle result
+            view.handleLinkFileResult(result.data!!.data!!, context, activity)
+        }
+
+        //Links actions
+        val onChooseLinkFolder = remember<(Int) -> Unit> {
+            { index ->
+                //Save link index
+                view.linkFilePickerIndex = index
+
+                //Feedback toast
+                Toast.makeText(activity, "Select a folder to use as album.", Toast.LENGTH_LONG).show()
+
+                //Ask for a folder
+                view.linkFilePickerAction = SettingsViewModel.LinkPickerAction.SelectFolder
+                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+                linksFilePickerLauncher.launch(intent)
+            }
+        }
+        val onChooseLinkFile = remember<(Int, Link) -> Unit> {
             { index, link ->
                 //Check if album folder exists
                 if (!link.albumFolder.exists()) {
-                    Toast.makeText(activity, "Add an album folder first", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(activity, "Add an album folder first.", Toast.LENGTH_SHORT).show()
                 } else {
                     //Save link index
-                    view.filePickerIndex = index
+                    view.linkFilePickerIndex = index
 
                     //Check action
                     Orion.snackTwo(
@@ -121,29 +146,29 @@ class SettingsActivity : ComponentActivity() {
                         "Create",
                         {
                             if (!Link.links[index].albumFolder.exists()) {
-                                Toast.makeText(activity, "Add an album folder first", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(activity, "Add an album folder first.", Toast.LENGTH_SHORT).show()
                             } else {
-                                Toast.makeText(activity,"Select a folder to create the album metadata file", Toast.LENGTH_LONG).show()
-                                view.filePickerAction = SettingsViewModel.PickerAction.CreateFile
+                                Toast.makeText(activity,"Select a folder to create the album metadata file.", Toast.LENGTH_LONG).show()
+                                view.linkFilePickerAction = SettingsViewModel.LinkPickerAction.CreateFile
                                 val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-                                filePickerLauncher.launch(intent)
+                                linksFilePickerLauncher.launch(intent)
                             }
                         },
                         "Select",
                         {
-                            Toast.makeText(activity, "Select a file to use as metadata", Toast.LENGTH_LONG).show()
-                            view.filePickerAction = SettingsViewModel.PickerAction.SelectFile
+                            Toast.makeText(activity, "Select a file to use as metadata.", Toast.LENGTH_LONG).show()
+                            view.linkFilePickerAction = SettingsViewModel.LinkPickerAction.SelectFile
                             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
                             intent.addCategory(Intent.CATEGORY_OPENABLE)
                             intent.type = "application/json"
-                            filePickerLauncher.launch(intent)
+                            linksFilePickerLauncher.launch(intent)
                         },
                         Snackbar.LENGTH_LONG
                     )
                 }
             }
         }
-        val onDelete = remember<(Int) -> Unit> {
+        val onDeleteLink = remember<(Int) -> Unit> {
             { index ->
                 //Remove link
                 if (Link.removeLink(index)) Link.saveLinks()
@@ -174,14 +199,14 @@ class SettingsActivity : ComponentActivity() {
                             ) {
                                 //Backup
                                 IconButton(
-                                    onClick = { view.backupSettings(activity) },
+                                    onClick = onCreateBackup,
                                     painter = painterResource(R.drawable.backup_create),
                                     contentDescription = "Backup"
                                 )
 
                                 //Restore
                                 IconButton(
-                                    onClick = { view.restoreSettings(activity) },
+                                    onClick = onChooseBackupFile,
                                     painter = painterResource(R.drawable.backup_restore),
                                     contentDescription = "Restore",
                                     modifier = Modifier
@@ -322,9 +347,9 @@ class SettingsActivity : ComponentActivity() {
                                 LinkItem(
                                     index = index,
                                     link = link,
-                                    onChooseFolder = onChooseFolder,
-                                    onChooseFile = onChooseFile,
-                                    onDelete = onDelete
+                                    onChooseFolder = onChooseLinkFolder,
+                                    onChooseFile = onChooseLinkFile,
+                                    onDelete = onDeleteLink
                                 )
 
                                 //Add divider between items
