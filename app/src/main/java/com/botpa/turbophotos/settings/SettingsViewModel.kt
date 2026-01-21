@@ -2,44 +2,34 @@ package com.botpa.turbophotos.settings
 
 import android.app.Activity
 import android.content.Context
-import android.net.Uri
 import android.os.Environment
 import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.botpa.turbophotos.gallery.Link
 import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.home.HomeActivity
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
-import com.fasterxml.jackson.databind.node.ObjectNode
 import java.io.File
 
 class SettingsViewModel : ViewModel() {
 
-    //App settings
+    //App
     var appModifyMetadata by mutableStateOf(Storage.getBool(StoragePairs.APP_AUTOMATIC_METADATA_MODIFICATION))
 
-    //Home settings
+    //Home screen
     var homeItemsPerRow by mutableFloatStateOf(Storage.getInt(StoragePairs.HOME_ITEMS_PER_ROW).toFloat())
 
-    //Album settings
+    //Album screen
     var albumItemsPerRow by mutableFloatStateOf(Storage.getInt(StoragePairs.ALBUM_ITEMS_PER_ROW).toFloat())
     var albumShowMissingMetadataIcon by  mutableStateOf(Storage.getBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON))
 
-    //Links
-    enum class LinkPickerAction { SelectFile, CreateFile }
 
-    var linkFilePickerIndex by  mutableIntStateOf(-1)
-    var linkFilePickerAction by mutableStateOf(LinkPickerAction.SelectFile)
-
-
-    //App settings
-    fun backupSettings(context: Context) {
+    //App
+    fun createSettingsBackup(context: Context) {
         //Create empty json
         val json = Orion.getEmptyJson()
 
@@ -88,7 +78,10 @@ class SettingsViewModel : ViewModel() {
         }
     }
 
-    private fun restoreSettingsFromJson(json: ObjectNode) {
+    fun restoreSettingsBackup(context: Context, activity: Activity, file: File) {
+        //Load json from backup file
+        val json = Orion.loadJson(file)
+
         //Library
         if (json.has(StoragePairs.LIBRARY_LINKS_KEY) && json.get(StoragePairs.LIBRARY_LINKS_KEY).isTextual) {
             //Too lazy to recreate all links so the library gets reloaded after finishing (✿◡‿◡)
@@ -124,30 +117,13 @@ class SettingsViewModel : ViewModel() {
             //Users list gets loaded in sync activity so no need to do anything here
             Storage.putString(StoragePairs.SYNC_USERS_KEY, json.get(StoragePairs.SYNC_USERS_KEY).asText())
         }
-    }
 
-    fun restoreSettings(uri: Uri, context: Context, activity: Activity): Boolean {
-        try {
-            //Parse file path from URI
-            val path = Orion.getFilePathFromDocumentProviderUri(context, uri) ?: throw Exception("Path was null")
-            val file = File(path)
+        //Success restoring backup
+        Toast.makeText(context, "Backup restored.", Toast.LENGTH_SHORT).show()
 
-            //Load json from backup file & restore it
-            val json = Orion.loadJson(file)
-            restoreSettingsFromJson(json)
-
-            //Success restoring backup
-            Toast.makeText(context, "Backup restored.", Toast.LENGTH_SHORT).show()
-
-            //Reload library on home resume & close settings screen
-            HomeActivity.reloadOnResume()
-            activity.finish()
-        } catch (e: Exception) {
-            //Error restoring backup
-            Toast.makeText(context, "Error restoring backup: ${e.toString()}.", Toast.LENGTH_LONG).show()
-            return false
-        }
-        return true
+        //Reload library on home resume & close settings screen
+        HomeActivity.reloadOnResume()
+        activity.finish()
     }
 
     fun updateAppModifyMetadata(isChecked: Boolean) {
@@ -155,7 +131,7 @@ class SettingsViewModel : ViewModel() {
         Storage.putBool(StoragePairs.APP_AUTOMATIC_METADATA_MODIFICATION.key, isChecked)
     }
 
-    //Home settings
+    //Home screen
     fun updateHomeItemsPerRow(value: Float) {
         homeItemsPerRow = value
     }
@@ -164,7 +140,7 @@ class SettingsViewModel : ViewModel() {
         Storage.putInt(StoragePairs.HOME_ITEMS_PER_ROW.key, homeItemsPerRow.toInt())
     }
 
-    //Album settings
+    //Album screen
     fun updateAlbumItemsPerRow(value: Float) {
         albumItemsPerRow = value
     }
@@ -176,48 +152,6 @@ class SettingsViewModel : ViewModel() {
     fun updateAlbumShowMissingMetadataIcon(isChecked: Boolean) {
         albumShowMissingMetadataIcon = isChecked
         Storage.putBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON.key, isChecked)
-    }
-
-    //Links
-    fun handleLinkFileResult(uri: Uri, context: Context) {
-        try {
-            //Parse file path from URI
-            val path = Orion.getFilePathFromDocumentProviderUri(context, uri) ?: throw Exception("Path was null")
-            val file = File(path)
-
-            //Update the link based on the action
-            val link = Link.links[linkFilePickerIndex]
-            when (linkFilePickerAction) {
-                //Select file
-                LinkPickerAction.SelectFile -> {
-                    //Update link with selected file
-                    Link.updateLinkFile(linkFilePickerIndex, file)
-                }
-
-                //Create file
-                LinkPickerAction.CreateFile -> {
-                    //Create file based in album name
-                    var metadataFile: File
-                    var name: String
-                    var i = 0
-                    do {
-                        name = "${link.albumFolder.name.lowercase().replace(" ", "-")}${if (i > 0) " ($i)" else ""}.json"
-                        metadataFile = File("${file.absolutePath}/${name}")
-                        i++
-                    } while (metadataFile.exists())
-                    Orion.writeFile(metadataFile, "{}")
-
-                    //Update link with created file
-                    Link.updateLinkFile(linkFilePickerIndex, metadataFile)
-                }
-            }
-
-            //Save links
-            Link.saveLinks()
-        } catch (e: Exception) {
-            //Error parsing file
-            Toast.makeText(context, "Error parsing file: ${e.toString()}.", Toast.LENGTH_LONG).show()
-        }
     }
 
 }

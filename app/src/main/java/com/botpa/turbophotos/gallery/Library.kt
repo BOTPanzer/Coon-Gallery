@@ -21,7 +21,7 @@ import com.botpa.turbophotos.gallery.actions.Action
 import com.botpa.turbophotos.gallery.actions.ActionError
 import com.botpa.turbophotos.gallery.dialogs.DialogAlbums
 import com.botpa.turbophotos.gallery.dialogs.DialogErrors
-import com.botpa.turbophotos.gallery.dialogs.DialogFolders
+import com.botpa.turbophotos.gallery.dialogs.DialogExplorer
 import com.botpa.turbophotos.gallery.dialogs.DialogInput
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage.getBool
@@ -474,9 +474,14 @@ object Library {
         DialogAlbums(context, albums, onSelect, { folder: File -> onSelect(getOrCreateAlbumFromFolder(folder)) }).buildAndShow()
     }
 
+    fun showSelectFileDialog(context: Context, onSelect: (File) -> Unit) {
+        //Create dialog
+        DialogExplorer(context, true, onSelect).buildAndShow()
+    }
+
     fun showSelectFolderDialog(context: Context, onSelect: (File) -> Unit) {
         //Create dialog
-        DialogFolders(context, null, onSelect).buildAndShow()
+        DialogExplorer(context, false, onSelect).buildAndShow()
     }
 
     //Actions (base & util)

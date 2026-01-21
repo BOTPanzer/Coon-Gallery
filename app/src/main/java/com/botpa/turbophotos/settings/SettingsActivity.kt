@@ -1,12 +1,9 @@
 package com.botpa.turbophotos.settings
 
-import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Row
@@ -35,7 +32,7 @@ import androidx.compose.ui.unit.sp
 import com.botpa.turbophotos.BuildConfig
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Link
-import com.botpa.turbophotos.gallery.dialogs.DialogFolders
+import com.botpa.turbophotos.gallery.dialogs.DialogExplorer
 import com.botpa.turbophotos.gallery.views.Group
 import com.botpa.turbophotos.gallery.views.GroupDivider
 import com.botpa.turbophotos.gallery.views.GroupItems
@@ -81,48 +78,46 @@ class SettingsActivity : AppCompatActivity() {
         val activity = this
         val uriHandler = LocalUriHandler.current
 
-        //Backup file picker
-        val backupFilePickerLauncher = rememberLauncherForActivityResult(StartActivityForResult()) { result ->
-            //Bad result
-            if (result.resultCode != RESULT_OK || result.data == null || result.data!!.data == null) return@rememberLauncherForActivityResult
-
-            //Handle result
-            view.restoreSettings(result.data!!.data!!, context, activity)
-        }
-
         //Backup actions
         val onCreateBackup = remember {
             {
-                view.backupSettings(context)
+                //Create settings backup
+                view.createSettingsBackup(context)
             }
         }
         val onChooseBackupFile = remember {
             {
+                //Show select file dialog
+                DialogExplorer(
+                    context = activity,
+                    isSelectingFiles = true,
+                    fileExtension = "json",
+                    onSelect = { file ->
+                        //Restore settings backup
+                        view.restoreSettingsBackup(context, activity, file)
+                    }
+                ).buildAndShow()
+
+                //Feedback toast
                 Toast.makeText(activity, "Select a backup file to restore.", Toast.LENGTH_LONG).show()
-                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-                intent.addCategory(Intent.CATEGORY_OPENABLE)
-                intent.type = "application/json"
-                backupFilePickerLauncher.launch(intent)
             }
-        }
-
-        //Links file picker
-        val linksFilePickerLauncher = rememberLauncherForActivityResult(StartActivityForResult()) { result ->
-            //Bad result
-            if (result.resultCode != RESULT_OK || result.data == null || result.data!!.data == null) return@rememberLauncherForActivityResult
-
-            //Handle result
-            view.handleLinkFileResult(result.data!!.data!!, context)
         }
 
         //Links actions
         val onChooseLinkFolder = remember<(Int) -> Unit> {
             { index ->
                 //Show select folder dialog
-                DialogFolders(activity) { file ->
-                    val updated = Link.updateLinkFolder(index, file)
-                    if (!updated) Orion.snack(activity, "Album already exists")
-                }.buildAndShow()
+                DialogExplorer(
+                    context = activity,
+                    isSelectingFiles = false,
+                    onSelect = { file ->
+                        //Update link folder
+                        val updated = Link.updateLinkFolder(index, file)
+
+                        //Check if update was successful
+                        if (!updated) Orion.snack(activity, "Album already exists")
+                    }
+                ).buildAndShow()
 
                 //Feedback toast
                 Toast.makeText(activity, "Select a folder to use as album.", Toast.LENGTH_LONG).show()
@@ -132,36 +127,22 @@ class SettingsActivity : AppCompatActivity() {
             { index, link ->
                 //Check if album folder exists
                 if (!link.albumFolder.exists()) {
+                    //Feedback toast
                     Toast.makeText(activity, "Add an album folder first.", Toast.LENGTH_SHORT).show()
                 } else {
-                    //Save link index
-                    view.linkFilePickerIndex = index
+                    //Show select file dialog
+                    DialogExplorer(
+                        context = activity,
+                        isSelectingFiles = true,
+                        fileExtension = "json",
+                        onSelect = { file ->
+                            //Update link with selected file
+                            Link.updateLinkFile(index, file)
+                        }
+                    ).buildAndShow()
 
-                    //Create dialog
-                    val builder = MaterialAlertDialogBuilder(context)
-                    builder.setTitle("Metadata file")
-                    builder.setMessage("Would you like to create a new file or select an already existing one?")
-                    builder.setNegativeButton("Create") { _, _ ->
-                        //Ask for a folder
-                        view.linkFilePickerAction = SettingsViewModel.LinkPickerAction.CreateFile
-                        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-                        linksFilePickerLauncher.launch(intent)
-
-                        //Feedback toast
-                        Toast.makeText(activity,"Select a folder to create the file inside.", Toast.LENGTH_LONG).show()
-                    }
-                    builder.setPositiveButton("Select") { _, _ ->
-                        //Ask for a file
-                        view.linkFilePickerAction = SettingsViewModel.LinkPickerAction.SelectFile
-                        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-                        intent.addCategory(Intent.CATEGORY_OPENABLE)
-                        intent.type = "application/json"
-                        linksFilePickerLauncher.launch(intent)
-
-                        //Feedback toast
-                        Toast.makeText(activity, "Select a file to use as metadata.", Toast.LENGTH_LONG).show()
-                    }
-                    builder.show()
+                    //Feedback toast
+                    Toast.makeText(activity, "Select a file to use as metadata.", Toast.LENGTH_LONG).show()
                 }
             }
         }

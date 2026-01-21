@@ -16,24 +16,24 @@
         android:paddingVertical="16dp">
 
         <ImageView
-            android:id="@+id/folderIcon"
+            android:id="@+id/itemIcon"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@drawable/folder"
             app:tint="?attr/colorPrimary" />
 
         <TextView
-            android:id="@+id/folderName"
+            android:id="@+id/itemName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:ellipsize="end"
-            android:text="Folder name"
+            android:text="Item name"
             android:textSize="16sp" />
     </LinearLayout>
 
     <Button
-        android:id="@+id/folderSelect"
+        android:id="@+id/itemSelect"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"

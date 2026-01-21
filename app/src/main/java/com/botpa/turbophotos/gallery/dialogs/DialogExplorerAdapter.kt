@@ -11,21 +11,22 @@ import android.widget.TextView
 import com.botpa.turbophotos.R
 import java.io.File
 
-class DialogFoldersAdapter(
+class DialogExplorerAdapter(
     context: Context,
+    private val isSelectingFiles: Boolean = false,
     private val externalStorage: File,
     private var currentFolder: File,
-    folders: List<File>
-) : ArrayAdapter<File>(context, 0, folders) {
+    items: List<File>
+) : ArrayAdapter<File>(context, 0, items) {
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         //Inflate
-        val view: View = convertView ?: LayoutInflater.from(context).inflate(R.layout.dialog_folders_item, parent, false)
+        val view: View = convertView ?: LayoutInflater.from(context).inflate(R.layout.dialog_explorer_item, parent, false)
 
         //Get views
-        val icon = view.findViewById<ImageView>(R.id.folderIcon)
-        val name = view.findViewById<TextView>(R.id.folderName)
-        val select = view.findViewById<Button>(R.id.folderSelect)
+        val icon = view.findViewById<ImageView>(R.id.itemIcon)
+        val name = view.findViewById<TextView>(R.id.itemName)
+        val select = view.findViewById<Button>(R.id.itemSelect)
 
         //Get index
         val index = position - this.positionOffset
@@ -37,11 +38,13 @@ class DialogFoldersAdapter(
             name.text = "Previous folder"
             select.visibility = View.GONE
         } else {
-            //Folder
-            icon.setImageResource(R.drawable.folder)
-            val folder = getItem(position - 1)
-            if (folder != null) name.text = folder.name
-            select.visibility = View.VISIBLE
+            //Item
+            val item = getItem(position - 1)
+            if (item != null) {
+                icon.setImageResource(if (item.isFile) R.drawable.file else R.drawable.folder)
+                name.text = item.name
+            }
+            select.visibility = if (isSelectingFiles) View.GONE else View.VISIBLE
         }
 
         //Add listeners

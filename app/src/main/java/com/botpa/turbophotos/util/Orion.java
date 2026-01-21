@@ -62,6 +62,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Orion {
@@ -445,17 +446,43 @@ public class Orion {
     }
 
     //Files
-    public static List<File> listFiles(File parent) {
+    public static List<File> listFolders(File parent) {
         //Create folders list
         List<File> folders = new ArrayList<>();
 
-        //Get files array
-        File[] files = parent.listFiles();
-        if (files == null) return folders;
+        //Get temp items array
+        File[] temp = parent.listFiles();
+        if (temp == null) return folders;
 
         //Add folders to list
-        for (File file : files) if (file.isDirectory()) folders.add(file);
+        for (File file : temp) if (file.isDirectory()) folders.add(file);
         return folders;
+    }
+
+    public static List<File> listFiles(File parent) {
+        //Create files list
+        List<File> files = new ArrayList<>();
+
+        //Get temp items array
+        File[] temp = parent.listFiles();
+        if (temp == null) return files;
+
+        //Add files to list
+        for (File file : temp) if (file.isFile()) files.add(file);
+        return files;
+    }
+
+    public static List<File> listFilesAndFolders(File parent) {
+        //Create files list
+        List<File> files = new ArrayList<>();
+
+        //Get temp items array
+        File[] temp = parent.listFiles();
+        if (temp == null) return files;
+
+        //Add files to list
+        files.addAll(Arrays.asList(temp));
+        return files;
     }
 
     private static Charset detectCharset(Path path) {
