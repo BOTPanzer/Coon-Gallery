@@ -45,12 +45,8 @@ class DialogFoldersAdapter(
         }
 
         //Add listeners
-        view.setOnClickListener { v ->
-            if (onOpenListener != null) onOpenListener!!.invoke(index)
-        }
-        select.setOnClickListener { v ->
-            if (onSelectListener != null) onSelectListener!!.invoke(index)
-        }
+        view.setOnClickListener { view -> onOpenListener?.invoke(index) }
+        select.setOnClickListener { view -> onSelectListener?.invoke(index) }
 
         return view
     }
@@ -67,14 +63,12 @@ class DialogFoldersAdapter(
     val currentFolderPath: String get() = currentFolder.absolutePath
     val currentFolderParent: File? get() = currentFolder.parentFile
 
-    fun setCurrentFolder(folder: File) {
-        currentFolder = folder
+    fun setCurrentFolder(newFolder: File) {
+        currentFolder = newFolder
     }
 
     //Listeners
-    fun interface Listener {
-        fun invoke(index: Int)
-    }
+    fun interface Listener { fun invoke(index: Int) }
 
     private var onOpenListener: Listener? = null
     private var onSelectListener: Listener? = null

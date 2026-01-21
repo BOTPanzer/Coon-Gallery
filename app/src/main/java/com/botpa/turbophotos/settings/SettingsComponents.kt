@@ -144,7 +144,7 @@ fun LinkItem(
                 //Select button
                 IconButton(
                     onClick = { onChooseFile(index, link) },
-                    painter = painterResource(R.drawable.folder),
+                    painter = painterResource(R.drawable.file),
                     contentDescription = "Select metadata file"
                 )
 

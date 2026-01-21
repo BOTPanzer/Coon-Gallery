@@ -45,7 +45,7 @@ class DialogFolders(
     //Init
     override fun onInitStart() {
         //Init current folder
-        currentFolder = startingFolder ?: File(externalStorage, "Pictures")
+        currentFolder = startingFolder ?: externalStorage
 
         //Init adapter
         adapter = DialogFoldersAdapter(context, externalStorage, currentFolder, folders)
