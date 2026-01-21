@@ -20,17 +20,14 @@
             android:layout_height="match_parent"
             android:clipToPadding="false">
 
-            <com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView
+            <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:clipToPadding="false"
-                android:paddingBottom="90dp"
-                app:fastScrollThumbColor="?attr/colorPrimary"
-                app:fastScrollThumbInactiveColor="?attr/colorPrimary"
-                app:fastScrollVerticalThumbDrawable="@drawable/custom_scrollbar_thumb">
+                android:paddingBottom="90dp">
 
-            </com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView>
+            </androidx.recyclerview.widget.RecyclerView>
 
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 

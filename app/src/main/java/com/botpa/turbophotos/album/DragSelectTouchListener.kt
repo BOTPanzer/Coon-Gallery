@@ -21,6 +21,7 @@ class DragSelectTouchListener(
     //Touch
     private var lastX = 0f
     private var lastY = 0f
+    private var isScrollbarTap = false
 
     //Drag selecting
     private var isDragSelecting = false
@@ -57,6 +58,9 @@ class DragSelectTouchListener(
     private val gestureDetector = GestureDetector(recyclerView.context, object : GestureDetector.SimpleOnGestureListener() {
 
         override fun onLongPress(event: MotionEvent) {
+            //Check if is scrollbar tap
+            if (isScrollbarTap) return
+
             //Update touch info
             lastX = event.x
             lastY = event.y
@@ -106,6 +110,9 @@ class DragSelectTouchListener(
     })
 
     override fun onInterceptTouchEvent(recyclerView: RecyclerView, event: MotionEvent): Boolean {
+        //Save if touching scrollbar
+        isScrollbarTap = isTouchOnScrollbar(event)
+
         //Handle touch events
         gestureDetector.onTouchEvent(event)
 
@@ -203,6 +210,17 @@ class DragSelectTouchListener(
         } else {
             //Reset scroll speed
             currentScrollSpeed = 0
+        }
+    }
+
+    private fun isTouchOnScrollbar(event: MotionEvent): Boolean {
+        val touchTargetWidth = (48 * context.resources.displayMetrics.density).toInt() //48dp is the standard accessible touch target size
+        val viewWidth = recyclerView.width
+
+        return if (recyclerView.layoutDirection == android.view.View.LAYOUT_DIRECTION_RTL) {
+            event.x <= touchTargetWidth
+        } else {
+            event.x >= viewWidth - touchTargetWidth
         }
     }
 

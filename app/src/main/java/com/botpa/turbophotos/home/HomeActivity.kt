@@ -49,8 +49,8 @@ import com.botpa.turbophotos.sync.SyncActivity
 import com.botpa.turbophotos.util.BackManager
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
-
-import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView
+import me.zhanghai.android.fastscroll.FastScroller
+import me.zhanghai.android.fastscroll.FastScrollerBuilder
 
 @SuppressLint("SetTextI18n", "NotifyDataSetChanged")
 class HomeActivity : GalleryActivity() {
@@ -104,8 +104,9 @@ class HomeActivity : GalleryActivity() {
     private lateinit var homeLayoutManager: GridLayoutManager
     private lateinit var homeAdapter: HomeAdapter
 
-    private lateinit var refreshLayout: SwipeRefreshLayout
-    private lateinit var homeList: FastScrollRecyclerView
+    private lateinit var homeRefreshLayout: SwipeRefreshLayout
+    private lateinit var homeList: RecyclerView
+    private lateinit var homeFastScroller: FastScroller
 
       /*$$$$$              /$$     /$$
      /$$__  $$            | $$    |__/
@@ -179,7 +180,7 @@ class HomeActivity : GalleryActivity() {
         backManager = BackManager(this@HomeActivity, onBackPressedDispatcher)
         initViews()
         initListeners()
-        initAdapters()
+        initLists()
 
         //Mark as init
         isInit = true
@@ -424,7 +425,7 @@ class HomeActivity : GalleryActivity() {
         optionsList = findViewById(R.id.optionsList)
 
         //List
-        refreshLayout = findViewById(R.id.refreshLayout)
+        homeRefreshLayout = findViewById(R.id.refreshLayout)
         homeList = findViewById(R.id.list)
 
         //Loading indicator
@@ -435,14 +436,17 @@ class HomeActivity : GalleryActivity() {
         systemNavigationBar = findViewById(R.id.navigationBar)
 
 
-        //Insets (keyboard & system bars)
+        //Insets (content)
         Orion.addInsetsChangedListener(
             findViewById(R.id.content),
             intArrayOf(WindowInsetsCompat.Type.systemBars())
         ) { view: View, insets: Insets, duration: Float ->
-            refreshLayout.setProgressViewOffset(false, 0, insets.top + 50)
+            homeRefreshLayout.setProgressViewOffset(false, 0, insets.top + 50)
             homeList.setPadding(0, insets.top, 0, homeList.paddingBottom + insets.bottom)
+            homeFastScroller.setPadding(0, homeList.paddingTop, 0, homeList.paddingBottom)
         }
+
+        //Insets (layout)
         Orion.addInsetsChangedListener(
             findViewById(R.id.layout),
             intArrayOf(WindowInsetsCompat.Type.systemBars(), WindowInsetsCompat.Type.ime()),
@@ -514,16 +518,16 @@ class HomeActivity : GalleryActivity() {
         }
 
         //List
-        refreshLayout.setOnRefreshListener {
+        homeRefreshLayout.setOnRefreshListener {
             //Reload library
             Library.loadLibrary(this@HomeActivity, true) //Fully refresh
 
             //Stop refreshing
-            refreshLayout.isRefreshing = false
+            homeRefreshLayout.isRefreshing = false
         }
     }
 
-    private fun initAdapters() {
+    private fun initLists() {
         //Init home layout manager
         homeLayoutManager = GridLayoutManager(this@HomeActivity, this.horizontalItemCount)
         homeList.setLayoutManager(homeLayoutManager)
@@ -562,6 +566,12 @@ class HomeActivity : GalleryActivity() {
             }
         }
         homeList.setAdapter(homeAdapter)
+
+        //Init home fast scroller
+        homeFastScroller = FastScrollerBuilder(homeList).apply {
+            setThumbDrawable(ContextCompat.getDrawable(this@HomeActivity, R.drawable.scrollbar_thumb)!!)
+            setTrackDrawable(ContextCompat.getDrawable(this@HomeActivity, R.drawable.scrollbar_track)!!)
+        }.build()
 
         //Init options layout manager
         optionsList.setLayoutManager(LinearLayoutManager(this@HomeActivity))

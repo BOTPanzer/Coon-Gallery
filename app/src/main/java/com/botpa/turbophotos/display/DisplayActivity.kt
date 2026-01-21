@@ -167,7 +167,7 @@ class DisplayActivity : GalleryActivity() {
         backManager = BackManager(this@DisplayActivity, onBackPressedDispatcher)
         initViews()
         initListeners()
-        initAdapters()
+        initLists()
 
         //Init activity
         initActivity()
@@ -430,7 +430,7 @@ class DisplayActivity : GalleryActivity() {
         }
     }
 
-    private fun initAdapters() {
+    private fun initLists() {
         //Init display layout manager
         displayLayoutManager = DisplayLayoutManager(this@DisplayActivity)
         displayLayoutManager.setOrientation(RecyclerView.HORIZONTAL)

@@ -12,6 +12,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 
 import androidx.activity.enableEdgeToEdge
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -36,8 +37,8 @@ import com.botpa.turbophotos.settings.SettingsPairs
 import com.botpa.turbophotos.util.BackManager
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
-
-import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView
+import me.zhanghai.android.fastscroll.FastScroller
+import me.zhanghai.android.fastscroll.FastScrollerBuilder
 
 import java.util.Locale
 
@@ -74,8 +75,9 @@ class AlbumActivity : GalleryActivity() {
     private lateinit var currentAlbum: Album
     private var inTrash = false
 
-    private lateinit var refreshLayout: SwipeRefreshLayout
-    private lateinit var albumList: FastScrollRecyclerView
+    private lateinit var albumRefreshLayout: SwipeRefreshLayout
+    private lateinit var albumList: RecyclerView
+    private lateinit var albumFastScroller: FastScroller
 
       /*$$$$$              /$$     /$$
      /$$__  $$            | $$    |__/
@@ -192,7 +194,7 @@ class AlbumActivity : GalleryActivity() {
         backManager = BackManager(this@AlbumActivity, onBackPressedDispatcher)
         initViews()
         initListeners()
-        initAdapters()
+        initLists()
 
         //Init activity
         initActivity()
@@ -308,7 +310,7 @@ class AlbumActivity : GalleryActivity() {
 
         //List
         albumList = findViewById(R.id.list)
-        refreshLayout = findViewById(R.id.refreshLayout)
+        albumRefreshLayout = findViewById(R.id.refreshLayout)
 
         //Loading indicator
         loadIndicatorText = findViewById(R.id.loadIndicatorText)
@@ -324,8 +326,9 @@ class AlbumActivity : GalleryActivity() {
             findViewById(R.id.content),
             intArrayOf(WindowInsetsCompat.Type.systemBars())
         ) { view: View, insets: Insets, duration: Float ->
-            refreshLayout.setProgressViewOffset(false, 0, insets.top + 50)
+            albumRefreshLayout.setProgressViewOffset(false, 0, insets.top + 50)
             albumList.setPadding(0, insets.top, 0, albumList.paddingBottom + insets.bottom)
+            albumFastScroller.setPadding(0, albumList.paddingTop, 0, albumList.paddingBottom)
         }
 
         //Insets (layout)
@@ -430,12 +433,12 @@ class AlbumActivity : GalleryActivity() {
         }
 
         //List
-        refreshLayout.setOnRefreshListener {
+        albumRefreshLayout.setOnRefreshListener {
             //Reload library
             Library.loadLibrary(this@AlbumActivity, false) //Soft refresh to ONLY look for new files
 
             //Stop refreshing
-            refreshLayout.isRefreshing = false
+            albumRefreshLayout.isRefreshing = false
         }
 
         albumList.addOnItemTouchListener(DragSelectTouchListener(
@@ -460,7 +463,7 @@ class AlbumActivity : GalleryActivity() {
             },
             onDragSelectingChanged = { isDragSelecting ->
                 //Disable swipe refresh layout when drag selecting
-                refreshLayout.requestDisallowInterceptTouchEvent(isDragSelecting)
+                albumRefreshLayout.requestDisallowInterceptTouchEvent(isDragSelecting)
             }
         ))
 
@@ -479,7 +482,7 @@ class AlbumActivity : GalleryActivity() {
         searchClose.setOnClickListener { view: View -> showSearchLayout(false) }
     }
 
-    private fun initAdapters() {
+    private fun initLists() {
         //Init album layout manager
         albumLayoutManager = GridLayoutManager(this@AlbumActivity, this.horizontalItemCount)
         albumList.setLayoutManager(albumLayoutManager)
@@ -487,6 +490,12 @@ class AlbumActivity : GalleryActivity() {
         //Init album adapter
         albumAdapter = AlbumAdapter(this@AlbumActivity, Library.gallery, selectedItems, Storage.getBool(SettingsPairs.ALBUM_SHOW_MISSING_METADATA_ICON))
         albumList.setAdapter(albumAdapter)
+
+        //Init home fast scroller
+        albumFastScroller = FastScrollerBuilder(albumList).apply {
+            setThumbDrawable(ContextCompat.getDrawable(this@AlbumActivity, R.drawable.scrollbar_thumb)!!)
+            setTrackDrawable(ContextCompat.getDrawable(this@AlbumActivity, R.drawable.scrollbar_track)!!)
+        }.build()
 
         //Init options layout manager
         optionsList.setLayoutManager(LinearLayoutManager(this@AlbumActivity))

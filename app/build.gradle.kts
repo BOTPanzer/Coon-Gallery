@@ -50,9 +50,9 @@ dependencies {
 
     //Layout
     implementation(libs.constraintlayout)
-    implementation(libs.recyclerview.fastscroll)
     implementation(libs.swiperefreshlayout)
     implementation(libs.recyclerview)
+    implementation(libs.fastscroll)
 
     //Material
     implementation(libs.material)
