@@ -1,15 +1,14 @@
 package com.botpa.turbophotos.gallery
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.drawable.Animatable
 import android.graphics.drawable.Drawable
+import android.net.Uri
+import android.webkit.MimeTypeMap
 import android.widget.ImageView
+import com.botpa.turbophotos.util.Orion
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.load.resource.bitmap.BitmapTransitionOptions
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
@@ -91,6 +90,26 @@ class CoonItem(
 
             //Load item
             request.into(imageView)
+        }
+
+        //Factory
+        fun createFromFile(file: File, album: Album): CoonItem {
+            //Prepare item info
+            val lastModified = file.lastModified() / 1000 //To seconds
+            val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(Orion.getExtension(file.absolutePath)) ?: "*/*"
+            val size = file.length()
+
+            //Create item
+            return CoonItem(file, album, lastModified, mimeType, size, false)
+        }
+
+        fun createFromUri(context: Context, uri: Uri, album: Album): CoonItem {
+            //Prepare item info
+            val path = Orion.getFilePathFromMediaUri(context, uri)
+            val file = File(path)
+
+            //Create item
+            return createFromFile(file, album)
         }
 
     }

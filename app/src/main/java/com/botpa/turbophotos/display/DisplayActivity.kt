@@ -1,8 +1,10 @@
 package com.botpa.turbophotos.display
 
 import android.annotation.SuppressLint
+import android.app.ComponentCaller
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
@@ -24,6 +26,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SnapHelper
 
 import com.botpa.turbophotos.R
+import com.botpa.turbophotos.gallery.Album
 import com.botpa.turbophotos.gallery.CoonItem
 import com.botpa.turbophotos.gallery.GalleryActivity
 import com.botpa.turbophotos.gallery.Library
@@ -38,6 +41,7 @@ import com.botpa.turbophotos.util.Orion.ResizeHeightAnimation
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import java.io.File
 
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -61,6 +65,7 @@ class DisplayActivity : GalleryActivity() {
     //Activity
     private lateinit var backManager: BackManager
     private var isInit = false
+    private var isViewingExternal: Boolean = false
 
     //Events
     private val onAction = ActionEvent { action -> this.manageAction(action) }
@@ -69,9 +74,12 @@ class DisplayActivity : GalleryActivity() {
     private lateinit var displayLayoutManager: DisplayLayoutManager
     private lateinit var displayAdapter: DisplayAdapter
 
-    private val displayItems: MutableList<CoonItem> = ArrayList()
+    private lateinit var displayGallery: List<CoonItem>
     private var currentIndexInGallery = -1
+
+    private val displayItems: MutableList<CoonItem> = ArrayList()
     private var currentIndexInDisplay = -1
+
     private lateinit var currentItem: CoonItem
 
     private lateinit var displayList: RecyclerView
@@ -194,6 +202,13 @@ class DisplayActivity : GalleryActivity() {
         }
     }
 
+    override fun onNewIntent(intent: Intent, caller: ComponentCaller) {
+        super.onNewIntent(intent, caller)
+
+        //Handle intent
+        handleIntent(intent)
+    }
+
     private fun initActivity() {
         //Check if intent is valid
         val intent = getIntent()
@@ -202,16 +217,44 @@ class DisplayActivity : GalleryActivity() {
             return
         }
 
-        //Check if intent has item index
-        val index = intent.getIntExtra("index", -1)
-        if (index < 0) {
-            finish()
-            return
-        }
-        selectItem(index)
+        //Handle intent
+        handleIntent(intent)
 
         //Mark as init
         isInit = true
+    }
+
+    private fun handleIntent(intent: Intent) {
+        //Check if intent has data (an external app requested to view a file)
+        val uri: Uri? = intent.data
+        if (uri != null) {
+            //Viewing external file
+            isViewingExternal = true
+
+            //Init gallery list
+            val gallery: MutableList<CoonItem> = ArrayList()
+            displayGallery = gallery
+
+            //Create item from uri & add it to list
+            gallery.add(CoonItem.createFromUri(this, uri, Album("Temp")))
+
+            //Select first item
+            selectItem(0)
+        } else {
+            //Viewing gallery item
+            isViewingExternal = false
+
+            //Init gallery list
+            displayGallery = Library.gallery
+
+            //Check if intent has item index
+            val index = intent.getIntExtra("index", -1)
+            if (index < 0) {
+                finish()
+                return
+            }
+            selectItem(index)
+        }
     }
 
     //Events
@@ -220,7 +263,7 @@ class DisplayActivity : GalleryActivity() {
         if (action.isOfType(Action.TYPE_NONE)) return
 
         //Check if gallery is empty
-        if (Library.gallery.isEmpty()) {
+        if (displayGallery.isEmpty()) {
             //Is empty -> Close display
             finish()
             return
@@ -516,7 +559,7 @@ class DisplayActivity : GalleryActivity() {
     private fun selectItem(index: Int) {
         //Fix index overflow
         var index = index
-        index = Math.clamp(index.toLong(), 0, Library.gallery.size - 1)
+        index = Math.clamp(index.toLong(), 0, displayGallery.size - 1)
 
         //Reset display items
         displayItems.clear()
@@ -526,13 +569,13 @@ class DisplayActivity : GalleryActivity() {
         //Add items to display list
         if (index > 0) {
             //Has item before -> Add it
-            displayItems.add(Library.gallery[index - 1])
+            displayItems.add(displayGallery[index - 1])
             currentIndexInDisplay++
         }
-        displayItems.add(Library.gallery[index])
-        if (index < Library.gallery.size - 1) {
+        displayItems.add(displayGallery[index])
+        if (index < displayGallery.size - 1) {
             //Has item after -> Add it
-            displayItems.add(Library.gallery[index + 1])
+            displayItems.add(displayGallery[index + 1])
         }
 
         //Get current image, update adapter & select it
@@ -622,18 +665,27 @@ class DisplayActivity : GalleryActivity() {
 
             //Update options list
             options.clear()
-            if (!isTrashed) {
-                options.add(optionRename)
-                options.add(optionEdit)
-                options.add(optionShare)
-                options.add(optionMove)
-                options.add(optionCopy)
-                options.add(optionSeparator)
-                options.add(optionTrash)
+            if (isViewingExternal) {
+                //Viewing external file
+                if (!isTrashed) {
+                    options.add(optionEdit)
+                    options.add(optionShare)
+                }
             } else {
-                options.add(optionRestore)
+                //Viewing gallery items
+                if (!isTrashed) {
+                    options.add(optionRename)
+                    options.add(optionEdit)
+                    options.add(optionShare)
+                    options.add(optionMove)
+                    options.add(optionCopy)
+                    options.add(optionSeparator)
+                    options.add(optionTrash)
+                } else {
+                    options.add(optionRestore)
+                }
+                options.add(optionDelete)
             }
-            options.add(optionDelete)
             optionsAdapter.notifyDataSetChanged()
 
             //Show
