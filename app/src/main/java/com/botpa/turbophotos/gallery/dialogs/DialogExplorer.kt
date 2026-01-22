@@ -6,6 +6,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ListView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
@@ -23,6 +24,7 @@ class DialogExplorer(
 ) : CustomDialog(context, R.layout.dialog_explorer) {
 
     //Views
+    private lateinit var folderPath: TextView
     private lateinit var listLayout: View
     private lateinit var list: ListView
     private lateinit var createLayout: View
@@ -64,6 +66,7 @@ class DialogExplorer(
 
     override fun initViews() {
         //Init views
+        folderPath = root.findViewById(R.id.folderPath)
         listLayout = root.findViewById(R.id.listLayout)
         list = root.findViewById(R.id.list)
         createLayout = root.findViewById(R.id.createLayout)
@@ -77,7 +80,7 @@ class DialogExplorer(
     override fun initDialog(builder: MaterialAlertDialogBuilder): MaterialAlertDialogBuilder {
         //Init dialog
         return builder.apply {
-            setTitle(adapter.currentFolderName)
+            setTitle(if (isSelectingFiles) "Select a file" else "Select a folder")
             setNeutralButton(getCreateText(), null)
             setNegativeButton("Cancel", null)
         }
@@ -125,7 +128,7 @@ class DialogExplorer(
             adapter.setCurrentFolder(item)
             adapter.notifyDataSetChanged()
             list.setSelectionAfterHeaderView() //Scroll to top
-            dialog.setTitle(adapter.currentFolderName)
+            updateCurrentFolderName()
         }
 
         //Create a folder
@@ -202,11 +205,7 @@ class DialogExplorer(
                 createLayout.visibility = View.GONE
 
                 //Reset focus
-                /*if (context is Activity) {
-                    val activity: Activity = context
-                    Orion.clearFocus(activity)
-                    Orion.hideKeyboard(activity)
-                }*/
+                createInput.clearFocus()
 
                 //Update neutral button
                 neutralButton.text = getCreateText()
@@ -215,12 +214,19 @@ class DialogExplorer(
     }
 
     override fun onInitEnd() {
+        //Update current folder name
+        updateCurrentFolderName()
+
         //Update create menu
         createInput.hint = getInputHint()
         createButton.text = getCreateText()
     }
 
     //Helpers
+    private fun updateCurrentFolderName() {
+        folderPath.text = adapter.getCurrentPath()
+    }
+
     private fun updateItemsList(folder: File) {
         //Clear old items
         items.clear()

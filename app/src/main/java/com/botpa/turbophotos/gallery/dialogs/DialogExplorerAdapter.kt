@@ -70,6 +70,18 @@ class DialogExplorerAdapter(
         currentFolder = newFolder
     }
 
+    fun getCurrentPath(): String {
+        //Get parent
+        val currentPath = currentFolder.absolutePath
+        val storagePath = externalStorage.absolutePath
+        val prettyPath = if (currentPath.startsWith(storagePath)) {
+            "External storage${currentPath.substring(storagePath.length)}"
+        } else {
+            currentPath
+        }
+        return prettyPath.replace("/", " > ")
+    }
+
     //Listeners
     fun interface Listener { fun invoke(index: Int) }
 

@@ -41,7 +41,7 @@ class HomeAdapter(
 
         //Update text
         holder.name.text = album.name
-        holder.info.text = album.size().toString() + " items"
+        holder.info.text = "${album.size()} items"
 
         //Add listeners
         holder.background.setOnClickListener { view: View -> onClickListener?.onClick(view, album) }
@@ -79,13 +79,9 @@ class HomeAdapter(
     //Listeners
     private var onClickListener: OnClickListener? = null
 
-    fun interface OnClickListener {
-        fun onClick(view: View, album: Album)
-    }
+    fun interface OnClickListener { fun onClick(view: View, album: Album) }
 
-    fun setOnClickListener(onClickListener: OnClickListener?) {
-        this.onClickListener = onClickListener
-    }
+    fun setOnClickListener(onClickListener: OnClickListener?) { this.onClickListener = onClickListener }
 
     //Holder
     class AlbumHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
