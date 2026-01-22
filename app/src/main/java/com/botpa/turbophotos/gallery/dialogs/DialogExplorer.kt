@@ -1,5 +1,6 @@
 package com.botpa.turbophotos.gallery.dialogs
 
+import android.app.Activity
 import android.content.Context
 import android.os.Environment
 import android.view.View
@@ -78,7 +79,7 @@ class DialogExplorer(
         //Init dialog
         return builder.apply {
             setTitle(adapter.currentFolderName)
-            setNeutralButton(if (isSelectingFiles) TEXT_CREATE_FILE else TEXT_CREATE_FOLDER, null)
+            setNeutralButton(getCreateText(), null)
             setNegativeButton("Cancel", null)
         }
     }
@@ -86,7 +87,7 @@ class DialogExplorer(
     override fun initListeners() {
         //List (select & open a folder)
         adapter.setOnSelectListener { index ->
-            //Select folder
+            //Select file
             onSelect(items[index])
 
             //Close dialog
@@ -136,35 +137,43 @@ class DialogExplorer(
 
         //Create a folder
         createButton.setOnClickListener { view ->
-            //Get item name
-            val itemName = createInput.text.toString().trim()
+            //Get input value
+            val inputValue = createInput.text.toString().trim()
 
             //Check if item exists
-            if (itemName.isEmpty()) {
+            if (inputValue.isEmpty()) {
                 //Name is empty
                 Toast.makeText(context, "Name can't be empty.", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
             //Get item file
-            val item = File(adapter.currentFolderPath, if (isSelectingFiles && !fileExtension.isEmpty()) "$itemName.$fileExtension" else itemName)
-
-            //Check if item exists
-            if (item.exists()) {
-                //Item already exists
-                Toast.makeText(context, "${if (isSelectingFiles) "File" else "Folder"} already exists.", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
+            val itemName = if (isSelectingFiles && !fileExtension.isEmpty()) "$inputValue.$fileExtension" else inputValue
+            val item = File(adapter.currentFolderPath, itemName)
 
             //Create item
             if (isSelectingFiles) {
+                //Check if file exists
+                if (item.exists()) {
+                    //File already exists
+                    Toast.makeText(context, "File already exists.", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
                 //Create file
                 if (!item.createNewFile()) {
-                    //Failed to create folder
+                    //Failed to create file
                     Toast.makeText(context, "Failed to create file.", Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
             } else {
+                //Check if folder exists
+                if (item.exists()) {
+                    //Folder already exists
+                    Toast.makeText(context, "Folder already exists.", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
                 //Create folder
                 if (!item.mkdir()) {
                     //Failed to create folder
@@ -173,7 +182,7 @@ class DialogExplorer(
                 }
             }
 
-            //Accept file
+            //Select file
             onSelect(item)
 
             //Close dialog
@@ -193,25 +202,29 @@ class DialogExplorer(
                 createInput.requestFocus()
 
                 //Update neutral button
-                neutralButton.text = if (isSelectingFiles) TEXT_SELECT_FILE else TEXT_SELECT_FOLDER
+                neutralButton.text = getSelectText()
             } else {
                 //Toggle menus (show filters list)
                 listLayout.visibility = View.VISIBLE
                 createLayout.visibility = View.GONE
 
                 //Reset focus
-                createInput.clearFocus()
+                /*if (context is Activity) {
+                    val activity: Activity = context
+                    Orion.clearFocus(activity)
+                    Orion.hideKeyboard(activity)
+                }*/
 
                 //Update neutral button
-                neutralButton.text = if (isSelectingFiles) TEXT_CREATE_FILE else TEXT_CREATE_FOLDER
+                neutralButton.text = getCreateText()
             }
         }
     }
 
     override fun onInitEnd() {
         //Update create menu
-        createInput.hint = if (isSelectingFiles) TEXT_INPUT_FILE else TEXT_INPUT_FOLDER
-        createButton.text = if (isSelectingFiles) TEXT_CREATE_FILE else TEXT_CREATE_FOLDER
+        createInput.hint = getInputHint()
+        createButton.text = getCreateText()
     }
 
     //Helpers
@@ -244,6 +257,18 @@ class DialogExplorer(
 
         //Sort items
         items.sortWith(compareBy<File> { !it.isDirectory }.thenBy { it.name.lowercase() })
+    }
+
+    private fun getInputHint(): String {
+        return if (isSelectingFiles) TEXT_INPUT_FILE else TEXT_INPUT_FOLDER
+    }
+
+    private fun getCreateText(): String {
+        return if (isSelectingFiles) TEXT_CREATE_FILE else TEXT_CREATE_FOLDER
+    }
+
+    private fun getSelectText(): String {
+        return if (isSelectingFiles) TEXT_SELECT_FILE else TEXT_SELECT_FOLDER
     }
 
 }

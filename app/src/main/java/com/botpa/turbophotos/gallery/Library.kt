@@ -6,7 +6,6 @@ import android.content.Intent
 import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
@@ -21,7 +20,6 @@ import com.botpa.turbophotos.gallery.actions.Action
 import com.botpa.turbophotos.gallery.actions.ActionError
 import com.botpa.turbophotos.gallery.dialogs.DialogAlbums
 import com.botpa.turbophotos.gallery.dialogs.DialogErrors
-import com.botpa.turbophotos.gallery.dialogs.DialogExplorer
 import com.botpa.turbophotos.gallery.dialogs.DialogInput
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage.getBool
@@ -238,20 +236,20 @@ object Library {
             Log.e(LOG_LIBRARY, "Error loading albums: " + e.message)
         }
 
-        //Remove unused albums & fill albums list
+        //Remove unused albums & populate albums list
         _albums.clear()
         val iterator = _albumsMap.entries.iterator()
         while (iterator.hasNext()) {
             //Get album
             val album = iterator.next().value
 
-            //Check if album is empty & not used in trash
-            if (album.isEmpty() && !trashMap.contains(album)) {
-                //Is empty & no trashed items are from this album -> Remove it
-                iterator.remove()
-            } else {
+            //Check what to do with album
+            if (!album.isEmpty()) {
                 //Not empty -> Add it to albums list
                 _albums.add(album)
+            } else if (!isAlbumInUse(album)) {
+                //Not in use -> Remove it
+                iterator.remove()
             }
         }
 
@@ -320,15 +318,24 @@ object Library {
         //Remove album from albums list
         val album = _albums.removeAt(index)
 
-        //Check if trash contains items from this album
-        if (!trashMap.containsKey(album)) {
-            //No items from this album in trash -> Remove album completely
-            _albumsMap.remove(album.imagesPath)
-        }
+        //Remove album completely if not being used
+        removeAlbumFromMapIfSafe(album)
     }
 
     private fun sortAlbumsList() {
         _albums.sortByDescending { it.get(0).lastModified }
+    }
+
+    private fun isAlbumInUse(album: Album): Boolean {
+        return !album.isEmpty() || trashMap.contains(album)
+    }
+
+    private fun removeAlbumFromMapIfSafe(album: Album) {
+        //Album is in use
+        if (isAlbumInUse(album)) return
+
+        //Delete album
+        _albumsMap.remove(album.imagesPath)
     }
 
     //Trash
@@ -349,11 +356,8 @@ object Library {
             //No more items from this album in trash -> Remove album from trash
             trashMap.remove(originalAlbum)
 
-            //Check if original album still has items
-            if (originalAlbum.isEmpty()) {
-                //Is empty -> Remove album completely
-                _albumsMap.remove(originalAlbum.imagesPath)
-            }
+            //Remove album completely if not being used
+            removeAlbumFromMapIfSafe(originalAlbum)
         } else {
             //Update trash amount
             trashMap[originalAlbum] = newTrashAmount
@@ -464,24 +468,9 @@ object Library {
     }
 
     //Actions (dialogs)
-    fun showActionErrorsDialog(context: Context, action: Action) {
-        //Create dialog
-        DialogErrors(context, action.errors).buildAndShow()
-    }
-
-    fun showSelectAlbumDialog(context: Context, onSelect: (Album) -> Unit) {
+    private fun showSelectAlbumDialog(context: Context, onSelect: (Album) -> Unit) {
         //Create dialog
         DialogAlbums(context, albums, onSelect, { folder: File -> onSelect(getOrCreateAlbumFromFolder(folder)) }).buildAndShow()
-    }
-
-    fun showSelectFileDialog(context: Context, onSelect: (File) -> Unit) {
-        //Create dialog
-        DialogExplorer(context, true, onSelect).buildAndShow()
-    }
-
-    fun showSelectFolderDialog(context: Context, onSelect: (File) -> Unit) {
-        //Create dialog
-        DialogExplorer(context, false, onSelect).buildAndShow()
     }
 
     //Actions (base & util)
@@ -594,7 +583,7 @@ object Library {
         //Check if actions failed
         if (!action.errors.isEmpty()) {
             //Actions failed -> Show dialog
-            showActionErrorsDialog(context, action)
+            DialogErrors(context, action.errors).buildAndShow()
         }
 
         //Invoke action

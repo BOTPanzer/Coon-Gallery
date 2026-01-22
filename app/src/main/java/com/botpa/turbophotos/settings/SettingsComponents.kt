@@ -75,8 +75,8 @@ fun SettingsItem(
 fun LinkItem(
     index: Int,
     link: Link,
-    onChooseFolder: (Int) -> Unit,
-    onChooseFile: (Int, Link) -> Unit,
+    onChooseAlbum: (Int) -> Unit,
+    onChooseMetadata: (Int, Link) -> Unit,
     onDelete: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -114,7 +114,7 @@ fun LinkItem(
             ) {
                 //Select button
                 IconButton(
-                    onClick = { onChooseFolder(index) },
+                    onClick = { onChooseAlbum(index) },
                     painter = painterResource(R.drawable.folder),
                     contentDescription = "Select album folder"
                 )
@@ -143,7 +143,7 @@ fun LinkItem(
             ) {
                 //Select button
                 IconButton(
-                    onClick = { onChooseFile(index, link) },
+                    onClick = { onChooseMetadata(index, link) },
                     painter = painterResource(R.drawable.file),
                     contentDescription = "Select metadata file"
                 )
@@ -181,8 +181,8 @@ fun LinkItemPreview() {
     LinkItem(
         index = 0,
         link = Link("Camera", "camera.json"),
-        onChooseFolder = { i -> },
-        onChooseFile = { i, l -> },
+        onChooseAlbum = { i -> },
+        onChooseMetadata = { i, l -> },
         onDelete = { i -> }
     )
 }

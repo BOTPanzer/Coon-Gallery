@@ -55,9 +55,6 @@ class Link(albumPath: String, metadataPath: String) {
             val list = ArrayList<String>()
             for (link in links) list.add(link.toString())
             Storage.putStringList(StoragePairs.LIBRARY_LINKS_KEY, list)
-
-            //Restart main activity on resume
-            HomeActivity.reloadOnResume()
         }
 
         //Updating list
@@ -89,12 +86,15 @@ class Link(albumPath: String, metadataPath: String) {
         }
 
         fun updateLinkFolder(index: Int, newFolder: File): Boolean {
+            //Get old link
+            val oldLink = links[index]
+
+            //Check if new folder is the same
+            if (newFolder == oldLink.albumFolder) return true
+
             //Check if album is already in a link
             val keyNew = newFolder.absolutePath
             if (linksMap.containsKey(keyNew)) return false
-
-            //Get old link
-            val oldLink = links[index]
 
             //Update it
             val link = Link(newFolder.absolutePath, oldLink.metadataPath)

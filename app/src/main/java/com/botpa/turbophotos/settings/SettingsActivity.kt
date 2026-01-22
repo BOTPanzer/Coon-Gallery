@@ -31,7 +31,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.botpa.turbophotos.BuildConfig
 import com.botpa.turbophotos.R
+import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.Link
+import com.botpa.turbophotos.gallery.dialogs.DialogAlbums
 import com.botpa.turbophotos.gallery.dialogs.DialogExplorer
 import com.botpa.turbophotos.gallery.views.Group
 import com.botpa.turbophotos.gallery.views.GroupDivider
@@ -41,7 +43,6 @@ import com.botpa.turbophotos.gallery.views.IconButton
 import com.botpa.turbophotos.gallery.views.Layout
 import com.botpa.turbophotos.theme.CoonTheme
 import com.botpa.turbophotos.theme.FONT_COMFORTAA
-import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
@@ -99,57 +100,53 @@ class SettingsActivity : AppCompatActivity() {
                 ).buildAndShow()
 
                 //Feedback toast
-                Toast.makeText(activity, "Select a backup file to restore.", Toast.LENGTH_LONG).show()
+                Toast.makeText(activity, "Select a backup file to restore.", Toast.LENGTH_SHORT).show()
             }
         }
 
         //Links actions
-        val onChooseLinkFolder = remember<(Int) -> Unit> {
+        val onChooseLinkAlbum = remember<(Int) -> Unit> {
             { index ->
-                //Show select folder dialog
-                DialogExplorer(
-                    context = activity,
-                    isSelectingFiles = false,
-                    onSelect = { file ->
-                        //Update link folder
-                        val updated = Link.updateLinkFolder(index, file)
-
-                        //Check if update was successful
-                        if (!updated) Orion.snack(activity, "Album already exists")
+                //Show select album dialog
+                DialogAlbums(
+                    context = context,
+                    albums = Library.albums,
+                    onSelectAlbum = { album ->
+                        //Choose album folder
+                        val folder = album.imagesFolder ?: return@DialogAlbums
+                        view.updateLinkAlbumFolder(activity, index, folder)
+                    },
+                    onSelectFolder = { folder ->
+                        //Choose folder
+                        view.updateLinkAlbumFolder(activity, index, folder)
                     }
                 ).buildAndShow()
 
                 //Feedback toast
-                Toast.makeText(activity, "Select a folder to use as album.", Toast.LENGTH_LONG).show()
+                Toast.makeText(activity, "Select an album to link it.", Toast.LENGTH_SHORT).show()
             }
         }
-        val onChooseLinkFile = remember<(Int, Link) -> Unit> {
+        val onChooseLinkMetadata = remember<(Int, Link) -> Unit> {
             { index, link ->
                 //Check if album folder exists
                 if (!link.albumFolder.exists()) {
                     //Feedback toast
-                    Toast.makeText(activity, "Add an album folder first.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(activity, "Add an album first.", Toast.LENGTH_SHORT).show()
                 } else {
                     //Show select file dialog
                     DialogExplorer(
-                        context = activity,
+                        context = context,
                         isSelectingFiles = true,
                         fileExtension = "json",
                         onSelect = { file ->
-                            //Update link with selected file
-                            Link.updateLinkFile(index, file)
+                            //Choose file
+                            view.updateLinkMetadataFile(index, file)
                         }
                     ).buildAndShow()
 
                     //Feedback toast
-                    Toast.makeText(activity, "Select a file to use as metadata.", Toast.LENGTH_LONG).show()
+                    Toast.makeText(activity, "Select a file to link it.", Toast.LENGTH_SHORT).show()
                 }
-            }
-        }
-        val onDeleteLink = remember<(Int) -> Unit> {
-            { index ->
-                //Remove link
-                if (Link.removeLink(index)) Link.saveLinks()
             }
         }
 
@@ -325,9 +322,9 @@ class SettingsActivity : AppCompatActivity() {
                                 LinkItem(
                                     index = index,
                                     link = link,
-                                    onChooseFolder = onChooseLinkFolder,
-                                    onChooseFile = onChooseLinkFile,
-                                    onDelete = onDeleteLink
+                                    onChooseAlbum = onChooseLinkAlbum,
+                                    onChooseMetadata = onChooseLinkMetadata,
+                                    onDelete = { index -> view.removeLink(index) }
                                 )
 
                                 //Add divider between items
@@ -337,16 +334,7 @@ class SettingsActivity : AppCompatActivity() {
 
                         //Add link button
                         Button(
-                            onClick = {
-                                //Create & try to add new link
-                                if (Link.addLink(Link("", ""))) {
-                                    //Added -> Save links
-                                    Link.saveLinks()
-                                } else {
-                                    //Not added -> There is another link with the same album
-                                    Orion.snack(activity, "Can't have duplicate albums")
-                                }
-                            },
+                            onClick = { view.addLink(activity) },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(top = 10.dp)
@@ -383,9 +371,7 @@ class SettingsActivity : AppCompatActivity() {
                                 description = "Click to see the things I make!"
                             ) {
                                 IconButton(
-                                    onClick = {
-                                        uriHandler.openUri("https://botpa.vercel.app/")
-                                    },
+                                    onClick = { uriHandler.openUri("https://botpa.vercel.app/") },
                                     painter = painterResource(R.drawable.open),
                                     contentDescription = "Portfolio"
                                 )
@@ -400,9 +386,7 @@ class SettingsActivity : AppCompatActivity() {
                                 description = "Click to check for updates!"
                             ) {
                                 IconButton(
-                                    onClick = {
-                                        uriHandler.openUri("https://github.com/BOTPanzer/Coon-Gallery")
-                                    },
+                                    onClick = { uriHandler.openUri("https://github.com/BOTPanzer/Coon-Gallery") },
                                     painter = painterResource(R.drawable.open),
                                     contentDescription = "Github"
                                 )

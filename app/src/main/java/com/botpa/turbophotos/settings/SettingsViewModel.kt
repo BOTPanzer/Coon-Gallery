@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.botpa.turbophotos.gallery.Link
 import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.home.HomeActivity
 import com.botpa.turbophotos.util.Orion
@@ -152,6 +153,55 @@ class SettingsViewModel : ViewModel() {
     fun updateAlbumShowMissingMetadataIcon(isChecked: Boolean) {
         albumShowMissingMetadataIcon = isChecked
         Storage.putBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON.key, isChecked)
+    }
+
+    //Links
+    fun updateLinkAlbumFolder(activity: Activity, index: Int, folder: File) {
+        //Update link folder
+        val updated = Link.updateLinkFolder(index, folder)
+
+        //Check if update was successful
+        if (!updated) {
+            //Failed -> Show error
+            Orion.snack(activity, "Album already exists")
+        } else {
+            //Success -> Reload library on home resume
+            HomeActivity.reloadOnResume()
+        }
+    }
+
+    fun updateLinkMetadataFile(index: Int, file: File) {
+        //Update link with selected file
+        Link.updateLinkFile(index, file)
+
+        //Reload library on home resume
+        HomeActivity.reloadOnResume()
+    }
+
+    fun removeLink(index: Int) {
+        //Remove link
+        if (!Link.removeLink(index)) return
+
+        //Save links
+        Link.saveLinks()
+
+        //Reload library on home resume
+        HomeActivity.reloadOnResume()
+    }
+
+    fun addLink(activity: Activity) {
+        //Try to add new empty link
+        if (!Link.addLink(Link("", ""))) {
+            //Not added -> There is another link with the same album
+            Orion.snack(activity, "Can't have duplicate albums")
+            return
+        }
+
+        //Save links
+        Link.saveLinks()
+
+        //Reload library on home resume
+        HomeActivity.reloadOnResume()
     }
 
 }
