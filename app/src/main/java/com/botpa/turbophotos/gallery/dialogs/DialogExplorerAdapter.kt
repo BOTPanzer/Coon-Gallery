@@ -43,8 +43,8 @@ class DialogExplorerAdapter(
             if (item != null) {
                 icon.setImageResource(if (item.isFile) R.drawable.file else R.drawable.folder)
                 name.text = item.name
+                select.visibility = if (isSelectingFiles && item.isDirectory) View.GONE else View.VISIBLE
             }
-            select.visibility = if (isSelectingFiles) View.GONE else View.VISIBLE
         }
 
         //Add listeners

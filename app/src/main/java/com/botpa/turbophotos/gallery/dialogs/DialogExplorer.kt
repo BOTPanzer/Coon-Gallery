@@ -1,6 +1,5 @@
 package com.botpa.turbophotos.gallery.dialogs
 
-import android.app.Activity
 import android.content.Context
 import android.os.Environment
 import android.view.View
@@ -42,12 +41,12 @@ class DialogExplorer(
     companion object {
         //File picker
         private const val TEXT_INPUT_FILE: String = "File name"
-        private const val TEXT_CREATE_FILE: String = "Create file"
-        private const val TEXT_SELECT_FILE: String = "Select file"
+        private const val TEXT_CREATE_FILE: String = "Create new file"
+        private const val TEXT_SELECT_FILE: String = "Select existing file"
         //Folder picker
         private const val TEXT_INPUT_FOLDER: String = "Folder name"
-        private const val TEXT_CREATE_FOLDER: String = "Create folder"
-        private const val TEXT_SELECT_FOLDER: String = "Select folder"
+        private const val TEXT_CREATE_FOLDER: String = "Create new folder"
+        private const val TEXT_SELECT_FOLDER: String = "Select existing folder"
     }
 
 
@@ -95,7 +94,7 @@ class DialogExplorer(
         }
 
         adapter.setOnOpenListener { index ->
-            //Get folder
+            //Get item
             val item = if (index < 0) {
                 //Back button
                 adapter.currentFolderParent
@@ -106,33 +105,27 @@ class DialogExplorer(
 
             //Check if item is valid
             if (item == null) {
-                //Invalid folder
+                //Invalid item
                 Toast.makeText(context, "Invalid item", Toast.LENGTH_SHORT).show()
                 return@setOnOpenListener
             }
 
-            //Check item type
-            if (item.isFile) {
-                //File -> Select file
-                onSelect(item)
+            //Check if item is not a folder
+            if (!item.isDirectory) return@setOnOpenListener
 
-                //Close dialog
-                dialog.dismiss()
-            } else {
-                //Folder -> Check if folder can be read and written to
-                if (!item.canRead() || !item.canWrite()) {
-                    //Folder can't be read/written to
-                    Toast.makeText(context, "Missing permissions to use that folder", Toast.LENGTH_SHORT).show()
-                    return@setOnOpenListener
-                }
-
-                //Update adapter & dialog
-                updateItemsList(item)
-                adapter.setCurrentFolder(item)
-                adapter.notifyDataSetChanged()
-                list.setSelectionAfterHeaderView() //Scroll to top
-                dialog.setTitle(adapter.currentFolderName)
+            //Check if folder can be read and written to
+            if (!item.canRead() || !item.canWrite()) {
+                //Folder can't be read/written to
+                Toast.makeText(context, "Missing permissions to use that folder", Toast.LENGTH_SHORT).show()
+                return@setOnOpenListener
             }
+
+            //Update adapter & dialog
+            updateItemsList(item)
+            adapter.setCurrentFolder(item)
+            adapter.notifyDataSetChanged()
+            list.setSelectionAfterHeaderView() //Scroll to top
+            dialog.setTitle(adapter.currentFolderName)
         }
 
         //Create a folder

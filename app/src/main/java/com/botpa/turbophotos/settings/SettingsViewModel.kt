@@ -162,8 +162,8 @@ class SettingsViewModel : ViewModel() {
 
         //Check if update was successful
         if (!updated) {
-            //Failed -> Show error
-            Orion.snack(activity, "Album already exists")
+            //Failed -> There is another link with the same album
+            Orion.snack(activity, "A link with that album already exists")
         } else {
             //Success -> Reload library on home resume
             HomeActivity.reloadOnResume()
@@ -193,7 +193,7 @@ class SettingsViewModel : ViewModel() {
         //Try to add new empty link
         if (!Link.addLink(Link("", ""))) {
             //Not added -> There is another link with the same album
-            Orion.snack(activity, "Can't have duplicate albums")
+            Orion.snack(activity, "A link with that album already exists")
             return
         }
 

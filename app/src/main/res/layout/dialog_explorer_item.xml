@@ -12,6 +12,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"
+        android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingVertical="16dp">
 
@@ -33,6 +34,7 @@
     </LinearLayout>
 
     <Button
+        style="?attr/materialIconButtonFilledStyle"
         android:id="@+id/itemSelect"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -40,5 +42,6 @@
         android:layout_marginTop="-16dp"
         android:layout_marginBottom="-16dp"
         android:clickable="true"
-        android:text="Select" />
+        app:icon="@drawable/check">
+    </Button>
 </LinearLayout>

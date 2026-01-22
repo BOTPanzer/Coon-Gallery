@@ -5,9 +5,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.ImageView
 import android.widget.TextView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Album
+import com.botpa.turbophotos.gallery.CoonItem
 
 class DialogAlbumsAdapter(
     context: Context,
@@ -19,6 +21,7 @@ class DialogAlbumsAdapter(
         val view: View = convertView ?: LayoutInflater.from(context).inflate(R.layout.dialog_albums_item, parent, false)
 
         //Get views
+        val icon = view.findViewById<ImageView>(R.id.albumIcon)
         val name = view.findViewById<TextView>(R.id.albumName)
 
         //Get album
@@ -26,6 +29,7 @@ class DialogAlbumsAdapter(
 
         //Update name
         if (album != null) {
+            if (!album.isEmpty()) CoonItem.load(context, icon, album.get(0))
             name.text = album.name
         }
 
