@@ -43,6 +43,7 @@ import com.botpa.turbophotos.gallery.views.GroupDivider
 import com.botpa.turbophotos.gallery.views.GroupItems
 import com.botpa.turbophotos.gallery.views.GroupTitle
 import com.botpa.turbophotos.gallery.views.Layout
+import com.botpa.turbophotos.gallery.views.SimpleButton
 import com.botpa.turbophotos.gallery.views.groupItemPaddingHorizontal
 import com.botpa.turbophotos.gallery.views.groupItemPaddingVertical
 import com.botpa.turbophotos.sync.SyncEventBus.Companion.instance
@@ -169,13 +170,14 @@ class SyncActivity : AppCompatActivity() {
                         .padding(top = 10.dp)
                 ) {
                     //Connect button
-                    Button(
+                    SimpleButton(
+                        text = "Connect",
                         onClick = {
                             //Already trying to connect
-                            if (view.connectionStatus != SyncService.STATUS_OFFLINE) return@Button
+                            if (view.connectionStatus != SyncService.STATUS_OFFLINE) return@SimpleButton
 
                             //Check if code is valid
-                            if (view.connectCode.isEmpty()) return@Button
+                            if (view.connectCode.isEmpty()) return@SimpleButton
 
                             //Check if name should get saved
                             if (!view.connectName.isEmpty()) {
@@ -204,14 +206,8 @@ class SyncActivity : AppCompatActivity() {
                             connect(view.connectCode)
                         },
                         modifier = Modifier
-                            .weight(1.0f)
-                    ) {
-                        Text(
-                            text = "Connect",
-                            fontFamily = FONT_COMFORTAA,
-                            fontSize = 14.sp
-                        )
-                    }
+                            .fillMaxWidth()
+                    )
 
                     //Connecting indicator
                     if (connecting) {
@@ -329,18 +325,13 @@ class SyncActivity : AppCompatActivity() {
             }
 
             //Exit button
-            Button(
+            SimpleButton(
+                text = "Exit",
                 onClick = { finish() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 10.dp)
-            ) {
-                Text(
-                    text = "Exit",
-                    fontFamily = FONT_COMFORTAA,
-                    fontSize = 14.sp
-                )
-            }
+            )
         }
     }
 

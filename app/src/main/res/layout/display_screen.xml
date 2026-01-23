@@ -167,7 +167,8 @@
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/opificio_bold_rounded"
                                     android:text="Name"
-                                    android:textColor="?attr/colorOnPrimary" />
+                                    android:textColor="?attr/colorOnPrimary"
+                                    android:textSize="16sp" />
 
                                 <TextView
                                     android:id="@+id/infoName"
@@ -190,7 +191,8 @@
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/opificio_bold_rounded"
                                     android:text="Date"
-                                    android:textColor="?attr/colorOnPrimary" />
+                                    android:textColor="?attr/colorOnPrimary"
+                                    android:textSize="16sp" />
 
                                 <TextView
                                     android:id="@+id/infoDate"
@@ -213,7 +215,8 @@
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/opificio_bold_rounded"
                                     android:text="Caption"
-                                    android:textColor="?attr/colorOnPrimary" />
+                                    android:textColor="?attr/colorOnPrimary"
+                                    android:textSize="16sp" />
 
                                 <TextView
                                     android:id="@+id/infoCaption"
@@ -235,7 +238,8 @@
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/opificio_bold_rounded"
                                     android:text="Labels"
-                                    android:textColor="?attr/colorOnPrimary" />
+                                    android:textColor="?attr/colorOnPrimary"
+                                    android:textSize="16sp" />
 
                                 <HorizontalScrollView
                                     android:id="@+id/infoLabelsScroll"
@@ -277,7 +281,8 @@
                                         android:layout_height="wrap_content"
                                         android:fontFamily="@font/opificio_bold_rounded"
                                         android:text="Text"
-                                        android:textColor="?attr/colorOnPrimary" />
+                                        android:textColor="?attr/colorOnPrimary"
+                                        android:textSize="16sp" />
 
                                     <HorizontalScrollView
                                         android:id="@+id/infoTextScroll"
@@ -371,7 +376,8 @@
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/opificio_bold_rounded"
                             android:text="Caption"
-                            android:textColor="?attr/colorOnPrimary" />
+                            android:textColor="?attr/colorOnPrimary"
+                            android:textSize="16sp" />
 
                         <EditText
                             android:id="@+id/editCaption"
@@ -392,7 +398,8 @@
                             android:layout_marginTop="10dp"
                             android:fontFamily="@font/opificio_bold_rounded"
                             android:text="Labels"
-                            android:textColor="?attr/colorOnPrimary" />
+                            android:textColor="?attr/colorOnPrimary"
+                            android:textSize="16sp" />
 
                         <EditText
                             android:id="@+id/editLabels"

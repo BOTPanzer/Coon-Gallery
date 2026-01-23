@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.botpa.turbophotos.R
+import com.botpa.turbophotos.theme.FONT_COMFORTAA
 import com.botpa.turbophotos.theme.FONT_OPIFICIO
 import com.botpa.turbophotos.util.Orion
 
@@ -124,6 +125,21 @@ fun IconButton(onClick: () -> Unit, painter: Painter, contentDescription: String
             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimary),
             modifier = Modifier
                 .size(24.dp)
+        )
+    }
+}
+
+@Composable
+fun SimpleButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Button(
+        onClick = onClick,
+        modifier = modifier
+    ) {
+        Text(
+            text = text,
+            fontFamily = FONT_COMFORTAA,
+            fontWeight = FontWeight.Bold,
+            fontSize = 14.sp
         )
     }
 }

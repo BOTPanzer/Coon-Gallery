@@ -44,7 +44,6 @@
             android:id="@+id/optionName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/poppins"
             android:paddingTop="5dp"
             android:text="Option"
             android:textColor="?attr/colorOnPrimary"

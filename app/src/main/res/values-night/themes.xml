@@ -53,5 +53,8 @@
 
         <!-- Navigation bar color -->
         <item name="android:navigationBarColor">?attr/colorSurface</item>
+
+        <!-- Default font -->
+        <item name="android:fontFamily">@font/poppins</item>
     </style>
 </resources>

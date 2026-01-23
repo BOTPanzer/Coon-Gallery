@@ -21,7 +21,7 @@ class DialogAlbumsAdapter(
         return AlbumHolder(LayoutInflater.from(context).inflate(R.layout.dialog_albums_item, viewGroup, false))
     }
 
-    override fun onBindViewHolder(holder: DialogAlbumsAdapter.AlbumHolder, i: Int) {
+    override fun onBindViewHolder(holder: AlbumHolder, i: Int) {
         //Get holder position & album
         val position = holder.bindingAdapterPosition
         val album = albums[position]

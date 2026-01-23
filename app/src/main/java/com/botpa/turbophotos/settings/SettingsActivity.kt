@@ -41,6 +41,7 @@ import com.botpa.turbophotos.gallery.views.GroupItems
 import com.botpa.turbophotos.gallery.views.GroupTitle
 import com.botpa.turbophotos.gallery.views.IconButton
 import com.botpa.turbophotos.gallery.views.Layout
+import com.botpa.turbophotos.gallery.views.SimpleButton
 import com.botpa.turbophotos.theme.CoonTheme
 import com.botpa.turbophotos.theme.FONT_COMFORTAA
 import com.botpa.turbophotos.util.Storage
@@ -333,18 +334,13 @@ class SettingsActivity : AppCompatActivity() {
                         }
 
                         //Add link button
-                        Button(
+                        SimpleButton(
+                            text = "Add link",
                             onClick = { view.addLink(activity) },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(top = 10.dp)
-                        ) {
-                            Text(
-                                text = "Add link",
-                                fontFamily = FONT_COMFORTAA,
-                                fontSize = 14.sp
-                            )
-                        }
+                        )
                     }
                 }
 

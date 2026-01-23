@@ -88,6 +88,7 @@
                             android:singleLine="true"
                             android:text="frog"
                             android:textColor="?attr/colorOnSurface"
+                            android:textSize="12sp"
                             android:visibility="gone" />
                     </LinearLayout>
 
@@ -146,10 +147,10 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="5dp"
                         android:layout_weight="1"
-                        android:ems="10"
                         android:hint="Search"
                         android:paddingVertical="10dp"
-                        android:singleLine="true" />
+                        android:singleLine="true"
+                        android:textSize="16sp" />
 
                     <androidx.cardview.widget.CardView
                         android:id="@+id/searchClose"

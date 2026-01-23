@@ -53,8 +53,12 @@
 
         <!-- Navigation bar color -->
         <item name="android:navigationBarColor">?attr/colorSurface</item>
+
+        <!-- Default font -->
+        <item name="android:fontFamily">@font/poppins</item>
     </style>
 
+    <!-- EditText -->
     <style name="EditTextStyle" parent="Widget.AppCompat.EditText">
         <item name="android:textCursorDrawable">@drawable/custom_cursor</item>
         <item name="android:textColorPrimary">?attr/colorOnPrimary</item>
