@@ -704,14 +704,14 @@ object Library {
         if (items.size == 1) {
             //Share 1 item
             intent = Intent(Intent.ACTION_SEND)
-            intent.putExtra(Intent.EXTRA_STREAM, Orion.getFileUriFromFilePath(context, items[0].file.getAbsolutePath()))
+            intent.putExtra(Intent.EXTRA_STREAM, Orion.getFileUriFromFilePath(context, items[0].file.absolutePath))
             intent.type = items[0].mimeType
         } else {
             //Share multiple items
             intent = Intent(Intent.ACTION_SEND_MULTIPLE)
-            val URIs = ArrayList<Uri>()
-            for (item in items) URIs.add(Orion.getFileUriFromFilePath(context, item.file.absolutePath))
-            intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, URIs)
+            val uris = ArrayList<Uri?>()
+            for (item in items) uris.add(Orion.getFileUriFromFilePath(context, item.file.absolutePath))
+            intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris)
             intent.type = "*/*"
         }
         context.startActivity(Intent.createChooser(intent, null))
@@ -738,7 +738,7 @@ object Library {
 
             //Move item file
             val newFile = File(newAlbum.imagesPath, item.name)
-            if (!Orion.moveFile(item.file, newFile)) {
+            if (!item.file.renameTo(newFile)) {
                 //Failed to move file -> Error
                 action.errors.add(ActionError(item, "Error while moving item file."))
                 return@performAction
@@ -1012,7 +1012,7 @@ object Library {
     private fun deleteItemsInternal(context: Context, items: Array<CoonItem>) {
         performAction(context, Action.TYPE_DELETE, items) { action: Action, item: CoonItem ->
             //Delete item file
-            if (!Orion.deleteFile(item.file)) {
+            if (!item.file.delete()) {
                 //Failed to delete file -> Error
                 action.errors.add(ActionError(item, "Error while deleting item file."))
                 return@performAction

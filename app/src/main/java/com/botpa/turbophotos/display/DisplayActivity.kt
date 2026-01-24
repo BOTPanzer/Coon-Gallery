@@ -412,7 +412,7 @@ class DisplayActivity : GalleryActivity() {
             //Update metadata
             val key = currentItem.name
             val hasMetadata = currentItem.hasMetadata()
-            val metadata = currentItem.getMetadata() ?: Orion.getEmptyJson()
+            val metadata = currentItem.getMetadata() ?: Orion.emptyJson
             if (!hasMetadata) currentItem.album.metadata!!.set<JsonNode>(key, metadata)
             metadata.put("caption", caption)
             metadata.set<JsonNode>("labels", Orion.arrayToJson(labelsArray))

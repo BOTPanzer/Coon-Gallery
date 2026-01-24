@@ -32,7 +32,7 @@ class SettingsViewModel : ViewModel() {
     //App
     fun createSettingsBackup(context: Context) {
         //Create empty json
-        val json = Orion.getEmptyJson()
+        val json = Orion.emptyJson
 
         //Library
         json.put(

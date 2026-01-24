@@ -122,15 +122,15 @@ class SyncService : Service() {
                 sendStatus(STATUS_ONLINE)
 
                 //Create albums object
-                val obj = Orion.getEmptyJson()
+                val obj = Orion.emptyJson
                 obj.put("action", "albums")
-                val albumsJsonArray = Orion.getEmptyJsonArray()
+                val albumsJsonArray = Orion.emptyJsonArray
                 for (i in backupItems.indices) {
                     //Get items
                     val items = backupItems[i]
 
                     //Create items list
-                    val itemsArray = arrayOfNulls<String>(items.size)
+                    val itemsArray = Array(items.size) { i -> "" }
                     for (j in items.indices) itemsArray[j] = items[j].name
 
                     //Add array with album items
@@ -142,7 +142,7 @@ class SyncService : Service() {
                 sendThroughWebSocket(obj.toString())
             }
 
-            override fun onTextReceived(message: String?) {
+            override fun onTextReceived(message: String) {
                 parseStringMessage(message)
             }
 
@@ -150,12 +150,12 @@ class SyncService : Service() {
                 parseBinaryMessage(data)
             }
 
-            override fun onPingReceived(data: ByteArray?) {
+            override fun onPingReceived(data: ByteArray) {
                 println("ping received");
                 sendPong(data);
             }
 
-            override fun onPongReceived(data: ByteArray?) {
+            override fun onPongReceived(data: ByteArray) {
                 println("pong received");
             }
 
@@ -180,7 +180,7 @@ class SyncService : Service() {
         webSocketClient!!.connect()
     }
 
-    private fun parseStringMessage(messageString: String?) {
+    private fun parseStringMessage(messageString: String) {
         //Show notification again
         notificationManager.notify(NOTIFICATION_ID, notification)
 
@@ -214,7 +214,7 @@ class SyncService : Service() {
                     sendLog("- Sending item \"${item.name}\"...")
 
                     //Create message
-                    val obj = Orion.getEmptyJson()
+                    val obj = Orion.emptyJson
                     obj.put("action", "itemInfo")
                     obj.put("albumIndex", albumIndex)
                     obj.put("itemIndex", itemIndex)
@@ -286,7 +286,7 @@ class SyncService : Service() {
                     sendLog("- Sending metadata for album $albumIndex...")
 
                     //Create message
-                    val obj = Orion.getEmptyJson()
+                    val obj = Orion.emptyJson
                     obj.put("action", "metadataInfo")
                     obj.put("albumIndex", albumIndex)
                     if (file.exists()) {
@@ -348,7 +348,7 @@ class SyncService : Service() {
                     metadataRequest = MetadataInfo(albumIndex, lastModified)
 
                     //Create message
-                    val obj = Orion.getEmptyJson()
+                    val obj = Orion.emptyJson
                     obj.put("action", "requestMetadataData")
                     obj.put("albumIndex", albumIndex)
 
@@ -496,7 +496,7 @@ class SyncService : Service() {
             sendLog("Finished metadata sync")
 
             //Create message
-            val obj = Orion.getEmptyJson()
+            val obj = Orion.emptyJson
             obj.put("action", "endSync")
 
             //Send message
@@ -519,7 +519,7 @@ class SyncService : Service() {
         sendLog("- Requesting metadata for album $metadataRequestIndex...")
 
         //Request next metadata
-        val obj = Orion.getEmptyJson()
+        val obj = Orion.emptyJson
         obj.put("action", "requestMetadataInfo")
         obj.put("albumIndex", metadataRequestIndex)
 

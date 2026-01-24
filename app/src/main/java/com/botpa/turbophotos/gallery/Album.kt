@@ -74,12 +74,15 @@ class Album(val name: String, val imagesFolder: File?, var metadataFile: File?) 
     }
 
     fun loadMetadata() {
-        metadata = Orion.loadJson(metadataFile)
+        metadata = if (metadataFile != null)
+            Orion.loadJson(metadataFile!!)
+        else
+            Orion.emptyJson
     }
 
     fun saveMetadata(): Boolean {
-        return if (hasMetadata())
-            Orion.writeJson(metadataFile, metadata)
+        return if (hasMetadata() && metadataFile != null)
+            Orion.writeJson(metadataFile!!, metadata!!)
         else
             false
     }
