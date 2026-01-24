@@ -31,7 +31,7 @@
 
         <!-- Activities -->
         <activity
-            android:name=".home.HomeActivity"
+            android:name="com.botpa.turbophotos.screens.home.HomeActivity"
             android:configChanges="orientation|screenSize"
             android:launchMode="singleTop"
             android:exported="true">
@@ -53,12 +53,12 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".album.AlbumActivity"
+            android:name="com.botpa.turbophotos.screens.album.AlbumActivity"
             android:launchMode="singleTask"
             android:exported="false">
         </activity>
         <activity
-            android:name=".display.DisplayActivity"
+            android:name="com.botpa.turbophotos.screens.display.DisplayActivity"
             android:launchMode="singleTask"
             android:exported="true">
             <intent-filter>
@@ -69,19 +69,31 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".settings.SettingsActivity"
+            android:name="com.botpa.turbophotos.screens.video.VideoActivity"
+            android:configChanges="orientation|screenSize|screenLayout"
+            android:launchMode="singleTask"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:mimeType="video/*" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.botpa.turbophotos.screens.settings.SettingsActivity"
             android:launchMode="singleTask"
             android:exported="false">
         </activity>
         <activity
-            android:name=".sync.SyncActivity"
+            android:name="com.botpa.turbophotos.screens.sync.SyncActivity"
             android:launchMode="singleTask"
             android:exported="false">
         </activity>
 
         <!-- Services -->
         <service
-            android:name=".sync.SyncService"
+            android:name="com.botpa.turbophotos.screens.sync.SyncService"
             android:foregroundServiceType="dataSync"
             android:exported="false">
         </service>

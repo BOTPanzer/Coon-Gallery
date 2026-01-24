@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.home.filters
+package com.botpa.turbophotos.screens.home.filters
 
 import android.content.Context
 import android.view.LayoutInflater

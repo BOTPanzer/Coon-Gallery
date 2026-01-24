@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.home
+package com.botpa.turbophotos.screens.home
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -32,7 +32,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 
 import com.botpa.turbophotos.R
-import com.botpa.turbophotos.album.AlbumActivity
+import com.botpa.turbophotos.screens.album.AlbumActivity
 import com.botpa.turbophotos.gallery.Album
 import com.botpa.turbophotos.gallery.GalleryActivity
 import com.botpa.turbophotos.gallery.Library
@@ -41,11 +41,11 @@ import com.botpa.turbophotos.gallery.Library.ActionEvent
 import com.botpa.turbophotos.gallery.actions.Action
 import com.botpa.turbophotos.gallery.options.OptionsAdapter
 import com.botpa.turbophotos.gallery.options.OptionsItem
-import com.botpa.turbophotos.home.filters.DialogFilters
-import com.botpa.turbophotos.home.filters.Filter
-import com.botpa.turbophotos.settings.SettingsActivity
+import com.botpa.turbophotos.screens.home.filters.DialogFilters
+import com.botpa.turbophotos.screens.home.filters.Filter
+import com.botpa.turbophotos.screens.settings.SettingsActivity
 import com.botpa.turbophotos.gallery.StoragePairs
-import com.botpa.turbophotos.sync.SyncActivity
+import com.botpa.turbophotos.screens.sync.SyncActivity
 import com.botpa.turbophotos.util.BackManager
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage

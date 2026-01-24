@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.album
+package com.botpa.turbophotos.screens.album
 
 import android.content.Context
 import android.os.Handler

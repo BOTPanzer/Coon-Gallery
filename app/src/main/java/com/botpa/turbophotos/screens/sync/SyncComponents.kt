@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.sync
+package com.botpa.turbophotos.screens.sync
 
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column

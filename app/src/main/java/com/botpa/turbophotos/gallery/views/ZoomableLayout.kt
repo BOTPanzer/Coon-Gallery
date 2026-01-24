@@ -59,6 +59,10 @@ class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(conte
     var zoom: Float = 1f
         private set
 
+    //Options
+    private var doubleTapZoomsToCover: Boolean = false
+    private var doubleTapZoom: Float = 2f
+
     //Click
     private var onClick: Runnable? = null
     private var onZoomChanged: Runnable? = null
@@ -86,7 +90,7 @@ class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(conte
                 if (onClick != null) handler.removeCallbacks(onClick!!)
 
                 //Animate scale
-                animateResize(if (zoom > minZoom) fitScale else coverScale)
+                animateResize(if (zoom > minZoom) fitScale else if (doubleTapZoomsToCover) coverScale else doubleTapZoom)
             } else {
                 //Save timestamp
                 lastClickTimestamp = currentTimestamp
@@ -317,6 +321,9 @@ class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(conte
         //Start animation
         animator.start()
     }
+
+    //Options
+    fun setDoubleTapZoomsToCover(value: Boolean) { doubleTapZoomsToCover = value }
 
     //Listeners
     fun setOnClick(runnable: Runnable) { onClick = runnable }

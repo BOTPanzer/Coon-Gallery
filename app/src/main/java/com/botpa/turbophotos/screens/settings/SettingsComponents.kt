@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.settings
+package com.botpa.turbophotos.screens.settings
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize

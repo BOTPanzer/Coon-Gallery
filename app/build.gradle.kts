@@ -50,6 +50,11 @@ dependencies {
     //Glide
     implementation(libs.glide)
 
+    //Media3
+    implementation(libs.media3.exoplayer)
+    implementation(libs.media3.ui)
+    implementation(libs.media3.common)
+
     //Layout
     implementation(libs.constraintlayout)
     implementation(libs.swiperefreshlayout)

@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.album
+package com.botpa.turbophotos.screens.album
 
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -22,7 +22,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 
 import com.botpa.turbophotos.R
-import com.botpa.turbophotos.display.DisplayActivity
+import com.botpa.turbophotos.screens.display.DisplayActivity
 import com.botpa.turbophotos.gallery.Album
 import com.botpa.turbophotos.gallery.CoonItem
 import com.botpa.turbophotos.gallery.GalleryActivity

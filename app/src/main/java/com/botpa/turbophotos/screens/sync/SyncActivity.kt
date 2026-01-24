@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.sync
+package com.botpa.turbophotos.screens.sync
 
 import android.app.Activity
 import android.content.Intent
@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -46,9 +45,8 @@ import com.botpa.turbophotos.gallery.views.Layout
 import com.botpa.turbophotos.gallery.views.SimpleButton
 import com.botpa.turbophotos.gallery.views.groupItemPaddingHorizontal
 import com.botpa.turbophotos.gallery.views.groupItemPaddingVertical
-import com.botpa.turbophotos.sync.SyncEventBus.Companion.instance
+import com.botpa.turbophotos.screens.sync.SyncEventBus.Companion.instance
 import com.botpa.turbophotos.theme.CoonTheme
-import com.botpa.turbophotos.theme.FONT_COMFORTAA
 import com.botpa.turbophotos.theme.FONT_POPPINS
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage

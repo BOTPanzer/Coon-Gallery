@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.display
+package com.botpa.turbophotos.screens.display
 
 import android.annotation.SuppressLint
 import android.app.ComponentCaller
@@ -41,7 +41,6 @@ import com.botpa.turbophotos.util.Orion.ResizeHeightAnimation
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
-import java.io.File
 
 import java.text.SimpleDateFormat
 import java.util.Date

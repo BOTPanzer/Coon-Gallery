@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:clipChildren="false"
-    tools:context=".home.HomeActivity">
+    tools:context=".screens.home.HomeActivity">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list"
@@ -65,7 +65,7 @@
 
                     </LinearLayout>
 
-                    <View
+                    <Space
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="1" />

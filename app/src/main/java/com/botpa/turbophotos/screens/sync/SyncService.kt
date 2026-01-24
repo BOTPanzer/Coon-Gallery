@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.sync
+package com.botpa.turbophotos.screens.sync
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -14,7 +14,7 @@ import androidx.core.app.NotificationCompat
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.CoonItem
 import com.botpa.turbophotos.gallery.Link
-import com.botpa.turbophotos.home.HomeActivity.Companion.reloadOnResume
+import com.botpa.turbophotos.screens.home.HomeActivity.Companion.reloadOnResume
 import com.botpa.turbophotos.util.Orion
 
 import com.fasterxml.jackson.databind.JsonNode

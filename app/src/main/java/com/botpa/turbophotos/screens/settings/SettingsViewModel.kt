@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.settings
+package com.botpa.turbophotos.screens.settings
 
 import android.app.Activity
 import android.content.Context
@@ -11,7 +11,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.botpa.turbophotos.gallery.Link
 import com.botpa.turbophotos.gallery.StoragePairs
-import com.botpa.turbophotos.home.HomeActivity
+import com.botpa.turbophotos.screens.home.HomeActivity
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
 import java.io.File

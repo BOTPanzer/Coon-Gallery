@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.display
+package com.botpa.turbophotos.screens.display
 
 import android.content.Context
 import androidx.recyclerview.widget.LinearLayoutManager

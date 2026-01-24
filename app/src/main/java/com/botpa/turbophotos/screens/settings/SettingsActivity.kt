@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.settings
+package com.botpa.turbophotos.screens.settings
 
 import android.os.Bundle
 import android.widget.Toast
@@ -15,11 +15,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -28,7 +26,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.botpa.turbophotos.BuildConfig
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Library
@@ -43,7 +40,6 @@ import com.botpa.turbophotos.gallery.views.IconButton
 import com.botpa.turbophotos.gallery.views.Layout
 import com.botpa.turbophotos.gallery.views.SimpleButton
 import com.botpa.turbophotos.theme.CoonTheme
-import com.botpa.turbophotos.theme.FONT_COMFORTAA
 import com.botpa.turbophotos.util.Storage
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 

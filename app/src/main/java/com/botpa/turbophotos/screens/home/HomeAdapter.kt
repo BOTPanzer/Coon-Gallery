@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.home
+package com.botpa.turbophotos.screens.home
 
 import android.annotation.SuppressLint
 import android.content.Context
