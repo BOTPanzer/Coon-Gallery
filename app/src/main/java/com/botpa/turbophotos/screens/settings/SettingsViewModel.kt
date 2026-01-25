@@ -33,6 +33,7 @@ class SettingsViewModel : ViewModel() {
     var videoSkipBackwardsAmount by mutableFloatStateOf(Storage.getLong(StoragePairs.VIDEO_SKIP_BACKWARDS).toFloat())
     var videoSkipForwardAmount by mutableFloatStateOf(Storage.getLong(StoragePairs.VIDEO_SKIP_FORWARD).toFloat())
     var videoUseInternalPlayer by  mutableStateOf(Storage.getBool(StoragePairs.VIDEO_USE_INTERNAL_PLAYER))
+    var videoIgnoreAudioFocus by  mutableStateOf(Storage.getBool(StoragePairs.VIDEO_IGNORE_AUDIO_FOCUS))
 
 
     //App
@@ -55,6 +56,7 @@ class SettingsViewModel : ViewModel() {
         json.put(StoragePairs.VIDEO_SKIP_BACKWARDS.key, Storage.getLong(StoragePairs.VIDEO_SKIP_BACKWARDS))
         json.put(StoragePairs.VIDEO_SKIP_FORWARD.key, Storage.getLong(StoragePairs.VIDEO_SKIP_FORWARD))
         json.put(StoragePairs.VIDEO_USE_INTERNAL_PLAYER.key, Storage.getBool(StoragePairs.VIDEO_USE_INTERNAL_PLAYER))
+        json.put(StoragePairs.VIDEO_IGNORE_AUDIO_FOCUS.key, Storage.getBool(StoragePairs.VIDEO_IGNORE_AUDIO_FOCUS))
 
         //Sync
         json.put(StoragePairs.SYNC_USERS_KEY, Storage.getString(StoragePairs.SYNC_USERS_KEY, ""))
@@ -122,6 +124,9 @@ class SettingsViewModel : ViewModel() {
         if (json.has(StoragePairs.VIDEO_USE_INTERNAL_PLAYER.key) && json.get(StoragePairs.VIDEO_USE_INTERNAL_PLAYER.key).isBoolean) {
             Storage.putBool(StoragePairs.VIDEO_USE_INTERNAL_PLAYER.key, json.get(StoragePairs.VIDEO_USE_INTERNAL_PLAYER.key).asBoolean())
         }
+        if (json.has(StoragePairs.VIDEO_IGNORE_AUDIO_FOCUS.key) && json.get(StoragePairs.VIDEO_IGNORE_AUDIO_FOCUS.key).isBoolean) {
+            Storage.putBool(StoragePairs.VIDEO_IGNORE_AUDIO_FOCUS.key, json.get(StoragePairs.VIDEO_IGNORE_AUDIO_FOCUS.key).asBoolean())
+        }
 
         //Sync (these settings get loaded in sync activity)
         if (json.has(StoragePairs.SYNC_USERS_KEY) && json.get(StoragePairs.SYNC_USERS_KEY).isTextual) {
@@ -176,6 +181,11 @@ class SettingsViewModel : ViewModel() {
     fun updateVideoUseInternalPlayer(isChecked: Boolean) {
         videoUseInternalPlayer = isChecked
         Storage.putBool(StoragePairs.VIDEO_USE_INTERNAL_PLAYER.key, isChecked)
+    }
+
+    fun updateVideoIgnoreAudioFocus(isChecked: Boolean) {
+        videoIgnoreAudioFocus = isChecked
+        Storage.putBool(StoragePairs.VIDEO_IGNORE_AUDIO_FOCUS.key, isChecked)
     }
 
     //Links

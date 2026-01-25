@@ -230,6 +230,15 @@ class VideoActivity : GalleryActivity() {
         if (!isInPiP) player.pause()
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        //Update settings
+        skipBackwardsAmount = Storage.getLong(StoragePairs.VIDEO_SKIP_BACKWARDS)
+        skipForwardAmount = Storage.getLong(StoragePairs.VIDEO_SKIP_FORWARD)
+        ignoreAudioFocus = Storage.getBool(StoragePairs.VIDEO_IGNORE_AUDIO_FOCUS)
+    }
+
     override fun onNewIntent(intent: Intent, caller: ComponentCaller) {
         super.onNewIntent(intent, caller)
 
@@ -487,8 +496,6 @@ class VideoActivity : GalleryActivity() {
                 Orion.snack(this@VideoActivity, error.toString())
             }
         })
-        skipBackwardsAmount = Storage.getLong(StoragePairs.VIDEO_SKIP_BACKWARDS)
-        skipForwardAmount = Storage.getLong(StoragePairs.VIDEO_SKIP_FORWARD)
         setLooping(Storage.getBool(StoragePairs.VIDEO_LOOP))
 
         //Init player view

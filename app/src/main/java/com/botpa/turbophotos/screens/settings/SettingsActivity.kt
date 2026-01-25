@@ -320,12 +320,27 @@ class SettingsActivity : AppCompatActivity() {
                             //Use internal player
                             SettingsItem(
                                 title = "Use internal video player",
-                                description = "Use internal video player or ask to use an external one when opening videos."
+                                description = "Use internal video player instead of asking to use an external one when opening videos."
                             ) {
                                 //Value
                                 Switch(
                                     checked = view.videoUseInternalPlayer,
                                     onCheckedChange = { isChecked -> view.updateVideoUseInternalPlayer(isChecked) }
+                                )
+                            }
+
+                            //Divider
+                            GroupDivider()
+
+                            //Ignore audio focus
+                            SettingsItem(
+                                title = "Ignore audio focus",
+                                description = "Don't pause content if other apps are playing audio."
+                            ) {
+                                //Value
+                                Switch(
+                                    checked = view.videoIgnoreAudioFocus,
+                                    onCheckedChange = { isChecked -> view.updateVideoIgnoreAudioFocus(isChecked) }
                                 )
                             }
                         }
