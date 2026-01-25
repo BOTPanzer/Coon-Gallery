@@ -54,6 +54,7 @@ class SettingsViewModel : ViewModel() {
         json.put(StoragePairs.VIDEO_LOOP.key, Storage.getBool(StoragePairs.VIDEO_LOOP))
         json.put(StoragePairs.VIDEO_SKIP_BACKWARDS.key, Storage.getLong(StoragePairs.VIDEO_SKIP_BACKWARDS))
         json.put(StoragePairs.VIDEO_SKIP_FORWARD.key, Storage.getLong(StoragePairs.VIDEO_SKIP_FORWARD))
+        json.put(StoragePairs.VIDEO_USE_INTERNAL_PLAYER.key, Storage.getBool(StoragePairs.VIDEO_USE_INTERNAL_PLAYER))
 
         //Sync
         json.put(StoragePairs.SYNC_USERS_KEY, Storage.getString(StoragePairs.SYNC_USERS_KEY, ""))
@@ -117,6 +118,9 @@ class SettingsViewModel : ViewModel() {
         }
         if (json.has(StoragePairs.VIDEO_SKIP_FORWARD.key) && json.get(StoragePairs.VIDEO_SKIP_FORWARD.key).isLong) {
             Storage.putLong(StoragePairs.VIDEO_SKIP_FORWARD.key, json.get(StoragePairs.VIDEO_SKIP_FORWARD.key).asLong())
+        }
+        if (json.has(StoragePairs.VIDEO_USE_INTERNAL_PLAYER.key) && json.get(StoragePairs.VIDEO_USE_INTERNAL_PLAYER.key).isBoolean) {
+            Storage.putBool(StoragePairs.VIDEO_USE_INTERNAL_PLAYER.key, json.get(StoragePairs.VIDEO_USE_INTERNAL_PLAYER.key).asBoolean())
         }
 
         //Sync (these settings get loaded in sync activity)

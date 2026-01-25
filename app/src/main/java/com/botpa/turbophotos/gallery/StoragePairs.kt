@@ -19,9 +19,9 @@ object StoragePairs {
 
     //Video player
     @JvmField val VIDEO_LOOP: Storage.StoragePair<Boolean> = Storage.StoragePair("Video.loop", true)
-    @JvmField val VIDEO_SKIP_BACKWARDS: Storage.StoragePair<Long> = Storage.StoragePair("Video.skipForward", 10)
+    @JvmField val VIDEO_SKIP_BACKWARDS: Storage.StoragePair<Long> = Storage.StoragePair("Video.skipBackwards", 10)
     @JvmField val VIDEO_SKIP_FORWARD: Storage.StoragePair<Long> = Storage.StoragePair("Video.skipForward", 10)
-    @JvmField val VIDEO_USE_INTERNAL_PLAYER: Storage.StoragePair<Boolean> = Storage.StoragePair("Settings.useInternalPlayer", true)
+    @JvmField val VIDEO_USE_INTERNAL_PLAYER: Storage.StoragePair<Boolean> = Storage.StoragePair("Video.useInternalPlayer", true)
 
     //Sync
     const val SYNC_USERS_KEY: String = "Sync.users"
