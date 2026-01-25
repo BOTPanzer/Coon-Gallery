@@ -53,11 +53,6 @@ class SettingsActivity : AppCompatActivity() {
     //App
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        //Init storage
-        Storage.init(this@SettingsActivity)
-
-        //Edging
         enableEdgeToEdge()
 
         //Content

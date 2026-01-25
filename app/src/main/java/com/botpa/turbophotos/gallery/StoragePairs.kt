@@ -20,4 +20,7 @@ object StoragePairs {
     //Sync
     const val SYNC_USERS_KEY: String = "Sync.users"
 
+    //Video
+    @JvmField val VIDE_LOOP: Storage.StoragePair<Boolean> = Storage.StoragePair("Video.loop", true)
+
 }

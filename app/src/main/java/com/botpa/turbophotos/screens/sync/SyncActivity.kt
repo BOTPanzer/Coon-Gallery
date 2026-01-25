@@ -64,11 +64,6 @@ class SyncActivity : AppCompatActivity() {
     //App
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        //Init storage
-        Storage.init(this@SyncActivity)
-
-        //Edging
         enableEdgeToEdge()
 
         //Load users

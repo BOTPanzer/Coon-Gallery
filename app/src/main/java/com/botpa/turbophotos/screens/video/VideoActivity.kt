@@ -34,11 +34,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.GalleryActivity
+import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.gallery.options.OptionsAdapter
 import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.views.ZoomableLayout
 import com.botpa.turbophotos.util.BackManager
 import com.botpa.turbophotos.util.Orion
+import com.botpa.turbophotos.util.Storage
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.slider.Slider
 import java.io.File
@@ -87,7 +89,22 @@ class VideoActivity : GalleryActivity() {
             updatePlayerTime()
         }
     }
-    private val showLoading = Runnable { overlayLoading.visibility = View.VISIBLE }
+
+    //Indicators (loading & time skip)
+    private var lastSkipDuration: Long = 0
+
+    private val showLoadingIndicator = Runnable {
+        loadingIndicator.visibility = View.VISIBLE
+    }
+    private val hideSkipIndicators = Runnable {
+        Orion.hideAnim(skipBackwardIndicator)
+        Orion.hideAnim(skipForwardIndicator)
+        lastSkipDuration = 0
+    }
+
+    private lateinit var loadingIndicator: View
+    private lateinit var skipBackwardIndicator: TextView
+    private lateinit var skipForwardIndicator: TextView
 
       /*$$$$$              /$$     /$$
      /$$__  $$            | $$    |__/
@@ -122,7 +139,6 @@ class VideoActivity : GalleryActivity() {
     //Views (overlay)
     private lateinit var overlayLayout: View
     private lateinit var overlayName: TextView
-    private lateinit var overlayLoading: View
     private lateinit var overlayPlay: MaterialButton
     private lateinit var overlayLoop: MaterialButton
     private lateinit var overlayOptions: MaterialButton
@@ -155,7 +171,8 @@ class VideoActivity : GalleryActivity() {
         window.colorMode = ActivityInfo.COLOR_MODE_HDR
 
         //Init components
-        backManager = BackManager(this@VideoActivity, onBackPressedDispatcher)
+        Storage.init(this) //Init storage cause activity is exported
+        backManager = BackManager(this, onBackPressedDispatcher)
         initViews()
         initListeners()
         initLists()
@@ -219,10 +236,14 @@ class VideoActivity : GalleryActivity() {
         playerZoom = findViewById(R.id.playerZoom)
         playerView = findViewById(R.id.playerView)
 
+        //Views (indicators)
+        loadingIndicator = findViewById(R.id.loadingIndicator)
+        skipBackwardIndicator = findViewById(R.id.skipBackwardIndicator)
+        skipForwardIndicator = findViewById(R.id.skipForwardIndicator)
+
         //Views (overlay)
         overlayLayout = findViewById(R.id.overlayLayout)
         overlayName = findViewById(R.id.overlayName)
-        overlayLoading = findViewById(R.id.overlayLoading)
         overlayPlay = findViewById(R.id.overlayPlay)
         overlayLoop = findViewById(R.id.overlayLoop)
         overlayOptions = findViewById(R.id.overlayOptions)
@@ -267,25 +288,41 @@ class VideoActivity : GalleryActivity() {
             val width = playerZoom.width
             val doubleTapArea = width / 5
 
-            //Check if seek
-            if (x < doubleTapArea) {
-                //Seek backwards
-                val newPosition = (player.currentPosition - (skipBackwardAmount * 1000L)).coerceAtLeast(0)
-                player.seekTo(newPosition)
-                overlayTimeSlider.value = newPosition.toFloat()
+            //Check position to see if should skip time
+            if (x <= doubleTapArea || x >= width - doubleTapArea) {
+                //Skip time -> Check direction
+                if (x < doubleTapArea) {
+                    //Skip backwards
+                    val newPosition = (player.currentPosition - (skipBackwardAmount * 1000L)).coerceAtLeast(0)
+                    player.seekTo(newPosition)
+                    overlayTimeSlider.value = newPosition.toFloat()
 
-                //Consume click
-                true
-            } else if (x > width - doubleTapArea) {
-                //Seek forward
-                val newPosition = (player.currentPosition + (skipForwardAmount * 1000L)).coerceAtMost(player.duration)
-                player.seekTo(newPosition)
-                overlayTimeSlider.value = newPosition.toFloat()
+                    //Update indicators
+                    lastSkipDuration = min(lastSkipDuration - skipBackwardAmount, -skipBackwardAmount)
+                    skipBackwardIndicator.text = "${lastSkipDuration}s"
+                    Orion.showAnim(skipBackwardIndicator)
+                    Orion.hideAnim(skipForwardIndicator)
+                } else if (x > width - doubleTapArea) {
+                    //Skip forward
+                    val newPosition = (player.currentPosition + (skipForwardAmount * 1000L)).coerceAtMost(player.duration)
+                    player.seekTo(newPosition)
+                    overlayTimeSlider.value = newPosition.toFloat()
+
+                    //Update indicators
+                    lastSkipDuration = max(lastSkipDuration + skipForwardAmount, skipForwardAmount)
+                    skipForwardIndicator.text = "+${lastSkipDuration}s"
+                    Orion.hideAnim(skipBackwardIndicator)
+                    Orion.showAnim(skipForwardIndicator)
+                }
+
+                //Seeking
+                handler.removeCallbacks(hideSkipIndicators)
+                handler.postDelayed(hideSkipIndicators, 1000)
 
                 //Consume click
                 true
             } else {
-                //Don't consume click
+                //Don't skip time -> Don't consume click
                 false
             }
         }
@@ -439,7 +476,7 @@ class VideoActivity : GalleryActivity() {
             }
 
         })
-        setLooping(isLooping)
+        setLooping(Storage.getBool(StoragePairs.VIDE_LOOP))
 
         //Init player view
         playerView.controllerAutoShow = false
@@ -527,15 +564,15 @@ class VideoActivity : GalleryActivity() {
 
     private fun showLoadingIndicator(show: Boolean) {
         //Remove loading callbacks
-        handler.removeCallbacks(showLoading)
+        handler.removeCallbacks(showLoadingIndicator)
 
         //Check if loading
         if (show) {
             //Start loading animation
-            handler.postDelayed(showLoading, 300)
+            handler.postDelayed(showLoadingIndicator, 300)
         } else {
             //Stop loading animation
-            overlayLoading.visibility = View.GONE
+            loadingIndicator.visibility = View.GONE
         }
     }
 
@@ -552,6 +589,7 @@ class VideoActivity : GalleryActivity() {
         //Set looping
         isLooping = looping
         player.repeatMode = if (isLooping) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_OFF
+        Storage.putBool(StoragePairs.VIDE_LOOP.key, isLooping)
 
         //Update loop button
         overlayLoop.setIconResource(if (isLooping) R.drawable.repeat_on else R.drawable.repeat)

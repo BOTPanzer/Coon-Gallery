@@ -38,6 +38,7 @@ import com.botpa.turbophotos.gallery.views.ZoomableLayout
 import com.botpa.turbophotos.util.BackManager
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Orion.ResizeHeightAnimation
+import com.botpa.turbophotos.util.Storage
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
@@ -171,7 +172,8 @@ class DisplayActivity : GalleryActivity() {
         Library.addOnActionEvent(onAction)
 
         //Init components
-        backManager = BackManager(this@DisplayActivity, onBackPressedDispatcher)
+        Storage.init(this) //Init storage cause activity is exported
+        backManager = BackManager(this, onBackPressedDispatcher)
         initViews()
         initListeners()
         initLists()

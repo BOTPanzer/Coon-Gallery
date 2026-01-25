@@ -176,8 +176,8 @@ class HomeActivity : GalleryActivity() {
         Library.addOnActionEvent(onAction)
 
         //Init components
-        Storage.init(this@HomeActivity)
-        backManager = BackManager(this@HomeActivity, onBackPressedDispatcher)
+        Storage.init(this) //Init storage cause activity is exported
+        backManager = BackManager(this, onBackPressedDispatcher)
         initViews()
         initListeners()
         initLists()
