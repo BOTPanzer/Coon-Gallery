@@ -8,19 +8,14 @@ import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
-
 import androidx.core.app.NotificationCompat
-
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.CoonItem
 import com.botpa.turbophotos.gallery.Link
 import com.botpa.turbophotos.screens.home.HomeActivity.Companion.reloadOnResume
 import com.botpa.turbophotos.util.Orion
-
 import com.fasterxml.jackson.databind.JsonNode
-
 import dev.gustavoavila.websocketclient.WebSocketClient
-
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.IOException
@@ -30,7 +25,6 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.attribute.FileTime
 import java.time.Instant
-
 import kotlin.math.min
 
 class SyncService : Service() {
@@ -427,19 +421,15 @@ class SyncService : Service() {
         channel.description = "Appears when the sync service is active"
         notificationManager.createNotificationChannel(channel)
 
+        //Create intent
+        val resumeIntent = Intent(this, SyncActivity::class.java)
+
         //Create notification
         val builder = NotificationCompat.Builder(this, channel.id)
             .setSmallIcon(R.drawable.app_icon)
             .setContentTitle("Sync")
             .setContentText("The sync service is active")
-            .setContentIntent(
-                PendingIntent.getActivity(
-                    this,
-                    0,
-                    Intent(this, SyncActivity::class.java),
-                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                )
-            )
+            .setContentIntent(PendingIntent.getActivity(this, 0, resumeIntent, PendingIntent.FLAG_IMMUTABLE))
             .setAutoCancel(true)
             .setOngoing(true)
         notification = builder.build()
@@ -529,6 +519,7 @@ class SyncService : Service() {
 
     private class MetadataInfo(var albumIndex: Int, var lastModified: Long)
 
+    //Static
     companion object {
 
         //Connection

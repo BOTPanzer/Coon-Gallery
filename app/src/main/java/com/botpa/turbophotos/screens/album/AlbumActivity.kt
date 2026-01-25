@@ -194,7 +194,8 @@ class AlbumActivity : GalleryActivity() {
         backManager = BackManager(this, onBackPressedDispatcher)
         initViews()
         initListeners()
-        initLists()
+        initAlbumList()
+        initOptionsList()
 
         //Init activity
         initActivity()
@@ -290,7 +291,7 @@ class AlbumActivity : GalleryActivity() {
         if (selectedItems.isEmpty()) unselectAll()
     }
 
-    //Components
+    //Views
     private fun initViews() {
         //Navbar
         navbarLayout = findViewById(R.id.navbarLayout)
@@ -482,7 +483,8 @@ class AlbumActivity : GalleryActivity() {
         searchClose.setOnClickListener { view: View -> showSearchLayout(false) }
     }
 
-    private fun initLists() {
+    //Album
+    private fun initAlbumList() {
         //Init album layout manager
         albumLayoutManager = GridLayoutManager(this@AlbumActivity, this.horizontalItemCount)
         albumList.setLayoutManager(albumLayoutManager)
@@ -496,27 +498,8 @@ class AlbumActivity : GalleryActivity() {
             setThumbDrawable(ContextCompat.getDrawable(this@AlbumActivity, R.drawable.scrollbar_thumb)!!)
             setTrackDrawable(ContextCompat.getDrawable(this@AlbumActivity, R.drawable.scrollbar_track)!!)
         }.build()
-
-        //Init options layout manager
-        optionsList.setLayoutManager(LinearLayoutManager(this@AlbumActivity))
-
-        //Init options adapter
-        optionsAdapter = OptionsAdapter(this@AlbumActivity, options)
-        optionsAdapter.setOnClickListener { view: View, index: Int ->
-            //Get option
-            val option = options.get(index)
-
-            //Get action
-            val action = option.action ?: return@setOnClickListener
-
-            //Invoke action
-            action.run()
-            toggleOptions(false)
-        }
-        optionsList.setAdapter(optionsAdapter)
     }
 
-    //Current album
     private fun selectAlbum(album: Album) {
         //Select album
         this.currentAlbum = album
@@ -533,7 +516,6 @@ class AlbumActivity : GalleryActivity() {
         filterItems()
     }
 
-    //Items
     private fun openItem(index: Int) {
         //Check action
         if (isPicking) {
@@ -562,6 +544,26 @@ class AlbumActivity : GalleryActivity() {
               | $$
               | $$
               |_*/
+
+    private fun initOptionsList() {
+        //Init options layout manager
+        optionsList.setLayoutManager(LinearLayoutManager(this@AlbumActivity))
+
+        //Init options adapter
+        optionsAdapter = OptionsAdapter(this@AlbumActivity, options)
+        optionsAdapter.setOnClickListener { view: View, index: Int ->
+            //Get option
+            val option = options.get(index)
+
+            //Get action
+            val action = option.action ?: return@setOnClickListener
+
+            //Invoke action
+            action.run()
+            toggleOptions(false)
+        }
+        optionsList.setAdapter(optionsAdapter)
+    }
 
     private fun getSelectedItems(): Array<CoonItem> {
         val selectedFiles = ArrayList<CoonItem>(selectedItems.size)

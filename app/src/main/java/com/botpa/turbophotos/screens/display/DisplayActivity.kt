@@ -127,7 +127,7 @@ class DisplayActivity : GalleryActivity() {
 
     //Views (overlay)
     private lateinit var overlayLayout: View
-    private lateinit var overlayName: TextView
+    private lateinit var overlayTitle: TextView
     private lateinit var overlayInfo: View
     private lateinit var overlayOptions: View
 
@@ -176,11 +176,12 @@ class DisplayActivity : GalleryActivity() {
         Library.addOnActionEvent(onAction)
 
         //Init components
-        Storage.init(this) //Init storage cause activity is exported
         backManager = BackManager(this, onBackPressedDispatcher)
+        Storage.init(this) //Init storage cause activity is exported
         initViews()
         initListeners()
-        initLists()
+        initDisplayList()
+        initOptionsList()
 
         //Init activity
         initActivity()
@@ -286,14 +287,14 @@ class DisplayActivity : GalleryActivity() {
         selectItem(currentIndexInGallery)
     }
 
-    //Components
+    //Views
     private fun initViews() {
         //Views (list)
         displayList = findViewById(R.id.list)
 
         //Views (overlay)
         overlayLayout = findViewById(R.id.overlayLayout)
-        overlayName = findViewById(R.id.overlayName)
+        overlayTitle = findViewById(R.id.overlayTitle)
         overlayInfo = findViewById(R.id.overlayInfo)
         overlayOptions = findViewById(R.id.overlayOptions)
 
@@ -481,7 +482,8 @@ class DisplayActivity : GalleryActivity() {
         }
     }
 
-    private fun initLists() {
+    //Display
+    private fun initDisplayList() {
         //Init display layout manager
         displayLayoutManager = DisplayLayoutManager(this@DisplayActivity)
         displayLayoutManager.setOrientation(RecyclerView.HORIZONTAL)
@@ -548,24 +550,6 @@ class DisplayActivity : GalleryActivity() {
                 super.onScrollStateChanged(recyclerView, newState)
             }
         })
-
-        //Init options layout manager
-        optionsList.setLayoutManager(LinearLayoutManager(this@DisplayActivity))
-
-        //Init options adapter
-        optionsAdapter = OptionsAdapter(this@DisplayActivity, options)
-        optionsAdapter.setOnClickListener { view: View, index: Int ->
-            //Get option
-            val option = options[index]
-
-            //Get action
-            val action = option.action ?: return@setOnClickListener
-
-            //Invoke action
-            action.run()
-            toggleOptions(false)
-        }
-        optionsList.setAdapter(optionsAdapter)
     }
 
     //Current item
@@ -604,7 +588,7 @@ class DisplayActivity : GalleryActivity() {
         displayLayoutManager.setScrollEnabled(true)
 
         //Change image name
-        overlayName.text = currentItem.name
+        overlayTitle.text = currentItem.name
 
         //Create date text
         val date = Date(currentItem.lastModified * 1000)
@@ -676,6 +660,26 @@ class DisplayActivity : GalleryActivity() {
               | $$
               | $$
               |_*/
+
+    private fun initOptionsList() {
+        //Init options layout manager
+        optionsList.setLayoutManager(LinearLayoutManager(this@DisplayActivity))
+
+        //Init options adapter
+        optionsAdapter = OptionsAdapter(this@DisplayActivity, options)
+        optionsAdapter.setOnClickListener { view: View, index: Int ->
+            //Get option
+            val option = options[index]
+
+            //Get action
+            val action = option.action ?: return@setOnClickListener
+
+            //Invoke action
+            action.run()
+            toggleOptions(false)
+        }
+        optionsList.setAdapter(optionsAdapter)
+    }
 
     private fun toggleOptions(show: Boolean) {
         if (show) {

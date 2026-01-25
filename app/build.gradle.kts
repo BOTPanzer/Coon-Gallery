@@ -16,7 +16,6 @@ configure<ApplicationExtension> {
         targetSdk = 36
         versionCode = 3
         versionName = "1.2.0"
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -50,10 +49,11 @@ dependencies {
     //Glide
     implementation(libs.glide)
 
-    //Media3
+    //Media
     implementation(libs.media3.exoplayer)
     implementation(libs.media3.ui)
     implementation(libs.media3.common)
+    implementation(libs.media)
 
     //Layout
     implementation(libs.constraintlayout)

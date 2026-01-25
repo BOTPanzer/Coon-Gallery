@@ -66,6 +66,7 @@ class HomeActivity : GalleryActivity() {
 
     //Activity
     private lateinit var backManager: BackManager
+
     private var isLibraryLoaded = false
     private var isInit = false
 
@@ -176,11 +177,12 @@ class HomeActivity : GalleryActivity() {
         Library.addOnActionEvent(onAction)
 
         //Init components
-        Storage.init(this) //Init storage cause activity is exported
         backManager = BackManager(this, onBackPressedDispatcher)
+        Storage.init(this) //Init storage cause activity is exported
         initViews()
         initListeners()
-        initLists()
+        initHomeList()
+        initOptionsList()
 
         //Mark as init
         isInit = true
@@ -408,7 +410,7 @@ class HomeActivity : GalleryActivity() {
         }
     }
 
-    //Components
+    //Views
     private fun initViews() {
         //Permissions
         permissionLayout = findViewById(R.id.permissionLayout)
@@ -527,7 +529,8 @@ class HomeActivity : GalleryActivity() {
         }
     }
 
-    private fun initLists() {
+    //Home
+    private fun initHomeList() {
         //Init home layout manager
         homeLayoutManager = GridLayoutManager(this@HomeActivity, this.horizontalItemCount)
         homeList.setLayoutManager(homeLayoutManager)
@@ -572,7 +575,21 @@ class HomeActivity : GalleryActivity() {
             setThumbDrawable(ContextCompat.getDrawable(this@HomeActivity, R.drawable.scrollbar_thumb)!!)
             setTrackDrawable(ContextCompat.getDrawable(this@HomeActivity, R.drawable.scrollbar_track)!!)
         }.build()
+    }
 
+      /*$$$$$              /$$     /$$
+     /$$__  $$            | $$    |__/
+    | $$  \ $$  /$$$$$$  /$$$$$$   /$$  /$$$$$$  /$$$$$$$   /$$$$$$$
+    | $$  | $$ /$$__  $$|_  $$_/  | $$ /$$__  $$| $$__  $$ /$$_____/
+    | $$  | $$| $$  \ $$  | $$    | $$| $$  \ $$| $$  \ $$|  $$$$$$
+    | $$  | $$| $$  | $$  | $$ /$$| $$| $$  | $$| $$  | $$ \____  $$
+    |  $$$$$$/| $$$$$$$/  |  $$$$/| $$|  $$$$$$/| $$  | $$ /$$$$$$$/
+     \______/ | $$____/    \___/  |__/ \______/ |__/  |__/|_______/
+              | $$
+              | $$
+              |_*/
+
+    private fun initOptionsList() {
         //Init options layout manager
         optionsList.setLayoutManager(LinearLayoutManager(this@HomeActivity))
 
@@ -591,18 +608,6 @@ class HomeActivity : GalleryActivity() {
         }
         optionsList.setAdapter(optionsAdapter)
     }
-
-      /*$$$$$              /$$     /$$
-     /$$__  $$            | $$    |__/
-    | $$  \ $$  /$$$$$$  /$$$$$$   /$$  /$$$$$$  /$$$$$$$   /$$$$$$$
-    | $$  | $$ /$$__  $$|_  $$_/  | $$ /$$__  $$| $$__  $$ /$$_____/
-    | $$  | $$| $$  \ $$  | $$    | $$| $$  \ $$| $$  \ $$|  $$$$$$
-    | $$  | $$| $$  | $$  | $$ /$$| $$| $$  | $$| $$  | $$ \____  $$
-    |  $$$$$$/| $$$$$$$/  |  $$$$/| $$|  $$$$$$/| $$  | $$ /$$$$$$$/
-     \______/ | $$____/    \___/  |__/ \______/ |__/  |__/|_______/
-              | $$
-              | $$
-              |_*/
 
     private fun toggleOptions(show: Boolean) {
         if (show) {
