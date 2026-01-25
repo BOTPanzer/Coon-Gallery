@@ -17,10 +17,12 @@ object StoragePairs {
     @JvmField val ALBUM_ITEMS_PER_ROW: Storage.StoragePair<Int> = Storage.StoragePair("Settings.albumItemsPerRow", 3)
     @JvmField val ALBUM_SHOW_MISSING_METADATA_ICON: Storage.StoragePair<Boolean> = Storage.StoragePair("Settings.albumShowMissingMetadataIcon", false)
 
+    //Video
+    @JvmField val VIDEO_LOOP: Storage.StoragePair<Boolean> = Storage.StoragePair("Video.loop", true)
+    @JvmField val VIDEO_SKIP_BACKWARDS: Storage.StoragePair<Long> = Storage.StoragePair("Video.skipForward", 10)
+    @JvmField val VIDEO_SKIP_FORWARD: Storage.StoragePair<Long> = Storage.StoragePair("Video.skipForward", 10)
+
     //Sync
     const val SYNC_USERS_KEY: String = "Sync.users"
-
-    //Video
-    @JvmField val VIDE_LOOP: Storage.StoragePair<Boolean> = Storage.StoragePair("Video.loop", true)
 
 }

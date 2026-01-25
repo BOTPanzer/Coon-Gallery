@@ -70,7 +70,7 @@ class VideoActivity : GalleryActivity() {
     private var isLooping: Boolean = true
     private var isSeeking: Boolean = false
     private var isInPiP: Boolean = false
-    private var skipBackwardAmount: Long = 5
+    private var skipBackwardsAmount: Long = 5
     private var skipForwardAmount: Long = 5
 
     private lateinit var playerZoom: ZoomableLayout
@@ -97,13 +97,13 @@ class VideoActivity : GalleryActivity() {
         loadingIndicator.visibility = View.VISIBLE
     }
     private val hideSkipIndicators = Runnable {
-        Orion.hideAnim(skipBackwardIndicator)
+        Orion.hideAnim(skipBackwardsIndicator)
         Orion.hideAnim(skipForwardIndicator)
         lastSkipDuration = 0
     }
 
     private lateinit var loadingIndicator: View
-    private lateinit var skipBackwardIndicator: TextView
+    private lateinit var skipBackwardsIndicator: TextView
     private lateinit var skipForwardIndicator: TextView
 
       /*$$$$$              /$$     /$$
@@ -238,7 +238,7 @@ class VideoActivity : GalleryActivity() {
 
         //Views (indicators)
         loadingIndicator = findViewById(R.id.loadingIndicator)
-        skipBackwardIndicator = findViewById(R.id.skipBackwardIndicator)
+        skipBackwardsIndicator = findViewById(R.id.skipBackwardsIndicator)
         skipForwardIndicator = findViewById(R.id.skipForwardIndicator)
 
         //Views (overlay)
@@ -293,14 +293,14 @@ class VideoActivity : GalleryActivity() {
                 //Skip time -> Check direction
                 if (x < doubleTapArea) {
                     //Skip backwards
-                    val newPosition = (player.currentPosition - (skipBackwardAmount * 1000L)).coerceAtLeast(0)
+                    val newPosition = (player.currentPosition - (skipBackwardsAmount * 1000L)).coerceAtLeast(0)
                     player.seekTo(newPosition)
                     overlayTimeSlider.value = newPosition.toFloat()
 
                     //Update indicators
-                    lastSkipDuration = min(lastSkipDuration - skipBackwardAmount, -skipBackwardAmount)
-                    skipBackwardIndicator.text = "${lastSkipDuration}s"
-                    Orion.showAnim(skipBackwardIndicator)
+                    lastSkipDuration = min(lastSkipDuration - skipBackwardsAmount, -skipBackwardsAmount)
+                    skipBackwardsIndicator.text = "${lastSkipDuration}s"
+                    Orion.showAnim(skipBackwardsIndicator)
                     Orion.hideAnim(skipForwardIndicator)
                 } else if (x > width - doubleTapArea) {
                     //Skip forward
@@ -311,7 +311,7 @@ class VideoActivity : GalleryActivity() {
                     //Update indicators
                     lastSkipDuration = max(lastSkipDuration + skipForwardAmount, skipForwardAmount)
                     skipForwardIndicator.text = "+${lastSkipDuration}s"
-                    Orion.hideAnim(skipBackwardIndicator)
+                    Orion.hideAnim(skipBackwardsIndicator)
                     Orion.showAnim(skipForwardIndicator)
                 }
 
@@ -407,6 +407,9 @@ class VideoActivity : GalleryActivity() {
         player = ExoPlayer.Builder(this@VideoActivity).build()
 
         //Init player
+        setLooping(Storage.getBool(StoragePairs.VIDEO_LOOP))
+        skipBackwardsAmount = Storage.getLong(StoragePairs.VIDEO_SKIP_BACKWARDS)
+        skipForwardAmount = Storage.getLong(StoragePairs.VIDEO_SKIP_FORWARD)
         player.playWhenReady = true
         player.addListener(object : Player.Listener {
 
@@ -476,7 +479,6 @@ class VideoActivity : GalleryActivity() {
             }
 
         })
-        setLooping(Storage.getBool(StoragePairs.VIDE_LOOP))
 
         //Init player view
         playerView.controllerAutoShow = false
@@ -589,7 +591,7 @@ class VideoActivity : GalleryActivity() {
         //Set looping
         isLooping = looping
         player.repeatMode = if (isLooping) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_OFF
-        Storage.putBool(StoragePairs.VIDE_LOOP.key, isLooping)
+        Storage.putBool(StoragePairs.VIDEO_LOOP.key, isLooping)
 
         //Update loop button
         overlayLoop.setIconResource(if (isLooping) R.drawable.repeat_on else R.drawable.repeat)

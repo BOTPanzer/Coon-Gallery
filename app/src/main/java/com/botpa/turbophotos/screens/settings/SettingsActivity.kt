@@ -209,13 +209,13 @@ class SettingsActivity : AppCompatActivity() {
                         GroupItems {
                             //Items per row
                             SettingsItem(
-                                title = "Items per row · ${view.homeItemsPerRow.toInt()}",
+                                title = "Items per row · ${view.homeItemsPerRow.toInt()} items",
                                 description = "The amount of albums to show per home screen row."
                             ) {
                                 //Value
                                 Slider(
                                     value = view.homeItemsPerRow,
-                                    onValueChange = { newValue -> view.updateHomeItemsPerRow(newValue) },
+                                    onValueChange = { newValue -> view.homeItemsPerRow = newValue },
                                     onValueChangeFinished = { view.saveHomeItemsPerRow() },
                                     valueRange = 1f..5f,
                                     steps = 3,
@@ -227,7 +227,7 @@ class SettingsActivity : AppCompatActivity() {
                     }
                 }
 
-                //Albums screen
+                //Album screen
                 item {
                     Group {
                         //Title
@@ -237,13 +237,13 @@ class SettingsActivity : AppCompatActivity() {
                         GroupItems {
                             //Items per row
                             SettingsItem(
-                                title = "Items per row · ${view.albumItemsPerRow.toInt()}",
+                                title = "Items per row · ${view.albumItemsPerRow.toInt()} items",
                                 description = "The amount of images/videos to show per album screen row."
                             ) {
                                 //Value
                                 Slider(
                                     value = view.albumItemsPerRow,
-                                    onValueChange = { newValue -> view.updateAlbumItemsPerRow(newValue) },
+                                    onValueChange = { newValue -> view.albumItemsPerRow = newValue },
                                     onValueChangeFinished = { view.saveAlbumItemsPerRow() },
                                     valueRange = 1f..5f,
                                     steps = 3,
@@ -264,6 +264,54 @@ class SettingsActivity : AppCompatActivity() {
                                 Switch(
                                     checked = view.albumShowMissingMetadataIcon,
                                     onCheckedChange = { isChecked -> view.updateAlbumShowMissingMetadataIcon(isChecked) }
+                                )
+                            }
+                        }
+                    }
+                }
+
+                //Video screen
+                item {
+                    Group {
+                        //Title
+                        GroupTitle("Video Screen")
+
+                        //Items
+                        GroupItems {
+                            //Skip backwards amount
+                            SettingsItem(
+                                title = "Skip backwards · ${view.videoSkipBackwardsAmount.toLong()}s",
+                                description = "The amount of seconds to skip backwards when double tapping the screen on the left."
+                            ) {
+                                //Value
+                                Slider(
+                                    value = view.videoSkipBackwardsAmount,
+                                    onValueChange = { newValue -> view.videoSkipBackwardsAmount = newValue },
+                                    onValueChangeFinished = { view.saveVideoSkipBackwardsAmount() },
+                                    valueRange = 5f..25f,
+                                    steps = 3,
+                                    modifier = Modifier
+                                        .weight(0.5f)
+                                )
+                            }
+
+                            //Divider
+                            GroupDivider()
+
+                            //Skip forward amount
+                            SettingsItem(
+                                title = "Skip forward · ${view.videoSkipForwardAmount.toLong()}s",
+                                description = "The amount of seconds to skip forward when double tapping the screen on the right."
+                            ) {
+                                //Value
+                                Slider(
+                                    value = view.videoSkipForwardAmount,
+                                    onValueChange = { newValue -> view.videoSkipForwardAmount = newValue },
+                                    onValueChangeFinished = { view.saveVideoSkipForwardAmount() },
+                                    valueRange = 5f..25f,
+                                    steps = 3,
+                                    modifier = Modifier
+                                        .weight(0.5f)
                                 )
                             }
                         }

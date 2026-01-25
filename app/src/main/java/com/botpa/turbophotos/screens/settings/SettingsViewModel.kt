@@ -14,6 +14,7 @@ import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.screens.home.HomeActivity
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
+import com.fasterxml.jackson.databind.node.ObjectNode
 import java.io.File
 
 class SettingsViewModel : ViewModel() {
@@ -28,45 +29,41 @@ class SettingsViewModel : ViewModel() {
     var albumItemsPerRow by mutableFloatStateOf(Storage.getInt(StoragePairs.ALBUM_ITEMS_PER_ROW).toFloat())
     var albumShowMissingMetadataIcon by  mutableStateOf(Storage.getBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON))
 
+    //Video screen
+    var videoSkipBackwardsAmount by mutableFloatStateOf(Storage.getLong(StoragePairs.VIDEO_SKIP_BACKWARDS).toFloat())
+    var videoSkipForwardAmount by mutableFloatStateOf(Storage.getLong(StoragePairs.VIDEO_SKIP_FORWARD).toFloat())
+
 
     //App
+    private fun addSettingsToJson(json: ObjectNode) {
+        //Library
+        json.put(StoragePairs.LIBRARY_LINKS_KEY, Storage.getString(StoragePairs.LIBRARY_LINKS_KEY, ""))
+
+        //App
+        json.put(StoragePairs.APP_AUTOMATIC_METADATA_MODIFICATION.key, Storage.getBool(StoragePairs.APP_AUTOMATIC_METADATA_MODIFICATION))
+
+        //Home
+        json.put(StoragePairs.HOME_ITEMS_PER_ROW.key, Storage.getInt(StoragePairs.HOME_ITEMS_PER_ROW))
+
+        //Album
+        json.put(StoragePairs.ALBUM_ITEMS_PER_ROW.key, Storage.getInt(StoragePairs.ALBUM_ITEMS_PER_ROW))
+        json.put(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON.key, Storage.getBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON))
+
+        //Video
+        json.put(StoragePairs.VIDEO_LOOP.key, Storage.getBool(StoragePairs.VIDEO_LOOP))
+        json.put(StoragePairs.VIDEO_SKIP_BACKWARDS.key, Storage.getLong(StoragePairs.VIDEO_SKIP_BACKWARDS))
+        json.put(StoragePairs.VIDEO_SKIP_FORWARD.key, Storage.getLong(StoragePairs.VIDEO_SKIP_FORWARD))
+
+        //Sync
+        json.put(StoragePairs.SYNC_USERS_KEY, Storage.getString(StoragePairs.SYNC_USERS_KEY, ""))
+    }
+
     fun createSettingsBackup(context: Context) {
         //Create empty json
         val json = Orion.emptyJson
 
-        //Library
-        json.put(
-            StoragePairs.LIBRARY_LINKS_KEY,
-            Storage.getString(StoragePairs.LIBRARY_LINKS_KEY, "")
-        )
-
-        //App
-        json.put(
-            StoragePairs.APP_AUTOMATIC_METADATA_MODIFICATION.key,
-            Storage.getBool(StoragePairs.APP_AUTOMATIC_METADATA_MODIFICATION)
-        )
-
-        //Home
-        json.put(
-            StoragePairs.HOME_ITEMS_PER_ROW.key,
-            Storage.getInt(StoragePairs.HOME_ITEMS_PER_ROW)
-        )
-
-        //Album
-        json.put(
-            StoragePairs.ALBUM_ITEMS_PER_ROW.key,
-            Storage.getInt(StoragePairs.ALBUM_ITEMS_PER_ROW)
-        )
-        json.put(
-            StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON.key,
-            Storage.getBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON)
-        )
-
-        //Sync
-        json.put(
-            StoragePairs.SYNC_USERS_KEY,
-            Storage.getString(StoragePairs.SYNC_USERS_KEY, "")
-        )
+        //Add settings to json
+        addSettingsToJson(json)
 
         //Create backup file
         val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "CoonGalleryBackup-${System.currentTimeMillis()}.json")
@@ -79,10 +76,7 @@ class SettingsViewModel : ViewModel() {
         }
     }
 
-    fun restoreSettingsBackup(context: Context, activity: Activity, file: File) {
-        //Load json from backup file
-        val json = Orion.loadJson(file)
-
+    private fun loadSettingsFromJson(json: ObjectNode) {
         //Library
         if (json.has(StoragePairs.LIBRARY_LINKS_KEY) && json.get(StoragePairs.LIBRARY_LINKS_KEY).isTextual) {
             //Too lazy to recreate all links so the library gets reloaded after finishing (✿◡‿◡)
@@ -113,11 +107,29 @@ class SettingsViewModel : ViewModel() {
             Storage.putBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON.key, albumShowMissingMetadataIcon)
         }
 
-        //Sync
+        //Video (these settings get loaded in video activity)
+        if (json.has(StoragePairs.VIDEO_LOOP.key) && json.get(StoragePairs.VIDEO_LOOP.key).isBoolean) {
+            Storage.putBool(StoragePairs.VIDEO_LOOP.key, json.get(StoragePairs.VIDEO_LOOP.key).asBoolean())
+        }
+        if (json.has(StoragePairs.VIDEO_SKIP_BACKWARDS.key) && json.get(StoragePairs.VIDEO_SKIP_BACKWARDS.key).isLong) {
+            Storage.putLong(StoragePairs.VIDEO_SKIP_BACKWARDS.key, json.get(StoragePairs.VIDEO_SKIP_BACKWARDS.key).asLong())
+        }
+        if (json.has(StoragePairs.VIDEO_SKIP_FORWARD.key) && json.get(StoragePairs.VIDEO_SKIP_FORWARD.key).isLong) {
+            Storage.putLong(StoragePairs.VIDEO_SKIP_FORWARD.key, json.get(StoragePairs.VIDEO_SKIP_FORWARD.key).asLong())
+        }
+
+        //Sync (these settings get loaded in sync activity)
         if (json.has(StoragePairs.SYNC_USERS_KEY) && json.get(StoragePairs.SYNC_USERS_KEY).isTextual) {
-            //Users list gets loaded in sync activity so no need to do anything here
             Storage.putString(StoragePairs.SYNC_USERS_KEY, json.get(StoragePairs.SYNC_USERS_KEY).asText())
         }
+    }
+
+    fun restoreSettingsBackup(context: Context, activity: Activity, file: File) {
+        //Load json from backup file
+        val json = Orion.loadJson(file)
+
+        //Load settings from json
+        loadSettingsFromJson(json)
 
         //Success restoring backup
         Toast.makeText(context, "Backup restored.", Toast.LENGTH_SHORT).show()
@@ -133,19 +145,11 @@ class SettingsViewModel : ViewModel() {
     }
 
     //Home screen
-    fun updateHomeItemsPerRow(value: Float) {
-        homeItemsPerRow = value
-    }
-
     fun saveHomeItemsPerRow() {
         Storage.putInt(StoragePairs.HOME_ITEMS_PER_ROW.key, homeItemsPerRow.toInt())
     }
 
     //Album screen
-    fun updateAlbumItemsPerRow(value: Float) {
-        albumItemsPerRow = value
-    }
-
     fun saveAlbumItemsPerRow() {
         Storage.putInt(StoragePairs.ALBUM_ITEMS_PER_ROW.key, albumItemsPerRow.toInt())
     }
@@ -153,6 +157,15 @@ class SettingsViewModel : ViewModel() {
     fun updateAlbumShowMissingMetadataIcon(isChecked: Boolean) {
         albumShowMissingMetadataIcon = isChecked
         Storage.putBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON.key, isChecked)
+    }
+
+    //Video screen
+    fun saveVideoSkipBackwardsAmount() {
+        Storage.putLong(StoragePairs.VIDEO_SKIP_BACKWARDS.key, videoSkipBackwardsAmount.toLong())
+    }
+
+    fun saveVideoSkipForwardAmount() {
+        Storage.putLong(StoragePairs.VIDEO_SKIP_FORWARD.key, videoSkipForwardAmount.toLong())
     }
 
     //Links
