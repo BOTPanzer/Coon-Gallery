@@ -71,6 +71,7 @@
         <activity
             android:name="com.botpa.turbophotos.screens.video.VideoActivity"
             android:configChanges="orientation|screenSize|screenLayout"
+            android:supportsPictureInPicture="true"
             android:launchMode="singleTask"
             android:exported="true">
             <intent-filter>
@@ -78,6 +79,19 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:mimeType="video/*" />
+            </intent-filter>
+            <intent-filter
+                tools:ignore="AppLinkUrlError">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="video/*"/>
+                <data android:host="*" />
+                <data android:pathPattern=".*\\.mp4" />
+                <data android:pathPattern=".*\\.webm" />
+                <data android:pathPattern=".*\\.mov" />
+                <data android:pathPattern=".*\\.mkv" />
+                <data android:pathPattern=".*\\.fmp4" />
+                <data android:pathPattern=".*\\.flv" />
             </intent-filter>
         </activity>
         <activity

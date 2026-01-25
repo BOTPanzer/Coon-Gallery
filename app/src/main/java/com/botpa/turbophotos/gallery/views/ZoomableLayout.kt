@@ -35,13 +35,14 @@ class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(conte
     private var mode: Int = NONE
 
     //Touch info
-    private var onPointersChanged: Runnable? = null
     private var last: PointF = PointF()
     private var start: PointF = PointF()
     private var swipeDistance: Int = ViewConfiguration.get(context).scaledTouchSlop
 
     var pointers: Int = 0
         private set
+
+    var onPointersChanged: Runnable? = null
 
     //Sizes
     private var viewSize: PointF = PointF()
@@ -59,15 +60,16 @@ class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(conte
     var zoom: Float = 1f
         private set
 
-    //Options
-    private var doubleTapZoomsToCover: Boolean = false
-    private var doubleTapZoom: Float = 2f
+    var doubleTapZoomsToCustom: Boolean = false
+    var doubleTapCustomZoom: Float = 2f
 
     //Click
-    private var onClick: Runnable? = null
-    private var onZoomChanged: Runnable? = null
-    private var lastClickTimestamp: Long = 0
     private val doubleClickDelay: Long = 200
+    private var lastClickTimestamp: Long = 0
+
+    var onClick: Runnable? = null
+    var onDoubleClick: ((x: Float, y: Float) -> Boolean)? = null
+    var onZoomChanged: Runnable? = null
 
 
     //Constructor
@@ -75,30 +77,6 @@ class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(conte
         //Init scale detector
         scaleDetector = ScaleGestureDetector(context, ScaleListener())
         scaleDetector.isQuickScaleEnabled = true //Reduces delay for scaling detection
-
-        //Click event
-        setOnClickListener { view ->
-            //Get current timestamp
-            val currentTimestamp = System.currentTimeMillis()
-
-            //Check if its double click
-            if (currentTimestamp - lastClickTimestamp < doubleClickDelay) {
-                //Reset timestamp
-                lastClickTimestamp = 0
-
-                //Stop click runnable
-                if (onClick != null) handler.removeCallbacks(onClick!!)
-
-                //Animate scale
-                animateResize(if (zoom > minZoom) fitScale else if (doubleTapZoomsToCover) coverScale else doubleTapZoom)
-            } else {
-                //Save timestamp
-                lastClickTimestamp = currentTimestamp
-
-                //Run click runnable
-                if (onClick != null) handler.postDelayed(onClick!!, doubleClickDelay)
-            }
-        }
     }
 
     //Touch
@@ -231,6 +209,34 @@ class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(conte
         return true
     }
 
+    override fun performClick(): Boolean {
+        //Get current timestamp
+        val currentTimestamp = System.currentTimeMillis()
+
+        //Check if its double click
+        if (currentTimestamp - lastClickTimestamp < doubleClickDelay) {
+            //Reset timestamp
+            lastClickTimestamp = 0
+
+            //Stop click runnable
+            if (onClick != null) handler.removeCallbacks(onClick!!)
+
+            //Perform double click
+            val consumed = onDoubleClick?.invoke(last.x, last.y) ?: false
+
+            //Not consumed -> Animate zoom
+            if (!consumed) animateResize(if (zoom > minZoom) fitScale else if (doubleTapZoomsToCustom) doubleTapCustomZoom else coverScale)
+        } else {
+            //Save timestamp
+            lastClickTimestamp = currentTimestamp
+
+            //Run click runnable
+            if (onClick != null) handler.postDelayed(onClick!!, doubleClickDelay)
+        }
+
+        return super.performClick()
+    }
+
     //Zoom
     private fun applyMatrixToChild() {
         //Get view
@@ -321,14 +327,6 @@ class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(conte
         //Start animation
         animator.start()
     }
-
-    //Options
-    fun setDoubleTapZoomsToCover(value: Boolean) { doubleTapZoomsToCover = value }
-
-    //Listeners
-    fun setOnClick(runnable: Runnable) { onClick = runnable }
-    fun setOnZoomChanged(runnable: Runnable) { onZoomChanged = runnable }
-    fun setOnPointersChanged(runnable: Runnable) { onPointersChanged = runnable }
 
     //Other
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {

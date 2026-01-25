@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/background"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:clipChildren="false"
-    tools:context=".screens.home.HomeActivity">
+    android:clipChildren="false">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list"
@@ -30,6 +28,8 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="500dp"
+                android:layout_marginBottom="1px"
+                android:alpha="0.8"
                 android:background="?attr/colorSurface"
                 app:layout_constraintBottom_toTopOf="parent" />
 
@@ -42,94 +42,116 @@
                     android:layout_height="match_parent"
                     android:orientation="vertical">
 
-                    <LinearLayout
+                    <RelativeLayout
                         android:layout_width="match_parent"
-                        android:layout_height="100dp"
-                        android:background="@drawable/bg_gradient"
-                        android:backgroundTint="?attr/colorSurface"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:layout_height="100dp">
 
-                        <TextView
-                            android:id="@+id/overlayName"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginHorizontal="20dp"
-                            android:layout_weight="1"
-                            android:ellipsize="end"
-                            android:fontFamily="@font/opificio_bold_rounded"
-                            android:singleLine="true"
-                            android:text="Name"
-                            android:textColor="?attr/colorOnSurface"
-                            android:textSize="16sp" />
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:alpha="0.8"
+                            android:background="@drawable/bg_gradient"
+                            android:backgroundTint="?attr/colorSurface" />
 
-                    </LinearLayout>
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingHorizontal="20dp">
+
+                            <TextView
+                                android:id="@+id/overlayName"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:ellipsize="end"
+                                android:fontFamily="@font/opificio_bold_rounded"
+                                android:singleLine="true"
+                                android:text="Name"
+                                android:textColor="?attr/colorOnSurface"
+                                android:textSize="16sp" />
+
+                        </LinearLayout>
+
+                    </RelativeLayout>
 
                     <Space
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="1" />
 
-                    <LinearLayout
+                    <RelativeLayout
                         android:layout_width="match_parent"
-                        android:layout_height="100dp"
-                        android:background="@drawable/bg_gradient_reversed"
-                        android:backgroundTint="?attr/colorSurface"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:layout_height="100dp">
 
-                        <Space
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1" />
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:alpha="0.8"
+                            android:background="@drawable/bg_gradient_reversed"
+                            android:backgroundTint="?attr/colorSurface" />
 
-                        <androidx.cardview.widget.CardView
-                            android:id="@+id/overlayInfo"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            app:cardBackgroundColor="#00000000"
-                            app:cardCornerRadius="20dp"
-                            app:cardElevation="0dp">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
 
-                            <ImageView
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:background="?attr/selectableItemBackground"
-                                android:padding="8dp"
-                                app:srcCompat="@drawable/info"
-                                app:tint="?attr/colorOnSurface" />
+                            <Space
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1" />
 
-                        </androidx.cardview.widget.CardView>
+                            <androidx.cardview.widget.CardView
+                                android:id="@+id/overlayInfo"
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                app:cardBackgroundColor="#00000000"
+                                app:cardCornerRadius="20dp"
+                                app:cardElevation="0dp">
 
-                        <Space
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1" />
+                                <ImageView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:background="?attr/selectableItemBackground"
+                                    android:padding="8dp"
+                                    app:srcCompat="@drawable/info"
+                                    app:tint="?attr/colorOnSurface" />
 
-                        <androidx.cardview.widget.CardView
-                            android:id="@+id/overlayOptions"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            app:cardBackgroundColor="#00000000"
-                            app:cardCornerRadius="20dp"
-                            app:cardElevation="0dp">
+                            </androidx.cardview.widget.CardView>
 
-                            <ImageView
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:background="?attr/selectableItemBackground"
-                                android:padding="8dp"
-                                app:srcCompat="@drawable/more"
-                                app:tint="?attr/colorOnSurface" />
+                            <Space
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1" />
 
-                        </androidx.cardview.widget.CardView>
+                            <androidx.cardview.widget.CardView
+                                android:id="@+id/overlayOptions"
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                app:cardBackgroundColor="#00000000"
+                                app:cardCornerRadius="20dp"
+                                app:cardElevation="0dp">
 
-                        <Space
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1" />
+                                <ImageView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:background="?attr/selectableItemBackground"
+                                    android:padding="8dp"
+                                    app:srcCompat="@drawable/more"
+                                    app:tint="?attr/colorOnSurface" />
 
-                    </LinearLayout>
+                            </androidx.cardview.widget.CardView>
+
+                            <Space
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1" />
+
+                        </LinearLayout>
+
+                    </RelativeLayout>
                 </LinearLayout>
 
                 <LinearLayout
@@ -338,6 +360,7 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="500dp"
+                android:alpha="0.8"
                 android:background="?attr/colorSurface"
                 app:layout_constraintTop_toBottomOf="parent" />
 

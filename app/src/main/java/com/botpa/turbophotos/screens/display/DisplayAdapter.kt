@@ -35,15 +35,15 @@ class DisplayAdapter(
         holder.play.visibility = if (item.isVideo) View.VISIBLE else View.GONE
 
         //Click listener
-        holder.zoom.setOnClick {
+        holder.zoom.onClick = {
             onClickListener?.onItemClick(holder.zoom, holder.image, holder.bindingAdapterPosition)
         }
 
-        holder.zoom.setOnZoomChanged {
+        holder.zoom.onZoomChanged = {
             onZoomChangedListener?.onItemClick(holder.zoom, holder.image, holder.bindingAdapterPosition)
         }
 
-        holder.zoom.setOnPointersChanged {
+        holder.zoom.onPointersChanged = {
             onPointersChangedListener?.onItemClick(holder.zoom, holder.image, holder.bindingAdapterPosition)
         }
 

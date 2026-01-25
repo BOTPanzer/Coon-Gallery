@@ -2,8 +2,10 @@ package com.botpa.turbophotos.screens.video
 
 import android.annotation.SuppressLint
 import android.app.ComponentCaller
+import android.app.PictureInPictureParams
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
@@ -11,10 +13,10 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Rational
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import android.view.WindowManager
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.OptIn
@@ -28,14 +30,20 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.GalleryActivity
+import com.botpa.turbophotos.gallery.options.OptionsAdapter
+import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.views.ZoomableLayout
 import com.botpa.turbophotos.util.BackManager
 import com.botpa.turbophotos.util.Orion
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.slider.Slider
 import java.io.File
 import kotlin.math.max
+import kotlin.math.min
 
 @SuppressLint("SetTextI18n", "NotifyDataSetChanged", "DefaultLocale")
 class VideoActivity : GalleryActivity() {
@@ -56,9 +64,12 @@ class VideoActivity : GalleryActivity() {
     //Player
     private lateinit var player: ExoPlayer
 
-    private var isLooping = true
-    private var isSeeking = false
-    private var hideControllerOnReady = true
+    private var hideControllerOnReady: Boolean = true
+    private var isLooping: Boolean = true
+    private var isSeeking: Boolean = false
+    private var isInPiP: Boolean = false
+    private var skipBackwardAmount: Long = 5
+    private var skipForwardAmount: Long = 5
 
     private lateinit var playerZoom: ZoomableLayout
     private lateinit var playerView: PlayerView
@@ -78,6 +89,27 @@ class VideoActivity : GalleryActivity() {
     }
     private val showLoading = Runnable { overlayLoading.visibility = View.VISIBLE }
 
+      /*$$$$$              /$$     /$$
+     /$$__  $$            | $$    |__/
+    | $$  \ $$  /$$$$$$  /$$$$$$   /$$  /$$$$$$  /$$$$$$$   /$$$$$$$
+    | $$  | $$ /$$__  $$|_  $$_/  | $$ /$$__  $$| $$__  $$ /$$_____/
+    | $$  | $$| $$  \ $$  | $$    | $$| $$  \ $$| $$  \ $$|  $$$$$$
+    | $$  | $$| $$  | $$  | $$ /$$| $$| $$  | $$| $$  | $$ \____  $$
+    |  $$$$$$/| $$$$$$$/  |  $$$$/| $$|  $$$$$$/| $$  | $$ /$$$$$$$/
+     \______/ | $$____/    \___/  |__/ \______/ |__/  |__/|_______/
+              | $$
+              | $$
+              |_*/
+
+    private val options: MutableList<OptionsItem> = ArrayList()
+    private lateinit var optionsAdapter: OptionsAdapter
+
+    private val optionSeparator: OptionsItem = OptionsItem()
+    private lateinit var optionPiP: OptionsItem
+
+    private lateinit var optionsLayout: View
+    private lateinit var optionsList: RecyclerView
+
       /*$$$$$    /$$     /$$
      /$$__  $$  | $$    | $$
     | $$  \ $$ /$$$$$$  | $$$$$$$   /$$$$$$   /$$$$$$
@@ -90,9 +122,10 @@ class VideoActivity : GalleryActivity() {
     //Views (overlay)
     private lateinit var overlayLayout: View
     private lateinit var overlayName: TextView
-    private lateinit var overlayPlay: View
-    private lateinit var overlayPlayIcon: ImageView
     private lateinit var overlayLoading: View
+    private lateinit var overlayPlay: MaterialButton
+    private lateinit var overlayLoop: MaterialButton
+    private lateinit var overlayOptions: MaterialButton
     private lateinit var overlayTimeSlider: Slider
     private lateinit var overlayTimeCurrent: TextView
     private lateinit var overlayTimeDuration: TextView
@@ -114,6 +147,10 @@ class VideoActivity : GalleryActivity() {
         this.enableEdgeToEdge()
         setContentView(R.layout.video_screen)
 
+        //Background is always black so we use dark theme status bar
+        val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
+        windowInsetsController.isAppearanceLightStatusBars = false
+
         //Enable HDR
         window.colorMode = ActivityInfo.COLOR_MODE_HDR
 
@@ -121,6 +158,7 @@ class VideoActivity : GalleryActivity() {
         backManager = BackManager(this@VideoActivity, onBackPressedDispatcher)
         initViews()
         initListeners()
+        initLists()
         initPlayer()
 
         //Init activity
@@ -132,6 +170,13 @@ class VideoActivity : GalleryActivity() {
 
         //Stop video
         player.stop()
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        //Pause video
+        if (!isInPiP) player.pause()
     }
 
     override fun onNewIntent(intent: Intent, caller: ComponentCaller) {
@@ -177,12 +222,18 @@ class VideoActivity : GalleryActivity() {
         //Views (overlay)
         overlayLayout = findViewById(R.id.overlayLayout)
         overlayName = findViewById(R.id.overlayName)
-        overlayPlay = findViewById(R.id.overlayPlay)
-        overlayPlayIcon = findViewById(R.id.overlayPlayIcon)
         overlayLoading = findViewById(R.id.overlayLoading)
+        overlayPlay = findViewById(R.id.overlayPlay)
+        overlayLoop = findViewById(R.id.overlayLoop)
+        overlayOptions = findViewById(R.id.overlayOptions)
         overlayTimeSlider = findViewById(R.id.overlayTimeSlider)
         overlayTimeCurrent = findViewById(R.id.overlayTimeCurrent)
         overlayTimeDuration = findViewById(R.id.overlayTimeDuration)
+
+        //Views (options)
+        optionsLayout = findViewById(R.id.optionsLayout)
+        optionsList = findViewById(R.id.optionsList)
+
 
         //Insets (overlay)
         Orion.addInsetsChangedListener(
@@ -197,22 +248,65 @@ class VideoActivity : GalleryActivity() {
             params.setMargins(insets.left, insets.top, insets.right, insets.bottom)
             view.layoutParams = params
         }
+
+        //Insets (options layout)
+        Orion.addInsetsChangedListener(
+            optionsLayout,
+            intArrayOf(WindowInsetsCompat.Type.systemBars())
+        )
     }
 
     private fun initListeners() {
         //Player
-        playerZoom.setOnClick {
+        playerZoom.onClick = {
             toggleController()
+        }
+
+        playerZoom.onDoubleClick = { x, y ->
+            //Get layout width
+            val width = playerZoom.width
+            val doubleTapArea = width / 5
+
+            //Check if seek
+            if (x < doubleTapArea) {
+                //Seek backwards
+                val newPosition = (player.currentPosition - (skipBackwardAmount * 1000L)).coerceAtLeast(0)
+                player.seekTo(newPosition)
+                overlayTimeSlider.value = newPosition.toFloat()
+
+                //Consume click
+                true
+            } else if (x > width - doubleTapArea) {
+                //Seek forward
+                val newPosition = (player.currentPosition + (skipForwardAmount * 1000L)).coerceAtMost(player.duration)
+                player.seekTo(newPosition)
+                overlayTimeSlider.value = newPosition.toFloat()
+
+                //Consume click
+                true
+            } else {
+                //Don't consume click
+                false
+            }
         }
 
         //Overlay
         overlayPlay.setOnClickListener { view ->
-            if (player.isPlaying) {
+            if (player.playbackState == ExoPlayer.STATE_ENDED) {
+                //Ended -> Restart
+                player.seekTo(0)
+            } else if (player.isPlaying) {
+                //Playing -> Pause
                 player.pause()
             } else {
+                //Not playing -> Play
                 player.play()
             }
         }
+
+        overlayLoop.setOnClickListener { setLooping(!isLooping) }
+
+        overlayOptions.setOnClickListener { toggleOptions(true) }
 
         overlayTimeSlider.addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
 
@@ -230,6 +324,44 @@ class VideoActivity : GalleryActivity() {
             }
 
         })
+
+        //Options
+        optionsLayout.setOnClickListener { toggleOptions(false) }
+
+        optionPiP = OptionsItem(R.drawable.pip, "Open in PiP") {
+            //Create params
+            val p = PictureInPictureParams.Builder()
+            try {
+                val size = player.videoSize
+                if (size.width <= 0 || size.height <= 0) throw Exception()
+                p.setAspectRatio(Rational(size.width, size.height))
+            } catch (_: Exception) {
+                p.setAspectRatio(Rational(16, 9))
+            }
+
+            //Enter PiP
+            isInPiP = enterPictureInPictureMode(p.build())
+        }
+    }
+
+    private fun initLists() {
+        //Init options layout manager
+        optionsList.setLayoutManager(LinearLayoutManager(this@VideoActivity))
+
+        //Init options adapter
+        optionsAdapter = OptionsAdapter(this@VideoActivity, options)
+        optionsAdapter.setOnClickListener { view: View, index: Int ->
+            //Get option
+            val option = options[index]
+
+            //Get action
+            val action = option.action ?: return@setOnClickListener
+
+            //Invoke action
+            action.run()
+            toggleOptions(false)
+        }
+        optionsList.setAdapter(optionsAdapter)
     }
 
     @OptIn(UnstableApi::class)
@@ -241,18 +373,17 @@ class VideoActivity : GalleryActivity() {
         player.playWhenReady = true
         player.addListener(object : Player.Listener {
 
-            override fun onIsLoadingChanged(isLoading: Boolean) {
-                super.onIsLoadingChanged(isLoading)
-
-                //Set is loading
-                showLoadingIndicator(isLoading)
-            }
-
             override fun onPlaybackStateChanged(playbackState: Int) {
                 when (playbackState) {
-                    //Ready
+                    //Media is buffering
+                    ExoPlayer.STATE_BUFFERING -> {
+                        //Show loading animation
+                        showLoadingIndicator(true)
+                    }
+
+                    //Media is ready
                     ExoPlayer.STATE_READY -> {
-                        //Stop loading animation
+                        //Hide loading animation
                         showLoadingIndicator(false)
 
                         //Hide controller
@@ -262,13 +393,10 @@ class VideoActivity : GalleryActivity() {
                         }
                     }
 
-                    //Ended
+                    //Finished playing media
                     ExoPlayer.STATE_ENDED -> {
                         //Update player time
                         updatePlayerTime()
-
-                        //Stop loading animation
-                        if (!player.isLoading) showLoadingIndicator(false)
                     }
 
                     //Other
@@ -282,7 +410,8 @@ class VideoActivity : GalleryActivity() {
                     requestAudioFocus()
 
                     //Update play button
-                    overlayPlayIcon.setImageResource(R.drawable.pause)
+                    overlayPlay.setIconResource(R.drawable.pause)
+                    overlayPlay.text = "Pause"
 
                     //Start time update loop
                     if (overlayLayout.isVisible) enableUpdateTimeLoop(true)
@@ -291,7 +420,8 @@ class VideoActivity : GalleryActivity() {
                     window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 } else {
                     //Update play button
-                    overlayPlayIcon.setImageResource(R.drawable.play)
+                    overlayPlay.setIconResource(R.drawable.play)
+                    overlayPlay.text = "Play"
 
                     //Stop time update loop
                     enableUpdateTimeLoop(false)
@@ -309,7 +439,7 @@ class VideoActivity : GalleryActivity() {
             }
 
         })
-        player.repeatMode = if (isLooping) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_OFF
+        setLooping(isLooping)
 
         //Init player view
         playerView.controllerAutoShow = false
@@ -319,7 +449,7 @@ class VideoActivity : GalleryActivity() {
         playerView.player = player
     }
 
-    //Playback
+    //Player
     private fun getNameFromUri(uri: Uri): String {
         //Get path from uri
         var path = uri.path!!
@@ -388,10 +518,11 @@ class VideoActivity : GalleryActivity() {
         if (isSeeking) return
 
         //Update time
-        overlayTimeSlider.valueTo = max(0, player.duration).toFloat()
-        overlayTimeSlider.value = player.currentPosition.toFloat()
-        overlayTimeCurrent.text = formatMilliseconds(player.currentPosition)
+        val duration = max(0, player.duration).toFloat()
+        overlayTimeSlider.valueTo = duration
+        overlayTimeSlider.value = min(duration, player.currentPosition.toFloat())
         overlayTimeDuration.text = formatMilliseconds(player.duration)
+        overlayTimeCurrent.text = formatMilliseconds(player.currentPosition)
     }
 
     private fun showLoadingIndicator(show: Boolean) {
@@ -401,11 +532,29 @@ class VideoActivity : GalleryActivity() {
         //Check if loading
         if (show) {
             //Start loading animation
-            handler.postDelayed(showLoading, 500)
+            handler.postDelayed(showLoading, 300)
         } else {
             //Stop loading animation
             overlayLoading.visibility = View.GONE
         }
+    }
+
+    //Playback
+    override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: Configuration) {
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+
+        //Update state & toggle controller
+        isInPiP = isInPictureInPictureMode
+        showController(!isInPictureInPictureMode)
+    }
+
+    private fun setLooping(looping: Boolean) {
+        //Set looping
+        isLooping = looping
+        player.repeatMode = if (isLooping) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_OFF
+
+        //Update loop button
+        overlayLoop.setIconResource(if (isLooping) R.drawable.repeat_on else R.drawable.repeat)
     }
 
     //Audio focus
@@ -457,6 +606,35 @@ class VideoActivity : GalleryActivity() {
         //Request audio focus
         val state = audioManager.requestAudioFocus(focusRequest)
         if (state == AudioManager.AUDIOFOCUS_GAIN) hasAudioFocus = true
+    }
+
+      /*$$$$$              /$$     /$$
+     /$$__  $$            | $$    |__/
+    | $$  \ $$  /$$$$$$  /$$$$$$   /$$  /$$$$$$  /$$$$$$$   /$$$$$$$
+    | $$  | $$ /$$__  $$|_  $$_/  | $$ /$$__  $$| $$__  $$ /$$_____/
+    | $$  | $$| $$  \ $$  | $$    | $$| $$  \ $$| $$  \ $$|  $$$$$$
+    | $$  | $$| $$  | $$  | $$ /$$| $$| $$  | $$| $$  | $$ \____  $$
+    |  $$$$$$/| $$$$$$$/  |  $$$$/| $$|  $$$$$$/| $$  | $$ /$$$$$$$/
+     \______/ | $$____/    \___/  |__/ \______/ |__/  |__/|_______/
+              | $$
+              | $$
+              |_*/
+
+    private fun toggleOptions(show: Boolean) {
+        if (show) {
+            //Update options list
+            options.clear()
+            options.add(optionPiP)
+            optionsAdapter.notifyDataSetChanged()
+
+            //Show
+            Orion.showAnim(optionsLayout)
+            backManager.register("options") { toggleOptions(false) }
+        } else {
+            //Hide
+            Orion.hideAnim(optionsLayout)
+            backManager.unregister("options")
+        }
     }
 
       /*$$$$$    /$$     /$$

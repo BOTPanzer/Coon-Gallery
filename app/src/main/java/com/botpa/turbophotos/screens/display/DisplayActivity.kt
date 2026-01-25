@@ -359,12 +359,12 @@ class DisplayActivity : GalleryActivity() {
 
     private fun initListeners() {
         //Overlay
-        overlayInfo.setOnClickListener { view: View -> toggleInfo(true) }
+        overlayInfo.setOnClickListener { toggleInfo(true) }
 
-        overlayOptions.setOnClickListener { view: View -> toggleOptions(true) }
+        overlayOptions.setOnClickListener { toggleOptions(true) }
 
         //Info
-        infoLayout.setOnClickListener { view: View -> toggleInfo(false) }
+        infoLayout.setOnClickListener { toggleInfo(false) }
 
         infoEdit.setOnClickListener { view: View ->
             //No metadata file
@@ -395,7 +395,7 @@ class DisplayActivity : GalleryActivity() {
         }
 
         //Edit
-        editLayout.setOnClickListener { view: View -> toggleEdit(false) }
+        editLayout.setOnClickListener { toggleEdit(false) }
 
         editSave.setOnClickListener { view: View ->
             //Get new caption & labels
@@ -429,7 +429,7 @@ class DisplayActivity : GalleryActivity() {
         }
 
         //Options
-        optionsLayout.setOnClickListener { view: View -> toggleOptions(false) }
+        optionsLayout.setOnClickListener { toggleOptions(false) }
 
         optionRename = OptionsItem(R.drawable.rename, "Rename") {
             //Rename
@@ -556,6 +556,12 @@ class DisplayActivity : GalleryActivity() {
 
     //Current item
     private fun selectItem(index: Int) {
+        //Empty display gallery
+        if (displayGallery.isEmpty()) {
+            finish()
+            return
+        }
+
         //Fix index overflow
         var index = index
         index = Math.clamp(index.toLong(), 0, displayGallery.size - 1)
@@ -689,11 +695,11 @@ class DisplayActivity : GalleryActivity() {
 
             //Show
             Orion.showAnim(optionsLayout)
-            backManager.register("displayOptions") { toggleOptions(false) }
+            backManager.register("options") { toggleOptions(false) }
         } else {
             //Hide
             Orion.hideAnim(optionsLayout)
-            backManager.unregister("displayOptions")
+            backManager.unregister("options")
         }
     }
 
@@ -715,11 +721,11 @@ class DisplayActivity : GalleryActivity() {
 
             //Show
             Orion.showAnim(infoLayout)
-            backManager.register("displayInfo") { toggleInfo(false) }
+            backManager.register("info") { toggleInfo(false) }
         } else {
             //Hide
             Orion.hideAnim(infoLayout)
-            backManager.unregister("displayInfo")
+            backManager.unregister("info")
         }
     }
 
@@ -731,7 +737,7 @@ class DisplayActivity : GalleryActivity() {
 
             //Show
             Orion.showAnim(editLayout)
-            backManager.register("displayEdit") { toggleEdit(false) }
+            backManager.register("edit") { toggleEdit(false) }
         } else {
             //Hide keyboard
             Orion.hideKeyboard(this@DisplayActivity)
@@ -739,7 +745,7 @@ class DisplayActivity : GalleryActivity() {
 
             //Hide
             Orion.hideAnim(editLayout)
-            backManager.unregister("displayEdit")
+            backManager.unregister("edit")
         }
     }
 
