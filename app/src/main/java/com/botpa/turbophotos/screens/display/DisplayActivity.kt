@@ -31,10 +31,12 @@ import com.botpa.turbophotos.gallery.CoonItem
 import com.botpa.turbophotos.gallery.GalleryActivity
 import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.Library.ActionEvent
+import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.gallery.actions.Action
 import com.botpa.turbophotos.gallery.options.OptionsAdapter
 import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.views.ZoomableLayout
+import com.botpa.turbophotos.screens.video.VideoActivity
 import com.botpa.turbophotos.util.BackManager
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Orion.ResizeHeightAnimation
@@ -79,6 +81,8 @@ class DisplayActivity : GalleryActivity() {
 
     private val displayItems: MutableList<CoonItem> = ArrayList()
     private var currentIndexInDisplay = -1
+
+    private var useInternalVideoPlayer: Boolean = true
 
     private lateinit var currentItem: CoonItem
 
@@ -191,6 +195,9 @@ class DisplayActivity : GalleryActivity() {
 
     override fun onResume() {
         super.onResume()
+
+        //Update settings
+        useInternalVideoPlayer = Storage.getBool(StoragePairs.VIDEO_USE_INTERNAL_PLAYER)
 
         //Not init
         if (!isInit) return
@@ -503,8 +510,13 @@ class DisplayActivity : GalleryActivity() {
             displayLayoutManager.setScrollEnabled(zoom.zoom <= 1 && zoom.pointers <= 1)
         }
         displayAdapter.setOnPlayListener { zoom: ZoomableLayout, image: ImageView, index: Int ->
-            //Play video outside
-            val intent = Intent(Intent.ACTION_VIEW)
+            val intent = if (useInternalVideoPlayer) {
+                //Play in internal player
+                Intent(this@DisplayActivity, VideoActivity::class.java)
+            } else {
+                //Play in external player
+                Intent(Intent.ACTION_VIEW)
+            }
             intent.setDataAndType(currentItem.file.absolutePath.toUri(), currentItem.mimeType)
             startActivity(intent)
         }

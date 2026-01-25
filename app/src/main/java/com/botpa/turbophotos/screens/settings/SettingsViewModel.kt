@@ -29,9 +29,10 @@ class SettingsViewModel : ViewModel() {
     var albumItemsPerRow by mutableFloatStateOf(Storage.getInt(StoragePairs.ALBUM_ITEMS_PER_ROW).toFloat())
     var albumShowMissingMetadataIcon by  mutableStateOf(Storage.getBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON))
 
-    //Video screen
+    //Video player
     var videoSkipBackwardsAmount by mutableFloatStateOf(Storage.getLong(StoragePairs.VIDEO_SKIP_BACKWARDS).toFloat())
     var videoSkipForwardAmount by mutableFloatStateOf(Storage.getLong(StoragePairs.VIDEO_SKIP_FORWARD).toFloat())
+    var videoUseInternalPlayer by  mutableStateOf(Storage.getBool(StoragePairs.VIDEO_USE_INTERNAL_PLAYER))
 
 
     //App
@@ -159,13 +160,18 @@ class SettingsViewModel : ViewModel() {
         Storage.putBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON.key, isChecked)
     }
 
-    //Video screen
+    //Video player
     fun saveVideoSkipBackwardsAmount() {
         Storage.putLong(StoragePairs.VIDEO_SKIP_BACKWARDS.key, videoSkipBackwardsAmount.toLong())
     }
 
     fun saveVideoSkipForwardAmount() {
         Storage.putLong(StoragePairs.VIDEO_SKIP_FORWARD.key, videoSkipForwardAmount.toLong())
+    }
+
+    fun updateVideoUseInternalPlayer(isChecked: Boolean) {
+        videoUseInternalPlayer = isChecked
+        Storage.putBool(StoragePairs.VIDEO_USE_INTERNAL_PLAYER.key, isChecked)
     }
 
     //Links

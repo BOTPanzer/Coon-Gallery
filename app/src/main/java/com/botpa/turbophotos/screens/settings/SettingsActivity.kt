@@ -40,7 +40,6 @@ import com.botpa.turbophotos.gallery.views.IconButton
 import com.botpa.turbophotos.gallery.views.Layout
 import com.botpa.turbophotos.gallery.views.SimpleButton
 import com.botpa.turbophotos.theme.CoonTheme
-import com.botpa.turbophotos.util.Storage
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -270,11 +269,11 @@ class SettingsActivity : AppCompatActivity() {
                     }
                 }
 
-                //Video screen
+                //Video player
                 item {
                     Group {
                         //Title
-                        GroupTitle("Video Screen")
+                        GroupTitle("Video Player")
 
                         //Items
                         GroupItems {
@@ -312,6 +311,21 @@ class SettingsActivity : AppCompatActivity() {
                                     steps = 3,
                                     modifier = Modifier
                                         .weight(0.5f)
+                                )
+                            }
+
+                            //Divider
+                            GroupDivider()
+
+                            //Use internal player
+                            SettingsItem(
+                                title = "Use internal video player",
+                                description = "Use internal video player or ask to use an external one when opening videos."
+                            ) {
+                                //Value
+                                Switch(
+                                    checked = view.videoUseInternalPlayer,
+                                    onCheckedChange = { isChecked -> view.updateVideoUseInternalPlayer(isChecked) }
                                 )
                             }
                         }
