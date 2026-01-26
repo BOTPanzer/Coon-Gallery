@@ -69,8 +69,8 @@ class Album(val name: String, val imagesFolder: File?, var metadataFile: File?) 
 
     //Load & save metadata
     fun updateMetadataFile(newFile: File?) {
-        metadataFile = newFile;
-        metadata = null;
+        metadataFile = newFile
+        metadata = null
     }
 
     fun loadMetadata() {

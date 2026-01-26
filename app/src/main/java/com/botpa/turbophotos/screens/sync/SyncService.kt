@@ -144,12 +144,12 @@ class SyncService : Service() {
             }
 
             override fun onPingReceived(data: ByteArray) {
-                println("ping received");
-                sendPong(data);
+                println("ping received")
+                sendPong(data)
             }
 
             override fun onPongReceived(data: ByteArray) {
-                println("pong received");
+                println("pong received")
             }
 
             override fun onException(e: Exception) {

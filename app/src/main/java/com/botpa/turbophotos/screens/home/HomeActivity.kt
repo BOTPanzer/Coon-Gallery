@@ -182,11 +182,8 @@ class HomeActivity : GalleryActivity() {
         initHomeList()
         initOptionsList()
 
-        //Mark as init
-        isInit = true
-
-        //Check permissions
-        checkPermissions()
+        //Init activity
+        initActivity()
     }
 
     override fun onDestroy() {
@@ -213,15 +210,15 @@ class HomeActivity : GalleryActivity() {
         //Library not loaded
         if (!isLibraryLoaded) return
 
-        //Update horizontal item count
-        updateHorizontalItemCount()
+        //Update list items per row
+        updateListItemsPerRow()
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
 
-        //Update horizontal item count
-        updateHorizontalItemCount()
+        //Update list items per row
+        updateListItemsPerRow()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray, deviceId: Int) {
@@ -238,13 +235,13 @@ class HomeActivity : GalleryActivity() {
             permissionWrite.alpha = 0.5f
         }
 
-        if (ContextCompat.checkSelfPermission(this@HomeActivity, Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED &&
-            ContextCompat.checkSelfPermission(this@HomeActivity, Manifest.permission.READ_MEDIA_VIDEO) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_VIDEO) == PackageManager.PERMISSION_GRANTED) {
             hasPermissionMedia = true
             permissionMedia.alpha = 0.5f
         }
 
-        if (NotificationManagerCompat.from(this@HomeActivity).areNotificationsEnabled()) {
+        if (NotificationManagerCompat.from(this).areNotificationsEnabled()) {
             hasPermissionNotifications = true
             permissionNotifications.alpha = 0.5f
         }
@@ -254,8 +251,8 @@ class HomeActivity : GalleryActivity() {
             //Hide permission layout
             permissionLayout.visibility = View.GONE
 
-            //Init activity
-            loadLibrary()
+            //Has permissions
+            onHasPermissions()
         } else {
             //Show permission layout
             permissionLayout.visibility = View.VISIBLE
@@ -304,7 +301,7 @@ class HomeActivity : GalleryActivity() {
         }
     }
 
-    private fun loadLibrary() {
+    private fun onHasPermissions() {
         //Hide list
         homeList.visibility = View.GONE
 
@@ -321,11 +318,12 @@ class HomeActivity : GalleryActivity() {
             isPicking = false
             filter = "*/*"
         }
+        navbarOptions.visibility = if (isPicking) View.GONE else View.VISIBLE
 
-        //Load albums
+        //Load library
         Thread {
-            //Load albums
-            Library.loadLibrary(this@HomeActivity, filter)
+            //Load library
+            Library.loadLibrary(this, filter)
 
             //Show list
             runOnUiThread {
@@ -342,6 +340,14 @@ class HomeActivity : GalleryActivity() {
             //Mark as loaded
             isLibraryLoaded = true
         }.start()
+    }
+
+    private fun initActivity() {
+        //Mark as init
+        isInit = true
+
+        //Check permissions
+        checkPermissions()
     }
 
     //Events
@@ -402,9 +408,9 @@ class HomeActivity : GalleryActivity() {
     private fun initViews() {
         //Permissions
         permissionLayout = findViewById(R.id.permissionLayout)
-        permissionWrite = findViewById(R.id.permissionWrite);
-        permissionMedia = findViewById(R.id.permissionMedia);
-        permissionNotifications = findViewById(R.id.permissionNotifications);
+        permissionWrite = findViewById(R.id.permissionWrite)
+        permissionMedia = findViewById(R.id.permissionMedia)
+        permissionNotifications = findViewById(R.id.permissionNotifications)
 
         //Navbar
         navbarSubtitle = findViewById(R.id.navbarSubtitle)
@@ -484,7 +490,7 @@ class HomeActivity : GalleryActivity() {
             if (!isLibraryLoaded) return@OptionsItem
 
             //Open sync
-            startActivity(Intent(this@HomeActivity, SyncActivity::class.java))
+            startActivity(Intent(this, SyncActivity::class.java))
         }
 
         optionSettings = OptionsItem(R.drawable.settings, "Settings") {
@@ -492,7 +498,7 @@ class HomeActivity : GalleryActivity() {
             if (!isLibraryLoaded) return@OptionsItem
 
             //Open sync
-            startActivity(Intent(this@HomeActivity, SettingsActivity::class.java))
+            startActivity(Intent(this, SettingsActivity::class.java))
         }
 
         optionFilters = OptionsItem(R.drawable.filter, "Filters") {
@@ -504,13 +510,13 @@ class HomeActivity : GalleryActivity() {
             )
 
             //Create dialog
-            DialogFilters(this@HomeActivity, filters).buildAndShow()
+            DialogFilters(this, filters).buildAndShow()
         }
 
         //List
         homeRefreshLayout.setOnRefreshListener {
             //Reload library
-            Library.loadLibrary(this@HomeActivity, true)
+            Library.loadLibrary(this, true)
 
             //Stop refreshing
             homeRefreshLayout.isRefreshing = false
@@ -520,11 +526,11 @@ class HomeActivity : GalleryActivity() {
     //Home
     private fun initHomeList() {
         //Init home layout manager
-        homeLayoutManager = GridLayoutManager(this@HomeActivity, this.horizontalItemCount)
+        homeLayoutManager = GridLayoutManager(this, listItemsPerRow)
         homeList.setLayoutManager(homeLayoutManager)
 
         //Init home adapter
-        homeAdapter = HomeAdapter(this@HomeActivity, Library.albums)
+        homeAdapter = HomeAdapter(this, Library.albums)
         homeAdapter.setOnClickListener { view: View, album: Album ->
             //Create open animation
             val startX = view.left + (view.width / 2)
@@ -539,7 +545,7 @@ class HomeActivity : GalleryActivity() {
             )
 
             //Prepare intent info
-            val intent = Intent(this@HomeActivity, AlbumActivity::class.java)
+            val intent = Intent(this, AlbumActivity::class.java)
             when (album) {
                 Library.trash ->
                     intent.putExtra("albumName", "trash")
@@ -582,10 +588,10 @@ class HomeActivity : GalleryActivity() {
 
     private fun initOptionsList() {
         //Init options layout manager
-        optionsList.setLayoutManager(LinearLayoutManager(this@HomeActivity))
+        optionsList.setLayoutManager(LinearLayoutManager(this))
 
         //Init options adapter
-        optionsAdapter = OptionsAdapter(this@HomeActivity, options)
+        optionsAdapter = OptionsAdapter(this, options)
         optionsAdapter.setOnClickListener { view: View, index: Int ->
             //Get option
             val option = options[index]
@@ -606,10 +612,8 @@ class HomeActivity : GalleryActivity() {
             options.clear()
             options.add(optionSync)
             options.add(optionSettings)
-            if (!isPicking) {
-                options.add(optionSeparator)
-                options.add(optionFilters)
-            }
+            options.add(optionSeparator)
+            options.add(optionFilters)
             optionsAdapter.notifyDataSetChanged()
 
             //Show
@@ -632,22 +636,25 @@ class HomeActivity : GalleryActivity() {
      \______/    \___/  |__/  |__/ \_______/|_*/
 
     //List grid
-    private val horizontalItemCount: Int get() {
+    private val listItemsPerRow: Int get() {
+        //Check if in horizontal orientation
         val isHorizontal = getResources().configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+        //Get portrait aspect ratio
         val metrics = getResources().displayMetrics
         val ratio = (metrics.widthPixels.toFloat() / metrics.heightPixels.toFloat())
 
-        //Get size for portrait
-        val size = Storage.getInt(StoragePairs.HOME_ITEMS_PER_ROW)
+        //Get portrait items per row
+        val itemsPerRow = Storage.getInt(StoragePairs.HOME_ITEMS_PER_ROW)
 
-        //Return size for current orientation
-        return if (isHorizontal) (size * ratio).toInt() else size
+        //Return items per row for current orientation
+        return if (isHorizontal) (itemsPerRow * ratio).toInt() else itemsPerRow
     }
 
-    private fun updateHorizontalItemCount() {
-        val newHorizontalItemCount = this.horizontalItemCount
-        if (homeLayoutManager.spanCount != newHorizontalItemCount) {
-            homeLayoutManager.setSpanCount(newHorizontalItemCount)
+    private fun updateListItemsPerRow() {
+        val newItemsPerRow = listItemsPerRow
+        if (homeLayoutManager.spanCount != newItemsPerRow) {
+            homeLayoutManager.setSpanCount(newItemsPerRow)
         }
     }
 

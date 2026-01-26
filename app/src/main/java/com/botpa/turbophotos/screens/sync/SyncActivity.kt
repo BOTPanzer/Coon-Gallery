@@ -85,7 +85,7 @@ class SyncActivity : AppCompatActivity() {
         super.onDestroy()
 
         //Close service
-        send("stop")
+        sendStop()
 
         //Check if library needs to be reset
         if (view.reloadLibraryOnExit) Library.loadLibrary(this, true)
@@ -203,7 +203,7 @@ class SyncActivity : AppCompatActivity() {
                             connect(view.connectCode)
                         },
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .weight(1.0f)
                     )
 
                     //Connecting indicator
@@ -396,16 +396,16 @@ class SyncActivity : AppCompatActivity() {
 
     private fun connect(code: String) {
         //Hide keyboard
-        Orion.hideKeyboard(this@SyncActivity)
-        Orion.clearFocus(this@SyncActivity)
+        Orion.hideKeyboard(this)
+        Orion.clearFocus(this)
 
         //Connect
         if (code.contains(":")) {
             //Code is already an IP:PORT address
-            send("connect", code)
+            sendConnect(code)
         } else {
             //Code needs conversion to address
-            send("connect", convertCodeToAddress(code))
+            sendConnect(convertCodeToAddress(code))
         }
     }
 
@@ -448,21 +448,21 @@ class SyncActivity : AppCompatActivity() {
                     SyncService.STATUS_ONLINE -> log("Connected")
                 }
             }
-            "snack" -> Orion.snack(this@SyncActivity, event.valueString)
+            "snack" -> Orion.snack(this, event.valueString)
             "log" -> log(event.valueString)
             "reload" -> view.reloadLibraryOnExit = true
         }
     }
 
-    private fun send(command: String) {
+    private fun sendStop() {
         val intent = Intent(this, SyncService::class.java)
-        intent.putExtra("command", command)
+        intent.putExtra("command", "stop")
         startService(intent)
     }
 
-    private fun send(command: String, value: String) {
+    private fun sendConnect(value: String) {
         val intent = Intent(this, SyncService::class.java)
-        intent.putExtra("command", command)
+        intent.putExtra("command", "connect")
         intent.putExtra("value", value)
         startService(intent)
     }

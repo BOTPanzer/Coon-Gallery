@@ -40,7 +40,7 @@ import kotlin.checkNotNull
 object Library {
 
     //Logging
-    private const val LOG_LIBRARY = "LIBRARY"
+    private const val LOGGING_TAG = "LIBRARY"
 
     //Events
     private val onRefresh = ArrayList<RefreshEvent>()
@@ -233,7 +233,7 @@ object Library {
                 }
             }
         } catch (e: Exception) {
-            Log.e(LOG_LIBRARY, "Error loading albums: " + e.message)
+            Log.e(LOGGING_TAG, "Error loading albums: ${e.message}")
         }
 
         //Remove unused albums & populate albums list

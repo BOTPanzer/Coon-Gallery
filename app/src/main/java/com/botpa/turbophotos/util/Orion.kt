@@ -32,8 +32,12 @@ import android.webkit.MimeTypeMap
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.graphics.Insets
+import androidx.core.graphics.scale
+import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isGone
+import androidx.core.view.isVisible
 import com.botpa.turbophotos.R
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -44,8 +48,6 @@ import com.google.android.material.snackbar.Snackbar.SnackbarLayout
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.File
-import java.io.FileInputStream
-import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStreamReader
@@ -53,25 +55,19 @@ import java.io.OutputStreamWriter
 import java.io.Reader
 import java.io.Writer
 import java.net.URLDecoder
-import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
-import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import java.util.Locale
 import kotlin.math.max
 import kotlin.math.min
-import androidx.core.view.isVisible
-import androidx.core.view.isGone
-import androidx.core.net.toUri
-import androidx.core.graphics.scale
 
 object Orion {
 
     //Logging
-    private const val loggingTag = "Orion";
+    private const val LOGGING_TAG = "ORION"
 
-    //Json
+    //JSON
     private val objectMapper = ObjectMapper()
 
 
@@ -182,13 +178,13 @@ object Orion {
     //Keyboard
     fun hideKeyboard(activity: Activity) {
         val imm = activity.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
-        val view = activity.currentFocus ?: View(activity.applicationContext)
+        val view = activity.currentFocus ?: View(activity)
         imm.hideSoftInputFromWindow(view.windowToken, 0)
     }
 
     fun showKeyboard(activity: Activity) {
         val imm = activity.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
-        val view = activity.currentFocus ?: View(activity.applicationContext)
+        val view = activity.currentFocus ?: View(activity)
         imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT)
     }
 
@@ -440,47 +436,6 @@ object Orion {
         return files
     }
 
-    private fun detectCharset(path: Path): Charset? {
-        var charset = StandardCharsets.UTF_8
-        var fis: FileInputStream? = null
-
-        try {
-            fis = FileInputStream(path.toFile())
-            val bytes = ByteArray(4096) // Read a chunk of bytes
-            val bytesRead = fis.read(bytes)
-            charset = if (bytesRead == -1) StandardCharsets.UTF_8 else detectCharsetFromBytes(bytes, bytesRead)
-        } catch (e: FileNotFoundException) {
-            e.printStackTrace()
-        } catch (e: IOException) {
-            e.printStackTrace()
-        } finally {
-            try {
-                fis?.close()
-            } catch (e: IOException) {
-                e.printStackTrace()
-            }
-        }
-
-        return charset
-    }
-
-    private fun detectCharsetFromBytes(bytes: ByteArray, length: Int): Charset? {
-        // Simple BOM detection (UTF-8, UTF-16, UTF-32)
-        if (length >= 3 && bytes[0] == 0xEF.toByte() && bytes[1] == 0xBB.toByte() && bytes[2] == 0xBF.toByte()) {
-            return StandardCharsets.UTF_8 // UTF-8 BOM
-        } else if (length >= 2 && bytes[0] == 0xFE.toByte() && bytes[1] == 0xFF.toByte()) {
-            return StandardCharsets.UTF_16BE // UTF-16BE BOM
-        } else if (length >= 2 && bytes[0] == 0xFF.toByte() && bytes[1] == 0xFE.toByte()) {
-            return StandardCharsets.UTF_16LE // UTF-16LE BOM
-        } /* else if (length >= 4 && bytes[0] == (byte) 0x00 && bytes[1] == (byte) 0x00 && bytes[2] == (byte) 0xFE && bytes[3] == (byte) 0xFF) {
-            return "UTF-32BE"; // UTF-32BE BOM
-        } else if (length >= 4 && bytes[0] == (byte) 0xFF && bytes[1] == (byte) 0xFE && bytes[2] == (byte) 0x00 && bytes[3] == (byte) 0x00) {
-            return "UTF-32LE"; // UTF-32LE BOM
-        }*/
-
-        return StandardCharsets.UTF_8 //default if unable to detect.
-    }
-
     fun getExtension(path: String): String {
         val dotIndex = path.lastIndexOf(".")
         return if (dotIndex == -1) "" else path.substring(dotIndex + 1)
@@ -488,13 +443,12 @@ object Orion {
 
     fun readFile(file: File): String {
         val path = file.toPath()
-        val charset = detectCharset(path)
         var reader: Reader? = null
 
         val sb = StringBuilder()
 
         try {
-            reader = BufferedReader(InputStreamReader(Files.newInputStream(path), charset))
+            reader = BufferedReader(InputStreamReader(Files.newInputStream(path), StandardCharsets.UTF_8))
             val buff = CharArray(1024)
             var length: Int
             while ((reader.read(buff).also { length = it }) > 0) {
@@ -502,13 +456,13 @@ object Orion {
             }
         } catch (e: IOException) {
             val message = e.message
-            if (message != null) Log.e(loggingTag, "Failed to read file: $message")
+            if (message != null) Log.e(LOGGING_TAG, "Failed to read file: $message")
         } finally {
             try {
                 reader?.close()
             } catch (e: Exception) {
                 val message = e.message
-                if (message != null) Log.e(loggingTag, "Failed to read file: $message")
+                if (message != null) Log.e(LOGGING_TAG, "Failed to read file: $message")
             }
         }
 
@@ -524,14 +478,14 @@ object Orion {
             writer.write(data)
         } catch (e: IOException) {
             val message = e.message
-            if (message != null) Log.e(loggingTag, "Failed to write file: $message")
+            if (message != null) Log.e(LOGGING_TAG, "Failed to write file: $message")
             success = false
         } finally {
             try {
                 writer?.close()
             } catch (e: Exception) {
                 val message = e.message
-                if (message != null) Log.e(loggingTag, "Failed to write file: $message")
+                if (message != null) Log.e(LOGGING_TAG, "Failed to write file: $message")
             }
         }
 
@@ -572,7 +526,7 @@ object Orion {
 
             //Create parent folder
             if (!parent.exists() && !parent.mkdirs()) {
-                Log.e(loggingTag, "Failed to create folder: $parent.absolutePath")
+                Log.e(LOGGING_TAG, "Failed to create folder: $parent.absolutePath")
                 return false
             }
 
@@ -589,7 +543,7 @@ object Orion {
         MediaScannerConnection.scanFile(context, arrayOf<String>(file.absolutePath), null, null)
     }
 
-    //Files: Json
+    //Files: JSON
     val emptyJson: ObjectNode get() = objectMapper.createObjectNode()
 
     val emptyJsonArray: ArrayNode get() = objectMapper.createArrayNode()
@@ -681,7 +635,7 @@ object Orion {
             }
         } catch (e: Exception) {
             //Error
-            Log.e(loggingTag, "Failed to get file uri from file path: ${e.message}")
+            Log.e(LOGGING_TAG, "Failed to get file uri from file path: ${e.message}")
         }
 
         //Failed
@@ -723,7 +677,7 @@ object Orion {
             }
         } catch (e: Exception) {
             //Error
-            Log.e(loggingTag, "Failed to media get uri from file path: ${e.message}")
+            Log.e(LOGGING_TAG, "Failed to media get uri from file path: ${e.message}")
         }
 
         //Failed
@@ -754,7 +708,7 @@ object Orion {
             }
         } catch (e: Exception) {
             //Error
-            Log.e(loggingTag, "Failed to get file path from media uri: ${e.message}")
+            Log.e(LOGGING_TAG, "Failed to get file path from media uri: ${e.message}")
         }
 
         //Failed

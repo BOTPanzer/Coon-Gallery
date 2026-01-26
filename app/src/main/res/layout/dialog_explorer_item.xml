@@ -9,7 +9,7 @@
     android:paddingHorizontal="16dp">
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:gravity="center_vertical"
@@ -35,13 +35,13 @@
 
     <Button
         android:id="@+id/itemSelect"
-        style="?attr/materialIconButtonFilledStyle"
+        style="@style/Widget.Material3Expressive.Button.IconButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:layout_marginTop="-16dp"
         android:layout_marginBottom="-16dp"
         android:clickable="true"
-        android:textSize="0sp"
-        app:icon="@drawable/check"></Button>
+        app:icon="@drawable/check"
+        app:iconTint="?attr/colorOnPrimary" />
 </LinearLayout>

@@ -1,11 +1,14 @@
 package com.botpa.turbophotos.screens.display
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.ComponentCaller
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import android.widget.HorizontalScrollView
@@ -13,6 +16,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.Insets
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
@@ -214,7 +219,30 @@ class DisplayActivity : GalleryActivity() {
         handleIntent(intent)
     }
 
+    private fun hasPermissions(): Boolean {
+        //External storage
+        if (!Environment.isExternalStorageManager()) {
+            return false
+        }
+
+        //Media
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_VIDEO) != PackageManager.PERMISSION_GRANTED) {
+            return false
+        }
+
+        //All good
+        return true
+    }
+
     private fun initActivity() {
+        //Check for permissions
+        if (!hasPermissions()) {
+            Toast.makeText(this, "Missing permissions.", Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        }
+
         //Check if intent is valid
         val intent = getIntent()
         if (intent == null) {
@@ -376,7 +404,7 @@ class DisplayActivity : GalleryActivity() {
             //No metadata file
             if (!currentItem.album.hasMetadata()) {
                 Toast.makeText(
-                    this@DisplayActivity,
+                    this,
                     "This item's album does not have a metadata file linked to it",
                     Toast.LENGTH_SHORT
                 ).show()
@@ -386,7 +414,7 @@ class DisplayActivity : GalleryActivity() {
             //No metadata
             if (!currentItem.hasMetadata()) {
                 Toast.makeText(
-                    this@DisplayActivity,
+                    this,
                     "This item does not have a key in its album metadata",
                     Toast.LENGTH_SHORT
                 ).show()
@@ -425,7 +453,7 @@ class DisplayActivity : GalleryActivity() {
             //Save
             val saved = currentItem.album.saveMetadata()
             Toast.makeText(
-                this@DisplayActivity,
+                this,
                 if (saved) "Saved successfully" else "An error occurred while saving",
                 Toast.LENGTH_SHORT
             ).show()
@@ -439,27 +467,27 @@ class DisplayActivity : GalleryActivity() {
 
         optionRename = OptionsItem(R.drawable.rename, "Rename") {
             //Rename
-            Library.renameItem(this@DisplayActivity, currentItem)
+            Library.renameItem(this, currentItem)
         }
 
         optionEdit = OptionsItem(R.drawable.edit, "Edit") {
             //Edit
-            Library.editItem(this@DisplayActivity, currentItem)
+            Library.editItem(this, currentItem)
         }
 
         optionShare = OptionsItem(R.drawable.share, "Share") {
             //Share
-            Library.shareItems(this@DisplayActivity, arrayOf(currentItem))
+            Library.shareItems(this, arrayOf(currentItem))
         }
 
         optionMove = OptionsItem(R.drawable.move, "Move to album") {
             //Move items
-            Library.moveItems(this@DisplayActivity, arrayOf(currentItem))
+            Library.moveItems(this, arrayOf(currentItem))
         }
 
         optionCopy = OptionsItem(R.drawable.copy, "Copy to album") {
             //Copy items
-            Library.copyItems(this@DisplayActivity, arrayOf(currentItem))
+            Library.copyItems(this, arrayOf(currentItem))
         }
 
         optionTrash = OptionsItem(R.drawable.trash, "Move to trash") {
@@ -474,19 +502,19 @@ class DisplayActivity : GalleryActivity() {
 
         optionDelete = OptionsItem(R.drawable.delete, "Delete") {
             //Delete item
-            Library.deleteItems(this@DisplayActivity, arrayOf(currentItem))
+            Library.deleteItems(this, arrayOf(currentItem))
         }
     }
 
     //Display
     private fun initDisplayList() {
         //Init display layout manager
-        displayLayoutManager = DisplayLayoutManager(this@DisplayActivity)
+        displayLayoutManager = DisplayLayoutManager(this)
         displayLayoutManager.setOrientation(RecyclerView.HORIZONTAL)
         displayList.setLayoutManager(displayLayoutManager)
 
         //Init display adapter
-        displayAdapter = DisplayAdapter(this@DisplayActivity, displayItems)
+        displayAdapter = DisplayAdapter(this, displayItems)
         displayList.setAdapter(displayAdapter)
 
         //Add adapter listeners
@@ -510,7 +538,7 @@ class DisplayActivity : GalleryActivity() {
         displayAdapter.setOnPlayListener { zoom: ZoomableLayout, image: ImageView, index: Int ->
             val intent = if (useInternalVideoPlayer) {
                 //Play in internal player
-                Intent(this@DisplayActivity, VideoActivity::class.java)
+                Intent(this, VideoActivity::class.java)
             } else {
                 //Play in external player
                 Intent(Intent.ACTION_VIEW)
@@ -659,10 +687,10 @@ class DisplayActivity : GalleryActivity() {
 
     private fun initOptionsList() {
         //Init options layout manager
-        optionsList.setLayoutManager(LinearLayoutManager(this@DisplayActivity))
+        optionsList.setLayoutManager(LinearLayoutManager(this))
 
         //Init options adapter
-        optionsAdapter = OptionsAdapter(this@DisplayActivity, options)
+        optionsAdapter = OptionsAdapter(this, options)
         optionsAdapter.setOnClickListener { view: View, index: Int ->
             //Get option
             val option = options[index]
@@ -754,8 +782,8 @@ class DisplayActivity : GalleryActivity() {
             backManager.register("edit") { toggleEdit(false) }
         } else {
             //Hide keyboard
-            Orion.hideKeyboard(this@DisplayActivity)
-            Orion.clearFocus(this@DisplayActivity)
+            Orion.hideKeyboard(this)
+            Orion.clearFocus(this)
 
             //Hide
             Orion.hideAnim(editLayout)

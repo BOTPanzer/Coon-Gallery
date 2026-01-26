@@ -13,10 +13,9 @@ object Storage {
     private const val LIST_SPLIT: String = "‚‗‚"
 
 
-
     //Init storage preferences
     @JvmStatic fun init(activity: Activity) {
-        if (!isInit) preferences = activity.getPreferences(Context.MODE_PRIVATE)
+        if (!isInit) preferences = activity.getSharedPreferences("preferences", Context.MODE_PRIVATE)
     }
 
     //String list

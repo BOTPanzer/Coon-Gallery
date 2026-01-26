@@ -1,5 +1,6 @@
 package com.botpa.turbophotos.screens.video
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.ComponentCaller
 import android.app.Notification
@@ -12,6 +13,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.ActivityInfo
+import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
@@ -20,6 +22,7 @@ import android.media.MediaMetadata
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import android.support.v4.media.MediaMetadataCompat
@@ -30,8 +33,10 @@ import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import android.view.WindowManager
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.Insets
 import androidx.core.view.WindowCompat
@@ -39,10 +44,8 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.media3.common.MediaItem
-import androidx.media3.common.Metadata
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
-import androidx.media3.common.VideoSize
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -255,7 +258,35 @@ class VideoActivity : GalleryActivity() {
         handleIntent(intent)
     }
 
+    private fun hasPermissions(): Boolean {
+        //External storage
+        if (!Environment.isExternalStorageManager()) {
+            return false
+        }
+
+        //Media
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_VIDEO) != PackageManager.PERMISSION_GRANTED) {
+            return false
+        }
+
+        //Notifications
+        if (NotificationManagerCompat.from(this).areNotificationsEnabled()) {
+            return false
+        }
+
+        //All good
+        return true
+    }
+
     private fun initActivity() {
+        //Check for permissions
+        if (!hasPermissions()) {
+            Toast.makeText(this, "Missing permissions.", Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        }
+
         //Hide player & controller
         playerView.visibility = View.INVISIBLE
         overlayLayout.visibility = View.GONE
@@ -286,7 +317,7 @@ class VideoActivity : GalleryActivity() {
         playMedia(uri, getNameFromUri(uri))
     }
 
-    //Components
+    //Views
     private fun initViews() {
         //Views (player)
         playerZoom = findViewById(R.id.playerZoom)
@@ -437,9 +468,10 @@ class VideoActivity : GalleryActivity() {
         }
     }
 
+    //Components
     private fun initPlayer() {
         //Create player
-        player = ExoPlayer.Builder(this@VideoActivity).build()
+        player = ExoPlayer.Builder(this).build()
 
         //Init player
         player.playWhenReady = true
@@ -523,7 +555,7 @@ class VideoActivity : GalleryActivity() {
 
     private fun initMediaSession() {
         //Create media session & playback state
-        mediaSession = MediaSessionCompat(this@VideoActivity, NOTIFICATION_CHANNEL_ID)
+        mediaSession = MediaSessionCompat(this, NOTIFICATION_CHANNEL_ID)
         playbackState = PlaybackStateCompat.Builder()
             .setActions(PlaybackStateCompat.ACTION_PLAY or PlaybackStateCompat.ACTION_PLAY_PAUSE or PlaybackStateCompat.ACTION_PAUSE or PlaybackStateCompat.ACTION_SEEK_TO)
 
@@ -809,10 +841,10 @@ class VideoActivity : GalleryActivity() {
 
     private fun initOptionsList() {
         //Init options layout manager
-        optionsList.setLayoutManager(LinearLayoutManager(this@VideoActivity))
+        optionsList.setLayoutManager(LinearLayoutManager(this))
 
         //Init options adapter
-        optionsAdapter = OptionsAdapter(this@VideoActivity, options)
+        optionsAdapter = OptionsAdapter(this, options)
         optionsAdapter.setOnClickListener { view: View, index: Int ->
             //Get option
             val option = options[index]
@@ -883,4 +915,5 @@ class VideoActivity : GalleryActivity() {
         private const val NOTIFICATION_BROADCAST_ID = "video_player_notification_broadcast"
 
     }
+
 }

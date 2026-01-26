@@ -212,8 +212,8 @@ class AlbumActivity : GalleryActivity() {
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
 
-        //Update horizontal item count
-        updateHorizontalItemCount()
+        //Update list items per row
+        updateListItemsPerRow()
     }
 
     private fun initActivity() {
@@ -382,7 +382,7 @@ class AlbumActivity : GalleryActivity() {
             if (selectedItems.size != 1) return@OptionsItem
 
             //Rename
-            Library.renameItem(this@AlbumActivity, Library.gallery[selectedItems.iterator().next()])
+            Library.renameItem(this, Library.gallery[selectedItems.iterator().next()])
         }
 
         optionEdit = OptionsItem(R.drawable.edit, "Edit") {
@@ -390,22 +390,22 @@ class AlbumActivity : GalleryActivity() {
             if (selectedItems.size != 1) return@OptionsItem
 
             //Edit
-            Library.editItem(this@AlbumActivity, Library.gallery[selectedItems.iterator().next()])
+            Library.editItem(this, Library.gallery[selectedItems.iterator().next()])
         }
 
         optionShare = OptionsItem(R.drawable.share, "Share") {
             //Share
-            Library.shareItems(this@AlbumActivity, getSelectedItems())
+            Library.shareItems(this, getSelectedItems())
         }
 
         optionMove = OptionsItem(R.drawable.move, "Move to album") {
             //Move items
-            Library.moveItems(this@AlbumActivity, getSelectedItems())
+            Library.moveItems(this, getSelectedItems())
         }
 
         optionCopy = OptionsItem(R.drawable.copy, "Copy to album") {
             //Copy items
-            Library.copyItems(this@AlbumActivity, getSelectedItems())
+            Library.copyItems(this, getSelectedItems())
         }
 
         optionTrash = OptionsItem(R.drawable.trash, "Move to trash") {
@@ -425,25 +425,25 @@ class AlbumActivity : GalleryActivity() {
 
         optionDelete = OptionsItem(R.drawable.delete, "Delete") {
             //Delete item
-            Library.deleteItems(this@AlbumActivity, getSelectedItems())
+            Library.deleteItems(this, getSelectedItems())
         }
 
         optionDeleteAll = OptionsItem(R.drawable.delete, "Delete all") {
             //Delete all items
-            Library.deleteItems(this@AlbumActivity, currentAlbum.items.toTypedArray<CoonItem>())
+            Library.deleteItems(this, currentAlbum.items.toTypedArray<CoonItem>())
         }
 
         //List
         albumRefreshLayout.setOnRefreshListener {
             //Refresh library
-            Library.loadLibrary(this@AlbumActivity, false)
+            Library.loadLibrary(this, false)
 
             //Stop refreshing
             albumRefreshLayout.isRefreshing = false
         }
 
         albumList.addOnItemTouchListener(DragSelectTouchListener(
-            this@AlbumActivity,
+            this,
             albumList,
             onSelectRange = { from, to, min, max ->
                 //Select range items
@@ -486,11 +486,11 @@ class AlbumActivity : GalleryActivity() {
     //Album
     private fun initAlbumList() {
         //Init album layout manager
-        albumLayoutManager = GridLayoutManager(this@AlbumActivity, this.horizontalItemCount)
+        albumLayoutManager = GridLayoutManager(this, listItemsPerRow)
         albumList.setLayoutManager(albumLayoutManager)
 
         //Init album adapter
-        albumAdapter = AlbumAdapter(this@AlbumActivity, Library.gallery, selectedItems, Storage.getBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON))
+        albumAdapter = AlbumAdapter(this, Library.gallery, selectedItems, Storage.getBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON))
         albumList.setAdapter(albumAdapter)
 
         //Init home fast scroller
@@ -521,13 +521,13 @@ class AlbumActivity : GalleryActivity() {
         if (isPicking) {
             //Pick item
             val resultIntent = Intent()
-            resultIntent.data = Orion.getFileUriFromFilePath(this@AlbumActivity, Library.gallery[index].file.absolutePath)
+            resultIntent.data = Orion.getFileUriFromFilePath(this, Library.gallery[index].file.absolutePath)
             resultIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             setResult(RESULT_OK, resultIntent)
             finish()
         } else {
             //Open display
-            val intent = Intent(this@AlbumActivity, DisplayActivity::class.java)
+            val intent = Intent(this, DisplayActivity::class.java)
             intent.putExtra("index", index)
             startActivity(intent)
         }
@@ -547,13 +547,13 @@ class AlbumActivity : GalleryActivity() {
 
     private fun initOptionsList() {
         //Init options layout manager
-        optionsList.setLayoutManager(LinearLayoutManager(this@AlbumActivity))
+        optionsList.setLayoutManager(LinearLayoutManager(this))
 
         //Init options adapter
-        optionsAdapter = OptionsAdapter(this@AlbumActivity, options)
+        optionsAdapter = OptionsAdapter(this, options)
         optionsAdapter.setOnClickListener { view: View, index: Int ->
             //Get option
-            val option = options.get(index)
+            val option = options[index]
 
             //Get action
             val action = option.action ?: return@setOnClickListener
@@ -563,12 +563,6 @@ class AlbumActivity : GalleryActivity() {
             toggleOptions(false)
         }
         optionsList.setAdapter(optionsAdapter)
-    }
-
-    private fun getSelectedItems(): Array<CoonItem> {
-        val selectedFiles = ArrayList<CoonItem>(selectedItems.size)
-        for (index in selectedItems) selectedFiles.add(Library.gallery[index])
-        return selectedFiles.toTypedArray<CoonItem>()
     }
 
     private fun toggleOptions(show: Boolean) {
@@ -602,6 +596,12 @@ class AlbumActivity : GalleryActivity() {
         }
     }
 
+    private fun getSelectedItems(): Array<CoonItem> {
+        val selectedFiles = ArrayList<CoonItem>(selectedItems.size)
+        for (index in selectedItems) selectedFiles.add(Library.gallery[index])
+        return selectedFiles.toTypedArray<CoonItem>()
+    }
+
       /*$$$$$    /$$     /$$
      /$$__  $$  | $$    | $$
     | $$  \ $$ /$$$$$$  | $$$$$$$   /$$$$$$   /$$$$$$
@@ -612,23 +612,32 @@ class AlbumActivity : GalleryActivity() {
      \______/    \___/  |__/  |__/ \_______/|_*/
 
     //List grid
-    private val horizontalItemCount: Int get() {
+    private val listItemsPerRow: Int get() {
+        //Check if in horizontal orientation
         val isHorizontal = getResources().configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+        //Get portrait aspect ratio
         val metrics = getResources().displayMetrics
         val ratio = (metrics.widthPixels.toFloat() / metrics.heightPixels.toFloat())
 
-        //Get size for portrait
-        val size = Storage.getInt(StoragePairs.ALBUM_ITEMS_PER_ROW)
+        //Get portrait items per row
+        val itemsPerRow = Storage.getInt(StoragePairs.ALBUM_ITEMS_PER_ROW)
 
-        //Return size for current orientation
-        return if (isHorizontal) (size * ratio).toInt() else size
+        //Return items per row for current orientation
+        return if (isHorizontal) (itemsPerRow * ratio).toInt() else itemsPerRow
     }
 
-    private fun updateHorizontalItemCount() {
-        val newHorizontalItemCount = this.horizontalItemCount
-        if (albumLayoutManager.spanCount != newHorizontalItemCount) {
-            albumLayoutManager.setSpanCount(newHorizontalItemCount)
+    private fun updateListItemsPerRow() {
+        val newItemsPerRow = listItemsPerRow
+        if (albumLayoutManager.spanCount != newItemsPerRow) {
+            albumLayoutManager.setSpanCount(newItemsPerRow)
         }
+    }
+
+    //Navbar
+    private fun updateNavbarTitle() {
+        //Update navbar title
+        navbarTitle.text = "${currentAlbum.name}${if (selectedItems.isEmpty()) "" else " (${selectedItems.size} selected)"}"
     }
 
     //Metadata
@@ -651,12 +660,6 @@ class AlbumActivity : GalleryActivity() {
                 isMetadataLoaded = true
             }
         }.start()
-    }
-
-    //Navbar
-    private fun updateNavbarTitle() {
-        //Update navbar title
-        navbarTitle.text = "${currentAlbum.name}${if (selectedItems.isEmpty()) "" else " (${selectedItems.size} selected)"}"
     }
 
     //Selection
@@ -793,14 +796,14 @@ class AlbumActivity : GalleryActivity() {
             //Focus text & show keyboard
             searchInput.requestFocus()
             searchInput.selectAll()
-            Orion.showKeyboard(this@AlbumActivity)
+            Orion.showKeyboard(this)
 
             //Back button
             backManager.register("searchMenu") { showSearchLayout(false) }
         } else {
             //Close keyboard
-            Orion.hideKeyboard(this@AlbumActivity)
-            Orion.clearFocus(this@AlbumActivity)
+            Orion.hideKeyboard(this)
+            Orion.clearFocus(this)
 
             //Toggle search
             Orion.hideAnim(searchLayout, 50) { Orion.showAnim(navbarLayout, 50) }

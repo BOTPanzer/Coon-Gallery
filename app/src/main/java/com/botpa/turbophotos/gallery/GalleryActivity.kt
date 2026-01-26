@@ -48,7 +48,7 @@ open class GalleryActivity : AppCompatActivity() {
         //Check if trash has a pending action
         if (trashAction != null) {
             //Trash has pending action -> Return
-            Orion.snack(this@GalleryActivity, "Trash has a pending action")
+            Orion.snack(this, "Trash has a pending action")
         } else {
             //Trash items
             trashAction = Library.trashItems(this, itemsToTrash, trashLauncher)
@@ -59,7 +59,7 @@ open class GalleryActivity : AppCompatActivity() {
         //Check if trash has a pending action
         if (trashAction != null) {
             //Trash has pending action -> Return
-            Orion.snack(this@GalleryActivity, "Trash has a pending action")
+            Orion.snack(this, "Trash has a pending action")
         } else {
             //Restore items
             trashAction = Library.restoreItems(this, itemsToRestore, trashLauncher)
