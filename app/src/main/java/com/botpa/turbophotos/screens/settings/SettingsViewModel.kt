@@ -46,21 +46,21 @@ class SettingsViewModel : ViewModel() {
         //App
         json.put(StoragePairs.APP_AUTOMATIC_METADATA_MODIFICATION.key, Storage.getBool(StoragePairs.APP_AUTOMATIC_METADATA_MODIFICATION))
 
-        //Home
+        //Home screen
         json.put(StoragePairs.HOME_ITEMS_PER_ROW.key, Storage.getInt(StoragePairs.HOME_ITEMS_PER_ROW))
 
-        //Album
+        //Album screen
         json.put(StoragePairs.ALBUM_ITEMS_PER_ROW.key, Storage.getInt(StoragePairs.ALBUM_ITEMS_PER_ROW))
         json.put(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON.key, Storage.getBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON))
 
-        //Video
+        //Video player
         json.put(StoragePairs.VIDEO_LOOP.key, Storage.getBool(StoragePairs.VIDEO_LOOP))
         json.put(StoragePairs.VIDEO_SKIP_BACKWARDS.key, Storage.getLong(StoragePairs.VIDEO_SKIP_BACKWARDS))
         json.put(StoragePairs.VIDEO_SKIP_FORWARD.key, Storage.getLong(StoragePairs.VIDEO_SKIP_FORWARD))
         json.put(StoragePairs.VIDEO_USE_INTERNAL_PLAYER.key, Storage.getBool(StoragePairs.VIDEO_USE_INTERNAL_PLAYER))
         json.put(StoragePairs.VIDEO_IGNORE_AUDIO_FOCUS.key, Storage.getBool(StoragePairs.VIDEO_IGNORE_AUDIO_FOCUS))
 
-        //Sync
+        //Sync screen
         json.put(StoragePairs.SYNC_USERS_KEY, Storage.getString(StoragePairs.SYNC_USERS_KEY, ""))
     }
 
@@ -82,57 +82,75 @@ class SettingsViewModel : ViewModel() {
         }
     }
 
+    private fun loadStringSettingFromJson(json: ObjectNode, key: String, onValue: (String) -> Unit) {
+        val value = json.get(key) ?: return
+        if (value.isTextual) onValue(value.asText())
+    }
+
+    private fun loadBoolSettingFromJson(json: ObjectNode, key: String, onValue: (Boolean) -> Unit) {
+        val value = json.get(key) ?: return
+        if (value.isBoolean) onValue(value.asBoolean())
+    }
+
+    private fun loadIntSettingFromJson(json: ObjectNode, key: String, onValue: (Int) -> Unit) {
+        val value = json.get(key) ?: return
+        if (value.isInt) onValue(value.asInt())
+    }
+
+    private fun loadLongSettingFromJson(json: ObjectNode, key: String, onValue: (Long) -> Unit) {
+        val value = json.get(key) ?: return
+        if (value.isLong) onValue(value.asLong())
+    }
+
     private fun loadSettingsFromJson(json: ObjectNode) {
         //Library
-        if (json.has(StoragePairs.LIBRARY_LINKS_KEY) && json.get(StoragePairs.LIBRARY_LINKS_KEY).isTextual) {
-            //Too lazy to recreate all links so the library gets reloaded after finishing (✿◡‿◡)
-            Storage.putString(StoragePairs.LIBRARY_LINKS_KEY, json.get(StoragePairs.LIBRARY_LINKS_KEY).asText())
+        loadStringSettingFromJson(json, StoragePairs.LIBRARY_LINKS_KEY) { value ->
+            //Too lazy to recreate all links so the library gets reloaded on exit (✿◡‿◡)
+            Storage.putString(StoragePairs.LIBRARY_LINKS_KEY, value)
         }
 
         //App
-        if (json.has(StoragePairs.APP_AUTOMATIC_METADATA_MODIFICATION.key) && json.get(StoragePairs.APP_AUTOMATIC_METADATA_MODIFICATION.key).isBoolean) {
-            appModifyMetadata = json.get(StoragePairs.APP_AUTOMATIC_METADATA_MODIFICATION.key).asBoolean()
-            Storage.putBool(StoragePairs.APP_AUTOMATIC_METADATA_MODIFICATION.key, appModifyMetadata)
+        loadBoolSettingFromJson(json, StoragePairs.APP_AUTOMATIC_METADATA_MODIFICATION.key) { value ->
+            appModifyMetadata = value
+            Storage.putBool(StoragePairs.APP_AUTOMATIC_METADATA_MODIFICATION.key, value)
         }
 
-        //Home
-        if (json.has(StoragePairs.HOME_ITEMS_PER_ROW.key) && json.get(StoragePairs.HOME_ITEMS_PER_ROW.key).isInt) {
-            val value = json.get(StoragePairs.HOME_ITEMS_PER_ROW.key).asInt()
+        //Home screen
+        loadIntSettingFromJson(json, StoragePairs.HOME_ITEMS_PER_ROW.key) { value ->
             homeItemsPerRow = value.toFloat()
             Storage.putInt(StoragePairs.HOME_ITEMS_PER_ROW.key, value)
         }
 
-        //Album
-        if (json.has(StoragePairs.ALBUM_ITEMS_PER_ROW.key) && json.get(StoragePairs.ALBUM_ITEMS_PER_ROW.key).isInt) {
-            val value = json.get(StoragePairs.ALBUM_ITEMS_PER_ROW.key).asInt()
+        //Album screen
+        loadIntSettingFromJson(json, StoragePairs.ALBUM_ITEMS_PER_ROW.key) { value ->
             albumItemsPerRow = value.toFloat()
             Storage.putInt(StoragePairs.ALBUM_ITEMS_PER_ROW.key, value)
         }
-        if (json.has(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON.key) && json.get(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON.key).isBoolean) {
-            albumShowMissingMetadataIcon = json.get(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON.key).asBoolean()
-            Storage.putBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON.key, albumShowMissingMetadataIcon)
+        loadBoolSettingFromJson(json, StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON.key) { value ->
+            albumShowMissingMetadataIcon = value
+            Storage.putBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON.key, value)
         }
 
-        //Video (these settings get loaded in video activity)
-        if (json.has(StoragePairs.VIDEO_LOOP.key) && json.get(StoragePairs.VIDEO_LOOP.key).isBoolean) {
-            Storage.putBool(StoragePairs.VIDEO_LOOP.key, json.get(StoragePairs.VIDEO_LOOP.key).asBoolean())
+        //Video player (these settings get loaded in video activity)
+        loadBoolSettingFromJson(json, StoragePairs.VIDEO_LOOP.key) { value ->
+            Storage.putBool(StoragePairs.VIDEO_LOOP.key, value)
         }
-        if (json.has(StoragePairs.VIDEO_SKIP_BACKWARDS.key) && json.get(StoragePairs.VIDEO_SKIP_BACKWARDS.key).isLong) {
-            Storage.putLong(StoragePairs.VIDEO_SKIP_BACKWARDS.key, json.get(StoragePairs.VIDEO_SKIP_BACKWARDS.key).asLong())
+        loadLongSettingFromJson(json, StoragePairs.VIDEO_SKIP_BACKWARDS.key) { value ->
+            Storage.putLong(StoragePairs.VIDEO_SKIP_BACKWARDS.key, value)
         }
-        if (json.has(StoragePairs.VIDEO_SKIP_FORWARD.key) && json.get(StoragePairs.VIDEO_SKIP_FORWARD.key).isLong) {
-            Storage.putLong(StoragePairs.VIDEO_SKIP_FORWARD.key, json.get(StoragePairs.VIDEO_SKIP_FORWARD.key).asLong())
+        loadLongSettingFromJson(json, StoragePairs.VIDEO_SKIP_FORWARD.key) { value ->
+            Storage.putLong(StoragePairs.VIDEO_SKIP_FORWARD.key, value)
         }
-        if (json.has(StoragePairs.VIDEO_USE_INTERNAL_PLAYER.key) && json.get(StoragePairs.VIDEO_USE_INTERNAL_PLAYER.key).isBoolean) {
-            Storage.putBool(StoragePairs.VIDEO_USE_INTERNAL_PLAYER.key, json.get(StoragePairs.VIDEO_USE_INTERNAL_PLAYER.key).asBoolean())
+        loadBoolSettingFromJson(json, StoragePairs.VIDEO_USE_INTERNAL_PLAYER.key) { value ->
+            Storage.putBool(StoragePairs.VIDEO_USE_INTERNAL_PLAYER.key, value)
         }
-        if (json.has(StoragePairs.VIDEO_IGNORE_AUDIO_FOCUS.key) && json.get(StoragePairs.VIDEO_IGNORE_AUDIO_FOCUS.key).isBoolean) {
-            Storage.putBool(StoragePairs.VIDEO_IGNORE_AUDIO_FOCUS.key, json.get(StoragePairs.VIDEO_IGNORE_AUDIO_FOCUS.key).asBoolean())
+        loadBoolSettingFromJson(json, StoragePairs.VIDEO_IGNORE_AUDIO_FOCUS.key) { value ->
+            Storage.putBool(StoragePairs.VIDEO_IGNORE_AUDIO_FOCUS.key, value)
         }
 
-        //Sync (these settings get loaded in sync activity)
-        if (json.has(StoragePairs.SYNC_USERS_KEY) && json.get(StoragePairs.SYNC_USERS_KEY).isTextual) {
-            Storage.putString(StoragePairs.SYNC_USERS_KEY, json.get(StoragePairs.SYNC_USERS_KEY).asText())
+        //Sync screen (these settings get loaded in sync activity)
+        loadStringSettingFromJson(json, StoragePairs.SYNC_USERS_KEY) { value ->
+            Storage.putString(StoragePairs.SYNC_USERS_KEY, value)
         }
     }
 

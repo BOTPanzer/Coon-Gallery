@@ -10,10 +10,10 @@ object StoragePairs {
     //App
     @JvmField val APP_AUTOMATIC_METADATA_MODIFICATION: Storage.StoragePair<Boolean> = Storage.StoragePair("Settings.appAutomaticMetadataModification", true)
 
-    //Home
+    //Home screen
     @JvmField val HOME_ITEMS_PER_ROW: Storage.StoragePair<Int> = Storage.StoragePair("Settings.homeItemsPerRow", 2)
 
-    //Album
+    //Album screen
     @JvmField val ALBUM_ITEMS_PER_ROW: Storage.StoragePair<Int> = Storage.StoragePair("Settings.albumItemsPerRow", 3)
     @JvmField val ALBUM_SHOW_MISSING_METADATA_ICON: Storage.StoragePair<Boolean> = Storage.StoragePair("Settings.albumShowMissingMetadataIcon", false)
 
@@ -24,7 +24,7 @@ object StoragePairs {
     @JvmField val VIDEO_USE_INTERNAL_PLAYER: Storage.StoragePair<Boolean> = Storage.StoragePair("Video.useInternalPlayer", true)
     @JvmField val VIDEO_IGNORE_AUDIO_FOCUS: Storage.StoragePair<Boolean> = Storage.StoragePair("Video.ignoreAudioFocus", true)
 
-    //Sync
+    //Sync screen
     const val SYNC_USERS_KEY: String = "Sync.users"
 
 }
