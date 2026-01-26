@@ -15,7 +15,6 @@ import android.provider.Settings
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
-
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
@@ -30,21 +29,20 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-
 import com.botpa.turbophotos.R
-import com.botpa.turbophotos.screens.album.AlbumActivity
 import com.botpa.turbophotos.gallery.Album
 import com.botpa.turbophotos.gallery.GalleryActivity
 import com.botpa.turbophotos.gallery.Library
-import com.botpa.turbophotos.gallery.Library.RefreshEvent
 import com.botpa.turbophotos.gallery.Library.ActionEvent
+import com.botpa.turbophotos.gallery.Library.RefreshEvent
+import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.gallery.actions.Action
 import com.botpa.turbophotos.gallery.options.OptionsAdapter
 import com.botpa.turbophotos.gallery.options.OptionsItem
+import com.botpa.turbophotos.screens.album.AlbumActivity
 import com.botpa.turbophotos.screens.home.filters.DialogFilters
 import com.botpa.turbophotos.screens.home.filters.Filter
 import com.botpa.turbophotos.screens.settings.SettingsActivity
-import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.screens.sync.SyncActivity
 import com.botpa.turbophotos.util.BackManager
 import com.botpa.turbophotos.util.Orion
@@ -205,13 +203,6 @@ class HomeActivity : GalleryActivity() {
         //Home not init
         if (!isInit) return
 
-        //Reload
-        if (shouldReloadOnResume) {
-            shouldReloadOnResume = false
-            recreate()
-            return
-        }
-
         //Check for permissions
         if (shouldCheckPermissions) {
             shouldCheckPermissions = false
@@ -224,9 +215,6 @@ class HomeActivity : GalleryActivity() {
 
         //Update horizontal item count
         updateHorizontalItemCount()
-
-        //Refresh albums (check for new items)
-        Library.loadLibrary(this@HomeActivity, false)
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -522,7 +510,7 @@ class HomeActivity : GalleryActivity() {
         //List
         homeRefreshLayout.setOnRefreshListener {
             //Reload library
-            Library.loadLibrary(this@HomeActivity, true) //Fully refresh
+            Library.loadLibrary(this@HomeActivity, true)
 
             //Stop refreshing
             homeRefreshLayout.isRefreshing = false
@@ -683,19 +671,6 @@ class HomeActivity : GalleryActivity() {
         }
         if (format != "*") subtitle.append("($format)")
         navbarSubtitle.text = subtitle.toString()
-    }
-
-    //Static
-    companion object {
-
-        private var shouldReloadOnResume = false
-
-        @JvmStatic
-        fun reloadOnResume() {
-            //Reload on resume
-            shouldReloadOnResume = true
-        }
-
     }
 
 }

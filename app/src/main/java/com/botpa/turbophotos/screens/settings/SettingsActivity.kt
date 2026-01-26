@@ -62,6 +62,13 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+
+        //Check if library needs to be reset
+        if (view.reloadLibraryOnExit) Library.loadLibrary(this, true)
+    }
+
     //Layout
     @Composable
     private fun SettingsLayout() {

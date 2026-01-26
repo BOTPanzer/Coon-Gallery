@@ -11,13 +11,15 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.botpa.turbophotos.gallery.Link
 import com.botpa.turbophotos.gallery.StoragePairs
-import com.botpa.turbophotos.screens.home.HomeActivity
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
 import com.fasterxml.jackson.databind.node.ObjectNode
 import java.io.File
 
 class SettingsViewModel : ViewModel() {
+
+    //Settings
+    var reloadLibraryOnExit = false
 
     //App
     var appModifyMetadata by mutableStateOf(Storage.getBool(StoragePairs.APP_AUTOMATIC_METADATA_MODIFICATION))
@@ -144,8 +146,8 @@ class SettingsViewModel : ViewModel() {
         //Success restoring backup
         Toast.makeText(context, "Backup restored.", Toast.LENGTH_SHORT).show()
 
-        //Reload library on home resume & close settings screen
-        HomeActivity.reloadOnResume()
+        //Reload library on exit & close settings screen
+        reloadLibraryOnExit = true
         activity.finish()
     }
 
@@ -198,8 +200,8 @@ class SettingsViewModel : ViewModel() {
             //Failed -> There is another link with the same album
             Orion.snack(activity, "A link with that album already exists")
         } else {
-            //Success -> Reload library on home resume
-            HomeActivity.reloadOnResume()
+            //Success -> Reload library on exit
+            reloadLibraryOnExit = true
         }
     }
 
@@ -207,8 +209,8 @@ class SettingsViewModel : ViewModel() {
         //Update link with selected file
         Link.updateLinkFile(index, file)
 
-        //Reload library on home resume
-        HomeActivity.reloadOnResume()
+        //Reload library on exit
+        reloadLibraryOnExit = true
     }
 
     fun removeLink(index: Int) {
@@ -218,8 +220,8 @@ class SettingsViewModel : ViewModel() {
         //Save links
         Link.saveLinks()
 
-        //Reload library on home resume
-        HomeActivity.reloadOnResume()
+        //Reload library on exit
+        reloadLibraryOnExit = true
     }
 
     fun addLink(activity: Activity) {
@@ -233,8 +235,8 @@ class SettingsViewModel : ViewModel() {
         //Save links
         Link.saveLinks()
 
-        //Reload library on home resume
-        HomeActivity.reloadOnResume()
+        //Reload library on exit
+        reloadLibraryOnExit = true
     }
 
 }

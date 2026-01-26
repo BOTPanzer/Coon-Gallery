@@ -435,8 +435,8 @@ class AlbumActivity : GalleryActivity() {
 
         //List
         albumRefreshLayout.setOnRefreshListener {
-            //Reload library
-            Library.loadLibrary(this@AlbumActivity, false) //Soft refresh to ONLY look for new files
+            //Refresh library
+            Library.loadLibrary(this@AlbumActivity, false)
 
             //Stop refreshing
             albumRefreshLayout.isRefreshing = false

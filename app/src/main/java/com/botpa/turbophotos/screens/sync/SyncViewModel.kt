@@ -13,6 +13,9 @@ import kotlinx.coroutines.launch
 
 class SyncViewModel : ViewModel() {
 
+    //Sync
+    var reloadLibraryOnExit = false
+
     //Status
     var connectionStatus by mutableIntStateOf(SyncService.STATUS_OFFLINE)
 

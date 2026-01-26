@@ -12,7 +12,6 @@ import androidx.core.app.NotificationCompat
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.CoonItem
 import com.botpa.turbophotos.gallery.Link
-import com.botpa.turbophotos.screens.home.HomeActivity.Companion.reloadOnResume
 import com.botpa.turbophotos.util.Orion
 import com.fasterxml.jackson.databind.JsonNode
 import dev.gustavoavila.websocketclient.WebSocketClient
@@ -385,8 +384,8 @@ class SyncService : Service() {
             buffer.close()
             Files.setLastModifiedTime(Paths.get(file.absolutePath), FileTime.from(Instant.ofEpochMilli(lastModified)))
 
-            //File modified -> Should restart
-            reloadOnResume()
+            //File modified -> Reload library
+            sendReloadLibraryOnExit()
 
             //Log
             sendLog("$requestText Success")
@@ -472,6 +471,11 @@ class SyncService : Service() {
     private fun sendStatus(status: Int) {
         //Send event
         SyncEventBus.instance.postEvent("status", status)
+    }
+
+    private fun sendReloadLibraryOnExit() {
+        //Send event
+        SyncEventBus.instance.postEvent("reload")
     }
 
     //Metadata requests

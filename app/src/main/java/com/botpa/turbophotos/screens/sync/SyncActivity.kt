@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Observer
+import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.gallery.views.Group
 import com.botpa.turbophotos.gallery.views.GroupDivider
@@ -85,6 +86,9 @@ class SyncActivity : AppCompatActivity() {
 
         //Close service
         send("stop")
+
+        //Check if library needs to be reset
+        if (view.reloadLibraryOnExit) Library.loadLibrary(this, true)
     }
 
     //Layout
@@ -446,6 +450,7 @@ class SyncActivity : AppCompatActivity() {
             }
             "snack" -> Orion.snack(this@SyncActivity, event.valueString)
             "log" -> log(event.valueString)
+            "reload" -> view.reloadLibraryOnExit = true
         }
     }
 
