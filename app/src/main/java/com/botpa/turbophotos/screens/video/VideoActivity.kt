@@ -271,7 +271,7 @@ class VideoActivity : GalleryActivity() {
         }
 
         //Notifications
-        if (NotificationManagerCompat.from(this).areNotificationsEnabled()) {
+        if (!NotificationManagerCompat.from(this).areNotificationsEnabled()) {
             return false
         }
 
