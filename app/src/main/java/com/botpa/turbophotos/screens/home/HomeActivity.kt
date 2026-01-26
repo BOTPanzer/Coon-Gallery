@@ -542,9 +542,12 @@ class HomeActivity : GalleryActivity() {
             val startX = view.left + (view.width / 2)
             val startY = view.top + (view.height / 2)
             val options = ActivityOptions.makeScaleUpAnimation(
-                homeList,  //The view to scale from
-                startX, startY,  //Starting point
-                0, 0 //Starting size
+                //The view to scale from
+                homeList,
+                //Starting point
+                startX, startY,
+                //Starting size
+                0, 0
             )
 
             //Prepare intent info

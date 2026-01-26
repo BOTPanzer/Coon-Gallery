@@ -160,42 +160,42 @@
                             android:gravity="center_vertical"
                             android:orientation="vertical">
 
-                        <com.google.android.material.button.MaterialButtonGroup
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginHorizontal="15dp">
-
-                            <com.google.android.material.button.MaterialButton
-                                android:id="@+id/overlayLoop"
-                                style="@style/Widget.Material3Expressive.Button.IconButton"
-                                android:layout_width="wrap_content"
-                                android:layout_height="match_parent"
-                                app:icon="@drawable/repeat"
-                                app:iconTint="?attr/colorOnPrimary"
-                                app:materialSizeOverlay="@style/SizeOverlay.Material3Expressive.Button.IconButton.Small.Square" />
-
-                            <com.google.android.material.button.MaterialButton
-                                android:id="@+id/overlayPlay"
-                                style="@style/Widget.Material3Expressive.Button"
-                                android:layout_width="0dp"
+                            <com.google.android.material.button.MaterialButtonGroup
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="Play"
-                                app:icon="@drawable/play"
-                                app:iconGravity="textStart"
-                                app:iconTint="?attr/colorOnPrimary"
-                                app:materialSizeOverlay="@style/SizeOverlay.Material3Expressive.Button.Small.Square" />
+                                android:layout_marginHorizontal="15dp">
 
-                            <com.google.android.material.button.MaterialButton
-                                android:id="@+id/overlayOptions"
-                                style="@style/Widget.Material3Expressive.Button.IconButton"
-                                android:layout_width="wrap_content"
-                                android:layout_height="match_parent"
-                                app:icon="@drawable/more"
-                                app:iconTint="?attr/colorOnPrimary"
-                                app:materialSizeOverlay="@style/SizeOverlay.Material3Expressive.Button.IconButton.Small.Square" />
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/overlayLoop"
+                                    style="@style/Widget.Material3Expressive.Button.IconButton"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="match_parent"
+                                    app:icon="@drawable/repeat"
+                                    app:iconTint="?attr/colorOnPrimary"
+                                    app:materialSizeOverlay="@style/SizeOverlay.Material3Expressive.Button.IconButton.Small.Square" />
 
-                        </com.google.android.material.button.MaterialButtonGroup>
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/overlayPlay"
+                                    style="@style/Widget.Material3Expressive.Button"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="Play"
+                                    app:icon="@drawable/play"
+                                    app:iconGravity="textStart"
+                                    app:iconTint="?attr/colorOnPrimary"
+                                    app:materialSizeOverlay="@style/SizeOverlay.Material3Expressive.Button.Small.Square" />
+
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/overlayOptions"
+                                    style="@style/Widget.Material3Expressive.Button.IconButton"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="match_parent"
+                                    app:icon="@drawable/more"
+                                    app:iconTint="?attr/colorOnPrimary"
+                                    app:materialSizeOverlay="@style/SizeOverlay.Material3Expressive.Button.IconButton.Small.Square" />
+
+                            </com.google.android.material.button.MaterialButtonGroup>
 
                             <LinearLayout
                                 android:layout_width="match_parent"

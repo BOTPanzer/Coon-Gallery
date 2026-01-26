@@ -12,19 +12,17 @@ import android.widget.HorizontalScrollView
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
-
 import androidx.activity.enableEdgeToEdge
 import androidx.core.graphics.Insets
+import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
-import androidx.core.net.toUri
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SnapHelper
-
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Album
 import com.botpa.turbophotos.gallery.CoonItem
@@ -41,10 +39,8 @@ import com.botpa.turbophotos.util.BackManager
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Orion.ResizeHeightAnimation
 import com.botpa.turbophotos.util.Storage
-
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
-
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale

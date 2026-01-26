@@ -231,9 +231,6 @@ object Orion {
         //Already visible
         if (view.isVisible) return
 
-        //Already being animated
-        if (view.animation != null && !view.animation.hasEnded()) return
-
         //Animate
         val alpha = AlphaAnimation(0f, 1f)
         alpha.duration = duration.toLong()

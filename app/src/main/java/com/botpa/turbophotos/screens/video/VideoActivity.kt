@@ -18,6 +18,7 @@ import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.media.MediaMetadata
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -36,9 +37,12 @@ import androidx.core.graphics.Insets
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
+import androidx.lifecycle.Lifecycle
 import androidx.media3.common.MediaItem
+import androidx.media3.common.Metadata
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.common.VideoSize
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -186,6 +190,11 @@ class VideoActivity : GalleryActivity() {
         this.enableEdgeToEdge()
         setContentView(R.layout.video_screen)
 
+        //Animation
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, android.R.anim.fade_in, android.R.anim.fade_out)
+        }
+
         //Background is always black so we use dark theme status bar
         val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
         windowInsetsController.isAppearanceLightStatusBars = false
@@ -247,6 +256,10 @@ class VideoActivity : GalleryActivity() {
     }
 
     private fun initActivity() {
+        //Hide player & controller
+        playerView.visibility = View.INVISIBLE
+        overlayLayout.visibility = View.GONE
+
         //Check if intent is valid
         val intent = getIntent()
         if (intent == null) {
@@ -431,6 +444,11 @@ class VideoActivity : GalleryActivity() {
         //Init player
         player.playWhenReady = true
         player.addListener(object : Player.Listener {
+            override fun onRenderedFirstFrame() {
+                //Prevents the first frame of the video from taking up the whole screen instead of its size
+                playerView.visibility = View.VISIBLE
+            }
+
             override fun onPlaybackStateChanged(playbackState: Int) {
                 when (playbackState) {
                     //Media is buffering
@@ -500,7 +518,7 @@ class VideoActivity : GalleryActivity() {
 
         //Init player view
         playerView.player = player
-        showController(false)
+        toggleController(false)
     }
 
     private fun initMediaSession() {
@@ -621,7 +639,7 @@ class VideoActivity : GalleryActivity() {
         player.play()
     }
 
-    private fun showController(show: Boolean) {
+    private fun toggleController(show: Boolean) {
         if (show) {
             //Show
             Orion.showAnim(overlayLayout)
@@ -640,7 +658,7 @@ class VideoActivity : GalleryActivity() {
     }
 
     private fun toggleController() {
-        showController(!overlayLayout.isVisible)
+        toggleController(!overlayLayout.isVisible)
     }
 
     private fun enableUpdateTimeLoop(enable: Boolean) {
@@ -753,10 +771,18 @@ class VideoActivity : GalleryActivity() {
     override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: Configuration) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
 
-        //Update state & toggle controller
+        //Update state
         isInPiP = isInPictureInPictureMode
-        showController(!isInPictureInPictureMode)
-        updatePlayerTime()
+
+        //Check state
+        if (!isInPictureInPictureMode && lifecycle.currentState == Lifecycle.State.CREATED) {
+            //PiP was destroyed -> Destroy activity
+            finish()
+        } else {
+            //PiP was opened/closed -> Toggle controller
+            toggleController(!isInPictureInPictureMode)
+            updatePlayerTime()
+        }
     }
 
     private fun setLooping(looping: Boolean) {

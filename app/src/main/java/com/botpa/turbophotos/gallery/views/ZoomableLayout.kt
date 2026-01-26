@@ -64,7 +64,7 @@ class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(conte
     var doubleTapCustomZoom: Float = 2f
 
     //Click
-    private val doubleClickDelay: Long = 200
+    private val doubleClickDelay: Long = 250
     private var lastClickTimestamp: Long = 0
 
     var onClick: Runnable? = null
