@@ -443,6 +443,9 @@ class VideoActivity : GalleryActivity() {
                 //Check if seeking manually
                 if (isSeeking) player.seekTo(overlayTimeSlider.value.toLong())
 
+                //Update time
+                overlayTimeCurrent.text = formatMilliseconds(overlayTimeSlider.value.toLong())
+
                 //Stop seeking
                 isSeeking = false
             }
