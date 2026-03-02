@@ -64,11 +64,12 @@ class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(conte
     var doubleTapCustomZoom: Float = 2f
 
     //Click
-    private val doubleClickDelay: Long = 250
     private var lastClickTimestamp: Long = 0
+    private val multiClickDelay: Long = 250
+    private var multiClickCount: Int = 0
 
     var onClick: Runnable? = null
-    var onDoubleClick: ((x: Float, y: Float) -> Boolean)? = null
+    var onMultiClick: ((x: Float, y: Float, count: Int) -> Boolean)? = null
     var onZoomChanged: Runnable? = null
 
 
@@ -214,25 +215,38 @@ class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(conte
         val currentTimestamp = System.currentTimeMillis()
 
         //Check if its double click
-        if (currentTimestamp - lastClickTimestamp < doubleClickDelay) {
-            //Reset timestamp
-            lastClickTimestamp = 0
+        if (currentTimestamp - lastClickTimestamp > multiClickDelay) {
+            //Reset multi click count
+            multiClickCount = 0
+
+            //Run click runnable
+            if (onClick != null) handler.postDelayed(onClick!!, multiClickDelay)
+
+            //Save timestamp
+            lastClickTimestamp = currentTimestamp
+        } else {
+            //Increase multi click count
+            multiClickCount++
 
             //Stop click runnable
             if (onClick != null) handler.removeCallbacks(onClick!!)
 
             //Perform double click
-            val consumed = onDoubleClick?.invoke(last.x, last.y) ?: false
+            val consumed = onMultiClick?.invoke(last.x, last.y, multiClickCount) ?: false
 
-            //Not consumed -> Animate zoom
-            if (!consumed) animateResize(if (zoom > minZoom) fitScale else if (doubleTapZoomsToCustom) doubleTapCustomZoom else coverScale)
-        } else {
-            //Save timestamp
-            lastClickTimestamp = currentTimestamp
+            //Check if consumed
+            if (consumed) {
+                //Save timestamp
+                lastClickTimestamp = currentTimestamp
+            } else {
+                //Reset timestamp
+                lastClickTimestamp = 0
 
-            //Run click runnable
-            if (onClick != null) handler.postDelayed(onClick!!, doubleClickDelay)
+                //Animate zoom
+                animateResize(if (zoom > minZoom) fitScale else if (doubleTapZoomsToCustom) doubleTapCustomZoom else coverScale)
+            }
         }
+
 
         return super.performClick()
     }

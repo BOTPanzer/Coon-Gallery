@@ -370,7 +370,7 @@ class VideoActivity : GalleryActivity() {
             toggleController()
         }
 
-        playerZoom.onDoubleClick = { x, y ->
+        playerZoom.onMultiClick = { x, y, count ->
             //Get layout width
             val width = playerZoom.width
             val doubleTapArea = width / 5
