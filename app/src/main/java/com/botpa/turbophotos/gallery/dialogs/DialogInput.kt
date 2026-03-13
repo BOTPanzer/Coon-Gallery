@@ -36,7 +36,7 @@ class DialogInput(
     }
 
     override fun initListeners() {
-        //Rename (adding listener like this prevent the button from dismissing the dialog)
+        //Confirm (adding listener like this prevent the button from dismissing the dialog)
         val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
         positiveButton.setOnClickListener { view ->
             //Get input value

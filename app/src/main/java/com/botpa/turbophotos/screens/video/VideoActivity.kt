@@ -53,6 +53,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.GalleryActivity
 import com.botpa.turbophotos.gallery.StoragePairs
+import com.botpa.turbophotos.gallery.dialogs.DialogSlider
 import com.botpa.turbophotos.gallery.options.OptionsAdapter
 import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.views.ZoomableLayout
@@ -153,6 +154,7 @@ class VideoActivity : GalleryActivity() {
 
     private val optionSeparator: OptionsItem = OptionsItem()
     private lateinit var optionPiP: OptionsItem
+    private lateinit var optionSpeed: OptionsItem
 
     private lateinit var optionsLayout: View
     private lateinit var optionsList: RecyclerView
@@ -468,6 +470,14 @@ class VideoActivity : GalleryActivity() {
 
             //Enter PiP
             isInPiP = enterPictureInPictureMode(p.build())
+        }
+
+        optionSpeed = OptionsItem(R.drawable.speed, "Playback speed") {
+            //Create speed slider dialog
+            DialogSlider(this@VideoActivity, "Playback speed", player.playbackParameters.speed, 0.25f, 1.75f, 0.25f) { speed ->
+                //Update speed
+                player.setPlaybackSpeed(speed)
+            }.buildAndShow()
         }
     }
 
@@ -867,6 +877,7 @@ class VideoActivity : GalleryActivity() {
             //Update options list
             options.clear()
             options.add(optionPiP)
+            options.add(optionSpeed)
             optionsAdapter.notifyDataSetChanged()
 
             //Show
