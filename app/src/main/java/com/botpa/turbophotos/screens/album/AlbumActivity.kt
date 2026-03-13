@@ -10,7 +10,6 @@ import android.view.View
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
-
 import androidx.activity.enableEdgeToEdge
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.Insets
@@ -20,7 +19,6 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.screens.display.DisplayActivity
 import com.botpa.turbophotos.gallery.Album
@@ -37,8 +35,8 @@ import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.util.BackManager
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
-import me.zhanghai.android.fastscroll.FastScroller
-import me.zhanghai.android.fastscroll.FastScrollerBuilder
+import com.botpa.turbophotos.gallery.fastscroller.FastScroller
+import com.botpa.turbophotos.gallery.fastscroller.FastScrollerBuilder
 
 import java.util.Locale
 

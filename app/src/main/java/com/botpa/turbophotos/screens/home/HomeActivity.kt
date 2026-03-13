@@ -47,8 +47,8 @@ import com.botpa.turbophotos.screens.sync.SyncActivity
 import com.botpa.turbophotos.util.BackManager
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
-import me.zhanghai.android.fastscroll.FastScroller
-import me.zhanghai.android.fastscroll.FastScrollerBuilder
+import com.botpa.turbophotos.gallery.fastscroller.FastScroller
+import com.botpa.turbophotos.gallery.fastscroller.FastScrollerBuilder
 
 @SuppressLint("SetTextI18n", "NotifyDataSetChanged")
 class HomeActivity : GalleryActivity() {
