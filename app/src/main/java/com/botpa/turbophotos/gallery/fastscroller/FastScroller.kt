@@ -15,15 +15,19 @@ import androidx.core.math.MathUtils
 import kotlin.math.abs
 import kotlin.math.max
 
-class FastScroller(view: ViewGroup, viewHelper: ViewHelper, padding: Rect?, trackDrawable: Drawable, thumbDrawable: Drawable, animationHelper: AnimationHelper) {
+class FastScroller(
+    private val view: ViewGroup,
+    private val viewHelper: ViewHelper,
+    padding: Rect?,
+    trackDrawable: Drawable,
+    thumbDrawable: Drawable,
+    private val animationHelper: AnimationHelper
+) {
 
     private val minTouchTargetSize = (20 * view.resources.displayMetrics.density).toInt()
     private val touchSlop: Int
 
-    private val view: ViewGroup
-    private val viewHelper: ViewHelper
-    private var userPadding: Rect?
-    private val animationHelper: AnimationHelper
+    private var userPadding: Rect? = padding
 
     private val trackWidth: Int
     private val thumbWidth: Int
@@ -47,18 +51,14 @@ class FastScroller(view: ViewGroup, viewHelper: ViewHelper, padding: Rect?, trac
 
     private val tempRect = Rect()
 
+
     init {
         val context = view.context
         touchSlop = ViewConfiguration.get(context).scaledTouchSlop
 
-        this@FastScroller.view = view
-        this@FastScroller.viewHelper = viewHelper
-        userPadding = padding
-        this@FastScroller.animationHelper = animationHelper
-
-        trackWidth = requireNonNegative(trackDrawable.intrinsicWidth, "trackDrawable.getIntrinsicWidth() < 0")
-        thumbWidth = requireNonNegative(thumbDrawable.intrinsicWidth, "thumbDrawable.getIntrinsicWidth() < 0")
-        thumbHeight = requireNonNegative(thumbDrawable.intrinsicHeight, "thumbDrawable.getIntrinsicHeight() < 0")
+        trackWidth = requireNonNegative(trackDrawable.intrinsicWidth, "trackDrawable.intrinsicWidth < 0")
+        thumbWidth = requireNonNegative(thumbDrawable.intrinsicWidth, "thumbDrawable.intrinsicWidth < 0")
+        thumbHeight = requireNonNegative(thumbDrawable.intrinsicHeight, "thumbDrawable.intrinsicHeight < 0")
 
         trackView = View(context)
         trackView.background = trackDrawable
@@ -277,23 +277,16 @@ class FastScroller(view: ViewGroup, viewHelper: ViewHelper, padding: Rect?, trac
     }
 
     private fun isInTouchTarget(position: Float, viewStart: Int, viewEnd: Int, parentStart: Int, parentEnd: Int): Boolean {
+        // 1. Calculate how much extra space we need to reach the 20dp target
         val viewSize = viewEnd - viewStart
-        if (viewSize >= minTouchTargetSize) {
-            return position >= viewStart && position < viewEnd
-        }
-        var touchTargetStart = viewStart - (minTouchTargetSize - viewSize) / 2
-        if (touchTargetStart < parentStart) {
-            touchTargetStart = parentStart
-        }
-        var touchTargetEnd = touchTargetStart + minTouchTargetSize
-        if (touchTargetEnd > parentEnd) {
-            touchTargetEnd = parentEnd
-            touchTargetStart = touchTargetEnd - minTouchTargetSize
-            if (touchTargetStart < parentStart) {
-                touchTargetStart = parentStart
-            }
-        }
-        return position >= touchTargetStart && position < touchTargetEnd
+        val paddingNeeded = if (viewSize < minTouchTargetSize) (minTouchTargetSize - viewSize) / 2 else 0
+
+        // 2. Expand the bounds
+        val expandedStart = viewStart - paddingNeeded
+        val expandedEnd = viewEnd + paddingNeeded
+
+        // 3. Return true if touch is within these expanded bounds
+        return position >= expandedStart && position < expandedEnd
     }
 
     private fun scrollToThumbOffset(thumbOffset: Int) {

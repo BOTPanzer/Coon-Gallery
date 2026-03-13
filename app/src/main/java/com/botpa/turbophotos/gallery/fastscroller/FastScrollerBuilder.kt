@@ -12,17 +12,14 @@ import com.botpa.turbophotos.gallery.fastscroller.FastScroller.ViewHelper
 class FastScrollerBuilder(private val view: ViewGroup) {
 
     private var viewHelper: ViewHelper? = null
-
     private var padding: Rect? = null
-
     private var trackDrawable: Drawable = ContextCompat.getDrawable(view.context, R.drawable.scrollbar_track)!!
-
     private var thumbDrawable: Drawable = ContextCompat.getDrawable(view.context, R.drawable.scrollbar_thumb)!!
-
     private var animationHelper: AnimationHelper? = null
 
+
     fun setViewHelper(viewHelper: ViewHelper?): FastScrollerBuilder {
-        this@FastScrollerBuilder.viewHelper = viewHelper
+        this.viewHelper = viewHelper
         return this
     }
 
@@ -36,28 +33,28 @@ class FastScrollerBuilder(private val view: ViewGroup) {
 
     fun setPadding(padding: Rect?): FastScrollerBuilder {
         if (padding != null) {
-            if (this@FastScrollerBuilder.padding == null) {
-                this@FastScrollerBuilder.padding = Rect()
+            if (this.padding == null) {
+                this.padding = Rect()
             }
-            this@FastScrollerBuilder.padding!!.set(padding)
+            this.padding!!.set(padding)
         } else {
-            this@FastScrollerBuilder.padding = null
+            this.padding = null
         }
         return this
     }
 
     fun setTrackDrawable(trackDrawable: Drawable): FastScrollerBuilder {
-        this@FastScrollerBuilder.trackDrawable = trackDrawable
+        this.trackDrawable = trackDrawable
         return this
     }
 
     fun setThumbDrawable(thumbDrawable: Drawable): FastScrollerBuilder {
-        this@FastScrollerBuilder.thumbDrawable = thumbDrawable
+        this.thumbDrawable = thumbDrawable
         return this
     }
 
     fun setAnimationHelper(animationHelper: AnimationHelper?) {
-        this@FastScrollerBuilder.animationHelper = animationHelper
+        this.animationHelper = animationHelper
     }
 
     fun build(): FastScroller {
