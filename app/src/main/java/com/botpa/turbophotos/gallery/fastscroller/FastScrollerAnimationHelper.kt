@@ -7,21 +7,17 @@ import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
 import com.botpa.turbophotos.gallery.fastscroller.FastScroller.AnimationHelper
 import kotlin.math.max
 
-class DefaultAnimationHelper(private val mView: View) : AnimationHelper {
+class FastScrollerAnimationHelper(private val mView: View) : AnimationHelper {
 
-    private var mScrollbarAutoHideEnabled = true
-
-    override val isScrollbarAutoHideEnabled: Boolean = mScrollbarAutoHideEnabled
+    override val isScrollbarAutoHideEnabled: Boolean = true
     override val scrollbarAutoHideDelayMillis: Int = AUTO_HIDE_SCROLLBAR_DELAY_MILLIS
 
-    private var mShowingScrollbar = true
-    private var mShowingPopup = false
+    private var isShowingScrollbar = true
+    private var isShowingPopup = false
 
     override fun showScrollbar(trackView: View, thumbView: View) {
-        if (mShowingScrollbar) {
-            return
-        }
-        mShowingScrollbar = true
+        if (isShowingScrollbar)  return
+        isShowingScrollbar = true
 
         trackView.animate()
             .alpha(1f)
@@ -38,18 +34,15 @@ class DefaultAnimationHelper(private val mView: View) : AnimationHelper {
     }
 
     override fun hideScrollbar(trackView: View, thumbView: View) {
-        if (!mShowingScrollbar) {
-            return
-        }
-        mShowingScrollbar = false
+        if (!isShowingScrollbar) return
+        isShowingScrollbar = false
 
-        val isLayoutRtl = mView.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL
-        val width = max(trackView.getWidth(), thumbView.getWidth())
-        val translationX: Float
-        if (isLayoutRtl) {
-            translationX = (if (trackView.getLeft() == 0) -width else 0).toFloat()
+        val isLayoutRtl = mView.layoutDirection == View.LAYOUT_DIRECTION_RTL
+        val width = max(trackView.width, thumbView.width)
+        val translationX: Float = if (isLayoutRtl) {
+            (if (trackView.left == 0) -width else 0).toFloat()
         } else {
-            translationX = (if (trackView.getRight() == mView.getWidth()) width else 0).toFloat()
+            (if (trackView.right == mView.width) width else 0).toFloat()
         }
         trackView.animate()
             .alpha(0f)
@@ -66,10 +59,10 @@ class DefaultAnimationHelper(private val mView: View) : AnimationHelper {
     }
 
     override fun showPopup(popupView: View) {
-        if (mShowingPopup) {
+        if (isShowingPopup) {
             return
         }
-        mShowingPopup = true
+        isShowingPopup = true
 
         popupView.animate()
             .alpha(1f)
@@ -78,10 +71,10 @@ class DefaultAnimationHelper(private val mView: View) : AnimationHelper {
     }
 
     override fun hidePopup(popupView: View) {
-        if (!mShowingPopup) {
+        if (!isShowingPopup) {
             return
         }
-        mShowingPopup = false
+        isShowingPopup = false
 
         popupView.animate()
             .alpha(0f)

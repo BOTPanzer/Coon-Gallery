@@ -568,10 +568,7 @@ class HomeActivity : GalleryActivity() {
         homeList.setAdapter(homeAdapter)
 
         //Init home fast scroller
-        homeFastScroller = FastScrollerBuilder(homeList).apply {
-            setThumbDrawable(ContextCompat.getDrawable(this@HomeActivity, R.drawable.scrollbar_thumb)!!)
-            setTrackDrawable(ContextCompat.getDrawable(this@HomeActivity, R.drawable.scrollbar_track)!!)
-        }.build()
+        homeFastScroller = FastScrollerBuilder(homeList).build()
     }
 
       /*$$$$$              /$$     /$$

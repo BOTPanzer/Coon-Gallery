@@ -492,10 +492,7 @@ class AlbumActivity : GalleryActivity() {
         albumList.setAdapter(albumAdapter)
 
         //Init home fast scroller
-        albumFastScroller = FastScrollerBuilder(albumList).apply {
-            setThumbDrawable(ContextCompat.getDrawable(this@AlbumActivity, R.drawable.scrollbar_thumb)!!)
-            setTrackDrawable(ContextCompat.getDrawable(this@AlbumActivity, R.drawable.scrollbar_track)!!)
-        }.build()
+        albumFastScroller = FastScrollerBuilder(albumList).build()
     }
 
     private fun selectAlbum(album: Album) {
