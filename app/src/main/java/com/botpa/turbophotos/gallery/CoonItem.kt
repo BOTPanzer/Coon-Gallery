@@ -61,12 +61,12 @@ class CoonItem(
     companion object {
 
         //Load item preview into ImageView
-        fun load(context: Context, imageView: ImageView, item: CoonItem, highestQuality: Boolean = false) {
+        fun load(context: Context, imageView: ImageView, item: CoonItem) {
             //Reset image scale type (due to a bug HDR does not load, but idk why changing scale type fixes it)
             imageView.scaleType = ImageView.ScaleType.CENTER
 
             //Create request
-            var request = Glide.with(context)
+            val request = Glide.with(context)
                 .load(item.file.absolutePath)
                 .signature(ObjectKey(item.lastModified)) //Reread from disk if cache was updated
                 .transition(DrawableTransitionOptions.withCrossFade())
@@ -83,10 +83,6 @@ class CoonItem(
                     }
 
                 })
-            if (highestQuality) {
-                request = request
-                    .override(Target.SIZE_ORIGINAL) //Force the highest quality possible
-            }
 
             //Load item
             request.into(imageView)

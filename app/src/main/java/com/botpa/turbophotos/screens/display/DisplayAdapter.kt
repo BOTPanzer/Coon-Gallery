@@ -29,7 +29,7 @@ class DisplayAdapter(
         val item = items[position]
 
         //Load image
-        CoonItem.load(context, holder.image, item, true)
+        CoonItem.load(context, holder.image, item)
 
         //Toggle play video button
         holder.play.visibility = if (item.isVideo) View.VISIBLE else View.GONE
