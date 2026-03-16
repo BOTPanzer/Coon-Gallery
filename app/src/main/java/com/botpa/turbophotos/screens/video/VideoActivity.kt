@@ -820,12 +820,12 @@ class VideoActivity : GalleryActivity() {
         isInPiP = isInPictureInPictureMode
 
         //Check state
-        if (!isInPictureInPictureMode && lifecycle.currentState == Lifecycle.State.CREATED) {
+        if (!isInPiP && lifecycle.currentState == Lifecycle.State.CREATED) {
             //PiP was destroyed -> Destroy activity
             finish()
         } else {
             //PiP was opened/closed -> Toggle controller
-            toggleController(!isInPictureInPictureMode)
+            toggleController(!isInPiP)
             updatePlayerTime()
         }
     }

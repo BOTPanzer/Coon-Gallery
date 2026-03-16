@@ -3,12 +3,15 @@ package com.botpa.turbophotos.screens.display
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.ComponentCaller
+import android.app.PictureInPictureParams
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
+import android.util.Rational
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import android.widget.HorizontalScrollView
@@ -16,14 +19,15 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
-import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.Insets
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.get
 import androidx.core.view.isVisible
+import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
@@ -69,6 +73,7 @@ class DisplayActivity : GalleryActivity() {
     private lateinit var backManager: BackManager
     private var isInit = false
     private var isViewingExternal: Boolean = false
+    private var isInPiP: Boolean = false
 
     //Events
     private val onAction = ActionEvent { action -> this.manageAction(action) }
@@ -108,6 +113,7 @@ class DisplayActivity : GalleryActivity() {
     private lateinit var optionRename: OptionsItem
     private lateinit var optionEdit: OptionsItem
     private lateinit var optionShare: OptionsItem
+    private lateinit var optionPiP: OptionsItem
     private lateinit var optionMove: OptionsItem
     private lateinit var optionCopy: OptionsItem
     private lateinit var optionTrash: OptionsItem
@@ -480,6 +486,20 @@ class DisplayActivity : GalleryActivity() {
             Library.shareItems(this, arrayOf(currentItem))
         }
 
+        optionPiP = OptionsItem(R.drawable.pip, "Open in PiP") {
+            //Create params
+            val p = PictureInPictureParams.Builder()
+            try {
+                val image = (displayList.findViewHolderForAdapterPosition(currentIndexInDisplay) as DisplayAdapter.DisplayHolder).image
+                p.setAspectRatio(Rational(image.width, image.height))
+            } catch (_: Exception) {
+                p.setAspectRatio(Rational(9, 16))
+            }
+
+            //Enter PiP
+            isInPiP = enterPictureInPictureMode(p.build())
+        }
+
         optionMove = OptionsItem(R.drawable.move, "Move to album") {
             //Move items
             Library.moveItems(this, arrayOf(currentItem))
@@ -519,13 +539,7 @@ class DisplayActivity : GalleryActivity() {
 
         //Add adapter listeners
         displayAdapter.setOnClickListener { zoom: ZoomableLayout, image: ImageView, index: Int ->
-            if (overlayLayout.isVisible) {
-                Orion.hideAnim(overlayLayout)
-                toggleSystemUI(false)
-            } else {
-                Orion.showAnim(overlayLayout)
-                toggleSystemUI(true)
-            }
+            toggleOverlay(!overlayLayout.isVisible)
         }
         displayAdapter.setOnZoomChangedListener { zoom: ZoomableLayout, image: ImageView, index: Int ->
             //Enable scrolling only if not zoomed and one finger is over
@@ -574,6 +588,18 @@ class DisplayActivity : GalleryActivity() {
                 super.onScrollStateChanged(recyclerView, newState)
             }
         })
+    }
+
+    private fun toggleOverlay(show: Boolean) {
+        if (show) {
+            //Show
+            Orion.showAnim(overlayLayout)
+            toggleSystemUI(true)
+        } else {
+            //Hide
+            Orion.hideAnim(overlayLayout)
+            toggleSystemUI(false)
+        }
     }
 
     //Current item
@@ -673,6 +699,23 @@ class DisplayActivity : GalleryActivity() {
         infoText.text = text
     }
 
+    //PiP
+    override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: Configuration) {
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+
+        //Update state
+        isInPiP = isInPictureInPictureMode
+
+        //Check state
+        if (!isInPiP && lifecycle.currentState == Lifecycle.State.CREATED) {
+            //PiP was destroyed -> Destroy activity
+            finish()
+        } else {
+            //PiP was opened/closed -> Toggle overlay
+            toggleOverlay(!isInPiP)
+        }
+    }
+
       /*$$$$$              /$$     /$$
      /$$__  $$            | $$    |__/
     | $$  \ $$  /$$$$$$  /$$$$$$   /$$  /$$$$$$  /$$$$$$$   /$$$$$$$
@@ -717,6 +760,7 @@ class DisplayActivity : GalleryActivity() {
                 if (!isTrashed) {
                     options.add(optionEdit)
                     options.add(optionShare)
+                    options.add(optionPiP)
                 }
             } else {
                 //Viewing gallery items
@@ -724,6 +768,7 @@ class DisplayActivity : GalleryActivity() {
                     options.add(optionRename)
                     options.add(optionEdit)
                     options.add(optionShare)
+                    options.add(optionPiP)
                     options.add(optionMove)
                     options.add(optionCopy)
                     options.add(optionSeparator)

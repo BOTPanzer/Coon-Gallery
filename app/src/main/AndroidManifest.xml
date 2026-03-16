@@ -64,7 +64,9 @@
         <activity
             android:name=".screens.display.DisplayActivity"
             android:launchMode="standard"
-            android:exported="true">
+            android:exported="true"
+            android:configChanges="orientation|screenSize|screenLayout"
+            android:supportsPictureInPicture="true">
             <intent-filter
                 android:label="Image Viewer">
                 <action android:name="android.intent.action.VIEW" />
