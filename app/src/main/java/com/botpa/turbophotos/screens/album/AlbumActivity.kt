@@ -97,6 +97,7 @@ class AlbumActivity : GalleryActivity() {
     private lateinit var optionRename: OptionsItem
     private lateinit var optionEdit: OptionsItem
     private lateinit var optionShare: OptionsItem
+    private lateinit var optionSetAs: OptionsItem
     private lateinit var optionMove: OptionsItem
     private lateinit var optionCopy: OptionsItem
     private lateinit var optionTrash: OptionsItem
@@ -396,6 +397,14 @@ class AlbumActivity : GalleryActivity() {
             Library.shareItems(this, getSelectedItems())
         }
 
+        optionSetAs = OptionsItem(R.drawable.wallpaper, "Set as") {
+            //Only allow 1 selection
+            if (selectedItems.size != 1) return@OptionsItem
+
+            //Set as
+            Library.setItemAs(this, Library.gallery[selectedItems.iterator().next()])
+        }
+
         optionMove = OptionsItem(R.drawable.move, "Move to album") {
             //Move items
             Library.moveItems(this, getSelectedItems())
@@ -571,6 +580,8 @@ class AlbumActivity : GalleryActivity() {
             if (!inTrash && isSelectingSingle) options.add(optionRename)
             if (!inTrash && isSelectingSingle) options.add(optionEdit)
             if (!inTrash && isSelecting) options.add(optionShare)
+            if (!inTrash && isSelectingSingle) options.add(optionSetAs)
+            if (!inTrash) options.add(optionSeparator)
             if (!inTrash && isSelecting) options.add(optionMove)
             if (!inTrash && isSelecting) options.add(optionCopy)
             if (!inTrash) options.add(optionSeparator)

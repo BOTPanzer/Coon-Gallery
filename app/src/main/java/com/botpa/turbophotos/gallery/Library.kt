@@ -689,9 +689,10 @@ object Library {
         val mimeType = item.mimeType
 
         //Edit
-        val intent = Intent(Intent.ACTION_EDIT)
-        intent.setDataAndType(uri, mimeType)
-        intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+        val intent = Intent(Intent.ACTION_EDIT).apply {
+            setDataAndType(uri, mimeType)
+            flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+        }
         context.startActivity(Intent.createChooser(intent, null))
     }
 
@@ -703,16 +704,32 @@ object Library {
         val intent: Intent?
         if (items.size == 1) {
             //Share 1 item
-            intent = Intent(Intent.ACTION_SEND)
-            intent.putExtra(Intent.EXTRA_STREAM, Orion.getFileUriFromFilePath(context, items[0].file.absolutePath))
-            intent.type = items[0].mimeType
+            intent = Intent(Intent.ACTION_SEND).apply {
+                putExtra(Intent.EXTRA_STREAM, Orion.getFileUriFromFilePath(context, items[0].file.absolutePath))
+                type = items[0].mimeType
+            }
         } else {
             //Share multiple items
-            intent = Intent(Intent.ACTION_SEND_MULTIPLE)
             val uris = ArrayList<Uri?>()
             for (item in items) uris.add(Orion.getFileUriFromFilePath(context, item.file.absolutePath))
-            intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris)
-            intent.type = "*/*"
+            intent = Intent(Intent.ACTION_SEND_MULTIPLE).apply {
+                putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris)
+                type = "*/*"
+            }
+        }
+        context.startActivity(Intent.createChooser(intent, null))
+    }
+
+    fun setItemAs(context: Context, item: CoonItem) {
+        //Get URI & mime type
+        val uri = Orion.getFileUriFromFilePath(context, item.file.absolutePath)
+        val mimeType = item.mimeType
+
+        //Set as
+        val intent = Intent(Intent.ACTION_ATTACH_DATA).apply {
+            addCategory(Intent.CATEGORY_DEFAULT)
+            setDataAndType(uri, mimeType)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
         context.startActivity(Intent.createChooser(intent, null))
     }

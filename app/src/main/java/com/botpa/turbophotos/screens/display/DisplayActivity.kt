@@ -113,6 +113,7 @@ class DisplayActivity : GalleryActivity() {
     private lateinit var optionRename: OptionsItem
     private lateinit var optionEdit: OptionsItem
     private lateinit var optionShare: OptionsItem
+    private lateinit var optionSetAs: OptionsItem
     private lateinit var optionPiP: OptionsItem
     private lateinit var optionMove: OptionsItem
     private lateinit var optionCopy: OptionsItem
@@ -486,6 +487,11 @@ class DisplayActivity : GalleryActivity() {
             Library.shareItems(this, arrayOf(currentItem))
         }
 
+        optionSetAs = OptionsItem(R.drawable.wallpaper, "Set as") {
+            //Set as
+            Library.setItemAs(this, currentItem)
+        }
+
         optionPiP = OptionsItem(R.drawable.pip, "Open in PiP") {
             //Create params
             val p = PictureInPictureParams.Builder()
@@ -760,7 +766,9 @@ class DisplayActivity : GalleryActivity() {
                 if (!isTrashed) {
                     options.add(optionEdit)
                     options.add(optionShare)
+                    options.add(optionSetAs)
                     options.add(optionPiP)
+                    options.add(optionSeparator)
                 }
             } else {
                 //Viewing gallery items
@@ -768,7 +776,9 @@ class DisplayActivity : GalleryActivity() {
                     options.add(optionRename)
                     options.add(optionEdit)
                     options.add(optionShare)
+                    options.add(optionSetAs)
                     options.add(optionPiP)
+                    options.add(optionSeparator)
                     options.add(optionMove)
                     options.add(optionCopy)
                     options.add(optionSeparator)
