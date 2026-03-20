@@ -66,6 +66,7 @@ class HomeActivity : GalleryActivity() {
     private lateinit var backManager: BackManager
 
     private var isLibraryLoaded = false
+    private var isLibraryLoading = false
     private var isInit = false
 
     //Events
@@ -302,6 +303,10 @@ class HomeActivity : GalleryActivity() {
     }
 
     private fun onHasPermissions() {
+        //Already loading or loaded
+        if (isLibraryLoading || isLibraryLoaded) return
+        isLibraryLoading = true
+
         //Hide list
         homeList.visibility = View.GONE
 
@@ -339,6 +344,7 @@ class HomeActivity : GalleryActivity() {
 
             //Mark as loaded
             isLibraryLoaded = true
+            isLibraryLoading = false
         }.start()
     }
 
