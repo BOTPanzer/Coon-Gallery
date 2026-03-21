@@ -72,8 +72,10 @@ object Library {
     //Gallery
     private val _gallery: MutableList<CoonItem> = ArrayList() //Currently open album items (could be filtered)
 
+    enum class SearchMethod { ContainsText, ContainsWords }
     val gallery: List<CoonItem>
         get() = _gallery
+
 
 
     //Library (events)
@@ -391,46 +393,86 @@ object Library {
     }
 
     //Gallery
-    private fun filterItem(item: CoonItem, filter: String): Boolean {
-        //Check item name
-        if (item.name.lowercase(Locale.getDefault()).contains(filter)) return true
-
-        //Get metadata
-        val metadata = item.getMetadata() ?: return false
-
+    private fun filterItemText(caption: String, labels: List<String>, texts: List<String>, filter: String): Boolean {
         //Check caption
-        if (metadata.has("caption")) {
-            val caption = metadata.path("caption")
-            if (caption.isTextual && caption.asText().lowercase(Locale.getDefault()) .contains(filter)) {
-                return true
-            }
-        }
+        if (caption.contains(filter)) return true
 
         //Check labels
-        if (metadata.has("labels")) {
-            val labels = metadata.path("labels")
-            for (i in 0..<labels.size()) {
-                if (labels.get(i).asText().lowercase(Locale.getDefault()).contains(filter)) {
-                    return true
-                }
-            }
+        for (label in labels) {
+            if (label.contains(filter)) return true
         }
 
         //Check text
-        if (metadata.has("text")) {
-            val text = metadata.path("text")
-            for (i in 0..<text.size()) {
-                if (text.get(i).asText().lowercase(Locale.getDefault()).contains(filter)) {
-                    return true
-                }
-            }
+        for (text in texts) {
+            if (text.contains(filter)) return true
         }
 
         //Not found
         return false
     }
 
-    fun filterGallery(filter: String, album: Album) {
+    private fun filterItemWords(caption: String, labels: List<String>, texts: List<String>, _filter: String): Boolean {
+        //Fix filter
+        val filter = _filter.trim()
+
+        //Check caption
+        for (word in caption.split(" ")) {
+            if (word == filter) return true
+        }
+
+        //Check labels
+        for (label in labels) {
+            if (label == filter) return true
+        }
+
+        //Check text
+        for (text in texts) {
+            if (text == filter) return true
+        }
+
+        //Not found
+        return false
+    }
+
+    private fun filterItem(item: CoonItem, filter: String, method: SearchMethod): Boolean {
+        //Check item name
+        if (item.name.lowercase(Locale.getDefault()).contains(filter)) return true
+
+        //Get metadata
+        val metadata = item.getMetadata() ?: return false
+
+        //Get caption
+        val caption: String = (metadata.get("caption")?.asText() ?: "").lowercase(Locale.getDefault())
+
+        //Get labels
+        val labels: MutableList<String> = ArrayList()
+        if (metadata.has("labels")) {
+            val value = metadata.get("labels")
+            for (i in 0..<value.size()) {
+                labels.add(value.get(i).asText().lowercase(Locale.getDefault()))
+            }
+        }
+
+        //Get text
+        val text: MutableList<String> = ArrayList()
+        if (metadata.has("text")) {
+            val value = metadata.path("text")
+            for (i in 0..<value.size()) {
+                text.add(value.get(i).asText().lowercase(Locale.getDefault()))
+            }
+        }
+
+        //Filter
+        return if (method == SearchMethod.ContainsText) {
+            //Contains whole text
+            filterItemText(caption, labels, text, filter)
+        } else {
+            //Contains all words
+            filterItemWords(caption, labels, text, filter)
+        }
+    }
+
+    fun filterGallery(filter: String, album: Album, method: SearchMethod) {
         //Check if filtering
         val isFiltering = !filter.isEmpty()
 
@@ -446,7 +488,7 @@ object Library {
             }
 
             //Check if json contains filter
-            if (filterItem(item, filter)) _gallery.add(item)
+            if (filterItem(item, filter.lowercase(Locale.getDefault()), method)) _gallery.add(item)
         }
     }
 

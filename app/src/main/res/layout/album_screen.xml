@@ -151,6 +151,25 @@
                         android:textSize="16sp" />
 
                     <androidx.cardview.widget.CardView
+                        android:id="@+id/searchMethod"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginStart="10dp"
+                        app:cardBackgroundColor="#00000000"
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="0dp">
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="?attr/selectableItemBackground"
+                            android:padding="8dp"
+                            app:srcCompat="@drawable/more"
+                            app:tint="?attr/colorOnSurface" />
+
+                    </androidx.cardview.widget.CardView>
+
+                    <androidx.cardview.widget.CardView
                         android:id="@+id/searchClose"
                         android:layout_width="40dp"
                         android:layout_height="40dp"

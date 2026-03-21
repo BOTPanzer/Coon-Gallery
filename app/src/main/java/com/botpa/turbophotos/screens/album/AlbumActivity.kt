@@ -11,7 +11,6 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
-import androidx.core.content.ContextCompat
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -37,8 +36,7 @@ import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
 import com.botpa.turbophotos.gallery.fastscroller.FastScroller
 import com.botpa.turbophotos.gallery.fastscroller.FastScrollerBuilder
-
-import java.util.Locale
+import com.botpa.turbophotos.screens.album.search.DialogSearch
 
 @SuppressLint("SetTextI18n", "NotifyDataSetChanged")
 class AlbumActivity : GalleryActivity() {
@@ -76,6 +74,10 @@ class AlbumActivity : GalleryActivity() {
     private lateinit var albumRefreshLayout: SwipeRefreshLayout
     private lateinit var albumList: RecyclerView
     private lateinit var albumFastScroller: FastScroller
+
+    //Search
+    private var currentSearchMethod: Library.SearchMethod = Library.SearchMethod.ContainsWords
+    private var currentSearch: String = ""
 
       /*$$$$$              /$$     /$$
      /$$__  $$            | $$    |__/
@@ -132,6 +134,7 @@ class AlbumActivity : GalleryActivity() {
     //Views (search)
     private lateinit var searchLayout: View
     private lateinit var searchInput: EditText
+    private lateinit var searchMethod: View
     private lateinit var searchClose: View
 
     //Views (loading indicator)
@@ -302,6 +305,7 @@ class AlbumActivity : GalleryActivity() {
         //Search
         searchLayout = findViewById(R.id.searchLayout)
         searchInput = findViewById(R.id.searchInput)
+        searchMethod = findViewById(R.id.searchMethod)
         searchClose = findViewById(R.id.searchClose)
 
         //Options
@@ -485,6 +489,16 @@ class AlbumActivity : GalleryActivity() {
                 filterItems(search, true)
             }
             false
+        }
+
+        searchMethod.setOnClickListener { view: View ->
+            DialogSearch(this) { method ->
+                //Update method
+                currentSearchMethod = method
+
+                //Filter
+                if (currentSearch.isNotEmpty()) filterItems(currentSearch, true)
+            }.buildAndShow()
         }
 
         searchClose.setOnClickListener { view: View -> showSearchLayout(false) }
@@ -743,10 +757,7 @@ class AlbumActivity : GalleryActivity() {
     }
 
     //Items & search
-    private fun filterItems(filterText: String = "", scrollToTop: Boolean = false) {
-        //Ignore case
-        val filter = filterText.lowercase(Locale.getDefault())
-
+    private fun filterItems(filter: String = "", scrollToTop: Boolean = false) {
         //Check if filtering
         val isFiltering = !filter.isEmpty()
 
@@ -754,12 +765,13 @@ class AlbumActivity : GalleryActivity() {
         if (isSearching || (!isMetadataLoaded && isFiltering)) return
 
         //Update subtitle
-        navbarSubtitle.text = if (isFiltering) "Search: $filterText" else ""
+        navbarSubtitle.text = if (isFiltering) "Search: $filter" else ""
         navbarSubtitle.visibility = if (isFiltering) View.VISIBLE else View.GONE
 
         //Start search
         isSearching = true
-        searchInput.setText(filterText)
+        currentSearch = filter
+        searchInput.setText(filter)
         if (isFiltering) loadingIndicator.search()
         showSearchLayout(false)
 
@@ -773,7 +785,7 @@ class AlbumActivity : GalleryActivity() {
         //Filter items
         Thread {
             //Filter library gallery list
-            Library.filterGallery(filter, currentAlbum)
+            Library.filterGallery(filter, currentAlbum, currentSearchMethod)
 
             //Update items
             runOnUiThread {
