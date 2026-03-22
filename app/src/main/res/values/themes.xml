@@ -54,6 +54,9 @@
         <!-- Navigation bar color -->
         <item name="android:navigationBarColor">?attr/colorSurface</item>
 
+        <!-- Dialogs -->
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.TurboPhotos.MaterialAlertDialog</item>
+
         <!-- Default font -->
         <item name="android:fontFamily">@font/poppins</item>
     </style>
@@ -66,5 +69,17 @@
         <item name="android:textColorSecondary">?attr/colorOnSecondary</item>
         <item name="android:textColorHint">?attr/colorOnSecondary</item>
         <item name="android:textColorHighlight">?attr/colorOnSecondary</item>
+    </style>
+
+    <!-- Dialogs -->
+    <style name="TextAppearance.TurboPhotos.Dialog.Title" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">22sp</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <style name="ThemeOverlay.TurboPhotos.MaterialAlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="textAppearanceHeadlineSmall">@style/TextAppearance.TurboPhotos.Dialog.Title</item>
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.Material3.BodyMedium</item>
     </style>
 </resources>

@@ -54,6 +54,9 @@
         <!-- Navigation bar color -->
         <item name="android:navigationBarColor">?attr/colorSurface</item>
 
+        <!-- Dialogs -->
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.TurboPhotos.MaterialAlertDialog</item>
+
         <!-- Default font -->
         <item name="android:fontFamily">@font/poppins</item>
     </style>
