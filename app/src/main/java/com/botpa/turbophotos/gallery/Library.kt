@@ -37,6 +37,8 @@ import kotlin.String
 import kotlin.arrayOf
 import kotlin.checkNotNull
 
+enum class SearchMethod { ContainsWords, ContainsText }
+
 object Library {
 
     //Logging
@@ -72,7 +74,6 @@ object Library {
     //Gallery
     private val _gallery: MutableList<CoonItem> = ArrayList() //Currently open album items (could be filtered)
 
-    enum class SearchMethod { ContainsText, ContainsWords }
     val gallery: List<CoonItem>
         get() = _gallery
 

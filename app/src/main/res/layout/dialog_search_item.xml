@@ -25,4 +25,22 @@
         android:textColor="?attr/colorOnSurface"
         android:textSize="12sp" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Good for:"
+        android:textColor="?attr/colorOnSurface"
+        android:textSize="12sp"
+        android:textStyle="italic" />
+
+    <TextView
+        android:id="@+id/methodUse"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:text="Method use"
+        android:textColor="?attr/colorOnSurface"
+        android:textSize="12sp"
+        android:textStyle="italic" />
+
 </LinearLayout>

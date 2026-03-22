@@ -27,6 +27,7 @@ import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.Library.RefreshEvent
 import com.botpa.turbophotos.gallery.Library.ActionEvent
 import com.botpa.turbophotos.gallery.LoadingIndicator
+import com.botpa.turbophotos.gallery.SearchMethod
 import com.botpa.turbophotos.gallery.actions.Action
 import com.botpa.turbophotos.gallery.options.OptionsAdapter
 import com.botpa.turbophotos.gallery.options.OptionsItem
@@ -76,7 +77,7 @@ class AlbumActivity : GalleryActivity() {
     private lateinit var albumFastScroller: FastScroller
 
     //Search
-    private var currentSearchMethod: Library.SearchMethod = Library.SearchMethod.ContainsWords
+    private var currentSearchMethod: SearchMethod = SearchMethod.ContainsWords
     private var currentSearch: String = ""
 
       /*$$$$$              /$$     /$$
@@ -502,6 +503,7 @@ class AlbumActivity : GalleryActivity() {
                 //Update method
                 currentSearchMethod = method
                 searchMethodName.text = getSearchMethodName(currentSearchMethod)
+                Storage.putString(StoragePairs.ALBUM_SEARCH_METHOD, currentSearchMethod.name)
 
                 //Filter
                 if (currentSearch.isNotEmpty()) filterItems(currentSearch, true)
@@ -532,6 +534,13 @@ class AlbumActivity : GalleryActivity() {
         //Check if in trash (trash always shows options cause of "Delete all" action)
         inTrash = (album == Library.trash)
         navbarOptions.visibility = if (inTrash) View.VISIBLE else View.GONE
+
+        //Get search method
+        currentSearchMethod = try {
+            SearchMethod.valueOf(Storage.getString(StoragePairs.ALBUM_SEARCH_METHOD)?: "")
+        } catch (e: IllegalArgumentException) {
+            SearchMethod.ContainsWords
+        }
 
         //Update navbar title
         updateNavbarTitle()
@@ -811,10 +820,10 @@ class AlbumActivity : GalleryActivity() {
         }.start()
     }
 
-    private fun getSearchMethodName(searchMethod: Library.SearchMethod): String {
+    private fun getSearchMethodName(searchMethod: SearchMethod): String {
         return when (searchMethod) {
-            Library.SearchMethod.ContainsText -> "Contains text"
-            Library.SearchMethod.ContainsWords -> "Contains words"
+            SearchMethod.ContainsWords -> "Contains words"
+            SearchMethod.ContainsText -> "Contains text"
         }
     }
 

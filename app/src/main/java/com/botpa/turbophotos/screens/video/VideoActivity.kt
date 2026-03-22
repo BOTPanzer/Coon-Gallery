@@ -834,7 +834,7 @@ class VideoActivity : GalleryActivity() {
         //Set looping
         isLooping = looping
         player.repeatMode = if (isLooping) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_OFF
-        Storage.putBool(StoragePairs.VIDEO_LOOP.key, isLooping)
+        Storage.putBool(StoragePairs.VIDEO_LOOP, isLooping)
 
         //Update loop button
         overlayLoop.setIconResource(if (isLooping) R.drawable.repeat_on else R.drawable.repeat)

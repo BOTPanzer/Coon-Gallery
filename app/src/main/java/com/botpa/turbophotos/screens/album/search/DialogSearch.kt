@@ -3,18 +3,18 @@ package com.botpa.turbophotos.screens.album.search
 import android.content.Context
 import android.widget.ListView
 import com.botpa.turbophotos.R
-import com.botpa.turbophotos.gallery.Library
+import com.botpa.turbophotos.gallery.SearchMethod
 import com.botpa.turbophotos.gallery.dialogs.CustomDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
-class DialogSearch(context: Context, private val onSelect: (Library.SearchMethod) -> Unit): CustomDialog(context, R.layout.dialog_search) {
+class DialogSearch(context: Context, private val onSelect: (SearchMethod) -> Unit): CustomDialog(context, R.layout.dialog_search) {
 
     //Views
     private lateinit var list: ListView
 
     //Adapter
     private lateinit var adapter: DialogSearchAdapter
-    private val methods: List<Library.SearchMethod> = listOf(Library.SearchMethod.ContainsText, Library.SearchMethod.ContainsWords)
+    private val methods: List<SearchMethod> = listOf(SearchMethod.ContainsWords, SearchMethod.ContainsText)
 
 
     //Init

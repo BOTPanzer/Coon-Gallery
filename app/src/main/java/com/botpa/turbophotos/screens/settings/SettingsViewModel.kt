@@ -112,40 +112,40 @@ class SettingsViewModel : ViewModel() {
         //App
         loadBoolSettingFromJson(json, StoragePairs.APP_AUTOMATIC_METADATA_MODIFICATION.key) { value ->
             appModifyMetadata = value
-            Storage.putBool(StoragePairs.APP_AUTOMATIC_METADATA_MODIFICATION.key, value)
+            Storage.putBool(StoragePairs.APP_AUTOMATIC_METADATA_MODIFICATION, value)
         }
 
         //Home screen
         loadIntSettingFromJson(json, StoragePairs.HOME_ITEMS_PER_ROW.key) { value ->
             homeItemsPerRow = value.toFloat()
-            Storage.putInt(StoragePairs.HOME_ITEMS_PER_ROW.key, value)
+            Storage.putInt(StoragePairs.HOME_ITEMS_PER_ROW, value)
         }
 
         //Album screen
         loadIntSettingFromJson(json, StoragePairs.ALBUM_ITEMS_PER_ROW.key) { value ->
             albumItemsPerRow = value.toFloat()
-            Storage.putInt(StoragePairs.ALBUM_ITEMS_PER_ROW.key, value)
+            Storage.putInt(StoragePairs.ALBUM_ITEMS_PER_ROW, value)
         }
         loadBoolSettingFromJson(json, StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON.key) { value ->
             albumShowMissingMetadataIcon = value
-            Storage.putBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON.key, value)
+            Storage.putBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON, value)
         }
 
         //Video player (these settings get loaded in video activity)
         loadBoolSettingFromJson(json, StoragePairs.VIDEO_LOOP.key) { value ->
-            Storage.putBool(StoragePairs.VIDEO_LOOP.key, value)
+            Storage.putBool(StoragePairs.VIDEO_LOOP, value)
         }
         loadLongSettingFromJson(json, StoragePairs.VIDEO_SKIP_BACKWARDS.key) { value ->
-            Storage.putLong(StoragePairs.VIDEO_SKIP_BACKWARDS.key, value)
+            Storage.putLong(StoragePairs.VIDEO_SKIP_BACKWARDS, value)
         }
         loadLongSettingFromJson(json, StoragePairs.VIDEO_SKIP_FORWARD.key) { value ->
-            Storage.putLong(StoragePairs.VIDEO_SKIP_FORWARD.key, value)
+            Storage.putLong(StoragePairs.VIDEO_SKIP_FORWARD, value)
         }
         loadBoolSettingFromJson(json, StoragePairs.VIDEO_USE_INTERNAL_PLAYER.key) { value ->
-            Storage.putBool(StoragePairs.VIDEO_USE_INTERNAL_PLAYER.key, value)
+            Storage.putBool(StoragePairs.VIDEO_USE_INTERNAL_PLAYER, value)
         }
         loadBoolSettingFromJson(json, StoragePairs.VIDEO_IGNORE_AUDIO_FOCUS.key) { value ->
-            Storage.putBool(StoragePairs.VIDEO_IGNORE_AUDIO_FOCUS.key, value)
+            Storage.putBool(StoragePairs.VIDEO_IGNORE_AUDIO_FOCUS, value)
         }
 
         //Sync screen (these settings get loaded in sync activity)
@@ -171,41 +171,41 @@ class SettingsViewModel : ViewModel() {
 
     fun updateAppModifyMetadata(isChecked: Boolean) {
         appModifyMetadata = isChecked
-        Storage.putBool(StoragePairs.APP_AUTOMATIC_METADATA_MODIFICATION.key, isChecked)
+        Storage.putBool(StoragePairs.APP_AUTOMATIC_METADATA_MODIFICATION, isChecked)
     }
 
     //Home screen
     fun saveHomeItemsPerRow() {
-        Storage.putInt(StoragePairs.HOME_ITEMS_PER_ROW.key, homeItemsPerRow.toInt())
+        Storage.putInt(StoragePairs.HOME_ITEMS_PER_ROW, homeItemsPerRow.toInt())
     }
 
     //Album screen
     fun saveAlbumItemsPerRow() {
-        Storage.putInt(StoragePairs.ALBUM_ITEMS_PER_ROW.key, albumItemsPerRow.toInt())
+        Storage.putInt(StoragePairs.ALBUM_ITEMS_PER_ROW, albumItemsPerRow.toInt())
     }
 
     fun updateAlbumShowMissingMetadataIcon(isChecked: Boolean) {
         albumShowMissingMetadataIcon = isChecked
-        Storage.putBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON.key, isChecked)
+        Storage.putBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON, isChecked)
     }
 
     //Video player
     fun saveVideoSkipBackwardsAmount() {
-        Storage.putLong(StoragePairs.VIDEO_SKIP_BACKWARDS.key, videoSkipBackwardsAmount.toLong())
+        Storage.putLong(StoragePairs.VIDEO_SKIP_BACKWARDS, videoSkipBackwardsAmount.toLong())
     }
 
     fun saveVideoSkipForwardAmount() {
-        Storage.putLong(StoragePairs.VIDEO_SKIP_FORWARD.key, videoSkipForwardAmount.toLong())
+        Storage.putLong(StoragePairs.VIDEO_SKIP_FORWARD, videoSkipForwardAmount.toLong())
     }
 
     fun updateVideoUseInternalPlayer(isChecked: Boolean) {
         videoUseInternalPlayer = isChecked
-        Storage.putBool(StoragePairs.VIDEO_USE_INTERNAL_PLAYER.key, isChecked)
+        Storage.putBool(StoragePairs.VIDEO_USE_INTERNAL_PLAYER, isChecked)
     }
 
     fun updateVideoIgnoreAudioFocus(isChecked: Boolean) {
         videoIgnoreAudioFocus = isChecked
-        Storage.putBool(StoragePairs.VIDEO_IGNORE_AUDIO_FOCUS.key, isChecked)
+        Storage.putBool(StoragePairs.VIDEO_IGNORE_AUDIO_FOCUS, isChecked)
     }
 
     //Links
