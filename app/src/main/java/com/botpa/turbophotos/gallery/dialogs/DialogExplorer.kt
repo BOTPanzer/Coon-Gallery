@@ -25,8 +25,8 @@ class DialogExplorer(
 
     //Views
     private lateinit var folderPath: TextView
-    private lateinit var listLayout: View
-    private lateinit var list: ListView
+    private lateinit var foldersLayout: View
+    private lateinit var foldersList: ListView
     private lateinit var createLayout: View
     private lateinit var createInput: EditText
     private lateinit var createButton: Button
@@ -67,14 +67,14 @@ class DialogExplorer(
     override fun initViews() {
         //Init views
         folderPath = root.findViewById(R.id.folderPath)
-        listLayout = root.findViewById(R.id.listLayout)
-        list = root.findViewById(R.id.list)
+        foldersLayout = root.findViewById(R.id.foldersLayout)
+        foldersList = root.findViewById(R.id.foldersList)
         createLayout = root.findViewById(R.id.createLayout)
         createInput = root.findViewById(R.id.createInput)
         createButton = root.findViewById(R.id.createButton)
 
         //Assign adapter to list
-        list.adapter = adapter
+        foldersList.adapter = adapter
     }
 
     override fun initDialog(builder: MaterialAlertDialogBuilder): MaterialAlertDialogBuilder {
@@ -127,7 +127,7 @@ class DialogExplorer(
             updateItemsList(item)
             adapter.setCurrentFolder(item)
             adapter.notifyDataSetChanged()
-            list.setSelectionAfterHeaderView() //Scroll to top
+            foldersList.setSelectionAfterHeaderView() //Scroll to top
             updateCurrentFolderName()
         }
 
@@ -188,9 +188,9 @@ class DialogExplorer(
         //Toggle list & create menus (adding listener like this prevent the button from dismissing the dialog)
         val neutralButton = dialog.getButton(AlertDialog.BUTTON_NEUTRAL)
         neutralButton.setOnClickListener { view ->
-            if (listLayout.isVisible) {
+            if (foldersLayout.isVisible) {
                 //Toggle menus (show create folder)
-                listLayout.visibility = View.GONE
+                foldersLayout.visibility = View.GONE
                 createLayout.visibility = View.VISIBLE
 
                 //Reset input
@@ -201,7 +201,7 @@ class DialogExplorer(
                 neutralButton.text = getSelectText()
             } else {
                 //Toggle menus (show filters list)
-                listLayout.visibility = View.VISIBLE
+                foldersLayout.visibility = View.VISIBLE
                 createLayout.visibility = View.GONE
 
                 //Reset focus

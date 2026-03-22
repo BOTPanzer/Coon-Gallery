@@ -40,13 +40,13 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/listLayout"
+        android:id="@+id/foldersLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
         <ListView
-            android:id="@+id/list"
+            android:id="@+id/foldersList"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 

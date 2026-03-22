@@ -1,7 +1,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/background"
+    android:id="@+id/albumItem"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="10dp">
@@ -20,7 +20,7 @@
             android:layout_height="wrap_content">
 
             <androidx.cardview.widget.CardView
-                android:id="@+id/imageCard"
+                android:id="@+id/albumImageCard"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:clickable="false"
@@ -33,7 +33,7 @@
                 app:layout_constraintTop_toTopOf="parent">
 
                 <ImageView
-                    android:id="@+id/image"
+                    android:id="@+id/albumImage"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:foreground="?attr/selectableItemBackground" />
@@ -41,7 +41,7 @@
             </androidx.cardview.widget.CardView>
 
             <TextView
-                android:id="@+id/name"
+                android:id="@+id/albumName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
@@ -52,10 +52,10 @@
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="14sp"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/imageCard" />
+                app:layout_constraintTop_toBottomOf="@id/albumImageCard" />
 
             <TextView
-                android:id="@+id/info"
+                android:id="@+id/albumInfo"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
@@ -65,7 +65,7 @@
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="12sp"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/name" />
+                app:layout_constraintTop_toBottomOf="@id/albumName" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

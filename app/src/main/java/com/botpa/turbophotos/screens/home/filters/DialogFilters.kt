@@ -24,7 +24,7 @@ class DialogFilters(context: Context, private val filters: List<Filter>) : Custo
     private lateinit var customButton: Button
 
     //Adapter
-    private lateinit var adapter: DialogFiltersAdapter
+    private var adapter: DialogFiltersAdapter = DialogFiltersAdapter(context, filters)
 
     //Text
     private val TEXT_CUSTOM: String = "Custom filter"
@@ -40,8 +40,7 @@ class DialogFilters(context: Context, private val filters: List<Filter>) : Custo
         customInput = root.findViewById(R.id.customInput)
         customButton = root.findViewById(R.id.customButton)
 
-        //Init adapter
-        adapter = DialogFiltersAdapter(context, filters)
+        //Assign adapter
         list.adapter = adapter
     }
 

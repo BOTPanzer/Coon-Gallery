@@ -37,7 +37,7 @@ class DialogAlbumsAdapter(
         holder.info.text = "${album.size()} items"
 
         //Add listeners
-        holder.background.setOnClickListener { view: View -> onClickListener?.onClick(view, album) }
+        holder.item.setOnClickListener { view: View -> onClickListener?.onClick(view, album) }
     }
 
     override fun getItemCount(): Int {
@@ -54,10 +54,10 @@ class DialogAlbumsAdapter(
     //Holder
     class AlbumHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-        var background: View = itemView.findViewById(R.id.background)
-        var image: ImageView = itemView.findViewById(R.id.image)
-        var name: TextView = itemView.findViewById(R.id.name)
-        var info: TextView = itemView.findViewById(R.id.info)
+        var item: View = itemView.findViewById(R.id.albumItem)
+        var image: ImageView = itemView.findViewById(R.id.albumImage)
+        var name: TextView = itemView.findViewById(R.id.albumName)
+        var info: TextView = itemView.findViewById(R.id.albumInfo)
 
     }
 

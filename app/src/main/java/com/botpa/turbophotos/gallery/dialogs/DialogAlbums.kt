@@ -32,7 +32,7 @@ class DialogAlbums(
 
     override fun initViews() {
         //Init views
-        list = root.findViewById(R.id.list)
+        list = root.findViewById(R.id.albumsList)
 
         //Assign adapter & layout manager to list
         list.adapter = adapter
