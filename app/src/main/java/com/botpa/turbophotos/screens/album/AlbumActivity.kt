@@ -134,6 +134,8 @@ class AlbumActivity : GalleryActivity() {
     //Views (search)
     private lateinit var searchLayout: View
     private lateinit var searchInput: EditText
+    private lateinit var searchSearch: View
+    private lateinit var searchMethodName: TextView
     private lateinit var searchMethod: View
     private lateinit var searchClose: View
 
@@ -305,6 +307,8 @@ class AlbumActivity : GalleryActivity() {
         //Search
         searchLayout = findViewById(R.id.searchLayout)
         searchInput = findViewById(R.id.searchInput)
+        searchSearch = findViewById(R.id.searchSearch)
+        searchMethodName = findViewById(R.id.searchMethodName)
         searchMethod = findViewById(R.id.searchMethod)
         searchClose = findViewById(R.id.searchClose)
 
@@ -481,20 +485,23 @@ class AlbumActivity : GalleryActivity() {
 
         //Search
         searchInput.setOnKeyListener { view: View, i: Int, keyEvent: KeyEvent ->
-            if (keyEvent.keyCode == KeyEvent.KEYCODE_ENTER) {
-                //Get search text
-                val search = searchInput.text.toString()
-
-                //Filter items with search
-                filterItems(search, true)
-            }
+            if (keyEvent.keyCode == KeyEvent.KEYCODE_ENTER) searchSearch.performClick()
             false
+        }
+
+        searchSearch.setOnClickListener { view ->
+            //Get search text
+            val search = searchInput.text.toString()
+
+            //Filter items with search
+            filterItems(search, true)
         }
 
         searchMethod.setOnClickListener { view: View ->
             DialogSearch(this) { method ->
                 //Update method
                 currentSearchMethod = method
+                searchMethodName.text = getSearchMethodName(currentSearchMethod)
 
                 //Filter
                 if (currentSearch.isNotEmpty()) filterItems(currentSearch, true)
@@ -772,6 +779,7 @@ class AlbumActivity : GalleryActivity() {
         isSearching = true
         currentSearch = filter
         searchInput.setText(filter)
+        searchMethodName.text = getSearchMethodName(currentSearchMethod)
         if (isFiltering) loadingIndicator.search()
         showSearchLayout(false)
 
@@ -801,6 +809,13 @@ class AlbumActivity : GalleryActivity() {
                 isSearching = false
             }
         }.start()
+    }
+
+    private fun getSearchMethodName(searchMethod: Library.SearchMethod): String {
+        return when (searchMethod) {
+            Library.SearchMethod.ContainsText -> "Contains text"
+            Library.SearchMethod.ContainsWords -> "Contains words"
+        }
     }
 
     private fun showSearchLayout(show: Boolean) {

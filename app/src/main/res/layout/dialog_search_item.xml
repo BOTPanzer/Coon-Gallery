@@ -13,13 +13,16 @@
         android:id="@+id/methodName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Method name" />
+        android:text="Method name"
+        android:textColor="?attr/colorOnSurface"
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/methodDescription"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Method description"
+        android:textColor="?attr/colorOnSurface"
         android:textSize="12sp" />
 
 </LinearLayout>

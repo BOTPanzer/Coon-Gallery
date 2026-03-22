@@ -411,27 +411,24 @@ object Library {
         return false
     }
 
-    private fun filterItemWords(caption: String, labels: List<String>, texts: List<String>, _filter: String): Boolean {
-        //Fix filter
-        val filter = _filter.trim()
+    private fun filterItemWords(caption: String, labels: List<String>, texts: List<String>, filter: String): Boolean {
+        //Get filter words
+        val words = filter.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
 
-        //Check caption
-        for (word in caption.split(" ")) {
-            if (word == filter) return true
+        //Check if all words are contained
+        return words.all { word ->
+            //Check caption
+            val inCaption = caption.split(" ").any { it.equals(word, ignoreCase = true) }
+
+            //Check labels
+            val inLabels = labels.any { it.equals(word, ignoreCase = true) }
+
+            //Check text
+            val inTexts = texts.any { it.equals(word, ignoreCase = true) }
+
+            //Contained in any
+            inCaption || inLabels || inTexts
         }
-
-        //Check labels
-        for (label in labels) {
-            if (label == filter) return true
-        }
-
-        //Check text
-        for (text in texts) {
-            if (text == filter) return true
-        }
-
-        //Not found
-        return false
     }
 
     private fun filterItem(item: CoonItem, filter: String, method: SearchMethod): Boolean {

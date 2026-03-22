@@ -21,6 +21,7 @@
         android:id="@+id/filterName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Filter name" />
+        android:text="Filter name"
+        android:textColor="?attr/colorOnSurface" />
 
 </LinearLayout>

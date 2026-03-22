@@ -6,14 +6,6 @@
     android:orientation="vertical"
     android:paddingTop="14dp">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
-        android:paddingStart="15dp"
-        android:paddingEnd="15dp"
-        android:text="Select a search method." />
-
     <ListView
         android:id="@+id/list"
         android:layout_width="match_parent"

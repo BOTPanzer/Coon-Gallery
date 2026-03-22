@@ -30,7 +30,7 @@ class DialogSearch(context: Context, private val onSelect: (Library.SearchMethod
     override fun initDialog(builder: MaterialAlertDialogBuilder): MaterialAlertDialogBuilder {
         //Init dialog
         return builder
-            .setTitle("Search")
+            .setTitle("Search method")
             .setNegativeButton("Cancel", null)
     }
 
