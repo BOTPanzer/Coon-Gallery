@@ -14,6 +14,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -373,6 +374,20 @@ class AlbumActivity : GalleryActivity() {
         ) { view: View, insets: Insets, duration: Float ->
             systemNotificationsBar.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, insets.top)
             systemNavigationBar.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, insets.bottom)
+        }
+
+        //Insets (close search layout when keyboard gets hidden)
+        ViewCompat.setOnApplyWindowInsetsListener(searchLayout) { v, insets ->
+            //Check if keyboard is visible
+            val isKeyboardVisible = insets.isVisible(WindowInsetsCompat.Type.ime())
+
+            //Hide search layout if keyboard was closed
+            if (!isKeyboardVisible && searchLayout.isVisible) {
+                searchClose.performClick()
+            }
+
+            //Return insets so layout stays correct
+            insets
         }
     }
 
