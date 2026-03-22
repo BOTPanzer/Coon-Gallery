@@ -19,8 +19,8 @@ class DialogErrorsAdapter(
         val view: View = convertView ?: LayoutInflater.from(context).inflate(R.layout.dialog_errors_item, parent, false)
 
         //Get views
-        val name = view.findViewById<TextView>(R.id.failItem)
-        val reason = view.findViewById<TextView>(R.id.failReason)
+        val name = view.findViewById<TextView>(R.id.errorItem)
+        val reason = view.findViewById<TextView>(R.id.errorReason)
 
         //Get error
         val error = getItem(position)

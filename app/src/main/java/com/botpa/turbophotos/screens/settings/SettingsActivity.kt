@@ -32,6 +32,7 @@ import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.Link
 import com.botpa.turbophotos.gallery.dialogs.DialogAlbums
 import com.botpa.turbophotos.gallery.dialogs.DialogExplorer
+import com.botpa.turbophotos.gallery.dialogs.DialogPoints
 import com.botpa.turbophotos.gallery.views.Group
 import com.botpa.turbophotos.gallery.views.GroupDivider
 import com.botpa.turbophotos.gallery.views.GroupItems
@@ -373,18 +374,16 @@ class SettingsActivity : AppCompatActivity() {
                             //Description
                             IconButton(
                                 onClick = {
-                                    //Create text
-                                    val text = StringBuilder()
-                                    text.append("Links let you to backup your albums and enable smart search.")
-                                    text.append("\n· Add an album to enable backing it up in the sync service.")
-                                    text.append("\n· Add a metadata file to improve search and find things in your images.")
-
-                                    //Create dialog
-                                    val builder = MaterialAlertDialogBuilder(context)
-                                    builder.setTitle("Links")
-                                    builder.setMessage(text.toString())
-                                    builder.setPositiveButton("Close", null)
-                                    builder.show()
+                                    //Create info dialog
+                                    DialogPoints(
+                                        context,
+                                        "Links",
+                                        "Links let you to backup your albums and enable smart search.",
+                                        listOf(
+                                            "Add an album to enable backing it up in the sync service.",
+                                            "Add a metadata file to improve search and find things in your images."
+                                        )
+                                    ).buildAndShow()
                                 },
                                 painter = painterResource(R.drawable.info),
                                 contentDescription = "Links info"

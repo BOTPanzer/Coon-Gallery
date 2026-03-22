@@ -27,7 +27,7 @@ class DialogErrors(
 
     override fun initViews() {
         //Init views
-        list = root.findViewById(R.id.list)
+        list = root.findViewById(R.id.errorsList)
 
         //Assign adapter to list
         list.adapter = adapter

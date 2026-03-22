@@ -9,7 +9,7 @@
     android:paddingVertical="10dp">
 
     <TextView
-        android:id="@+id/failItem"
+        android:id="@+id/errorItem"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Item name"
@@ -18,7 +18,7 @@
         android:textStyle="bold" />
 
     <TextView
-        android:id="@+id/failReason"
+        android:id="@+id/errorReason"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Error reason"

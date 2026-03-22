@@ -7,7 +7,7 @@
     android:paddingTop="12dp">
 
     <ListView
-        android:id="@+id/list"
+        android:id="@+id/errorsList"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
