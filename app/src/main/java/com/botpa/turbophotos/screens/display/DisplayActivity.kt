@@ -137,6 +137,7 @@ class DisplayActivity : BaseActivity() {
     //Views (overlay)
     private lateinit var overlayLayout: View
     private lateinit var overlayTitle: TextView
+    private lateinit var overlayFavourite: View
     private lateinit var overlayInfo: View
     private lateinit var overlayOptions: View
 
@@ -327,6 +328,7 @@ class DisplayActivity : BaseActivity() {
         //Views (overlay)
         overlayLayout = findViewById(R.id.overlayLayout)
         overlayTitle = findViewById(R.id.overlayTitle)
+        overlayFavourite = findViewById(R.id.overlayFavourite)
         overlayInfo = findViewById(R.id.overlayInfo)
         overlayOptions = findViewById(R.id.overlayOptions)
 
@@ -654,8 +656,9 @@ class DisplayActivity : BaseActivity() {
         displayList.scrollToPosition(currentIndexInDisplay)
         displayLayoutManager.setScrollEnabled(true)
 
-        //Change image name
+        //Change image name & favourite state
         overlayTitle.text = currentItem.name
+        overlayFavourite.visibility = if (currentItem.isFavourite) View.VISIBLE else View.GONE
 
         //Create date text
         val date = Date(currentItem.lastModified * 1000)
