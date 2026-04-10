@@ -60,6 +60,22 @@
                     </androidx.cardview.widget.CardView>
 
                     <androidx.cardview.widget.CardView
+                        android:id="@+id/isFavourite"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        app:cardBackgroundColor="#80070707"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="0dp">
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_margin="5dp"
+                            app:srcCompat="@drawable/favourite" />
+
+                    </androidx.cardview.widget.CardView>
+
+                    <androidx.cardview.widget.CardView
                         android:id="@+id/missingInfo"
                         android:layout_width="24dp"
                         android:layout_height="24dp"

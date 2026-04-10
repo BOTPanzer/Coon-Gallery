@@ -34,6 +34,7 @@ class AlbumAdapter(
 
         //Toggle is video & missing info icons
         holder.isVideo.visibility = if (item.isVideo) View.VISIBLE else View.GONE
+        holder.isFavourite.visibility = if (item.isFavourite) View.VISIBLE else View.GONE
         holder.missingInfo.visibility = if (!showMissingMetadataIcon || item.album.hasMetadataKey(item.name)) View.GONE else View.VISIBLE
 
         //Toggle is selected
@@ -59,6 +60,7 @@ class AlbumAdapter(
         var imageCard: MaterialCardView = view.findViewById(R.id.imageCard)
         var image: ImageView = view.findViewById(R.id.image)
         var isVideo: View = view.findViewById(R.id.isVideo)
+        var isFavourite: View = view.findViewById(R.id.isFavourite)
         var missingInfo: View = view.findViewById(R.id.missingInfo)
         var isSelected: View = view.findViewById(R.id.isSelected)
 
