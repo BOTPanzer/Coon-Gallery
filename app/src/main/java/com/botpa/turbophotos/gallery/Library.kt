@@ -73,6 +73,7 @@ object Library {
     val trash: Album = Album("Trash")
 
     //Gallery
+    private var galleryAlbum: Album? = null
     private val _gallery: MutableList<CoonItem> = ArrayList() //Currently open album items (could be filtered)
 
     val gallery: List<CoonItem>
@@ -481,19 +482,17 @@ object Library {
         //Check if filtering
         val isFiltering = !filter.isEmpty()
 
-        //Clear items list
+        //Save album & reset gallery
+        galleryAlbum = album
         _gallery.clear()
 
         //Look for items that contain the filter
         for (item in album.items) {
-            //No filter -> Skip check
-            if (!isFiltering) {
-                _gallery.add(item)
-                continue
-            }
+            //Filtering & not valid -> Skip item
+            if (isFiltering && !filterItem(item, filter.lowercase(Locale.getDefault()), method)) continue
 
-            //Check if json contains filter
-            if (filterItem(item, filter.lowercase(Locale.getDefault()), method)) _gallery.add(item)
+            //Add item
+            _gallery.add(item)
         }
     }
 
@@ -1036,8 +1035,14 @@ object Library {
             //Remove item from favourites
             performRemoveFromFavourites(action, helper.indexInFavourites)
 
-            //Mark as modified to update star icon
-            action.modifiedIndexesInGallery.add(helper.indexInGallery)
+            //Check gallery album
+            if (galleryAlbum == favourites) {
+                //Favourites album only shows favourites
+                performRemoveFromGallery(action, helper.indexInGallery)
+            } else {
+                //Mark as modified to update star icon
+                action.modifiedIndexesInGallery.add(helper.indexInGallery)
+            }
         }
 
         //Evaluate action
