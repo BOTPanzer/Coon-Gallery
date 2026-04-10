@@ -9,14 +9,15 @@ class Action(val type: Int, @JvmField val items: Array<CoonItem>) {
     //Errors
     @JvmField var errors: MutableList<ActionError> = ArrayList()
 
-    //Results (trash)
-    @JvmField var trashPending: MutableMap<Uri, CoonItem> = HashMap()
+    //Results (async actions)
+    @JvmField var pending: MutableMap<Uri, CoonItem> = HashMap()
 
     //Results (albums & gallery)
     @JvmField var hasSortedAlbumsList: Boolean = false
     @JvmField var modifiedAlbums: MutableSet<Album> = HashSet()
     @JvmField var removedIndexesInAlbums: MutableList<Int> = ArrayList()
     @JvmField var removedIndexesInGallery: MutableList<Int> = ArrayList()
+    @JvmField var modifiedIndexesInGallery: MutableList<Int> = ArrayList()
 
 
     //Action
@@ -40,6 +41,8 @@ class Action(val type: Int, @JvmField val items: Array<CoonItem>) {
         const val TYPE_MOVE:        Int = 4
         const val TYPE_COPY:        Int = 5
         const val TYPE_RENAME:      Int = 6
+        const val TYPE_FAVOURITE:   Int = 7
+        const val TYPE_UNFAVOURITE: Int = 8
 
     }
 

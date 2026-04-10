@@ -31,7 +31,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Album
-import com.botpa.turbophotos.gallery.GalleryActivity
+import com.botpa.turbophotos.gallery.BaseActivity
 import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.Library.ActionEvent
 import com.botpa.turbophotos.gallery.Library.RefreshEvent
@@ -51,7 +51,7 @@ import com.botpa.turbophotos.gallery.fastscroller.FastScroller
 import com.botpa.turbophotos.gallery.fastscroller.FastScrollerBuilder
 
 @SuppressLint("SetTextI18n", "NotifyDataSetChanged")
-class HomeActivity : GalleryActivity() {
+class HomeActivity : BaseActivity() {
 
      /*$   /$$
     | $$  | $$

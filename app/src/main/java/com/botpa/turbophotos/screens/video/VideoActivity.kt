@@ -51,7 +51,7 @@ import androidx.media3.ui.PlayerView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
-import com.botpa.turbophotos.gallery.GalleryActivity
+import com.botpa.turbophotos.gallery.BaseActivity
 import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.gallery.dialogs.DialogSlider
 import com.botpa.turbophotos.gallery.options.OptionsAdapter
@@ -67,7 +67,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 @SuppressLint("SetTextI18n", "NotifyDataSetChanged", "DefaultLocale")
-class VideoActivity : GalleryActivity() {
+class VideoActivity : BaseActivity() {
 
      /*$    /$$ /$$       /$$
     | $$   | $$|__/      | $$

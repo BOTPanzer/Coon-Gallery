@@ -23,7 +23,7 @@ import com.botpa.turbophotos.R
 import com.botpa.turbophotos.screens.display.DisplayActivity
 import com.botpa.turbophotos.gallery.Album
 import com.botpa.turbophotos.gallery.CoonItem
-import com.botpa.turbophotos.gallery.GalleryActivity
+import com.botpa.turbophotos.gallery.BaseActivity
 import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.Library.RefreshEvent
 import com.botpa.turbophotos.gallery.Library.ActionEvent
@@ -41,7 +41,7 @@ import com.botpa.turbophotos.gallery.fastscroller.FastScrollerBuilder
 import com.botpa.turbophotos.screens.album.search.DialogSearch
 
 @SuppressLint("SetTextI18n", "NotifyDataSetChanged")
-class AlbumActivity : GalleryActivity() {
+class AlbumActivity : BaseActivity() {
 
       /*$$$$$  /$$ /$$
      /$$__  $$| $$| $$
@@ -274,13 +274,6 @@ class AlbumActivity : GalleryActivity() {
         //No action
         if (action.isOfType(Action.TYPE_NONE)) return
 
-        //Renamed file
-        if (action.isOfType(Action.TYPE_RENAME)) {
-            //Unselect item
-            unselectAll()
-            return
-        }
-
         //Check if gallery is empty
         if (Library.gallery.isEmpty()) {
             //Is empty -> Close display
@@ -288,7 +281,19 @@ class AlbumActivity : GalleryActivity() {
             return
         }
 
-        //Remove selected items & update adapter
+        //Renamed file
+        if (action.isOfType(Action.TYPE_RENAME)) {
+            //Unselect item
+            unselectAll()
+            return
+        }
+
+        //Update items
+        for (indexInGallery in action.modifiedIndexesInGallery) {
+            albumAdapter.notifyItemChanged(indexInGallery)
+        }
+
+        //Remove items
         for (indexInGallery in action.removedIndexesInGallery) {
             selectedItems.remove(indexInGallery)
             albumAdapter.notifyItemRemoved(indexInGallery)

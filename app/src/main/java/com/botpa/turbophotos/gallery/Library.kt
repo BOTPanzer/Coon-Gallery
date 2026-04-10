@@ -149,6 +149,7 @@ object Library {
         //Sort albums
         trash.sort()
         all.sort()
+        favourites.sort()
         for (album in albums) album.sort()
         sortAlbumsList()
 
@@ -907,7 +908,7 @@ object Library {
 
         //Get item URIs
         for (item in action.items) {
-            //Check if item is already trashed
+            //Check if item is valid for action
             when (action.type) {
                 Action.TYPE_TRASH -> {
                     //Item is trashed
@@ -916,11 +917,24 @@ object Library {
                         continue
                     }
                 }
-
                 Action.TYPE_RESTORE -> {
                     //Item is not trashed
                     if (!item.isTrashed) {
                         action.errors.add(ActionError(item, "Item is not in the trash."))
+                        continue
+                    }
+                }
+                Action.TYPE_FAVOURITE -> {
+                    //Item is favourited
+                    if (item.isFavourite) {
+                        action.errors.add(ActionError(item, "Item is already favourited."))
+                        continue
+                    }
+                }
+                Action.TYPE_UNFAVOURITE -> {
+                    //Item is not favourited
+                    if (!item.isFavourite) {
+                        action.errors.add(ActionError(item, "Item is not favourited."))
                         continue
                     }
                 }
@@ -942,22 +956,110 @@ object Library {
         return pendingItems
     }
 
-    fun trashItems(activity: GalleryActivity, items: Array<CoonItem>, launcher: ActivityResultLauncher<IntentSenderRequest>): Action? {
+    fun favouriteItems(activity: BaseActivity, items: Array<CoonItem>, launcher: ActivityResultLauncher<IntentSenderRequest>): Action? {
+        //Create action
+        val action = Action(Action.TYPE_FAVOURITE, items)
+
+        //Get item URIs
+        action.pending = prepareItemURIs(activity, action)
+
+        //Check if there are any pending items
+        if (action.pending.isEmpty()) {
+            //No pending items -> Ignore action
+            evaluateAction(activity, action)
+            return null
+        }
+
+        //Create favourite request
+        val pendingIntent = MediaStore.createFavoriteRequest(activity.contentResolver, action.pending.keys, true) //True -> Favourite
+        val request = IntentSenderRequest.Builder(pendingIntent.intentSender).build()
+        launcher.launch(request)
+
+        //Return action (the ones that will get favourited)
+        return action
+    }
+
+    fun onFavouriteItemsResult(context: Context, action: Action) {
+        //Update items
+        for (entry in action.pending.entries) {
+            //Get item & action helper
+            val item = entry.value
+            val helper = action.getHelper(item)
+
+            //Update item
+            item.isFavourite = true
+
+            //Add item to favourites
+            helper.indexInFavourites = performAddToAlbum(action, item, favourites)
+
+            //Mark as modified to update star icon
+            action.modifiedIndexesInGallery.add(helper.indexInGallery)
+        }
+
+        //Evaluate action
+        evaluateAction(context, action)
+    }
+
+    fun unfavouriteItems(activity: BaseActivity, items: Array<CoonItem>, launcher: ActivityResultLauncher<IntentSenderRequest>): Action? {
+        //Create action
+        val action = Action(Action.TYPE_UNFAVOURITE, items)
+
+        //Get item URIs
+        action.pending = prepareItemURIs(activity, action)
+
+        //Check if there are any pending items
+        if (action.pending.isEmpty()) {
+            //No pending items -> Ignore action
+            evaluateAction(activity, action)
+            return null
+        }
+
+        //Create unfavourite request
+        val pendingIntent = MediaStore.createFavoriteRequest(activity.contentResolver, action.pending.keys, false) //False -> Unfavourite
+        val request = IntentSenderRequest.Builder(pendingIntent.intentSender).build()
+        launcher.launch(request)
+
+        //Return action (the ones that will get unfavourited)
+        return action
+    }
+
+    fun onUnfavouriteItemsResult(context: Context, action: Action) {
+        //Update items
+        for (entry in action.pending.entries) {
+            //Get item & action helper
+            val item = entry.value
+            val helper = action.getHelper(item)
+
+            //Update item
+            item.isFavourite = false
+
+            //Remove item from favourites
+            performRemoveFromFavourites(action, helper.indexInFavourites)
+
+            //Mark as modified to update star icon
+            action.modifiedIndexesInGallery.add(helper.indexInGallery)
+        }
+
+        //Evaluate action
+        evaluateAction(context, action)
+    }
+
+    fun trashItems(activity: BaseActivity, items: Array<CoonItem>, launcher: ActivityResultLauncher<IntentSenderRequest>): Action? {
         //Create action
         val action = Action(Action.TYPE_TRASH, items)
 
         //Get item URIs
-        action.trashPending = prepareItemURIs(activity, action)
+        action.pending = prepareItemURIs(activity, action)
 
         //Check if there are any pending items
-        if (action.trashPending.isEmpty()) {
+        if (action.pending.isEmpty()) {
             //No pending items -> Ignore action
             evaluateAction(activity, action)
             return null
         }
 
         //Create trash request
-        val pendingIntent = MediaStore.createTrashRequest(activity.contentResolver, action.trashPending.keys, true) //True -> Move to trash
+        val pendingIntent = MediaStore.createTrashRequest(activity.contentResolver, action.pending.keys, true) //True -> Move to trash
         val request = IntentSenderRequest.Builder(pendingIntent.intentSender).build()
         launcher.launch(request)
 
@@ -967,7 +1069,7 @@ object Library {
 
     fun onTrashItemsResult(context: Context, action: Action) {
         //Update items
-        for (entry in action.trashPending.entries) {
+        for (entry in action.pending.entries) {
             //Get URI & item
             val uri: Uri = entry.key
             val item = entry.value
@@ -1010,22 +1112,22 @@ object Library {
         evaluateAction(context, action)
     }
 
-    fun restoreItems(activity: GalleryActivity, items: Array<CoonItem>, launcher: ActivityResultLauncher<IntentSenderRequest>): Action? {
+    fun restoreItems(activity: BaseActivity, items: Array<CoonItem>, launcher: ActivityResultLauncher<IntentSenderRequest>): Action? {
         //Create action
         val action = Action(Action.TYPE_RESTORE, items)
 
         //Get item URIs
-        action.trashPending = prepareItemURIs(activity, action)
+        action.pending = prepareItemURIs(activity, action)
 
         //Check if there are any pending items
-        if (action.trashPending.isEmpty()) {
+        if (action.pending.isEmpty()) {
             //No pending items -> Ignore action
             evaluateAction(activity, action)
             return null
         }
 
         //Create restore request
-        val pendingIntent = MediaStore.createTrashRequest(activity.contentResolver, action.trashPending.keys, false) //False -> Restore from trash
+        val pendingIntent = MediaStore.createTrashRequest(activity.contentResolver, action.pending.keys, false) //False -> Restore from trash
         val request = IntentSenderRequest.Builder(pendingIntent.intentSender).build()
         launcher.launch(request)
 
@@ -1035,7 +1137,7 @@ object Library {
 
     fun onRestoreItemsResult(context: Context, action: Action) {
         //Update items
-        for (entry in action.trashPending.entries) {
+        for (entry in action.pending.entries) {
             //Get URI & item
             val uri: Uri = entry.key
             val item = entry.value

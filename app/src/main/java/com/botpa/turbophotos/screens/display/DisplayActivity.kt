@@ -25,7 +25,6 @@ import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.get
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -35,7 +34,7 @@ import androidx.recyclerview.widget.SnapHelper
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Album
 import com.botpa.turbophotos.gallery.CoonItem
-import com.botpa.turbophotos.gallery.GalleryActivity
+import com.botpa.turbophotos.gallery.BaseActivity
 import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.Library.ActionEvent
 import com.botpa.turbophotos.gallery.StoragePairs
@@ -55,7 +54,7 @@ import java.util.Date
 import java.util.Locale
 
 @SuppressLint("SetTextI18n", "NotifyDataSetChanged")
-class DisplayActivity : GalleryActivity() {
+class DisplayActivity : BaseActivity() {
 
      /*$$$$$$  /$$                     /$$
     | $$__  $$|__/                    | $$
@@ -115,6 +114,8 @@ class DisplayActivity : GalleryActivity() {
     private lateinit var optionShare: OptionsItem
     private lateinit var optionSetAs: OptionsItem
     private lateinit var optionPiP: OptionsItem
+    private lateinit var optionFavourite: OptionsItem
+    private lateinit var optionUnfavourite: OptionsItem
     private lateinit var optionMove: OptionsItem
     private lateinit var optionCopy: OptionsItem
     private lateinit var optionTrash: OptionsItem
@@ -506,6 +507,16 @@ class DisplayActivity : GalleryActivity() {
             isInPiP = enterPictureInPictureMode(p.build())
         }
 
+        optionFavourite = OptionsItem(R.drawable.favourite_on, "Favourite") {
+            //Add to favourites
+            favouriteItems(arrayOf(currentItem))
+        }
+
+        optionUnfavourite = OptionsItem(R.drawable.favourite_off, "Unfavourite") {
+            //Remove from favourites
+            unfavouriteItems(arrayOf(currentItem))
+        }
+
         optionMove = OptionsItem(R.drawable.move, "Move to album") {
             //Move items
             Library.moveItems(this, arrayOf(currentItem))
@@ -758,6 +769,7 @@ class DisplayActivity : GalleryActivity() {
         if (show) {
             //Get state info
             val isTrashed = currentItem.isTrashed
+            val isFavourite = currentItem.isFavourite
 
             //Update options list
             options.clear()
@@ -779,6 +791,11 @@ class DisplayActivity : GalleryActivity() {
                     options.add(optionSetAs)
                     options.add(optionPiP)
                     options.add(optionSeparator)
+                    if (isFavourite) {
+                        options.add(optionUnfavourite)
+                    } else {
+                        options.add(optionFavourite)
+                    }
                     options.add(optionMove)
                     options.add(optionCopy)
                     options.add(optionSeparator)
