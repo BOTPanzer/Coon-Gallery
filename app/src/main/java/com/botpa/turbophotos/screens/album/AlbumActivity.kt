@@ -69,6 +69,9 @@ class AlbumActivity : BaseActivity() {
     private lateinit var albumLayoutManager: GridLayoutManager
     private lateinit var albumAdapter: AlbumAdapter
 
+    private val gallery: List<CoonItem>
+        get() = Library.gallery
+
     private val selectedItems: MutableSet<Int> = HashSet()
     private lateinit var currentAlbum: Album
     private var inTrash = false
@@ -102,6 +105,8 @@ class AlbumActivity : BaseActivity() {
     private lateinit var optionEdit: OptionsItem
     private lateinit var optionShare: OptionsItem
     private lateinit var optionSetAs: OptionsItem
+    private lateinit var optionFavourite: OptionsItem
+    private lateinit var optionUnfavourite: OptionsItem
     private lateinit var optionMove: OptionsItem
     private lateinit var optionCopy: OptionsItem
     private lateinit var optionTrash: OptionsItem
@@ -275,7 +280,7 @@ class AlbumActivity : BaseActivity() {
         if (action.isOfType(Action.TYPE_NONE)) return
 
         //Check if gallery is empty
-        if (Library.gallery.isEmpty()) {
+        if (gallery.isEmpty()) {
             //Is empty -> Close display
             finish()
             return
@@ -411,7 +416,7 @@ class AlbumActivity : BaseActivity() {
             if (selectedItems.size != 1) return@OptionsItem
 
             //Rename
-            Library.renameItem(this, Library.gallery[selectedItems.iterator().next()])
+            Library.renameItem(this, gallery[selectedItems.iterator().next()])
         }
 
         optionEdit = OptionsItem(R.drawable.edit, "Edit") {
@@ -419,7 +424,7 @@ class AlbumActivity : BaseActivity() {
             if (selectedItems.size != 1) return@OptionsItem
 
             //Edit
-            Library.editItem(this, Library.gallery[selectedItems.iterator().next()])
+            Library.editItem(this, gallery[selectedItems.iterator().next()])
         }
 
         optionShare = OptionsItem(R.drawable.share, "Share") {
@@ -432,7 +437,17 @@ class AlbumActivity : BaseActivity() {
             if (selectedItems.size != 1) return@OptionsItem
 
             //Set as
-            Library.setItemAs(this, Library.gallery[selectedItems.iterator().next()])
+            Library.setItemAs(this, gallery[selectedItems.iterator().next()])
+        }
+
+        optionFavourite = OptionsItem(R.drawable.favourite_on, "Favourite") {
+            //Add to favourites
+            favouriteItems(getSelectedItems())
+        }
+
+        optionUnfavourite = OptionsItem(R.drawable.favourite_off, "Unfavourite") {
+            //Remove from favourites
+            unfavouriteItems(getSelectedItems())
         }
 
         optionMove = OptionsItem(R.drawable.move, "Move to album") {
@@ -541,7 +556,7 @@ class AlbumActivity : BaseActivity() {
         albumList.setLayoutManager(albumLayoutManager)
 
         //Init album adapter
-        albumAdapter = AlbumAdapter(this, Library.gallery, selectedItems, Storage.getBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON))
+        albumAdapter = AlbumAdapter(this, gallery, selectedItems, Storage.getBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON))
         albumList.setAdapter(albumAdapter)
 
         //Init home fast scroller
@@ -576,7 +591,7 @@ class AlbumActivity : BaseActivity() {
         if (isPicking) {
             //Pick item
             val resultIntent = Intent()
-            resultIntent.data = Orion.getFileUriFromFilePath(this, Library.gallery[index].file.absolutePath)
+            resultIntent.data = Orion.getFileUriFromFilePath(this, gallery[index].file.absolutePath)
             resultIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             setResult(RESULT_OK, resultIntent)
             finish()
@@ -633,6 +648,13 @@ class AlbumActivity : BaseActivity() {
             if (!inTrash && isSelecting) options.add(optionShare)
             if (!inTrash && isSelectingSingle) options.add(optionSetAs)
             if (!inTrash) options.add(optionSeparator)
+            if (!inTrash) {
+                if (selectedItems.all { gallery[it].isFavourite }) {
+                    options.add(optionUnfavourite)
+                } else if (selectedItems.all { !gallery[it].isFavourite }) {
+                    options.add(optionFavourite)
+                }
+            }
             if (!inTrash && isSelecting) options.add(optionMove)
             if (!inTrash && isSelecting) options.add(optionCopy)
             if (!inTrash) options.add(optionSeparator)
@@ -655,7 +677,7 @@ class AlbumActivity : BaseActivity() {
 
     private fun getSelectedItems(): Array<CoonItem> {
         val selectedFiles = ArrayList<CoonItem>(selectedItems.size)
-        for (index in selectedItems) selectedFiles.add(Library.gallery[index])
+        for (index in selectedItems) selectedFiles.add(gallery[index])
         return selectedFiles.toTypedArray<CoonItem>()
     }
 
