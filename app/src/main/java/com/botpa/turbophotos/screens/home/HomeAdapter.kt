@@ -53,9 +53,15 @@ class HomeAdapter(
         //Check holder type
         if (holder is HeaderHolder) {
             //Load album covers
-            loadAlbumCover(holder.allImage, Library.all)
-            loadAlbumCover(holder.favouritesImage, Library.favourites)
-            loadAlbumCover(holder.trashImage, Library.trash)
+            val allImageLoaded = loadAlbumCover(holder.allImage, Library.all)
+            holder.allImage.visibility = if (allImageLoaded) View.VISIBLE else View.GONE
+            holder.allIcon.visibility = if (allImageLoaded) View.GONE else View.VISIBLE
+            val allFavouritesLoaded = loadAlbumCover(holder.favouritesImage, Library.favourites)
+            holder.favouritesImage.visibility = if (allFavouritesLoaded) View.VISIBLE else View.GONE
+            holder.favouritesIcon.visibility = if (allFavouritesLoaded) View.GONE else View.VISIBLE
+            val allTrashLoaded = loadAlbumCover(holder.trashImage, Library.trash)
+            holder.trashImage.visibility = if (allTrashLoaded) View.VISIBLE else View.GONE
+            holder.trashIcon.visibility = if (allTrashLoaded) View.GONE else View.VISIBLE
 
             //Update text
             holder.allInfo.text = "${Library.all.size()} items"
@@ -87,11 +93,13 @@ class HomeAdapter(
     }
 
     //Helpers
-    private fun loadAlbumCover(image: ImageView, album: Album) {
+    private fun loadAlbumCover(image: ImageView, album: Album): Boolean {
         if (album.isEmpty()) {
             image.setImageDrawable(null)
+            return false
         } else {
             CoonItem.load(context, image, album.get(0))
+            return true
         }
     }
 
@@ -124,14 +132,17 @@ class HomeAdapter(
 
         var all: View = itemView.findViewById(R.id.all)
         var allImage: ImageView = itemView.findViewById(R.id.allImage)
+        var allIcon: ImageView = itemView.findViewById(R.id.allIcon)
         var allInfo: TextView = itemView.findViewById(R.id.allInfo)
 
         var favourites: View = itemView.findViewById(R.id.favourites)
         var favouritesImage: ImageView = itemView.findViewById(R.id.favouritesImage)
+        var favouritesIcon: ImageView = itemView.findViewById(R.id.favouritesIcon)
         var favouritesInfo: TextView = itemView.findViewById(R.id.favouritesInfo)
 
         var trash: View = itemView.findViewById(R.id.trash)
         var trashImage: ImageView = itemView.findViewById(R.id.trashImage)
+        var trashIcon: ImageView = itemView.findViewById(R.id.trashIcon)
         var trashInfo: TextView = itemView.findViewById(R.id.trashInfo)
 
     }

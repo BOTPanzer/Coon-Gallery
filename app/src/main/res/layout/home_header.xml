@@ -23,8 +23,8 @@
             android:layout_weight="1"
             app:cardBackgroundColor="#00000000"
             app:cardCornerRadius="30dp"
-            app:strokeColor="?attr/colorPrimary"
-            app:strokeWidth="1dp">
+            app:strokeColor="#40757575"
+            app:strokeWidth="2dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -37,13 +37,21 @@
                     android:layout_width="50dp"
                     android:layout_height="50dp"
                     android:layout_marginHorizontal="5dp"
-                    app:cardBackgroundColor="#40757575"
+                    app:cardBackgroundColor="#00757575"
                     app:cardCornerRadius="25dp">
 
                     <ImageView
                         android:id="@+id/allImage"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent" />
+
+                    <ImageView
+                        android:id="@+id/allIcon"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
+                        app:srcCompat="@drawable/gallery_all"
+                        app:tint="?attr/colorPrimary" />
 
                 </com.google.android.material.card.MaterialCardView>
 
@@ -73,82 +81,15 @@
         </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.card.MaterialCardView
-            android:id="@+id/favourites"
-            style="@style/Widget.Material3.CardView.Filled"
-            android:layout_width="0dp"
-            android:layout_height="60dp"
-            android:layout_weight="1"
-            app:cardBackgroundColor="#00000000"
-            app:cardCornerRadius="30dp"
-            app:strokeColor="?attr/colorPrimary"
-            app:strokeWidth="1dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-
-                <com.google.android.material.card.MaterialCardView
-                    style="@style/Widget.Material3.CardView.Filled"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:layout_marginHorizontal="5dp"
-                    app:cardBackgroundColor="#40757575"
-                    app:cardCornerRadius="25dp">
-
-                    <ImageView
-                        android:id="@+id/favouritesImage"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent" />
-
-                </com.google.android.material.card.MaterialCardView>
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Favourites"
-                        android:textColor="?attr/colorOnSurface"
-                        android:textSize="14sp" />
-
-                    <TextView
-                        android:id="@+id/favouritesInfo"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="1000 items"
-                        android:textColor="?attr/colorOnSurface"
-                        android:textSize="12sp" />
-                </LinearLayout>
-
-            </LinearLayout>
-
-        </com.google.android.material.card.MaterialCardView>
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="10dp"
-        android:layout_weight="1"
-        android:orientation="horizontal">
-
-        <com.google.android.material.card.MaterialCardView
             android:id="@+id/trash"
             style="@style/Widget.Material3.CardView.Filled"
             android:layout_width="0dp"
             android:layout_height="60dp"
-            android:layout_marginEnd="10dp"
             android:layout_weight="1"
             app:cardBackgroundColor="#00000000"
             app:cardCornerRadius="30dp"
-            app:strokeColor="?attr/colorPrimary"
-            app:strokeWidth="1dp">
+            app:strokeColor="#40757575"
+            app:strokeWidth="2dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -161,13 +102,21 @@
                     android:layout_width="50dp"
                     android:layout_height="50dp"
                     android:layout_marginHorizontal="5dp"
-                    app:cardBackgroundColor="#40757575"
+                    app:cardBackgroundColor="#00757575"
                     app:cardCornerRadius="25dp">
 
                     <ImageView
                         android:id="@+id/trashImage"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent" />
+
+                    <ImageView
+                        android:id="@+id/trashIcon"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
+                        app:srcCompat="@drawable/trash"
+                        app:tint="?attr/colorPrimary" />
 
                 </com.google.android.material.card.MaterialCardView>
 
@@ -196,8 +145,83 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-        <Space
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="10dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/favourites"
+            style="@style/Widget.Material3.CardView.Filled"
             android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:layout_marginEnd="10dp"
+            android:layout_weight="1"
+            app:cardBackgroundColor="#00000000"
+            app:cardCornerRadius="30dp"
+            app:strokeColor="#40757575"
+            app:strokeWidth="2dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/Widget.Material3.CardView.Filled"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_marginHorizontal="5dp"
+                    app:cardBackgroundColor="#00757575"
+                    app:cardCornerRadius="25dp">
+
+                    <ImageView
+                        android:id="@+id/favouritesImage"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" />
+
+                    <ImageView
+                        android:id="@+id/favouritesIcon"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
+                        app:srcCompat="@drawable/favourite_off"
+                        app:tint="?attr/colorPrimary" />
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Favourites"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/favouritesInfo"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="1000 items"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <Space
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1" />
 
