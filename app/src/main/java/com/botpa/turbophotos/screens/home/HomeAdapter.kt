@@ -17,34 +17,69 @@ import com.botpa.turbophotos.gallery.CoonItem
 class HomeAdapter(
     private val context: Context,
     private val albums: List<Album>
-) : RecyclerView.Adapter<HomeAdapter.AlbumHolder>() {
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    //Adapter
-    override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): AlbumHolder {
-        return AlbumHolder(LayoutInflater.from(context).inflate(R.layout.home_item, viewGroup, false))
+    companion object {
+        private const val TYPE_HEADER = 0
+        private const val TYPE_ALBUM = 1
     }
 
-    override fun onBindViewHolder(holder: AlbumHolder, i: Int) {
+    init {
+        setHasStableIds(true)
+    }
+
+    override fun getItemId(position: Int): Long {
+        // Return a unique constant for the header, and the album's hash or index for others
+        return if (position == 0) -1L else albums[position - getPositionOffset()].hashCode().toLong()
+    }
+
+    //Adapter
+    override fun getItemViewType(position: Int): Int {
+        return if (position == 0) TYPE_HEADER else TYPE_ALBUM
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return if (viewType == TYPE_HEADER) {
+            HeaderHolder(LayoutInflater.from(context).inflate(R.layout.home_header, parent, false))
+        } else {
+            AlbumHolder(LayoutInflater.from(context).inflate(R.layout.home_item, parent, false))
+        }
+    }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         //Get holder position & album
         val position = holder.bindingAdapterPosition - getPositionOffset()
-        val album = getAlbumFromIndex(position)
 
-        //Load album cover
-        if (album.isEmpty())
-            holder.image.setImageDrawable(null)
-        else
-            CoonItem.load(context, holder.image, album.get(0))
+        //Check holder type
+        if (holder is HeaderHolder) {
+            //Load album covers
+            loadAlbumCover(holder.allImage, Library.all)
+            loadAlbumCover(holder.favouritesImage, Library.favourites)
+            loadAlbumCover(holder.trashImage, Library.trash)
 
-        //Update icons
-        holder.isTrash.visibility = if (album == Library.trash) View.VISIBLE else View.GONE
-        holder.isAll.visibility = if (album == Library.all) View.VISIBLE else View.GONE
+            //Update text
+            holder.allInfo.text = "${Library.all.size()} items"
+            holder.favouritesInfo.text = "${Library.favourites.size()} items"
+            holder.trashInfo.text = "${Library.trash.size()} items"
 
-        //Update text
-        holder.name.text = album.name
-        holder.info.text = "${album.size()} items"
+            //Add listeners
+            addAlbumListener(holder.all, Library.all)
+            addAlbumListener(holder.favourites, Library.favourites)
+            addAlbumListener(holder.trash, Library.trash)
+        } else if (holder is AlbumHolder) {
+            //Get album
+            val album = albums[position]
 
-        //Add listeners
-        holder.background.setOnClickListener { view: View -> onClickListener?.onClick(view, album) }
+            //Load album cover
+            loadAlbumCover(holder.image, album)
+
+            //Update text
+            holder.name.text = album.name
+            holder.info.text = "${album.size()} items"
+
+            //Add listeners
+            addAlbumListener(holder.background, album)
+        }
     }
 
     override fun getItemCount(): Int {
@@ -52,16 +87,22 @@ class HomeAdapter(
     }
 
     //Helpers
-    private fun getAlbumFromIndex(index: Int): Album {
-        return when (index) {
-            -2 -> Library.trash
-            -1 -> Library.all
-            else -> albums[index]
+    private fun loadAlbumCover(image: ImageView, album: Album) {
+        if (album.isEmpty()) {
+            image.setImageDrawable(null)
+        } else {
+            CoonItem.load(context, image, album.get(0))
         }
     }
 
+    private fun addAlbumListener(view: View, album: Album) {
+        if (album.isEmpty()) return
+        view.setOnClickListener { view -> onClickListener?.onClick(view, album) }
+    }
+
     private fun getPositionOffset(): Int {
-        return if (Library.trash.isEmpty()) 1 else 2
+        //return if (Library.trash.isEmpty()) 1 else 2
+        return 1
     }
 
     fun getPositionFromIndex(index: Int): Int {
@@ -83,13 +124,27 @@ class HomeAdapter(
 
     fun setOnClickListener(onClickListener: OnClickListener?) { this.onClickListener = onClickListener }
 
-    //Holder
+    //Holders
+    class HeaderHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+
+        var all: View = itemView.findViewById(R.id.all)
+        var allImage: ImageView = itemView.findViewById(R.id.allImage)
+        var allInfo: TextView = itemView.findViewById(R.id.allInfo)
+
+        var favourites: View = itemView.findViewById(R.id.favourites)
+        var favouritesImage: ImageView = itemView.findViewById(R.id.favouritesImage)
+        var favouritesInfo: TextView = itemView.findViewById(R.id.favouritesInfo)
+
+        var trash: View = itemView.findViewById(R.id.trash)
+        var trashImage: ImageView = itemView.findViewById(R.id.trashImage)
+        var trashInfo: TextView = itemView.findViewById(R.id.trashInfo)
+
+    }
+
     class AlbumHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         var background: View = itemView.findViewById(R.id.background)
         var image: ImageView = itemView.findViewById(R.id.image)
-        var isTrash: View = itemView.findViewById(R.id.isTrash)
-        var isAll: View = itemView.findViewById(R.id.isAll)
         var name: TextView = itemView.findViewById(R.id.name)
         var info: TextView = itemView.findViewById(R.id.info)
 

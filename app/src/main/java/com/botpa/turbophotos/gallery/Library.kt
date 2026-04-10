@@ -60,6 +60,7 @@ object Library {
     private val _albums: MutableList<Album> = ArrayList()
 
     val all: Album = Album("All")
+    val favourites: Album = Album("Favourites")
 
     val albumsMap: Map<String, Album>
         get() = _albumsMap

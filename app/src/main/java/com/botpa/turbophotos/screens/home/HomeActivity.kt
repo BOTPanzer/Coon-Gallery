@@ -380,11 +380,7 @@ class HomeActivity : GalleryActivity() {
             homeAdapter.notifyDataSetChanged()
         } else {
             //Check if trash was added, removed or updated
-            when (action.trashAction) {
-                Action.TRASH_ADDED -> homeAdapter.notifyItemInserted(0)
-                Action.TRASH_REMOVED -> homeAdapter.notifyItemRemoved(0)
-                Action.TRASH_UPDATED -> homeAdapter.notifyItemChanged(0)
-            }
+            if (action.trashAction != Action.TRASH_NONE) homeAdapter.notifyItemChanged(0)
 
             //Check if albums were deleted
             if (!action.removedIndexesInAlbums.isEmpty()) {
@@ -533,6 +529,11 @@ class HomeActivity : GalleryActivity() {
     private fun initHomeList() {
         //Init home layout manager
         homeLayoutManager = GridLayoutManager(this, listItemsPerRow)
+        homeLayoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+            override fun getSpanSize(position: Int): Int {
+                return if (homeAdapter.getItemViewType(position) == 0) homeLayoutManager.spanCount else 1
+            }
+        }
         homeList.setLayoutManager(homeLayoutManager)
 
         //Init home adapter
@@ -574,7 +575,9 @@ class HomeActivity : GalleryActivity() {
         homeList.setAdapter(homeAdapter)
 
         //Init home fast scroller
-        homeFastScroller = FastScrollerBuilder(homeList).build()
+        homeFastScroller = FastScrollerBuilder(homeList)
+            .setHasHeader(true)
+            .build()
     }
 
       /*$$$$$              /$$     /$$

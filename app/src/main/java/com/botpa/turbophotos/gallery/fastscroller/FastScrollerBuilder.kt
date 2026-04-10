@@ -16,7 +16,7 @@ class FastScrollerBuilder(private val view: ViewGroup) {
     private var trackDrawable: Drawable = ContextCompat.getDrawable(view.context, R.drawable.scrollbar_track)!!
     private var thumbDrawable: Drawable = ContextCompat.getDrawable(view.context, R.drawable.scrollbar_thumb)!!
     private var animationHelper: AnimationHelper? = null
-
+    private var hasHeader: Boolean = false
 
     fun setViewHelper(viewHelper: ViewHelper?): FastScrollerBuilder {
         this.viewHelper = viewHelper
@@ -57,10 +57,20 @@ class FastScrollerBuilder(private val view: ViewGroup) {
         this.animationHelper = animationHelper
     }
 
+    fun setHasHeader(hasHeader: Boolean): FastScrollerBuilder {
+        this.hasHeader = hasHeader
+        return this
+    }
+
     fun build(): FastScroller {
+        val helper = this.getOrCreateViewHelper
+        if (helper is FastScrollerRecyclerViewHelper) {
+            helper.hasHeader = hasHeader
+        }
+
         return FastScroller(
             view,
-            this.getOrCreateViewHelper,
+            helper,
             padding,
             trackDrawable,
             thumbDrawable,
