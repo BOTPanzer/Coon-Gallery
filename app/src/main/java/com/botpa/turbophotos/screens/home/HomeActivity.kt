@@ -379,9 +379,6 @@ class HomeActivity : GalleryActivity() {
             //Sorted albums list -> Notify all
             homeAdapter.notifyDataSetChanged()
         } else {
-            //Check if trash was added, removed or updated
-            if (action.trashAction != Action.TRASH_NONE) homeAdapter.notifyItemChanged(0)
-
             //Check if albums were deleted
             if (!action.removedIndexesInAlbums.isEmpty()) {
                 //Albums were deleted -> Notify items removed
@@ -392,17 +389,22 @@ class HomeActivity : GalleryActivity() {
             }
 
             //Check if albums were sorted
+            var specialAlbumWasModified = false
             if (!action.modifiedAlbums.isEmpty()) {
                 //Albums were sorted -> Notify items changed
                 for (album in action.modifiedAlbums) {
-                    //Get album index
-                    val albumIndex = homeAdapter.getIndexFromAlbum(album)
-                    if (albumIndex < 0 && !album.isEspecial) continue
+                    //Check if album is special
+                    if (album.isSpecial) {
+                        specialAlbumWasModified = true
+                        continue
+                    }
 
-                    //Notify position changed
+                    //Notify album position changed
+                    val albumIndex = homeAdapter.getIndexFromAlbum(album)
                     homeAdapter.notifyItemChanged(homeAdapter.getPositionFromIndex(albumIndex))
                 }
             }
+            if (specialAlbumWasModified) homeAdapter.notifyItemChanged(0)
         }
     }
 
@@ -558,6 +560,8 @@ class HomeActivity : GalleryActivity() {
                     intent.putExtra("albumName", "trash")
                 Library.all ->
                     intent.putExtra("albumName", "all")
+                Library.favourites ->
+                    intent.putExtra("albumName", "favourites")
                 else ->
                     intent.putExtra("albumIndex", Library.albums.indexOf(album))
             }

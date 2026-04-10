@@ -239,6 +239,7 @@ class AlbumActivity : GalleryActivity() {
             when (intent.getStringExtra("albumName")) {
                 "trash" -> selectAlbum(Library.trash)
                 "all" -> selectAlbum(Library.all)
+                "favourites" -> selectAlbum(Library.favourites)
                 else -> finish()
             }
         } else {

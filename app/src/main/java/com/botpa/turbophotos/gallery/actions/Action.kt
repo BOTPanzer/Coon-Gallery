@@ -10,7 +10,6 @@ class Action(val type: Int, @JvmField val items: Array<CoonItem>) {
     @JvmField var errors: MutableList<ActionError> = ArrayList()
 
     //Results (trash)
-    @JvmField var trashAction: Int = TRASH_NONE
     @JvmField var trashPending: MutableMap<Uri, CoonItem> = HashMap()
 
     //Results (albums & gallery)
@@ -41,12 +40,6 @@ class Action(val type: Int, @JvmField val items: Array<CoonItem>) {
         const val TYPE_MOVE:        Int = 4
         const val TYPE_COPY:        Int = 5
         const val TYPE_RENAME:      Int = 6
-
-        //Trash action
-        const val TRASH_NONE:       Int = 0
-        const val TRASH_ADDED:      Int = 1
-        const val TRASH_REMOVED:    Int = 2
-        const val TRASH_UPDATED:    Int = 3
 
     }
 

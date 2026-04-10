@@ -108,7 +108,8 @@ object Library {
             MediaStore.Files.FileColumns.MIME_TYPE,
             MediaStore.Files.FileColumns.SIZE,
             MediaStore.Files.FileColumns.DATA,
-            MediaStore.Files.FileColumns.IS_TRASHED
+            MediaStore.Files.FileColumns.IS_TRASHED,
+            MediaStore.Files.FileColumns.IS_FAVORITE
         )
 
         //Create selection
@@ -173,8 +174,9 @@ object Library {
             lastUpdate = 0
 
             //Clear items from albums
-            trash.reset()
             all.reset()
+            favourites.reset()
+            trash.reset()
             for (album in albums) album.reset()
 
             //Albums map doesn't get cleared so that the gallery can stay on the selected album on reload :D
@@ -193,6 +195,7 @@ object Library {
                 val columnSize = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.SIZE)
                 val columnData = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATA)
                 val columnIsTrashed = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.IS_TRASHED)
+                val columnIsFavourite = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.IS_FAVORITE)
 
                 //Check items
                 while (cursor.moveToNext()) {
@@ -214,21 +217,23 @@ object Library {
                     val lastModified = cursor.getLong(columnLastModified)
                     val size = cursor.getLong(columnSize)
                     val isTrashed = cursor.getInt(columnIsTrashed) == 1
+                    val isFavourite = cursor.getInt(columnIsFavourite) == 1
 
                     //Check if is trashed
                     val album = getOrCreateAlbumFromItemFile(file)
                     if (isTrashed) {
                         //Trashed -> Create item with trash as album
-                        val item = CoonItem(file, trash, lastModified, mimeType!!, size, true)
+                        val item = CoonItem(file, trash, lastModified, mimeType!!, size, true, isFavourite)
 
                         //Add to trash
                         addItemToTrash(item, album)
                     } else {
                         //Not trashed -> Create item with normal album
-                        val item = CoonItem(file, album, lastModified, mimeType!!, size, false)
+                        val item = CoonItem(file, album, lastModified, mimeType!!, size, false, isFavourite)
 
                         //Add to all items list & its album
                         all.add(item)
+                        if (isFavourite) favourites.add(item)
                         item.album.add(item)
                     }
 
@@ -524,6 +529,15 @@ object Library {
         action.modifiedAlbums.add(all)
     }
 
+    private fun performRemoveFromFavourites(action: Action, indexInFavourites: Int) {
+        //Not in favourite items list
+        if (indexInFavourites == -1) return
+
+        //Remove item
+        favourites.remove(indexInFavourites)
+        action.modifiedAlbums.add(favourites)
+    }
+
     private fun performRemoveFromGallery(action: Action, indexInGallery: Int) {
         //Not in gallery items list
         if (indexInGallery == -1) return
@@ -556,7 +570,7 @@ object Library {
 
         //Remove item
         removeItemFromTrash(indexInTrash, originalAlbum)
-        action.trashAction = if (trash.isEmpty()) Action.TRASH_REMOVED else Action.TRASH_UPDATED
+        action.modifiedAlbums.add(trash)
     }
 
     private fun performCheckForAlbumChanges(action: Action, indexInAlbum: Int, album: Album) {
@@ -639,7 +653,7 @@ object Library {
         //Get file info
         val oldName = item.name
         val extension = Orion.getExtension(oldName)
-        val oldNameNoExtension = if (extension.isEmpty()) oldName else oldName.substring(0, oldName.length - (extension.length + 1))
+        val oldNameNoExtension = if (extension.isEmpty()) oldName else oldName.dropLast(extension.length + 1)
 
         //Create action
         val action = Action(Action.TYPE_RENAME, arrayOf(item))
@@ -866,7 +880,7 @@ object Library {
             recentlyAddedFiles.add(newFile) //Mark file as recently added to prevent duplicates on refresh
 
             //Create new item
-            val newItem = CoonItem(newFile, newAlbum, item.lastModified, item.mimeType, item.size, item.isTrashed)
+            val newItem = CoonItem(newFile, newAlbum, item.lastModified, item.mimeType, item.size, item.isTrashed, false)
 
             //Add item to new album
             val indexInAlbum = performAddToAlbum(action, newItem, newAlbum)
@@ -983,13 +997,11 @@ object Library {
 
             //Add item to trash
             helper.indexInTrash = addItemToTrash(item, originalAlbum)
-            if (action.trashAction == Action.TRASH_NONE) {
-                //First change to trash this action -> Check if trash was added to list or just updated
-                action.trashAction = if (trash.size() == 1) Action.TRASH_ADDED else Action.TRASH_UPDATED
-            }
+            action.modifiedAlbums.add(trash)
 
-            //Remove item from all, gallery & album
+            //Remove item from all, favourites, gallery & album
             performRemoveFromAll(action, helper.indexInAll)
+            performRemoveFromFavourites(action, helper.indexInFavourites)
             performRemoveFromGallery(action, helper.indexInGallery)
             performRemoveFromAlbum(action, helper.indexInAlbum, helper.indexOfAlbum, originalAlbum) //Remove from album after adding to trash cause, if both trash & album are empty, the album gets removed from albumsMap
         }
@@ -1053,6 +1065,7 @@ object Library {
 
             //Add to all & original album
             helper.indexInAll = performAddToAlbum(action, item, all)
+            helper.indexInFavourites = performAddToAlbum(action, item, favourites)
             helper.indexInAlbum = performAddToAlbum(action, item, originalAlbum)
 
             //Check for album changes
@@ -1079,8 +1092,9 @@ object Library {
             //Get action helper
             val helper = action.getHelper(item)
 
-            //Remove item from all & gallery
+            //Remove item from all, favourites & gallery
             performRemoveFromAll(action, helper.indexInAll)
+            performRemoveFromFavourites(action, helper.indexInFavourites)
             performRemoveFromGallery(action, helper.indexInGallery)
 
             //Get item album & remove item from it

@@ -12,7 +12,7 @@ class Album(val name: String, val imagesFolder: File?, var metadataFile: File?) 
     @JvmField val items: MutableList<CoonItem> = ArrayList()
     @JvmField var metadata: ObjectNode? = null
 
-    val isEspecial: Boolean = imagesFolder == null
+    val isSpecial: Boolean = imagesFolder == null
 
     val imagesPath: String = imagesFolder?.absolutePath ?: ""
     val metadataPath: String = metadataFile?.absolutePath ?: ""

@@ -23,6 +23,7 @@ class CoonItem(
     @JvmField var mimeType: String,         //The type and format of the file
     @JvmField var size: Long,               //The size of the file in bytes
     @JvmField var isTrashed: Boolean,       //If the file is in the trash
+    @JvmField var isFavourite: Boolean,     //If the file is favourite
 ) : Comparable<CoonItem> {
 
     //Item info
@@ -96,7 +97,7 @@ class CoonItem(
             val size = file.length()
 
             //Create item
-            return CoonItem(file, album, lastModified, mimeType, size, false)
+            return CoonItem(file, album, lastModified, mimeType, size, false, false)
         }
 
         fun createFromUri(context: Context, uri: Uri, album: Album): CoonItem {

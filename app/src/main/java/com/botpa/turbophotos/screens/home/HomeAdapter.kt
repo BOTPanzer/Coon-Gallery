@@ -96,8 +96,7 @@ class HomeAdapter(
     }
 
     private fun addAlbumListener(view: View, album: Album) {
-        if (album.isEmpty()) return
-        view.setOnClickListener { view -> onClickListener?.onClick(view, album) }
+        view.setOnClickListener { view -> if (album.isNotEmpty()) onClickListener?.onClick(view, album) }
     }
 
     private fun getPositionOffset(): Int {
@@ -110,11 +109,7 @@ class HomeAdapter(
     }
 
     fun getIndexFromAlbum(album: Album): Int {
-        return when (album) {
-            Library.trash -> -2
-            Library.all -> -1
-            else -> albums.indexOf(album)
-        }
+        return albums.indexOf(album)
     }
 
     //Listeners
