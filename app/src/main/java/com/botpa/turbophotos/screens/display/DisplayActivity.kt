@@ -14,7 +14,6 @@ import android.os.Environment
 import android.util.Rational
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
-import android.widget.HorizontalScrollView
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -22,7 +21,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.Insets
 import androidx.core.net.toUri
-import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
@@ -42,16 +40,11 @@ import com.botpa.turbophotos.gallery.actions.Action
 import com.botpa.turbophotos.gallery.options.OptionsAdapter
 import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.views.ZoomableLayout
+import com.botpa.turbophotos.screens.display.info.DrawerInfo
 import com.botpa.turbophotos.screens.video.VideoActivity
 import com.botpa.turbophotos.util.BackManager
 import com.botpa.turbophotos.util.Orion
-import com.botpa.turbophotos.util.Orion.ResizeHeightAnimation
 import com.botpa.turbophotos.util.Storage
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.ObjectNode
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 @SuppressLint("SetTextI18n", "NotifyDataSetChanged")
 class DisplayActivity : BaseActivity() {
@@ -140,24 +133,6 @@ class DisplayActivity : BaseActivity() {
     private lateinit var overlayFavourite: View
     private lateinit var overlayInfo: View
     private lateinit var overlayOptions: View
-
-    //Views (info)
-    private lateinit var infoLayout: View
-    private lateinit var infoName: TextView
-    private lateinit var infoDate: TextView
-    private lateinit var infoCaption: TextView
-    private lateinit var infoLabelsScroll: HorizontalScrollView
-    private lateinit var infoLabels: TextView
-    private lateinit var infoTextScroll: HorizontalScrollView
-    private lateinit var infoText: TextView
-    private lateinit var infoEdit: View
-
-    //Views (edit)
-    private lateinit var editLayout: View
-    private lateinit var editCaption: TextView
-    private lateinit var editLabels: TextView
-    private lateinit var editSave: View
-    private lateinit var editSpace: View
 
 
 
@@ -332,24 +307,6 @@ class DisplayActivity : BaseActivity() {
         overlayInfo = findViewById(R.id.overlayInfo)
         overlayOptions = findViewById(R.id.overlayOptions)
 
-        //Views (info)
-        infoLayout = findViewById(R.id.infoLayout)
-        infoName = findViewById(R.id.infoName)
-        infoDate = findViewById(R.id.infoDate)
-        infoCaption = findViewById(R.id.infoCaption)
-        infoLabelsScroll = findViewById(R.id.infoLabelsScroll)
-        infoLabels = findViewById(R.id.infoLabels)
-        infoTextScroll = findViewById(R.id.infoTextScroll)
-        infoText = findViewById(R.id.infoText)
-        infoEdit = findViewById(R.id.infoEdit)
-
-        //Views (edit)
-        editLayout = findViewById(R.id.editLayout)
-        editCaption = findViewById(R.id.editCaption)
-        editLabels = findViewById(R.id.editLabels)
-        editSave = findViewById(R.id.editSave)
-        editSpace = findViewById(R.id.editSpace)
-
         //Views (options)
         optionsLayout = findViewById(R.id.optionsLayout)
         optionsList = findViewById(R.id.optionsList)
@@ -369,31 +326,6 @@ class DisplayActivity : BaseActivity() {
             view.layoutParams = params
         }
 
-        //Insets (edit info layout)
-        val defaultEditSpaceHeight = editSpace.minimumHeight //Height returns 0 when view is not rendered, so we store height in minimumHeight too :D
-        ViewCompat.setOnApplyWindowInsetsListener(
-            editSpace
-        ) { view: View, windowInsets: WindowInsetsCompat ->
-            //Get new bottom space height
-            val insetsSystemBars = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
-            val insetsKeyboard = windowInsets.getInsets(WindowInsetsCompat.Type.ime())
-            val keyboardOpen = insetsKeyboard.bottom != 0
-            val height = if (keyboardOpen) insetsKeyboard.bottom else insetsSystemBars.bottom + defaultEditSpaceHeight
-
-            //Update bottom space height
-            if (view.height == 0) {
-                //Not rendered yet -> Don't animate
-                view.layoutParams.height = height
-                view.requestLayout()
-            } else {
-                //Has height -> Animate
-                val resize = ResizeHeightAnimation(editSpace, height)
-                resize.duration = 100L
-                view.startAnimation(resize)
-            }
-            windowInsets
-        }
-
         //Insets (options layout)
         Orion.addInsetsChangedListener(
             optionsLayout,
@@ -403,74 +335,11 @@ class DisplayActivity : BaseActivity() {
 
     private fun initListeners() {
         //Overlay
-        overlayInfo.setOnClickListener { toggleInfo(true) }
+        overlayInfo.setOnClickListener {
+            DrawerInfo(this, currentItem).buildAndShow()
+        }
 
         overlayOptions.setOnClickListener { toggleOptions(true) }
-
-        //Info
-        infoLayout.setOnClickListener { toggleInfo(false) }
-
-        infoEdit.setOnClickListener { view: View ->
-            //No metadata file
-            if (!currentItem.album.hasMetadata()) {
-                Toast.makeText(
-                    this,
-                    "This item's album does not have a metadata file linked to it",
-                    Toast.LENGTH_SHORT
-                ).show()
-                return@setOnClickListener
-            }
-
-            //No metadata
-            if (!currentItem.hasMetadata()) {
-                Toast.makeText(
-                    this,
-                    "This item does not have a key in its album metadata",
-                    Toast.LENGTH_SHORT
-                ).show()
-                return@setOnClickListener
-            }
-
-            //Hide display info
-            toggleInfo(false)
-
-            //Toggle display edit
-            toggleEdit(editLayout.visibility != View.VISIBLE)
-        }
-
-        //Edit
-        editLayout.setOnClickListener { toggleEdit(false) }
-
-        editSave.setOnClickListener { view: View ->
-            //Get new caption & labels
-            val caption = editCaption.text.toString()
-            val labels = editLabels.text.toString()
-            val labelsArray: Array<String> = labels.split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-            for (i in labelsArray.indices) labelsArray[i] = labelsArray[i].trim { it <= ' ' }
-
-            //Update info texts with new ones
-            infoCaption.text = caption
-            infoLabels.text = labels
-
-            //Update metadata
-            val key = currentItem.name
-            val hasMetadata = currentItem.hasMetadata()
-            val metadata = currentItem.getMetadata() ?: Orion.emptyJson
-            if (!hasMetadata) currentItem.album.metadata!!.set<JsonNode>(key, metadata)
-            metadata.put("caption", caption)
-            metadata.set<JsonNode>("labels", Orion.arrayToJson(labelsArray))
-
-            //Save
-            val saved = currentItem.album.saveMetadata()
-            Toast.makeText(
-                this,
-                if (saved) "Saved successfully" else "An error occurred while saving",
-                Toast.LENGTH_SHORT
-            ).show()
-
-            //Close menu
-            toggleEdit(false)
-        }
 
         //Options
         optionsLayout.setOnClickListener { toggleOptions(false) }
@@ -659,64 +528,6 @@ class DisplayActivity : BaseActivity() {
         //Change image name & favourite state
         overlayTitle.text = currentItem.name
         overlayFavourite.visibility = if (currentItem.isFavourite) View.VISIBLE else View.GONE
-
-        //Create date text
-        val date = Date(currentItem.lastModified * 1000)
-        val formatter1 = SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH)
-        val formatter2 = SimpleDateFormat("hh:mm.ss a", Locale.ENGLISH)
-
-        //Load image info (caption & labels)
-        var caption: String? = ""
-        var labels = ""
-        var text = ""
-        try {
-            //Get metadata
-            val metadata: ObjectNode = currentItem.getMetadata() ?: throw Exception()
-
-            //Load caption
-            caption = metadata.path("caption").asText()
-
-            //Add labels
-            var info = StringBuilder()
-            if (metadata.has("labels")) {
-                //Get labels array
-                val array = metadata.path("labels")
-
-                //Get array max & append all labels to info
-                val arrayMax = array.size() - 1
-                if (arrayMax >= 0 && info.isNotEmpty()) info.append("\n\n")
-                for (i in 0..arrayMax) {
-                    info.append(array.get(i).asText())
-                    if (i != arrayMax) info.append(", ")
-                }
-            }
-            labels = info.toString()
-
-            //Add text
-            info = StringBuilder()
-            if (metadata.has("text")) {
-                //Get labels array
-                val array = metadata.path("text")
-
-                //Get array max & append all labels to info
-                val arrayMax = array.size() - 1
-                if (arrayMax >= 0 && info.isNotEmpty()) info.append("\n\n")
-                for (i in 0..arrayMax) {
-                    info.append(array.get(i).asText())
-                    if (i != arrayMax) info.append(", ")
-                }
-            }
-            text = info.toString()
-        } catch (_: Exception) {
-            //Error while parsing JSON
-        }
-
-        //Update text
-        infoName.text = currentItem.name
-        infoDate.text = "${formatter1.format(date)}, ${formatter2.format(date)}"
-        infoCaption.text = caption
-        infoLabels.text = labels
-        infoText.text = text
     }
 
     //PiP
@@ -828,43 +639,6 @@ class DisplayActivity : BaseActivity() {
     | $$  | $$  | $$ /$$| $$  | $$| $$_____/| $$
     |  $$$$$$/  |  $$$$/| $$  | $$|  $$$$$$$| $$
      \______/    \___/  |__/  |__/ \_______/|_*/
-
-    //Menus
-    private fun toggleInfo(show: Boolean) {
-        if (show) {
-            //Scroll info to start
-            infoLabelsScroll.scrollTo(0, 0)
-            infoTextScroll.scrollTo(0, 0)
-
-            //Show
-            Orion.showAnim(infoLayout)
-            backManager.register("info") { toggleInfo(false) }
-        } else {
-            //Hide
-            Orion.hideAnim(infoLayout)
-            backManager.unregister("info")
-        }
-    }
-
-    private fun toggleEdit(show: Boolean) {
-        if (show) {
-            //Update edit texts
-            editCaption.text = infoCaption.text
-            editLabels.text = infoLabels.text
-
-            //Show
-            Orion.showAnim(editLayout)
-            backManager.register("edit") { toggleEdit(false) }
-        } else {
-            //Hide keyboard
-            Orion.hideKeyboard(this)
-            Orion.clearFocus(this)
-
-            //Hide
-            Orion.hideAnim(editLayout)
-            backManager.unregister("edit")
-        }
-    }
 
     //Util
     private fun toggleSystemUI(show: Boolean) {

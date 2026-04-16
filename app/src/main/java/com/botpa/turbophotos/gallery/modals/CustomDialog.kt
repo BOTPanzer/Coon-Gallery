@@ -1,24 +1,25 @@
-package com.botpa.turbophotos.gallery.dialogs
+package com.botpa.turbophotos.gallery.modals
 
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
-import com.google.android.material.bottomsheet.BottomSheetDialog
+import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
-open class CustomBottomSheet(protected val context: Context, private val resource: Int) {
+open class CustomDialog(protected val context: Context, private val resource: Int) {
 
     //Views
     protected lateinit var root: View
 
     //Dialog
-    protected lateinit var dialog: BottomSheetDialog
+    protected lateinit var dialog: AlertDialog
 
 
     //Init
     protected open fun onInitStart() {}
 
-    protected open fun initDialog(dialog: BottomSheetDialog): BottomSheetDialog {
-        return dialog
+    protected open fun initDialog(builder: MaterialAlertDialogBuilder): MaterialAlertDialogBuilder {
+        return builder
     }
 
     protected open fun initViews() {}
@@ -39,10 +40,7 @@ open class CustomBottomSheet(protected val context: Context, private val resourc
         initViews()
 
         //Init dialog
-        dialog = BottomSheetDialog(context)
-        dialog.setContentView(root)
-        initDialog(dialog)
-        dialog.show()
+        dialog = initDialog(MaterialAlertDialogBuilder(context).setView(root)).show()
 
         //Init listeners
         initListeners()
@@ -50,4 +48,5 @@ open class CustomBottomSheet(protected val context: Context, private val resourc
         //End
         onInitEnd()
     }
+
 }

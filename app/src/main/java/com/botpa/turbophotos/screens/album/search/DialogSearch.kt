@@ -4,7 +4,7 @@ import android.content.Context
 import android.widget.ListView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.SearchMethod
-import com.botpa.turbophotos.gallery.dialogs.CustomDialog
+import com.botpa.turbophotos.gallery.modals.CustomDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class DialogSearch(context: Context, private val onSelect: (SearchMethod) -> Unit): CustomDialog(context, R.layout.dialog_search) {

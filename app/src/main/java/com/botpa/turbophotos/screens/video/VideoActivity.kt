@@ -53,7 +53,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.BaseActivity
 import com.botpa.turbophotos.gallery.StoragePairs
-import com.botpa.turbophotos.gallery.dialogs.DialogSlider
+import com.botpa.turbophotos.gallery.modals.DialogSlider
 import com.botpa.turbophotos.gallery.options.OptionsAdapter
 import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.views.ZoomableLayout

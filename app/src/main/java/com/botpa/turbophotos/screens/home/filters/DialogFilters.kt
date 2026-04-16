@@ -10,7 +10,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Library
-import com.botpa.turbophotos.gallery.dialogs.CustomDialog
+import com.botpa.turbophotos.gallery.modals.CustomDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.util.regex.Pattern
 

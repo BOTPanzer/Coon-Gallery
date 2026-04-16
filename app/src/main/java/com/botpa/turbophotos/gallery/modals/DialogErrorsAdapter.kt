@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.gallery.dialogs
+package com.botpa.turbophotos.gallery.modals
 
 import android.content.Context
 import android.view.LayoutInflater
