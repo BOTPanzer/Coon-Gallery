@@ -440,12 +440,13 @@ class HomeActivity : BaseActivity() {
 
 
         //Insets (content)
+        val listMinBottomPadding = homeList.paddingBottom
         Orion.addInsetsChangedListener(
             findViewById(R.id.content),
             intArrayOf(WindowInsetsCompat.Type.systemBars())
         ) { view: View, insets: Insets, duration: Float ->
             homeRefreshLayout.setProgressViewOffset(false, 0, insets.top + 50)
-            homeList.setPadding(0, insets.top, 0, homeList.paddingBottom + insets.bottom)
+            homeList.setPadding(0, insets.top, 0, listMinBottomPadding + insets.bottom)
             homeFastScroller.setPadding(0, homeList.paddingTop, 0, homeList.paddingBottom)
         }
 
