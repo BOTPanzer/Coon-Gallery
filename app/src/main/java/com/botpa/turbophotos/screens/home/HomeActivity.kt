@@ -325,6 +325,9 @@ class HomeActivity : BaseActivity() {
         }
         navbarOptions.visibility = if (isPicking) View.GONE else View.VISIBLE
 
+        //Show loading indicator
+        loadingIndicator.visibility = View.VISIBLE
+
         //Load library
         Thread {
             //Load library
