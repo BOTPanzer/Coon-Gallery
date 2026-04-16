@@ -8,6 +8,7 @@ import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.CoonItem
+import com.bumptech.glide.Glide
 import com.google.android.material.card.MaterialCardView
 
 class AlbumAdapter(
@@ -47,6 +48,13 @@ class AlbumAdapter(
             holder.imageCard.scaleX = 1.0f
             holder.imageCard.scaleY = 1.0f
         }
+    }
+
+    override fun onViewRecycled(holder: GalleryHolder) {
+        super.onViewRecycled(holder)
+
+        //Cancel pending loads
+        Glide.with(context).clear(holder.image)
     }
 
     override fun getItemCount(): Int {

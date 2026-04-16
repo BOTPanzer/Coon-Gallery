@@ -12,6 +12,7 @@ import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Album
 import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.CoonItem
+import com.bumptech.glide.Glide
 
 @SuppressLint("SetTextI18n")
 class HomeAdapter(
@@ -85,6 +86,15 @@ class HomeAdapter(
 
             //Add listeners
             addAlbumListener(holder.background, album)
+        }
+    }
+
+    override fun onViewRecycled(holder: RecyclerView.ViewHolder) {
+        super.onViewRecycled(holder)
+
+        //Cancel pending loads
+        if (holder is AlbumHolder) {
+            Glide.with(context).clear(holder.image)
         }
     }
 
