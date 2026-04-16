@@ -343,12 +343,13 @@ class AlbumActivity : BaseActivity() {
 
 
         //Insets (content)
+        val albumListMinBottomPadding = albumList.paddingBottom
         Orion.addInsetsChangedListener(
             findViewById(R.id.content),
             intArrayOf(WindowInsetsCompat.Type.systemBars())
         ) { view: View, insets: Insets, duration: Float ->
             albumRefreshLayout.setProgressViewOffset(false, 0, insets.top + 50)
-            albumList.setPadding(0, insets.top, 0, albumList.paddingBottom + insets.bottom)
+            albumList.setPadding(0, insets.top, 0, albumListMinBottomPadding + insets.bottom)
             albumFastScroller.setPadding(0, albumList.paddingTop, 0, albumList.paddingBottom)
         }
 
