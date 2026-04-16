@@ -7,9 +7,8 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import com.botpa.turbophotos.R
-import com.botpa.turbophotos.gallery.actions.ActionError
 
-class DialogPointsAdapter(
+class DialogBulletpointsAdapter(
     context: Context,
     points: List<String>
 ) : ArrayAdapter<String>(context, 0, points) {

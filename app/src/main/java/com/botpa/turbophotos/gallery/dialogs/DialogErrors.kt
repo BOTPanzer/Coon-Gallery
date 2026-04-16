@@ -28,9 +28,6 @@ class DialogErrors(
     override fun initViews() {
         //Init views
         list = root.findViewById(R.id.errorsList)
-
-        //Assign adapter to list
-        list.adapter = adapter
     }
 
     override fun initDialog(builder: MaterialAlertDialogBuilder): MaterialAlertDialogBuilder {
@@ -47,6 +44,11 @@ class DialogErrors(
             val error: ActionError = errors[position]
             Orion.copyToClip(context, "${error.item.name}: ${error.reason}")
         }
+    }
+
+    override fun onInitEnd() {
+        //Assign adapter to list
+        list.adapter = adapter
     }
 
 }

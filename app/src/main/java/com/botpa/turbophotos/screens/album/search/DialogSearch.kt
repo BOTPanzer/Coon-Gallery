@@ -21,10 +21,6 @@ class DialogSearch(context: Context, private val onSelect: (SearchMethod) -> Uni
     override fun initViews() {
         //Init views
         list = root.findViewById(R.id.list)
-
-        //Init adapter
-        adapter = DialogSearchAdapter(context, methods)
-        list.adapter = adapter
     }
 
     override fun initDialog(builder: MaterialAlertDialogBuilder): MaterialAlertDialogBuilder {
@@ -43,6 +39,12 @@ class DialogSearch(context: Context, private val onSelect: (SearchMethod) -> Uni
             //Close dialog
             dialog.dismiss()
         }
+    }
+
+    override fun onInitEnd() {
+        //Init adapter
+        adapter = DialogSearchAdapter(context, methods)
+        list.adapter = adapter
     }
 
 }

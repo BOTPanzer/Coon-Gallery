@@ -33,10 +33,6 @@ class DialogAlbums(
     override fun initViews() {
         //Init views
         list = root.findViewById(R.id.albumsList)
-
-        //Assign adapter & layout manager to list
-        list.adapter = adapter
-        list.layoutManager = layoutManager
     }
 
     override fun initDialog(builder: MaterialAlertDialogBuilder): MaterialAlertDialogBuilder {
@@ -59,6 +55,12 @@ class DialogAlbums(
             //Close dialog
             dialog.dismiss()
         }
+    }
+
+    override fun onInitEnd() {
+        //Assign adapter & layout manager to list
+        list.adapter = adapter
+        list.layoutManager = layoutManager
     }
 
 }

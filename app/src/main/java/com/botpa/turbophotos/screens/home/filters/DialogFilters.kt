@@ -39,9 +39,6 @@ class DialogFilters(context: Context, private val filters: List<Filter>) : Custo
         customLayout = root.findViewById(R.id.customLayout)
         customInput = root.findViewById(R.id.customInput)
         customButton = root.findViewById(R.id.customButton)
-
-        //Assign adapter
-        list.adapter = adapter
     }
 
     override fun initDialog(builder: MaterialAlertDialogBuilder): MaterialAlertDialogBuilder {
@@ -104,6 +101,11 @@ class DialogFilters(context: Context, private val filters: List<Filter>) : Custo
                 neutralButton.text = TEXT_CUSTOM
             }
         }
+    }
+
+    override fun onInitEnd() {
+        //Assign adapter
+        list.adapter = adapter
     }
 
 }

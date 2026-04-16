@@ -72,9 +72,6 @@ class DialogExplorer(
         createLayout = root.findViewById(R.id.createLayout)
         createInput = root.findViewById(R.id.createInput)
         createButton = root.findViewById(R.id.createButton)
-
-        //Assign adapter to list
-        foldersList.adapter = adapter
     }
 
     override fun initDialog(builder: MaterialAlertDialogBuilder): MaterialAlertDialogBuilder {
@@ -214,6 +211,9 @@ class DialogExplorer(
     }
 
     override fun onInitEnd() {
+        //Assign adapter to list
+        foldersList.adapter = adapter
+
         //Update current folder name
         updateCurrentFolderName()
 

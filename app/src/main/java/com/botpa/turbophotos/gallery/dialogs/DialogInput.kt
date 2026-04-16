@@ -22,9 +22,6 @@ class DialogInput(
     override fun initViews() {
         //Init views
         input = root.findViewById(R.id.input)
-
-        //Update hint
-        input.hint = hint
     }
 
     override fun initDialog(builder: MaterialAlertDialogBuilder): MaterialAlertDialogBuilder {
@@ -50,6 +47,11 @@ class DialogInput(
             onConfirm(value)
             dialog.dismiss()
         }
+    }
+
+    override fun onInitEnd() {
+        //Update hint
+        input.hint = hint
     }
 
     //Util

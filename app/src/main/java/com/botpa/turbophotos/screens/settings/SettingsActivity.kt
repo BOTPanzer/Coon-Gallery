@@ -32,7 +32,7 @@ import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.Link
 import com.botpa.turbophotos.gallery.dialogs.DialogAlbums
 import com.botpa.turbophotos.gallery.dialogs.DialogExplorer
-import com.botpa.turbophotos.gallery.dialogs.DialogPoints
+import com.botpa.turbophotos.gallery.dialogs.DialogBulletpoints
 import com.botpa.turbophotos.gallery.views.Group
 import com.botpa.turbophotos.gallery.views.GroupDivider
 import com.botpa.turbophotos.gallery.views.GroupItems
@@ -41,7 +41,6 @@ import com.botpa.turbophotos.gallery.views.IconButton
 import com.botpa.turbophotos.gallery.views.Layout
 import com.botpa.turbophotos.gallery.views.SimpleButton
 import com.botpa.turbophotos.theme.CoonTheme
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 @OptIn(ExperimentalMaterial3Api::class)
 class SettingsActivity : AppCompatActivity() {
@@ -375,7 +374,7 @@ class SettingsActivity : AppCompatActivity() {
                             IconButton(
                                 onClick = {
                                     //Create info dialog
-                                    DialogPoints(
+                                    DialogBulletpoints(
                                         context,
                                         "Links",
                                         "Links let you to backup your albums and enable smart search.",

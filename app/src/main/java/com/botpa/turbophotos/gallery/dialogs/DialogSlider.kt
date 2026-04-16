@@ -27,15 +27,6 @@ class DialogSlider(
         //Init views
         slider = root.findViewById(R.id.slider)
         sliderText = root.findViewById(R.id.sliderText)
-
-        //Update slider values
-        slider.valueFrom = min
-        slider.valueTo = max
-        slider.value = value
-        slider.stepSize = stepSize
-
-        //Update text
-        sliderText.text = value.toString()
     }
 
     override fun initDialog(builder: MaterialAlertDialogBuilder): MaterialAlertDialogBuilder {
@@ -59,6 +50,17 @@ class DialogSlider(
             onConfirm(slider.value)
             dialog.dismiss()
         }
+    }
+
+    override fun onInitEnd() {
+        //Update slider values
+        slider.valueFrom = min
+        slider.valueTo = max
+        slider.value = value
+        slider.stepSize = stepSize
+
+        //Update text
+        sliderText.text = value.toString()
     }
 
 }
