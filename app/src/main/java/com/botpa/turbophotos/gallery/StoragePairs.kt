@@ -6,17 +6,15 @@ object StoragePairs {
 
     //Library
     const val LIBRARY_LINKS_KEY: String = "Library.links"
-
-    //App
-    @JvmField val APP_AUTOMATIC_METADATA_MODIFICATION: Storage.StoragePair<Boolean> = Storage.StoragePair("Settings.appAutomaticMetadataModification", true)
+    @JvmField val LIBRARY_AUTOMATIC_METADATA_MODIFICATION: Storage.StoragePair<Boolean> = Storage.StoragePair("Library.automaticMetadataModification", true)
 
     //Home screen
-    @JvmField val HOME_ITEMS_PER_ROW: Storage.StoragePair<Int> = Storage.StoragePair("Settings.homeItemsPerRow", 2)
+    @JvmField val HOME_ITEMS_PER_ROW: Storage.StoragePair<Int> = Storage.StoragePair("Home.itemsPerRow", 2)
 
     //Album screen
-    @JvmField val ALBUM_ITEMS_PER_ROW: Storage.StoragePair<Int> = Storage.StoragePair("Settings.albumItemsPerRow", 3)
-    @JvmField val ALBUM_SHOW_MISSING_METADATA_ICON: Storage.StoragePair<Boolean> = Storage.StoragePair("Settings.albumShowMissingMetadataIcon", false)
-    @JvmField val ALBUM_SEARCH_METHOD: Storage.StoragePair<String> = Storage.StoragePair("Settings.albumSearchMethod", SearchMethod.ContainsWords.name)
+    @JvmField val ALBUM_ITEMS_PER_ROW: Storage.StoragePair<Int> = Storage.StoragePair("Album.itemsPerRow", 3)
+    @JvmField val ALBUM_SHOW_MISSING_METADATA_ICON: Storage.StoragePair<Boolean> = Storage.StoragePair("Album.showMissingMetadataIcon", false)
+    @JvmField val ALBUM_SEARCH_METHOD: Storage.StoragePair<String> = Storage.StoragePair("Album.searchMethod", SearchMethod.ContainsWords.name)
 
     //Video player
     @JvmField val VIDEO_LOOP: Storage.StoragePair<Boolean> = Storage.StoragePair("Video.loop", true)

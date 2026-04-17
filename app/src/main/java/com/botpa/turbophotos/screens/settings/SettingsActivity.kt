@@ -80,8 +80,17 @@ class SettingsActivity : AppCompatActivity() {
         //Backup actions
         val onCreateBackup = remember {
             {
-                //Create settings backup
-                view.createSettingsBackup(context)
+                //Show select folder dialog
+                DialogExplorer(
+                    context = activity,
+                    isSelectingFiles = false,
+                    onSelect = { folder ->
+                        view.createSettingsBackup(context, folder)
+                    }
+                ).buildAndShow()
+
+                //Feedback toast
+                Toast.makeText(activity, "Select a folder to create the backup.", Toast.LENGTH_SHORT).show()
             }
         }
         val onChooseBackupFile = remember {
@@ -92,7 +101,6 @@ class SettingsActivity : AppCompatActivity() {
                     isSelectingFiles = true,
                     fileExtension = "json",
                     onSelect = { file ->
-                        //Restore settings backup
                         view.restoreSettingsBackup(context, activity, file)
                     }
                 ).buildAndShow()

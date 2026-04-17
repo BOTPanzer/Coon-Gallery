@@ -724,7 +724,7 @@ object Library {
 
                 //Copy item metadata to new key
                 val album = item.album
-                if (album.hasMetadataKey(oldName) && getBool(StoragePairs.APP_AUTOMATIC_METADATA_MODIFICATION)) {
+                if (album.hasMetadataKey(oldName) && getBool(StoragePairs.LIBRARY_AUTOMATIC_METADATA_MODIFICATION)) {
                     album.setMetadataKey(newName, album.getMetadataKey(oldName))
                     album.removeMetadataKey(oldName)
                     album.saveMetadata()
@@ -834,7 +834,7 @@ object Library {
             performCheckForAlbumChanges(action, helper.indexInAlbum, newAlbum)
 
             //Move item metadata from old album to new album
-            if (oldAlbum.hasMetadataKey(item.name) && getBool(StoragePairs.APP_AUTOMATIC_METADATA_MODIFICATION)) {
+            if (oldAlbum.hasMetadataKey(item.name) && getBool(StoragePairs.LIBRARY_AUTOMATIC_METADATA_MODIFICATION)) {
                 //Copy metadata to new album
                 newAlbum.setMetadataKey(item.name, oldAlbum.getMetadataKey(item.name))
                 newAlbum.saveMetadata()
@@ -889,7 +889,7 @@ object Library {
             performCheckForAlbumChanges(action, indexInAlbum, newAlbum)
 
             //Copy item metadata from old album to new album
-            if (oldAlbum.hasMetadataKey(item.name) && getBool(StoragePairs.APP_AUTOMATIC_METADATA_MODIFICATION)) {
+            if (oldAlbum.hasMetadataKey(item.name) && getBool(StoragePairs.LIBRARY_AUTOMATIC_METADATA_MODIFICATION)) {
                 newAlbum.setMetadataKey(item.name, oldAlbum.getMetadataKey(item.name))
                 newAlbum.saveMetadata()
             }
@@ -1215,7 +1215,7 @@ object Library {
             }
 
             //Delete item metadata from album
-            if (album.hasMetadataKey(item.name) && getBool(StoragePairs.APP_AUTOMATIC_METADATA_MODIFICATION)) {
+            if (album.hasMetadataKey(item.name) && getBool(StoragePairs.LIBRARY_AUTOMATIC_METADATA_MODIFICATION)) {
                 album.removeMetadataKey(item.name)
                 album.saveMetadata()
             }

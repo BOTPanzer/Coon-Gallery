@@ -15,6 +15,8 @@ import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
 import com.fasterxml.jackson.databind.node.ObjectNode
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class SettingsViewModel : ViewModel() {
 
@@ -22,7 +24,7 @@ class SettingsViewModel : ViewModel() {
     var reloadLibraryOnExit = false
 
     //App
-    var appModifyMetadata by mutableStateOf(Storage.getBool(StoragePairs.APP_AUTOMATIC_METADATA_MODIFICATION))
+    var appModifyMetadata by mutableStateOf(Storage.getBool(StoragePairs.LIBRARY_AUTOMATIC_METADATA_MODIFICATION))
 
     //Home screen
     var homeItemsPerRow by mutableFloatStateOf(Storage.getInt(StoragePairs.HOME_ITEMS_PER_ROW).toFloat())
@@ -42,9 +44,7 @@ class SettingsViewModel : ViewModel() {
     private fun addSettingsToJson(json: ObjectNode) {
         //Library
         json.put(StoragePairs.LIBRARY_LINKS_KEY, Storage.getString(StoragePairs.LIBRARY_LINKS_KEY, ""))
-
-        //App
-        json.put(StoragePairs.APP_AUTOMATIC_METADATA_MODIFICATION.key, Storage.getBool(StoragePairs.APP_AUTOMATIC_METADATA_MODIFICATION))
+        json.put(StoragePairs.LIBRARY_AUTOMATIC_METADATA_MODIFICATION.key, Storage.getBool(StoragePairs.LIBRARY_AUTOMATIC_METADATA_MODIFICATION))
 
         //Home screen
         json.put(StoragePairs.HOME_ITEMS_PER_ROW.key, Storage.getInt(StoragePairs.HOME_ITEMS_PER_ROW))
@@ -52,6 +52,7 @@ class SettingsViewModel : ViewModel() {
         //Album screen
         json.put(StoragePairs.ALBUM_ITEMS_PER_ROW.key, Storage.getInt(StoragePairs.ALBUM_ITEMS_PER_ROW))
         json.put(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON.key, Storage.getBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON))
+        json.put(StoragePairs.ALBUM_SEARCH_METHOD.key, Storage.getString(StoragePairs.ALBUM_SEARCH_METHOD))
 
         //Video player
         json.put(StoragePairs.VIDEO_LOOP.key, Storage.getBool(StoragePairs.VIDEO_LOOP))
@@ -64,7 +65,7 @@ class SettingsViewModel : ViewModel() {
         json.put(StoragePairs.SYNC_USERS_KEY, Storage.getString(StoragePairs.SYNC_USERS_KEY, ""))
     }
 
-    fun createSettingsBackup(context: Context) {
+    fun createSettingsBackup(context: Context, folder: File) {
         //Create empty json
         val json = Orion.emptyJson
 
@@ -72,10 +73,11 @@ class SettingsViewModel : ViewModel() {
         addSettingsToJson(json)
 
         //Create backup file
-        val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "CoonGalleryBackup-${System.currentTimeMillis()}.json")
+        val name = "CoonGalleryBackup_${SimpleDateFormat("yyyyMMddHHmmss", Locale.US).format(System.currentTimeMillis())}.json"
+        val file = File(folder, name)
         if (Orion.writeJsonPretty(file, json)) {
             //Success creating file
-            Toast.makeText(context, "Backup saved to downloads folder.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Backup saved to selected folder.", Toast.LENGTH_SHORT).show()
         } else {
             //Error creating file
             Toast.makeText(context, "Error creating backup file.", Toast.LENGTH_SHORT).show()
@@ -108,11 +110,9 @@ class SettingsViewModel : ViewModel() {
             //Too lazy to recreate all links so the library gets reloaded on exit (✿◡‿◡)
             Storage.putString(StoragePairs.LIBRARY_LINKS_KEY, value)
         }
-
-        //App
-        loadBoolSettingFromJson(json, StoragePairs.APP_AUTOMATIC_METADATA_MODIFICATION.key) { value ->
+        loadBoolSettingFromJson(json, StoragePairs.LIBRARY_AUTOMATIC_METADATA_MODIFICATION.key) { value ->
             appModifyMetadata = value
-            Storage.putBool(StoragePairs.APP_AUTOMATIC_METADATA_MODIFICATION, value)
+            Storage.putBool(StoragePairs.LIBRARY_AUTOMATIC_METADATA_MODIFICATION, value)
         }
 
         //Home screen
@@ -129,6 +129,9 @@ class SettingsViewModel : ViewModel() {
         loadBoolSettingFromJson(json, StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON.key) { value ->
             albumShowMissingMetadataIcon = value
             Storage.putBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON, value)
+        }
+        loadStringSettingFromJson(json, StoragePairs.ALBUM_SEARCH_METHOD.key) { value ->
+            Storage.putString(StoragePairs.ALBUM_SEARCH_METHOD, value)
         }
 
         //Video player (these settings get loaded in video activity)
@@ -171,7 +174,7 @@ class SettingsViewModel : ViewModel() {
 
     fun updateAppModifyMetadata(isChecked: Boolean) {
         appModifyMetadata = isChecked
-        Storage.putBool(StoragePairs.APP_AUTOMATIC_METADATA_MODIFICATION, isChecked)
+        Storage.putBool(StoragePairs.LIBRARY_AUTOMATIC_METADATA_MODIFICATION, isChecked)
     }
 
     //Home screen

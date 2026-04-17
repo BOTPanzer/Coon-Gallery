@@ -232,6 +232,16 @@ class AlbumActivity : BaseActivity() {
         Library.removeOnActionEvent(onAction)
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        //Not init
+        if (!isInit) return
+
+        //Update search method
+        updateSearchMethod()
+    }
+
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
 
@@ -580,12 +590,8 @@ class AlbumActivity : BaseActivity() {
         inTrash = (album == Library.trash)
         navbarOptions.visibility = if (inTrash) View.VISIBLE else View.GONE
 
-        //Get search method
-        currentSearchMethod = try {
-            SearchMethod.valueOf(Storage.getString(StoragePairs.ALBUM_SEARCH_METHOD)?: "")
-        } catch (e: IllegalArgumentException) {
-            SearchMethod.ContainsWords
-        }
+        //Update search method
+        updateSearchMethod()
 
         //Update navbar title
         updateNavbarTitle()
@@ -842,6 +848,18 @@ class AlbumActivity : BaseActivity() {
                 isSearching = false
             }
         }.start()
+    }
+
+    private fun updateSearchMethod() {
+        //Update method
+        currentSearchMethod = try {
+            SearchMethod.valueOf(Storage.getString(StoragePairs.ALBUM_SEARCH_METHOD)?: "")
+        } catch (e: IllegalArgumentException) {
+            SearchMethod.ContainsWords
+        }
+
+        //Update text
+        searchMethodName.text = getSearchMethodName(currentSearchMethod)
     }
 
     private fun getSearchMethodName(searchMethod: SearchMethod): String {

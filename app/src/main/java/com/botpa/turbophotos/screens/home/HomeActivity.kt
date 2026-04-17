@@ -194,7 +194,7 @@ class HomeActivity : BaseActivity() {
     override fun onResume() {
         super.onResume()
 
-        //Home not init
+        //Not init
         if (!isInit) return
 
         //Check for permissions
