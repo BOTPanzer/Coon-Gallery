@@ -11,6 +11,7 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -83,6 +84,21 @@ class AlbumActivity : BaseActivity() {
     //Search
     private var currentSearchMethod: SearchMethod = SearchMethod.ContainsWords
     private var currentSearch: String = ""
+
+    //Display
+    private var displayIndex: Int = -1
+
+    private val onDisplayClosed = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        //Not OK
+        if (result.resultCode != RESULT_OK) return@registerForActivityResult
+
+        //Move to last opened item on display when it closes
+        val intent = result.data
+        val newDisplayIndex = intent?.getIntExtra("index", displayIndex) ?: displayIndex
+        if (newDisplayIndex != displayIndex) {
+            albumList.scrollToPosition(newDisplayIndex)
+        }
+    }
 
       /*$$$$$              /$$     /$$
      /$$__  $$            | $$    |__/
@@ -597,10 +613,13 @@ class AlbumActivity : BaseActivity() {
             setResult(RESULT_OK, resultIntent)
             finish()
         } else {
+            //Save index
+            displayIndex = index
+
             //Open display
             val intent = Intent(this, DisplayActivity::class.java)
             intent.putExtra("index", index)
-            startActivity(intent)
+            onDisplayClosed.launch(intent)
         }
     }
 

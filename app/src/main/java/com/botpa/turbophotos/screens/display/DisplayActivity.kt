@@ -502,6 +502,11 @@ class DisplayActivity : BaseActivity() {
         var index = index
         index = Math.clamp(index.toLong(), 0, displayGallery.size - 1)
 
+        //Create return intent (to scroll album list to current item on close)
+        val returnIntent = Intent()
+        returnIntent.putExtra("index", index)
+        setResult(RESULT_OK, returnIntent)
+
         //Reset display items
         displayItems.clear()
         currentIndexInGallery = index
