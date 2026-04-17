@@ -26,7 +26,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
-import android.view.animation.Transformation
+import android.view.animation.TranslateAnimation
 import android.view.inputmethod.InputMethodManager
 import android.webkit.MimeTypeMap
 import android.widget.LinearLayout
@@ -67,23 +67,20 @@ object Orion {
     //Logging
     private const val LOGGING_TAG = "ORION"
 
-    //JSON
+    //Files: JSON
     private val objectMapper = ObjectMapper()
 
 
-    //Math
-    fun lerp(a: Float, b: Float, t: Float): Float {
-        return a * (1 - t) + b * t
-    }
 
-    //Get attribute color
-    fun getColor(context: Context, attr: Int): Int {
-        val typedValue = TypedValue()
-        context.theme.resolveAttribute(attr, typedValue, true)
-        return typedValue.data
-    }
+      /*$$$$$                                /$$       /$$
+     /$$__  $$                              | $$      | $$
+    | $$  \__/ /$$$$$$$   /$$$$$$   /$$$$$$$| $$   /$$| $$$$$$$   /$$$$$$   /$$$$$$
+    |  $$$$$$ | $$__  $$ |____  $$ /$$_____/| $$  /$$/| $$__  $$ |____  $$ /$$__  $$
+     \____  $$| $$  \ $$  /$$$$$$$| $$      | $$$$$$/ | $$  \ $$  /$$$$$$$| $$  \__/
+     /$$  \ $$| $$  | $$ /$$__  $$| $$      | $$_  $$ | $$  | $$ /$$__  $$| $$
+    |  $$$$$$/| $$  | $$|  $$$$$$$|  $$$$$$$| $$ \  $$| $$$$$$$/|  $$$$$$$| $$
+     \______/ |__/  |__/ \_______/ \_______/|__/  \__/|_______/  \_______/|_*/
 
-    //Snack bar
     @JvmOverloads
     fun snack(activity: Activity, message: String, button: String = "ok", runnable: Runnable? = null) {
         val objLayoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
@@ -175,129 +172,104 @@ object Orion {
         snackbar.show()
     }
 
-    //Keyboard
-    fun hideKeyboard(activity: Activity) {
-        val imm = activity.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
-        val view = activity.currentFocus ?: View(activity)
-        imm.hideSoftInputFromWindow(view.windowToken, 0)
-    }
+      /*$$$$$            /$$                           /$$     /$$
+     /$$__  $$          |__/                          | $$    |__/
+    | $$  \ $$ /$$$$$$$  /$$ /$$$$$$/$$$$   /$$$$$$  /$$$$$$   /$$  /$$$$$$  /$$$$$$$   /$$$$$$$
+    | $$$$$$$$| $$__  $$| $$| $$_  $$_  $$ |____  $$|_  $$_/  | $$ /$$__  $$| $$__  $$ /$$_____/
+    | $$__  $$| $$  \ $$| $$| $$ \ $$ \ $$  /$$$$$$$  | $$    | $$| $$  \ $$| $$  \ $$|  $$$$$$
+    | $$  | $$| $$  | $$| $$| $$ | $$ | $$ /$$__  $$  | $$ /$$| $$| $$  | $$| $$  | $$ \____  $$
+    | $$  | $$| $$  | $$| $$| $$ | $$ | $$|  $$$$$$$  |  $$$$/| $$|  $$$$$$/| $$  | $$ /$$$$$$$/
+    |__/  |__/|__/  |__/|__/|__/ |__/ |__/ \_______/   \___/  |__/ \______/ |__/  |__/|______*/
 
-    fun showKeyboard(activity: Activity) {
-        val imm = activity.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
-        val view = activity.currentFocus ?: View(activity)
-        imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT)
-    }
+    const val DEFAULT_ANIMATION_DURATION: Int = 150
 
-    //Focus
-    fun clearFocus(activity: Activity) {
-        activity.currentFocus?.clearFocus()
-    }
-
-    //Animations
+    //Visibility
     @JvmOverloads
-    fun hideAnim(view: View, duration: Int = 150, runnable: Runnable? = null) {
+    fun animateHide(view: View, duration: Int = DEFAULT_ANIMATION_DURATION, onFinish: (() -> Unit)? = null) {
         //Already gone
         if (view.isGone) return
 
-        //Already being animated
-        if (view.animation != null && !view.animation.hasEnded()) return
-
         //Animate
-        val alpha = AlphaAnimation(1f, 0f)
-        alpha.duration = duration.toLong()
-        view.startAnimation(alpha)
-        alpha.setAnimationListener(object : Animation.AnimationListener {
-            override fun onAnimationStart(animation: Animation) {}
-
-            override fun onAnimationEnd(animation: Animation) {
+        view.alpha = 1.0f
+        view.animate()
+            .alpha(0.0f)
+            .setDuration(duration.toLong())
+            .withEndAction {
                 view.visibility = View.GONE
-                runnable?.run()
+                onFinish?.invoke()
             }
-
-            override fun onAnimationRepeat(animation: Animation) {}
-        })
+            .start()
     }
 
-    fun hideAnim(view: View, runnable: Runnable?) {
-        hideAnim(view, 150, runnable)
+    fun animateHide(view: View, onFinish: (() -> Unit)? = null) {
+        animateHide(view, DEFAULT_ANIMATION_DURATION, onFinish)
     }
 
     @JvmOverloads
-    fun showAnim(view: View, duration: Int = 150, runnable: Runnable? = null) {
+    fun animateShow(view: View, duration: Int = DEFAULT_ANIMATION_DURATION, onFinish: (() -> Unit)? = null) {
         //Already visible
         if (view.isVisible) return
 
         //Animate
-        val alpha = AlphaAnimation(0f, 1f)
-        alpha.duration = duration.toLong()
-        view.startAnimation(alpha)
-        view.visibility = View.VISIBLE
-        runnable?.run()
+        view.alpha = 0.0f
+        view.animate()
+            .alpha(1.0f)
+            .setDuration(duration.toLong())
+            .withStartAction {
+                view.visibility = View.VISIBLE
+            }
+            .withEndAction {
+                onFinish?.invoke()
+            }
+            .start()
     }
 
-    fun showAnim(view: View, runnable: Runnable?) {
-        showAnim(view, 150, runnable)
+    fun animateShow(view: View, onFinish: (() -> Unit)? = null) {
+        animateShow(view, DEFAULT_ANIMATION_DURATION, onFinish)
     }
 
-    class ResizeWidthAnimation : Animation {
-
-        private val view: View
-        private val width: Int
-        private val startWidth: Int
-
-        constructor(view: View, width: Int) {
-            this.view = view
-            this.width = width
-            startWidth = view.width
-        }
-
-        constructor(view: View, width: Int, startWidth: Int) {
-            this.view = view
-            this.width = width
-            this.startWidth = startWidth
-        }
-
-        override fun applyTransformation(interpolatedTime: Float, t: Transformation) {
-            view.layoutParams.width = startWidth + ((width - startWidth) * interpolatedTime).toInt()
-            view.requestLayout()
-        }
-
-        override fun willChangeBounds(): Boolean {
-            return true
-        }
-
+    //Position
+    @JvmOverloads
+    fun animateMoveX(view: View, destination: Float, duration: Int = DEFAULT_ANIMATION_DURATION, onFinish: (() -> Unit)? = null) {
+        //Animate
+        view.animate()
+            .translationX(destination)
+            .setDuration(duration.toLong())
+            .withEndAction {
+                onFinish?.invoke()
+            }
+            .start()
     }
 
-    class ResizeHeightAnimation : Animation {
-
-        private val view: View
-        private val height: Int
-        private val startHeight: Int
-
-        constructor(view: View, height: Int) {
-            this.view = view
-            this.height = height
-            startHeight = view.height
-        }
-
-        constructor(view: View, height: Int, startHeight: Int) {
-            this.view = view
-            this.height = height
-            this.startHeight = startHeight
-        }
-
-        override fun applyTransformation(interpolatedTime: Float, t: Transformation) {
-            view.layoutParams.height = startHeight + ((height - startHeight) * interpolatedTime).toInt()
-            view.requestLayout()
-        }
-
-        override fun willChangeBounds(): Boolean {
-            return true
-        }
-
+    fun animateMoveX(view: View, destination: Float, onFinish: (() -> Unit)? = null) {
+        animateMoveX(view, destination, DEFAULT_ANIMATION_DURATION, onFinish)
     }
 
-    //Insets
+    @JvmOverloads
+    fun animateMoveY(view: View, destination: Float, duration: Int = DEFAULT_ANIMATION_DURATION, onFinish: (() -> Unit)? = null) {
+        //Animate
+        view.animate()
+            .translationY(destination)
+            .setDuration(duration.toLong())
+            .withEndAction {
+                onFinish?.invoke()
+            }
+            .start()
+    }
+
+    fun animateMoveY(view: View, destination: Float, onFinish: (() -> Unit)? = null) {
+        animateMoveY(view, destination, DEFAULT_ANIMATION_DURATION, onFinish)
+    }
+
+     /*$$$$$                                 /$$
+    |_  $$_/                                | $$
+      | $$   /$$$$$$$   /$$$$$$$  /$$$$$$  /$$$$$$   /$$$$$$$
+      | $$  | $$__  $$ /$$_____/ /$$__  $$|_  $$_/  /$$_____/
+      | $$  | $$  \ $$|  $$$$$$ | $$$$$$$$  | $$   |  $$$$$$
+      | $$  | $$  | $$ \____  $$| $$_____/  | $$ /$$\____  $$
+     /$$$$$$| $$  | $$ /$$$$$$$/|  $$$$$$$  |  $$$$//$$$$$$$/
+    |______/|__/  |__/|_______/  \_______/   \___/ |______*/
+
     fun interface OnInsetsChanged {
         fun run(view: View, insets: Insets, percent: Float)
     }
@@ -361,34 +333,33 @@ object Orion {
         addInsetsChangedListener(view, types, 0f, onInsetsChanged)
     }
 
-    //Clipboard
-    fun copyToClip(context: Context, string: String) {
-        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        val clip = ClipData.newPlainText("", string)
-        clipboard.setPrimaryClip(clip)
+      /*$$$$$            /$$
+     /$$__  $$          | $$
+    | $$  \__/  /$$$$$$ | $$  /$$$$$$   /$$$$$$   /$$$$$$$
+    | $$       /$$__  $$| $$ /$$__  $$ /$$__  $$ /$$_____/
+    | $$      | $$  \ $$| $$| $$  \ $$| $$  \__/|  $$$$$$
+    | $$    $$| $$  | $$| $$| $$  | $$| $$       \____  $$
+    |  $$$$$$/|  $$$$$$/| $$|  $$$$$$/| $$       /$$$$$$$/
+     \______/  \______/ |__/ \______/ |__/      |______*/
+
+    fun getColorFromAttribute(context: Context, attr: Int): Int {
+        val typedValue = TypedValue()
+        context.theme.resolveAttribute(attr, typedValue, true)
+        return typedValue.data
     }
 
-    //Colors
     fun lightenColor(color: Int, fraction: Double): Int {
-        var red = Color.red(color)
-        var green = Color.green(color)
-        var blue = Color.blue(color)
-        red = lightenColorValue(red, fraction)
-        green = lightenColorValue(green, fraction)
-        blue = lightenColorValue(blue, fraction)
-        val alpha = Color.alpha(color)
-        return Color.argb(alpha, red, green, blue)
+        val red = lightenColorValue(Color.red(color), fraction)
+        val green = lightenColorValue(Color.green(color), fraction)
+        val blue = lightenColorValue(Color.blue(color), fraction)
+        return Color.argb(Color.alpha(color), red, green, blue)
     }
 
     fun darkenColor(color: Int, fraction: Double): Int {
-        var red = Color.red(color)
-        var green = Color.green(color)
-        var blue = Color.blue(color)
-        red = darkenColorValue(red, fraction)
-        green = darkenColorValue(green, fraction)
-        blue = darkenColorValue(blue, fraction)
-        val alpha = Color.alpha(color)
-        return Color.argb(alpha, red, green, blue)
+        val red = darkenColorValue(Color.red(color), fraction)
+        val green = darkenColorValue(Color.green(color), fraction)
+        val blue = darkenColorValue(Color.blue(color), fraction)
+        return Color.argb(Color.alpha(color), red, green, blue)
     }
 
     private fun darkenColorValue(color: Int, fraction: Double): Int {
@@ -399,7 +370,15 @@ object Orion {
         return min(color + (color * fraction), 255.0).toInt()
     }
 
-    //Files
+     /*$$$$$$$ /$$ /$$
+    | $$_____/|__/| $$
+    | $$       /$$| $$  /$$$$$$   /$$$$$$$
+    | $$$$$   | $$| $$ /$$__  $$ /$$_____/
+    | $$__/   | $$| $$| $$$$$$$$|  $$$$$$
+    | $$      | $$| $$| $$_____/ \____  $$
+    | $$      | $$| $$|  $$$$$$$ /$$$$$$$/
+    |__/      |__/|__/ \_______/|______*/
+
     fun listFolders(parent: File): MutableList<File> {
         //Create folders list
         val folders: MutableList<File> = ArrayList()
@@ -886,6 +865,45 @@ object Orion {
 
         options.inJustDecodeBounds = false
         return BitmapFactory.decodeFile(path, options)
+    }
+
+      /*$$$$$    /$$     /$$
+     /$$__  $$  | $$    | $$
+    | $$  \ $$ /$$$$$$  | $$$$$$$   /$$$$$$   /$$$$$$
+    | $$  | $$|_  $$_/  | $$__  $$ /$$__  $$ /$$__  $$
+    | $$  | $$  | $$    | $$  \ $$| $$$$$$$$| $$  \__/
+    | $$  | $$  | $$ /$$| $$  | $$| $$_____/| $$
+    |  $$$$$$/  |  $$$$/| $$  | $$|  $$$$$$$| $$
+     \______/    \___/  |__/  |__/ \_______/|_*/
+
+    //Math
+    fun lerp(a: Float, b: Float, t: Float): Float {
+        return a * (1 - t) + b * t
+    }
+
+    //Keyboard
+    fun hideKeyboard(activity: Activity) {
+        val imm = activity.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        val view = activity.currentFocus ?: View(activity)
+        imm.hideSoftInputFromWindow(view.windowToken, 0)
+    }
+
+    fun showKeyboard(activity: Activity) {
+        val imm = activity.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        val view = activity.currentFocus ?: View(activity)
+        imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT)
+    }
+
+    //Focus
+    fun clearFocus(activity: Activity) {
+        activity.currentFocus?.clearFocus()
+    }
+
+    //Clipboard
+    fun copyToClip(context: Context, string: String) {
+        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = ClipData.newPlainText("", string)
+        clipboard.setPrimaryClip(clip)
     }
 
 }

@@ -288,6 +288,7 @@
         android:visibility="gone">
 
         <androidx.cardview.widget.CardView
+            android:id="@+id/optionsMenu"
             android:layout_width="220dp"
             android:layout_height="wrap_content"
             android:layout_marginBottom="70dp"

@@ -26,7 +26,6 @@ import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.botpa.turbophotos.R
@@ -37,7 +36,6 @@ import com.botpa.turbophotos.gallery.Library.ActionEvent
 import com.botpa.turbophotos.gallery.Library.RefreshEvent
 import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.gallery.actions.Action
-import com.botpa.turbophotos.gallery.options.OptionsAdapter
 import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.screens.album.AlbumActivity
 import com.botpa.turbophotos.screens.home.filters.DialogFilters
@@ -49,6 +47,7 @@ import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
 import com.botpa.turbophotos.gallery.fastscroller.FastScroller
 import com.botpa.turbophotos.gallery.fastscroller.FastScrollerBuilder
+import com.botpa.turbophotos.gallery.options.OptionsManager
 
 @SuppressLint("SetTextI18n", "NotifyDataSetChanged")
 class HomeActivity : BaseActivity() {
@@ -121,15 +120,12 @@ class HomeActivity : BaseActivity() {
               |_*/
 
     private val options: MutableList<OptionsItem> = ArrayList()
-    private lateinit var optionsAdapter: OptionsAdapter
+    private lateinit var optionsManager: OptionsManager
 
     private val optionSeparator: OptionsItem = OptionsItem()
     private lateinit var optionSync: OptionsItem
     private lateinit var optionSettings: OptionsItem
     private lateinit var optionFilters: OptionsItem
-
-    private lateinit var optionsLayout: View
-    private lateinit var optionsList: RecyclerView
 
       /*$$$$$    /$$     /$$
      /$$__  $$  | $$    | $$
@@ -177,11 +173,11 @@ class HomeActivity : BaseActivity() {
 
         //Init components
         backManager = BackManager(this, onBackPressedDispatcher)
+        optionsManager = OptionsManager(this, options, backManager) { onUpdateOptions() }
         Storage.init(this) //Init storage cause activity is exported
         initViews()
         initListeners()
         initHomeList()
-        initOptionsList()
 
         //Init activity
         initActivity()
@@ -339,7 +335,7 @@ class HomeActivity : BaseActivity() {
                 loadingIndicator.visibility = View.GONE
 
                 //Show list
-                Orion.showAnim(homeList)
+                Orion.animateShow(homeList)
 
                 //Reload albums list
                 homeAdapter.notifyDataSetChanged()
@@ -423,10 +419,6 @@ class HomeActivity : BaseActivity() {
         navbarSubtitle = findViewById(R.id.navbarSubtitle)
         navbarOptions = findViewById(R.id.navbarOptions)
 
-        //Options
-        optionsLayout = findViewById(R.id.optionsLayout)
-        optionsList = findViewById(R.id.optionsList)
-
         //List
         homeRefreshLayout = findViewById(R.id.refreshLayout)
         homeList = findViewById(R.id.list)
@@ -470,12 +462,6 @@ class HomeActivity : BaseActivity() {
             Orion.onInsetsChangedDefault.run(view, insets, percent)
         }
 
-        //Insets (options layout)
-        Orion.addInsetsChangedListener(
-            optionsLayout,
-            intArrayOf(WindowInsetsCompat.Type.systemBars())
-        )
-
         //Insets (system bars background)
         Orion.addInsetsChangedListener(
             systemNotificationsBar,
@@ -484,14 +470,29 @@ class HomeActivity : BaseActivity() {
             systemNotificationsBar.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, insets.top)
             systemNavigationBar.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, insets.bottom)
         }
+
+        //Insets (options layout)
+        Orion.addInsetsChangedListener(
+            optionsManager.layout,
+            intArrayOf(WindowInsetsCompat.Type.systemBars())
+        )
     }
 
     private fun initListeners() {
         //Navbar
-        navbarOptions.setOnClickListener { view: View -> toggleOptions(true) }
+        navbarOptions.setOnClickListener { view: View -> optionsManager.toggle(true) }
+
+        //List
+        homeRefreshLayout.setOnRefreshListener {
+            //Reload library
+            Library.loadLibrary(this, true)
+
+            //Stop refreshing
+            homeRefreshLayout.isRefreshing = false
+        }
 
         //Options
-        optionsLayout.setOnClickListener { view: View -> toggleOptions(false) }
+        optionsManager.layout.setOnClickListener { view: View -> optionsManager.toggle(false) }
 
         optionSync = OptionsItem(R.drawable.sync, "Sync") {
             //Not loaded
@@ -519,15 +520,6 @@ class HomeActivity : BaseActivity() {
 
             //Create dialog
             DialogFilters(this, filters).buildAndShow()
-        }
-
-        //List
-        homeRefreshLayout.setOnRefreshListener {
-            //Reload library
-            Library.loadLibrary(this, true)
-
-            //Stop refreshing
-            homeRefreshLayout.isRefreshing = false
         }
     }
 
@@ -600,44 +592,11 @@ class HomeActivity : BaseActivity() {
               | $$
               |_*/
 
-    private fun initOptionsList() {
-        //Init options layout manager
-        optionsList.setLayoutManager(LinearLayoutManager(this))
-
-        //Init options adapter
-        optionsAdapter = OptionsAdapter(this, options)
-        optionsAdapter.setOnClickListener { view: View, index: Int ->
-            //Get option
-            val option = options[index]
-
-            //Get action
-            val action = option.action ?: return@setOnClickListener
-
-            //Invoke action
-            action.run()
-            toggleOptions(false)
-        }
-        optionsList.setAdapter(optionsAdapter)
-    }
-
-    private fun toggleOptions(show: Boolean) {
-        if (show) {
-            //Update options list
-            options.clear()
-            options.add(optionSync)
-            options.add(optionSettings)
-            options.add(optionSeparator)
-            options.add(optionFilters)
-            optionsAdapter.notifyDataSetChanged()
-
-            //Show
-            Orion.showAnim(optionsLayout)
-            backManager.register("options") { toggleOptions(false) }
-        } else {
-            //Hide
-            Orion.hideAnim(optionsLayout)
-            backManager.unregister("options")
-        }
+    private fun onUpdateOptions() {
+        options.add(optionSync)
+        options.add(optionSettings)
+        options.add(optionSeparator)
+        options.add(optionFilters)
     }
 
       /*$$$$$    /$$     /$$

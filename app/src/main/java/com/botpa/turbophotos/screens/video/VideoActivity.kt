@@ -56,6 +56,7 @@ import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.gallery.modals.DialogSlider
 import com.botpa.turbophotos.gallery.options.OptionsAdapter
 import com.botpa.turbophotos.gallery.options.OptionsItem
+import com.botpa.turbophotos.gallery.options.OptionsManager
 import com.botpa.turbophotos.gallery.views.ZoomableLayout
 import com.botpa.turbophotos.util.BackManager
 import com.botpa.turbophotos.util.Orion
@@ -128,8 +129,8 @@ class VideoActivity : BaseActivity() {
         loadingIndicator.visibility = View.VISIBLE
     }
     private val hideSkipIndicators = Runnable {
-        Orion.hideAnim(skipBackwardsIndicator)
-        Orion.hideAnim(skipForwardIndicator)
+        Orion.animateHide(skipBackwardsIndicator)
+        Orion.animateHide(skipForwardIndicator)
         lastSkipDuration = 0
     }
 
@@ -150,14 +151,11 @@ class VideoActivity : BaseActivity() {
               |_*/
 
     private val options: MutableList<OptionsItem> = ArrayList()
-    private lateinit var optionsAdapter: OptionsAdapter
+    private lateinit var optionsManager: OptionsManager
 
     private val optionSeparator: OptionsItem = OptionsItem()
     private lateinit var optionPiP: OptionsItem
     private lateinit var optionSpeed: OptionsItem
-
-    private lateinit var optionsLayout: View
-    private lateinit var optionsList: RecyclerView
 
       /*$$$$$    /$$     /$$
      /$$__  $$  | $$    | $$
@@ -209,6 +207,7 @@ class VideoActivity : BaseActivity() {
 
         //Init components
         backManager = BackManager(this, onBackPressedDispatcher)
+        optionsManager = OptionsManager(this, options, backManager) { onUpdateOptions() }
         Storage.init(this) //Init storage cause activity is exported
         initViews()
         initListeners()
@@ -216,7 +215,6 @@ class VideoActivity : BaseActivity() {
         initMediaSession()
         initNotification()
         initBroadcastReceiver()
-        initOptionsList()
 
         //Init activity
         initActivity()
@@ -340,10 +338,6 @@ class VideoActivity : BaseActivity() {
         overlayTimeCurrent = findViewById(R.id.overlayTimeCurrent)
         overlayTimeDuration = findViewById(R.id.overlayTimeDuration)
 
-        //Views (options)
-        optionsLayout = findViewById(R.id.optionsLayout)
-        optionsList = findViewById(R.id.optionsList)
-
 
         //Insets (overlay)
         Orion.addInsetsChangedListener(
@@ -361,7 +355,7 @@ class VideoActivity : BaseActivity() {
 
         //Insets (options layout)
         Orion.addInsetsChangedListener(
-            optionsLayout,
+            optionsManager.layout,
             intArrayOf(WindowInsetsCompat.Type.systemBars())
         )
     }
@@ -389,8 +383,8 @@ class VideoActivity : BaseActivity() {
                     //Update indicators
                     lastSkipDuration = min(lastSkipDuration - skipBackwardsAmount, -skipBackwardsAmount)
                     skipBackwardsIndicator.text = "${lastSkipDuration}s"
-                    Orion.showAnim(skipBackwardsIndicator)
-                    Orion.hideAnim(skipForwardIndicator)
+                    Orion.animateShow(skipBackwardsIndicator)
+                    Orion.animateHide(skipForwardIndicator)
                 } else if (x > width - doubleTapArea) {
                     //Skip forward
                     val newPosition = (player.currentPosition + (skipForwardAmount * 1000L)).coerceAtMost(player.duration)
@@ -400,8 +394,8 @@ class VideoActivity : BaseActivity() {
                     //Update indicators
                     lastSkipDuration = max(lastSkipDuration + skipForwardAmount, skipForwardAmount)
                     skipForwardIndicator.text = "+${lastSkipDuration}s"
-                    Orion.hideAnim(skipBackwardsIndicator)
-                    Orion.showAnim(skipForwardIndicator)
+                    Orion.animateHide(skipBackwardsIndicator)
+                    Orion.animateShow(skipForwardIndicator)
                 }
 
                 //Seeking
@@ -432,7 +426,7 @@ class VideoActivity : BaseActivity() {
             }
         }
 
-        overlayOptions.setOnClickListener { toggleOptions(true) }
+        overlayOptions.setOnClickListener { optionsManager.toggle(true) }
 
         overlayTimeSlider.addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
 
@@ -455,7 +449,7 @@ class VideoActivity : BaseActivity() {
         })
 
         //Options
-        optionsLayout.setOnClickListener { toggleOptions(false) }
+        optionsManager.layout.setOnClickListener { optionsManager.toggle(false) }
 
         optionPiP = OptionsItem(R.drawable.pip, "Open in PiP") {
             //Create params
@@ -687,14 +681,14 @@ class VideoActivity : BaseActivity() {
     private fun toggleController(show: Boolean) {
         if (show) {
             //Show
-            Orion.showAnim(overlayLayout)
+            Orion.animateShow(overlayLayout)
             toggleSystemUI(true)
 
             //Start update time loop
             if (player.isPlaying) enableUpdateTimeLoop(true)
         } else {
             //Hide
-            Orion.hideAnim(overlayLayout)
+            Orion.animateHide(overlayLayout)
             toggleSystemUI(false)
 
             //Stop update time loop
@@ -852,42 +846,9 @@ class VideoActivity : BaseActivity() {
               | $$
               |_*/
 
-    private fun initOptionsList() {
-        //Init options layout manager
-        optionsList.setLayoutManager(LinearLayoutManager(this))
-
-        //Init options adapter
-        optionsAdapter = OptionsAdapter(this, options)
-        optionsAdapter.setOnClickListener { view: View, index: Int ->
-            //Get option
-            val option = options[index]
-
-            //Get action
-            val action = option.action ?: return@setOnClickListener
-
-            //Invoke action
-            action.run()
-            toggleOptions(false)
-        }
-        optionsList.setAdapter(optionsAdapter)
-    }
-
-    private fun toggleOptions(show: Boolean) {
-        if (show) {
-            //Update options list
-            options.clear()
-            options.add(optionPiP)
-            options.add(optionSpeed)
-            optionsAdapter.notifyDataSetChanged()
-
-            //Show
-            Orion.showAnim(optionsLayout)
-            backManager.register("options") { toggleOptions(false) }
-        } else {
-            //Hide
-            Orion.hideAnim(optionsLayout)
-            backManager.unregister("options")
-        }
+    private fun onUpdateOptions() {
+        options.add(optionPiP)
+        options.add(optionSpeed)
     }
 
       /*$$$$$    /$$     /$$

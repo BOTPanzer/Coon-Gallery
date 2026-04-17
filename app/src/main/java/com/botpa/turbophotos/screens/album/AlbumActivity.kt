@@ -17,7 +17,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.botpa.turbophotos.R
@@ -31,7 +30,6 @@ import com.botpa.turbophotos.gallery.Library.ActionEvent
 import com.botpa.turbophotos.gallery.LoadingIndicator
 import com.botpa.turbophotos.gallery.SearchMethod
 import com.botpa.turbophotos.gallery.actions.Action
-import com.botpa.turbophotos.gallery.options.OptionsAdapter
 import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.util.BackManager
@@ -39,6 +37,7 @@ import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
 import com.botpa.turbophotos.gallery.fastscroller.FastScroller
 import com.botpa.turbophotos.gallery.fastscroller.FastScrollerBuilder
+import com.botpa.turbophotos.gallery.options.OptionsManager
 import com.botpa.turbophotos.screens.album.search.DialogSearch
 
 @SuppressLint("SetTextI18n", "NotifyDataSetChanged")
@@ -73,7 +72,7 @@ class AlbumActivity : BaseActivity() {
     private val gallery: List<CoonItem>
         get() = Library.gallery
 
-    private val selectedItems: MutableSet<Int> = HashSet()
+    private val selectedIndexes: MutableSet<Int> = HashSet()
     private lateinit var currentAlbum: Album
     private var inTrash = false
 
@@ -114,7 +113,7 @@ class AlbumActivity : BaseActivity() {
 
     //Options
     private val options: MutableList<OptionsItem> = ArrayList()
-    private lateinit var optionsAdapter: OptionsAdapter
+    private lateinit var optionsManager: OptionsManager
 
     private val optionSeparator: OptionsItem = OptionsItem()
     private lateinit var optionRename: OptionsItem
@@ -130,9 +129,6 @@ class AlbumActivity : BaseActivity() {
     private lateinit var optionRestoreAll: OptionsItem
     private lateinit var optionDelete: OptionsItem
     private lateinit var optionDeleteAll: OptionsItem
-
-    private lateinit var optionsLayout: View
-    private lateinit var optionsList: RecyclerView
 
       /*$$$$$    /$$     /$$
      /$$__  $$  | $$    | $$
@@ -219,10 +215,10 @@ class AlbumActivity : BaseActivity() {
 
         //Init components
         backManager = BackManager(this, onBackPressedDispatcher)
+        optionsManager = OptionsManager(this, options, backManager) { onUpdateOptions() }
         initViews()
         initListeners()
         initAlbumList()
-        initOptionsList()
 
         //Init activity
         initActivity()
@@ -316,12 +312,12 @@ class AlbumActivity : BaseActivity() {
 
         //Remove items
         for (indexInGallery in action.removedIndexesInGallery) {
-            selectedItems.remove(indexInGallery)
+            selectedIndexes.remove(indexInGallery)
             albumAdapter.notifyItemRemoved(indexInGallery)
         }
 
         //Remove select back callback if no more items are selected
-        if (selectedItems.isEmpty()) unselectAll()
+        if (selectedIndexes.isEmpty()) unselectAll()
     }
 
     //Views
@@ -340,10 +336,6 @@ class AlbumActivity : BaseActivity() {
         searchMethodName = findViewById(R.id.searchMethodName)
         searchMethod = findViewById(R.id.searchMethod)
         searchClose = findViewById(R.id.searchClose)
-
-        //Options
-        optionsList = findViewById(R.id.optionsList)
-        optionsLayout = findViewById(R.id.optionsLayout)
 
         //List
         albumList = findViewById(R.id.list)
@@ -389,12 +381,6 @@ class AlbumActivity : BaseActivity() {
             Orion.onInsetsChangedDefault.run(view, insets, percent)
         }
 
-        //Insets (options layout)
-        Orion.addInsetsChangedListener(
-            optionsLayout,
-            intArrayOf(WindowInsetsCompat.Type.systemBars())
-        )
-
         //Insets (system bars background)
         Orion.addInsetsChangedListener(
             systemNotificationsBar,
@@ -417,31 +403,100 @@ class AlbumActivity : BaseActivity() {
             //Return insets so layout stays correct
             insets
         }
+
+        //Insets (options layout)
+        Orion.addInsetsChangedListener(
+            optionsManager.layout,
+            intArrayOf(WindowInsetsCompat.Type.systemBars())
+        )
     }
 
     private fun initListeners() {
         //Navbar
         navbarSearch.setOnClickListener { view: View -> showSearchLayout(true) }
 
-        navbarOptions.setOnClickListener { view: View -> toggleOptions(true) }
+        navbarOptions.setOnClickListener { view: View -> optionsManager.toggle(true) }
+
+        //List
+        albumRefreshLayout.setOnRefreshListener {
+            //Refresh library
+            Library.loadLibrary(this, false)
+
+            //Stop refreshing
+            albumRefreshLayout.isRefreshing = false
+        }
+
+        albumList.addOnItemTouchListener(DragSelectTouchListener(
+            this,
+            albumList,
+            onSelectRange = { from, to, min, max ->
+                //Select range items
+                selectRange(from..to)
+
+                //Deselect extra items
+                if (min < from) deselectRange(min..(from - 1))
+                if (max > to) deselectRange((to + 1)..max)
+            },
+            onSingleTap = { position ->
+                if (selectedIndexes.isNotEmpty()) {
+                    //Toggle item
+                    toggleSelected(position)
+                } else {
+                    //Open item
+                    openItem(position)
+                }
+            },
+            onDragSelectingChanged = { isDragSelecting ->
+                //Disable swipe refresh layout when drag selecting
+                albumRefreshLayout.requestDisallowInterceptTouchEvent(isDragSelecting)
+            }
+        ))
+
+        //Search
+        searchInput.setOnKeyListener { view: View, i: Int, keyEvent: KeyEvent ->
+            if (keyEvent.keyCode == KeyEvent.KEYCODE_ENTER) searchSearch.performClick()
+            false
+        }
+
+        searchSearch.setOnClickListener { view ->
+            //Get search text
+            val search = searchInput.text.toString()
+
+            //Filter items with search
+            filterItems(search, true)
+        }
+
+        searchMethod.setOnClickListener { view: View ->
+            DialogSearch(this) { method ->
+                //Update method
+                currentSearchMethod = method
+                searchMethodName.text = getSearchMethodName(currentSearchMethod)
+                Storage.putString(StoragePairs.ALBUM_SEARCH_METHOD, currentSearchMethod.name)
+
+                //Filter
+                if (currentSearch.isNotEmpty()) filterItems(currentSearch, true)
+            }.buildAndShow()
+        }
+
+        searchClose.setOnClickListener { view: View -> showSearchLayout(false) }
 
         //Options
-        optionsLayout.setOnClickListener { view: View -> toggleOptions(false) }
+        optionsManager.layout.setOnClickListener { view: View -> optionsManager.toggle(false) }
 
         optionRename = OptionsItem(R.drawable.rename, "Rename") {
             //Only allow 1 selection
-            if (selectedItems.size != 1) return@OptionsItem
+            if (selectedIndexes.size != 1) return@OptionsItem
 
             //Rename
-            Library.renameItem(this, gallery[selectedItems.iterator().next()])
+            Library.renameItem(this, gallery[selectedIndexes.iterator().next()])
         }
 
         optionEdit = OptionsItem(R.drawable.edit, "Edit") {
             //Only allow 1 selection
-            if (selectedItems.size != 1) return@OptionsItem
+            if (selectedIndexes.size != 1) return@OptionsItem
 
             //Edit
-            Library.editItem(this, gallery[selectedItems.iterator().next()])
+            Library.editItem(this, gallery[selectedIndexes.iterator().next()])
         }
 
         optionShare = OptionsItem(R.drawable.share, "Share") {
@@ -451,10 +506,10 @@ class AlbumActivity : BaseActivity() {
 
         optionSetAs = OptionsItem(R.drawable.wallpaper, "Set as") {
             //Only allow 1 selection
-            if (selectedItems.size != 1) return@OptionsItem
+            if (selectedIndexes.size != 1) return@OptionsItem
 
             //Set as
-            Library.setItemAs(this, gallery[selectedItems.iterator().next()])
+            Library.setItemAs(this, gallery[selectedIndexes.iterator().next()])
         }
 
         optionFavourite = OptionsItem(R.drawable.favourite_on, "Favourite") {
@@ -501,69 +556,6 @@ class AlbumActivity : BaseActivity() {
             //Delete all items
             Library.deleteItems(this, currentAlbum.items.toTypedArray<CoonItem>())
         }
-
-        //List
-        albumRefreshLayout.setOnRefreshListener {
-            //Refresh library
-            Library.loadLibrary(this, false)
-
-            //Stop refreshing
-            albumRefreshLayout.isRefreshing = false
-        }
-
-        albumList.addOnItemTouchListener(DragSelectTouchListener(
-            this,
-            albumList,
-            onSelectRange = { from, to, min, max ->
-                //Select range items
-                selectRange(from..to)
-
-                //Deselect extra items
-                if (min < from) deselectRange(min..(from - 1))
-                if (max > to) deselectRange((to + 1)..max)
-            },
-            onSingleTap = { position ->
-                if (selectedItems.isNotEmpty()) {
-                    //Toggle item
-                    toggleSelected(position)
-                } else {
-                    //Open item
-                    openItem(position)
-                }
-            },
-            onDragSelectingChanged = { isDragSelecting ->
-                //Disable swipe refresh layout when drag selecting
-                albumRefreshLayout.requestDisallowInterceptTouchEvent(isDragSelecting)
-            }
-        ))
-
-        //Search
-        searchInput.setOnKeyListener { view: View, i: Int, keyEvent: KeyEvent ->
-            if (keyEvent.keyCode == KeyEvent.KEYCODE_ENTER) searchSearch.performClick()
-            false
-        }
-
-        searchSearch.setOnClickListener { view ->
-            //Get search text
-            val search = searchInput.text.toString()
-
-            //Filter items with search
-            filterItems(search, true)
-        }
-
-        searchMethod.setOnClickListener { view: View ->
-            DialogSearch(this) { method ->
-                //Update method
-                currentSearchMethod = method
-                searchMethodName.text = getSearchMethodName(currentSearchMethod)
-                Storage.putString(StoragePairs.ALBUM_SEARCH_METHOD, currentSearchMethod.name)
-
-                //Filter
-                if (currentSearch.isNotEmpty()) filterItems(currentSearch, true)
-            }.buildAndShow()
-        }
-
-        searchClose.setOnClickListener { view: View -> showSearchLayout(false) }
     }
 
     //Album
@@ -573,7 +565,7 @@ class AlbumActivity : BaseActivity() {
         albumList.setLayoutManager(albumLayoutManager)
 
         //Init album adapter
-        albumAdapter = AlbumAdapter(this, gallery, selectedItems, Storage.getBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON))
+        albumAdapter = AlbumAdapter(this, gallery, selectedIndexes, Storage.getBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON))
         albumList.setAdapter(albumAdapter)
 
         //Init home fast scroller
@@ -635,70 +627,32 @@ class AlbumActivity : BaseActivity() {
               | $$
               |_*/
 
-    private fun initOptionsList() {
-        //Init options layout manager
-        optionsList.setLayoutManager(LinearLayoutManager(this))
+    private fun onUpdateOptions() {
+        //Get state info
+        val isSelecting = !selectedIndexes.isEmpty()
+        val isSelectingSingle = selectedIndexes.size == 1
 
-        //Init options adapter
-        optionsAdapter = OptionsAdapter(this, options)
-        optionsAdapter.setOnClickListener { view: View, index: Int ->
-            //Get option
-            val option = options[index]
-
-            //Get action
-            val action = option.action ?: return@setOnClickListener
-
-            //Invoke action
-            action.run()
-            toggleOptions(false)
-        }
-        optionsList.setAdapter(optionsAdapter)
-    }
-
-    private fun toggleOptions(show: Boolean) {
-        if (show) {
-            //Get state info
-            val isSelecting = !selectedItems.isEmpty()
-            val isSelectingSingle = selectedItems.size == 1
-
-            //Update options list
-            options.clear()
-            if (!inTrash && isSelectingSingle) options.add(optionRename)
-            if (!inTrash && isSelectingSingle) options.add(optionEdit)
-            if (!inTrash && isSelecting) options.add(optionShare)
-            if (!inTrash && isSelectingSingle) options.add(optionSetAs)
-            if (!inTrash) options.add(optionSeparator)
-            if (!inTrash) {
-                if (selectedItems.all { gallery[it].isFavourite }) {
-                    options.add(optionUnfavourite)
-                } else if (selectedItems.all { !gallery[it].isFavourite }) {
-                    options.add(optionFavourite)
-                }
+        //Update options list
+        if (!inTrash && isSelectingSingle) options.add(optionRename)
+        if (!inTrash && isSelectingSingle) options.add(optionEdit)
+        if (!inTrash && isSelecting) options.add(optionShare)
+        if (!inTrash && isSelectingSingle) options.add(optionSetAs)
+        if (!inTrash) options.add(optionSeparator)
+        if (!inTrash) {
+            if (selectedIndexes.all { gallery[it].isFavourite }) {
+                options.add(optionUnfavourite)
+            } else if (selectedIndexes.all { !gallery[it].isFavourite }) {
+                options.add(optionFavourite)
             }
-            if (!inTrash && isSelecting) options.add(optionMove)
-            if (!inTrash && isSelecting) options.add(optionCopy)
-            if (!inTrash) options.add(optionSeparator)
-            if (!inTrash && isSelecting) options.add(optionTrash)
-            if (inTrash && isSelecting) options.add(optionRestore)
-            if (inTrash && !isSelecting) options.add(optionRestoreAll)
-            if (isSelecting) options.add(optionDelete)
-            if (inTrash && !isSelecting) options.add(optionDeleteAll)
-            optionsAdapter.notifyDataSetChanged()
-
-            //Show
-            Orion.showAnim(optionsLayout)
-            backManager.register("options") { toggleOptions(false) }
-        } else {
-            //Hide
-            Orion.hideAnim(optionsLayout)
-            backManager.unregister("options")
         }
-    }
-
-    private fun getSelectedItems(): Array<CoonItem> {
-        val selectedFiles = ArrayList<CoonItem>(selectedItems.size)
-        for (index in selectedItems) selectedFiles.add(gallery[index])
-        return selectedFiles.toTypedArray<CoonItem>()
+        if (!inTrash && isSelecting) options.add(optionMove)
+        if (!inTrash && isSelecting) options.add(optionCopy)
+        if (!inTrash) options.add(optionSeparator)
+        if (!inTrash && isSelecting) options.add(optionTrash)
+        if (inTrash && isSelecting) options.add(optionRestore)
+        if (inTrash && !isSelecting) options.add(optionRestoreAll)
+        if (isSelecting) options.add(optionDelete)
+        if (inTrash && !isSelecting) options.add(optionDeleteAll)
     }
 
       /*$$$$$    /$$     /$$
@@ -709,6 +663,13 @@ class AlbumActivity : BaseActivity() {
     | $$  | $$  | $$ /$$| $$  | $$| $$_____/| $$
     |  $$$$$$/  |  $$$$/| $$  | $$|  $$$$$$$| $$
      \______/    \___/  |__/  |__/ \_______/|_*/
+
+    //Selection
+    private fun getSelectedItems(): Array<CoonItem> {
+        val selectedFiles = ArrayList<CoonItem>(selectedIndexes.size)
+        for (index in selectedIndexes) selectedFiles.add(gallery[index])
+        return selectedFiles.toTypedArray<CoonItem>()
+    }
 
     //List grid
     private val listItemsPerRow: Int get() {
@@ -736,7 +697,7 @@ class AlbumActivity : BaseActivity() {
     //Navbar
     private fun updateNavbarTitle() {
         //Update navbar title
-        navbarTitle.text = "${currentAlbum.name}${if (selectedItems.isEmpty()) "" else " (${selectedItems.size} selected)"}"
+        navbarTitle.text = "${currentAlbum.name}${if (selectedIndexes.isEmpty()) "" else " (${selectedIndexes.size} selected)"}"
     }
 
     //Metadata
@@ -767,7 +728,7 @@ class AlbumActivity : BaseActivity() {
         if (range.isEmpty()) return
 
         //Check if its the first item to be selected
-        if (selectedItems.isEmpty()) {
+        if (selectedIndexes.isEmpty()) {
             //Add back event
             backManager.register("selected") { this.unselectAll() }
 
@@ -777,7 +738,7 @@ class AlbumActivity : BaseActivity() {
 
         //Select items & update adapter
         val selected = ArrayList<Int>()
-        for (index in range) if (selectedItems.add(index)) selected.add(index)
+        for (index in range) if (selectedIndexes.add(index)) selected.add(index)
         for (index in selected) albumAdapter.notifyItemChanged(index)
 
         //Update navbar title
@@ -790,11 +751,11 @@ class AlbumActivity : BaseActivity() {
 
         //Deselect items & update adapter
         val deselected = ArrayList<Int>()
-        for (index in range) if (selectedItems.remove(index)) deselected.add(index)
+        for (index in range) if (selectedIndexes.remove(index)) deselected.add(index)
         for (index in deselected) albumAdapter.notifyItemChanged(index)
 
         //Check if no more items are selected
-        if (selectedItems.isEmpty()) {
+        if (selectedIndexes.isEmpty()) {
             //Add back event
             backManager.register("selected") { this.unselectAll() }
 
@@ -808,7 +769,7 @@ class AlbumActivity : BaseActivity() {
 
     private fun toggleSelected(index: Int) {
         //Check if item is selected
-        if (selectedItems.contains(index)) {
+        if (selectedIndexes.contains(index)) {
             //Deselect item
             deselectRange(index..index)
         } else {
@@ -825,9 +786,9 @@ class AlbumActivity : BaseActivity() {
         if (!inTrash) navbarOptions.visibility = View.GONE
 
         //Unselect all
-        if (!selectedItems.isEmpty()) {
-            val temp = HashSet<Int>(selectedItems)
-            selectedItems.clear()
+        if (!selectedIndexes.isEmpty()) {
+            val temp = HashSet<Int>(selectedIndexes)
+            selectedIndexes.clear()
             for (index in temp) albumAdapter.notifyItemChanged(index)
         }
 
@@ -860,7 +821,7 @@ class AlbumActivity : BaseActivity() {
         else backManager.unregister("search")
 
         //Clear selected items
-        selectedItems.clear()
+        selectedIndexes.clear()
 
         //Filter items
         Thread {
@@ -896,7 +857,7 @@ class AlbumActivity : BaseActivity() {
             if (isSearching) return
 
             //Toggle search
-            Orion.hideAnim(navbarLayout, 50) { Orion.showAnim(searchLayout, 50) }
+            Orion.animateHide(navbarLayout) { Orion.animateShow(searchLayout) }
 
             //Focus text & show keyboard
             searchInput.requestFocus()
@@ -911,7 +872,7 @@ class AlbumActivity : BaseActivity() {
             Orion.clearFocus(this)
 
             //Toggle search
-            Orion.hideAnim(searchLayout, 50) { Orion.showAnim(navbarLayout, 50) }
+            Orion.animateHide(searchLayout) { Orion.animateShow(navbarLayout) }
 
             //Back button
             backManager.unregister("searchMenu")

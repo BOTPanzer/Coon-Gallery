@@ -25,20 +25,19 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SnapHelper
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Album
-import com.botpa.turbophotos.gallery.CoonItem
 import com.botpa.turbophotos.gallery.BaseActivity
+import com.botpa.turbophotos.gallery.CoonItem
 import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.Library.ActionEvent
 import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.gallery.actions.Action
-import com.botpa.turbophotos.gallery.options.OptionsAdapter
 import com.botpa.turbophotos.gallery.options.OptionsItem
+import com.botpa.turbophotos.gallery.options.OptionsManager
 import com.botpa.turbophotos.gallery.views.ZoomableLayout
 import com.botpa.turbophotos.screens.display.info.DrawerInfo
 import com.botpa.turbophotos.screens.video.VideoActivity
@@ -99,7 +98,7 @@ class DisplayActivity : BaseActivity() {
               |_*/
 
     private val options: MutableList<OptionsItem> = ArrayList()
-    private lateinit var optionsAdapter: OptionsAdapter
+    private lateinit var optionsManager: OptionsManager
 
     private val optionSeparator: OptionsItem = OptionsItem()
     private lateinit var optionRename: OptionsItem
@@ -114,9 +113,6 @@ class DisplayActivity : BaseActivity() {
     private lateinit var optionTrash: OptionsItem
     private lateinit var optionRestore: OptionsItem
     private lateinit var optionDelete: OptionsItem
-
-    private lateinit var optionsLayout: View
-    private lateinit var optionsList: RecyclerView
 
       /*$$$$$    /$$     /$$
      /$$__  $$  | $$    | $$
@@ -162,11 +158,11 @@ class DisplayActivity : BaseActivity() {
 
         //Init components
         backManager = BackManager(this, onBackPressedDispatcher)
+        optionsManager = OptionsManager(this, options, backManager) { onUpdateOptions() }
         Storage.init(this) //Init storage cause activity is exported
         initViews()
         initListeners()
         initDisplayList()
-        initOptionsList()
 
         //Init activity
         initActivity()
@@ -307,10 +303,6 @@ class DisplayActivity : BaseActivity() {
         overlayInfo = findViewById(R.id.overlayInfo)
         overlayOptions = findViewById(R.id.overlayOptions)
 
-        //Views (options)
-        optionsLayout = findViewById(R.id.optionsLayout)
-        optionsList = findViewById(R.id.optionsList)
-
 
         //Insets (overlay)
         Orion.addInsetsChangedListener(
@@ -328,7 +320,7 @@ class DisplayActivity : BaseActivity() {
 
         //Insets (options layout)
         Orion.addInsetsChangedListener(
-            optionsLayout,
+            optionsManager.layout,
             intArrayOf(WindowInsetsCompat.Type.systemBars())
         )
     }
@@ -339,10 +331,10 @@ class DisplayActivity : BaseActivity() {
             DrawerInfo(this, currentItem).buildAndShow()
         }
 
-        overlayOptions.setOnClickListener { toggleOptions(true) }
+        overlayOptions.setOnClickListener { optionsManager.toggle(true) }
 
         //Options
-        optionsLayout.setOnClickListener { toggleOptions(false) }
+        optionsManager.layout.setOnClickListener { optionsManager.toggle(false) }
 
         optionRename = OptionsItem(R.drawable.rename, "Rename") {
             //Rename
@@ -481,11 +473,11 @@ class DisplayActivity : BaseActivity() {
     private fun toggleOverlay(show: Boolean) {
         if (show) {
             //Show
-            Orion.showAnim(overlayLayout)
+            Orion.animateShow(overlayLayout, 500)
             toggleSystemUI(true)
         } else {
             //Hide
-            Orion.hideAnim(overlayLayout)
+            Orion.animateHide(overlayLayout, 500)
             toggleSystemUI(false)
         }
     }
@@ -564,75 +556,44 @@ class DisplayActivity : BaseActivity() {
               | $$
               |_*/
 
-    private fun initOptionsList() {
-        //Init options layout manager
-        optionsList.setLayoutManager(LinearLayoutManager(this))
+    private fun onUpdateOptions() {
+        //Get state info
+        val isTrashed = currentItem.isTrashed
+        val isFavourite = currentItem.isFavourite
 
-        //Init options adapter
-        optionsAdapter = OptionsAdapter(this, options)
-        optionsAdapter.setOnClickListener { view: View, index: Int ->
-            //Get option
-            val option = options[index]
-
-            //Get action
-            val action = option.action ?: return@setOnClickListener
-
-            //Invoke action
-            action.run()
-            toggleOptions(false)
-        }
-        optionsList.setAdapter(optionsAdapter)
-    }
-
-    private fun toggleOptions(show: Boolean) {
-        if (show) {
-            //Get state info
-            val isTrashed = currentItem.isTrashed
-            val isFavourite = currentItem.isFavourite
-
-            //Update options list
-            options.clear()
-            if (isViewingExternal) {
-                //Viewing external file
-                if (!isTrashed) {
-                    options.add(optionEdit)
-                    options.add(optionShare)
-                    options.add(optionSetAs)
-                    options.add(optionPiP)
-                    options.add(optionSeparator)
-                }
-            } else {
-                //Viewing gallery items
-                if (!isTrashed) {
-                    options.add(optionRename)
-                    options.add(optionEdit)
-                    options.add(optionShare)
-                    options.add(optionSetAs)
-                    options.add(optionPiP)
-                    options.add(optionSeparator)
-                    if (isFavourite) {
-                        options.add(optionUnfavourite)
-                    } else {
-                        options.add(optionFavourite)
-                    }
-                    options.add(optionMove)
-                    options.add(optionCopy)
-                    options.add(optionSeparator)
-                    options.add(optionTrash)
-                } else {
-                    options.add(optionRestore)
-                }
-                options.add(optionDelete)
+        //Update options list
+        options.clear()
+        if (isViewingExternal) {
+            //Viewing external file
+            if (!isTrashed) {
+                options.add(optionEdit)
+                options.add(optionShare)
+                options.add(optionSetAs)
+                options.add(optionPiP)
+                options.add(optionSeparator)
             }
-            optionsAdapter.notifyDataSetChanged()
-
-            //Show
-            Orion.showAnim(optionsLayout)
-            backManager.register("options") { toggleOptions(false) }
         } else {
-            //Hide
-            Orion.hideAnim(optionsLayout)
-            backManager.unregister("options")
+            //Viewing gallery items
+            if (!isTrashed) {
+                options.add(optionRename)
+                options.add(optionEdit)
+                options.add(optionShare)
+                options.add(optionSetAs)
+                options.add(optionPiP)
+                options.add(optionSeparator)
+                if (isFavourite) {
+                    options.add(optionUnfavourite)
+                } else {
+                    options.add(optionFavourite)
+                }
+                options.add(optionMove)
+                options.add(optionCopy)
+                options.add(optionSeparator)
+                options.add(optionTrash)
+            } else {
+                options.add(optionRestore)
+            }
+            options.add(optionDelete)
         }
     }
 
