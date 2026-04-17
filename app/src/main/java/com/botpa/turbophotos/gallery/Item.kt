@@ -16,7 +16,7 @@ import com.bumptech.glide.signature.ObjectKey
 import com.fasterxml.jackson.databind.node.ObjectNode
 import java.io.File
 
-class CoonItem(
+class Item(
     @JvmField var file: File,               //The file in storage
     @JvmField var album: Album,             //The album of the item
     @JvmField var lastModified: Long,       //Timestamp of the last time the file was modified (in seconds)
@@ -24,7 +24,7 @@ class CoonItem(
     @JvmField var size: Long,               //The size of the file in bytes
     @JvmField var isTrashed: Boolean,       //If the file is in the trash
     @JvmField var isFavourite: Boolean,     //If the file is favourite
-) : Comparable<CoonItem> {
+) : Comparable<Item> {
 
     //Item info
     @JvmField var name: String = file.name
@@ -54,7 +54,7 @@ class CoonItem(
         }
     }
 
-    override fun compareTo(other: CoonItem): Int {
+    override fun compareTo(other: Item): Int {
         return lastModified.compareTo(other.lastModified)
     }
 
@@ -62,7 +62,7 @@ class CoonItem(
     companion object {
 
         //Load item preview into ImageView
-        fun load(context: Context, imageView: ImageView, item: CoonItem) {
+        fun load(context: Context, imageView: ImageView, item: Item) {
             //Reset image scale type (due to a bug HDR does not load, but idk why changing scale type fixes it)
             imageView.scaleType = ImageView.ScaleType.CENTER
 
@@ -90,17 +90,17 @@ class CoonItem(
         }
 
         //Factory
-        fun createFromFile(file: File, album: Album): CoonItem {
+        fun createFromFile(file: File, album: Album): Item {
             //Prepare item info
             val lastModified = file.lastModified() / 1000 //To seconds
             val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(Orion.getExtension(file.absolutePath)) ?: "*/*"
             val size = file.length()
 
             //Create item
-            return CoonItem(file, album, lastModified, mimeType, size, false, false)
+            return Item(file, album, lastModified, mimeType, size, false, false)
         }
 
-        fun createFromUri(context: Context, uri: Uri, album: Album): CoonItem {
+        fun createFromUri(context: Context, uri: Uri, album: Album): Item {
             //Prepare item info
             val path = Orion.getFilePathFromMediaUri(context, uri)
             val file = File(path)

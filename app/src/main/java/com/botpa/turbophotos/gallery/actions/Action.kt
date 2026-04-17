@@ -2,15 +2,15 @@ package com.botpa.turbophotos.gallery.actions
 
 import android.net.Uri
 import com.botpa.turbophotos.gallery.Album
-import com.botpa.turbophotos.gallery.CoonItem
+import com.botpa.turbophotos.gallery.Item
 
-class Action(val type: Int, @JvmField val items: Array<CoonItem>) {
+class Action(val type: Int, @JvmField val items: Array<Item>) {
 
     //Errors
     @JvmField var errors: MutableList<ActionError> = ArrayList()
 
     //Results (async actions)
-    @JvmField var pending: MutableMap<Uri, CoonItem> = HashMap()
+    @JvmField var pending: MutableMap<Uri, Item> = HashMap()
 
     //Results (albums & gallery)
     @JvmField var hasSortedAlbumsList: Boolean = false
@@ -21,7 +21,7 @@ class Action(val type: Int, @JvmField val items: Array<CoonItem>) {
 
 
     //Action
-    fun getHelper(file: CoonItem): ActionHelper {
+    fun getHelper(file: Item): ActionHelper {
         return ActionHelper(file)
     }
 

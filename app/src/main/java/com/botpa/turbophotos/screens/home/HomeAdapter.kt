@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Album
 import com.botpa.turbophotos.gallery.Library
-import com.botpa.turbophotos.gallery.CoonItem
+import com.botpa.turbophotos.gallery.Item
 import com.bumptech.glide.Glide
 
 @SuppressLint("SetTextI18n")
@@ -108,7 +108,7 @@ class HomeAdapter(
             image.setImageDrawable(null)
             return false
         } else {
-            CoonItem.load(context, image, album.get(0))
+            Item.load(context, image, album.get(0))
             return true
         }
     }

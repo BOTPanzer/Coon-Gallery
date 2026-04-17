@@ -10,7 +10,7 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.botpa.turbophotos.R
-import com.botpa.turbophotos.gallery.CoonItem
+import com.botpa.turbophotos.gallery.Item
 import com.botpa.turbophotos.gallery.Link
 import com.botpa.turbophotos.util.Orion
 import com.fasterxml.jackson.databind.JsonNode
@@ -40,7 +40,7 @@ class SyncService : Service() {
     private var metadataRequest: MetadataInfo? = null
 
     //Albums
-    private val backupItems: MutableList<MutableList<CoonItem>> = ArrayList()
+    private val backupItems: MutableList<MutableList<Item>> = ArrayList()
 
     //Web socket
     private var webSocketClient: WebSocketClient? = null
@@ -62,7 +62,7 @@ class SyncService : Service() {
             for (link in Link.links) {
                 //Get album & create items list
                 val album = link.album
-                val items: MutableList<CoonItem> = ArrayList()
+                val items: MutableList<Item> = ArrayList()
 
                 //Add items if album exists
                 if (album != null) items.addAll(album.items)

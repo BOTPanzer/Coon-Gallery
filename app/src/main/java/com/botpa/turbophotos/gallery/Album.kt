@@ -9,7 +9,7 @@ class Album(val name: String, val imagesFolder: File?, var metadataFile: File?) 
     constructor(name: String) : this(name, null, null)
 
     //Album info
-    @JvmField val items: MutableList<CoonItem> = ArrayList()
+    @JvmField val items: MutableList<Item> = ArrayList()
     @JvmField var metadata: ObjectNode? = null
 
     val isSpecial: Boolean = imagesFolder == null
@@ -44,26 +44,26 @@ class Album(val name: String, val imagesFolder: File?, var metadataFile: File?) 
         return items.isNotEmpty()
     }
 
-    fun get(index: Int): CoonItem {
+    fun get(index: Int): Item {
         return items[index]
     }
 
-    fun add(item: CoonItem) {
+    fun add(item: Item) {
         items.add(item)
     }
 
-    fun addSorted(item: CoonItem): Int {
+    fun addSorted(item: Item): Int {
         val searchResult = items.binarySearch(item, reverseOrder())
         val index = if (searchResult < 0) -searchResult - 1 else searchResult
         items.add(index, item)
         return index
     }
 
-    fun remove(index: Int): CoonItem {
+    fun remove(index: Int): Item {
         return items.removeAt(index)
     }
 
-    fun indexOf(item: CoonItem): Int {
+    fun indexOf(item: Item): Int {
         return items.indexOf(item)
     }
 

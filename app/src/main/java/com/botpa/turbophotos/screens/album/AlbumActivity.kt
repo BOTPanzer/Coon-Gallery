@@ -22,7 +22,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.screens.display.DisplayActivity
 import com.botpa.turbophotos.gallery.Album
-import com.botpa.turbophotos.gallery.CoonItem
+import com.botpa.turbophotos.gallery.Item
 import com.botpa.turbophotos.gallery.BaseActivity
 import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.Library.RefreshEvent
@@ -69,7 +69,7 @@ class AlbumActivity : BaseActivity() {
     private lateinit var albumLayoutManager: GridLayoutManager
     private lateinit var albumAdapter: AlbumAdapter
 
-    private val gallery: List<CoonItem>
+    private val gallery: List<Item>
         get() = Library.gallery
 
     private val selectedIndexes: MutableSet<Int> = HashSet()
@@ -544,7 +544,7 @@ class AlbumActivity : BaseActivity() {
 
         optionRestoreAll = OptionsItem(R.drawable.restore, "Restore all") {
             //Restore all items from trash
-            restoreItems(currentAlbum.items.toTypedArray<CoonItem>())
+            restoreItems(currentAlbum.items.toTypedArray<Item>())
         }
 
         optionDelete = OptionsItem(R.drawable.delete, "Delete") {
@@ -554,7 +554,7 @@ class AlbumActivity : BaseActivity() {
 
         optionDeleteAll = OptionsItem(R.drawable.delete, "Delete all") {
             //Delete all items
-            Library.deleteItems(this, currentAlbum.items.toTypedArray<CoonItem>())
+            Library.deleteItems(this, currentAlbum.items.toTypedArray<Item>())
         }
     }
 
@@ -665,10 +665,10 @@ class AlbumActivity : BaseActivity() {
      \______/    \___/  |__/  |__/ \_______/|_*/
 
     //Selection
-    private fun getSelectedItems(): Array<CoonItem> {
-        val selectedFiles = ArrayList<CoonItem>(selectedIndexes.size)
+    private fun getSelectedItems(): Array<Item> {
+        val selectedFiles = ArrayList<Item>(selectedIndexes.size)
         for (index in selectedIndexes) selectedFiles.add(gallery[index])
-        return selectedFiles.toTypedArray<CoonItem>()
+        return selectedFiles.toTypedArray<Item>()
     }
 
     //List grid

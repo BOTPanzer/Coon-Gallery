@@ -7,12 +7,12 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
-import com.botpa.turbophotos.gallery.CoonItem
+import com.botpa.turbophotos.gallery.Item
 import com.botpa.turbophotos.gallery.views.ZoomableLayout
 
 class DisplayAdapter(
     private val context: Context,
-    private val items: List<CoonItem>
+    private val items: List<Item>
 ) : RecyclerView.Adapter<DisplayAdapter.DisplayHolder>() {
 
     //Adapter
@@ -29,7 +29,7 @@ class DisplayAdapter(
         val item = items[position]
 
         //Load image
-        CoonItem.load(context, holder.image, item)
+        Item.load(context, holder.image, item)
 
         //Toggle play video button
         holder.play.visibility = if (item.isVideo) View.VISIBLE else View.GONE

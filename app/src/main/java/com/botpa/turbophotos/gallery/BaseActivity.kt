@@ -41,7 +41,7 @@ open class BaseActivity : AppCompatActivity() {
 
 
     //Trash functions
-    protected fun trashItems(itemsToTrash: Array<CoonItem>) {
+    protected fun trashItems(itemsToTrash: Array<Item>) {
         //Check if there is a pending action
         if (pendingAction != null) {
             Orion.snack(this, "There is a pending action.")
@@ -51,7 +51,7 @@ open class BaseActivity : AppCompatActivity() {
         }
     }
 
-    protected fun restoreItems(itemsToRestore: Array<CoonItem>) {
+    protected fun restoreItems(itemsToRestore: Array<Item>) {
         //Check if there is a pending action
         if (pendingAction != null) {
             Orion.snack(this, "There is a pending action.")
@@ -62,7 +62,7 @@ open class BaseActivity : AppCompatActivity() {
     }
 
     //Favourite functions
-    protected fun favouriteItems(itemsToFavourite: Array<CoonItem>) {
+    protected fun favouriteItems(itemsToFavourite: Array<Item>) {
         //Check if there is a pending action
         if (pendingAction != null) {
             Orion.snack(this, "There is a pending action.")
@@ -72,7 +72,7 @@ open class BaseActivity : AppCompatActivity() {
         }
     }
 
-    protected fun unfavouriteItems(itemsToUnfavourite: Array<CoonItem>) {
+    protected fun unfavouriteItems(itemsToUnfavourite: Array<Item>) {
         //Check if there is a pending action
         if (pendingAction != null) {
             Orion.snack(this, "There is a pending action.")

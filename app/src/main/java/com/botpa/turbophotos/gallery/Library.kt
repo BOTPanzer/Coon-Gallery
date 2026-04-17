@@ -74,9 +74,9 @@ object Library {
 
     //Gallery
     private var galleryAlbum: Album? = null
-    private val _gallery: MutableList<CoonItem> = ArrayList() //Currently open album items (could be filtered)
+    private val _gallery: MutableList<Item> = ArrayList() //Currently open album items (could be filtered)
 
-    val gallery: List<CoonItem>
+    val gallery: List<Item>
         get() = _gallery
 
 
@@ -225,13 +225,13 @@ object Library {
                     val album = getOrCreateAlbumFromItemFile(file)
                     if (isTrashed) {
                         //Trashed -> Create item with trash as album
-                        val item = CoonItem(file, trash, lastModified, mimeType!!, size, true, isFavourite)
+                        val item = Item(file, trash, lastModified, mimeType!!, size, true, isFavourite)
 
                         //Add to trash
                         addItemToTrash(item, album)
                     } else {
                         //Not trashed -> Create item with normal album
-                        val item = CoonItem(file, album, lastModified, mimeType!!, size, false, isFavourite)
+                        val item = Item(file, album, lastModified, mimeType!!, size, false, isFavourite)
 
                         //Add to all items list & its album
                         all.add(item)
@@ -350,7 +350,7 @@ object Library {
     }
 
     //Trash
-    private fun addItemToTrash(item: CoonItem, originalAlbum: Album): Int {
+    private fun addItemToTrash(item: Item, originalAlbum: Album): Int {
         //Add to trash
         val index = trash.addSorted(item)
         trashMap[originalAlbum] = trashMap.getOrDefault(originalAlbum, 0) + 1
@@ -440,7 +440,7 @@ object Library {
         }
     }
 
-    private fun filterItem(item: CoonItem, filter: String, method: SearchMethod): Boolean {
+    private fun filterItem(item: Item, filter: String, method: SearchMethod): Boolean {
         //Check item name
         if (item.name.lowercase(Locale.getDefault()).contains(filter)) return true
 
@@ -587,13 +587,13 @@ object Library {
         }
     }
 
-    private fun performAddToAlbum(action: Action, item: CoonItem, album: Album): Int {
+    private fun performAddToAlbum(action: Action, item: Item, album: Album): Int {
         val indexInAlbum = album.addSorted(item)
         action.modifiedAlbums.add(album)
         return indexInAlbum
     }
 
-    private fun performAction(context: Context, type: Int, items: Array<CoonItem>, onPerformAction: (Action, CoonItem) -> Unit) {
+    private fun performAction(context: Context, type: Int, items: Array<Item>, onPerformAction: (Action, Item) -> Unit) {
         //Create action
         val action = Action(type, items)
 
@@ -646,7 +646,7 @@ object Library {
     }
 
     //Actions (modify items)
-    fun renameItem(context: Context, item: CoonItem) {
+    fun renameItem(context: Context, item: Item) {
         //Check if item is in trash
         if (item.isTrashed) return
 
@@ -738,7 +738,7 @@ object Library {
         dialog.setText(oldNameNoExtension)
     }
 
-    fun editItem(context: Context, item: CoonItem) {
+    fun editItem(context: Context, item: Item) {
         //Get URI & mime type
         val uri = Orion.getFileUriFromFilePath(context, item.file.absolutePath)
         val mimeType = item.mimeType
@@ -751,7 +751,7 @@ object Library {
         context.startActivity(Intent.createChooser(intent, null))
     }
 
-    fun shareItems(context: Context, items: Array<CoonItem>) {
+    fun shareItems(context: Context, items: Array<Item>) {
         //No items
         if (items.isEmpty()) return
 
@@ -775,7 +775,7 @@ object Library {
         context.startActivity(Intent.createChooser(intent, null))
     }
 
-    fun setItemAs(context: Context, item: CoonItem) {
+    fun setItemAs(context: Context, item: Item) {
         //Get URI & mime type
         val uri = Orion.getFileUriFromFilePath(context, item.file.absolutePath)
         val mimeType = item.mimeType
@@ -789,8 +789,8 @@ object Library {
         context.startActivity(Intent.createChooser(intent, null))
     }
 
-    private fun moveItemsInternal(context: Context, items: Array<CoonItem>, newAlbum: Album) {
-        performAction(context, Action.TYPE_MOVE, items) { action: Action, item: CoonItem ->
+    private fun moveItemsInternal(context: Context, items: Array<Item>, newAlbum: Album) {
+        performAction(context, Action.TYPE_MOVE, items) { action: Action, item: Item ->
             //Check if item is in trash
             if (item.isTrashed) {
                 //Item is in trash -> Error
@@ -846,13 +846,13 @@ object Library {
         }
     }
 
-    fun moveItems(context: Context, items: Array<CoonItem>) {
+    fun moveItems(context: Context, items: Array<Item>) {
         //Show album selection dialog
         showSelectAlbumDialog(context, { newAlbum: Album -> moveItemsInternal(context, items, newAlbum) })
     }
 
-    private fun copyItemsInternal(context: Context, items: Array<CoonItem>, newAlbum: Album) {
-        performAction(context, Action.TYPE_COPY, items) { action: Action, item: CoonItem ->
+    private fun copyItemsInternal(context: Context, items: Array<Item>, newAlbum: Album) {
+        performAction(context, Action.TYPE_COPY, items) { action: Action, item: Item ->
             //Check if item is in trash
             if (item.isTrashed) {
                 //Item is in trash -> Error
@@ -880,7 +880,7 @@ object Library {
             recentlyAddedFiles.add(newFile) //Mark file as recently added to prevent duplicates on refresh
 
             //Create new item
-            val newItem = CoonItem(newFile, newAlbum, item.lastModified, item.mimeType, item.size, item.isTrashed, false)
+            val newItem = Item(newFile, newAlbum, item.lastModified, item.mimeType, item.size, item.isTrashed, false)
 
             //Add item to new album
             val indexInAlbum = performAddToAlbum(action, newItem, newAlbum)
@@ -896,14 +896,14 @@ object Library {
         }
     }
 
-    fun copyItems(context: Context, items: Array<CoonItem>) {
+    fun copyItems(context: Context, items: Array<Item>) {
         //Show album selection dialog
         showSelectAlbumDialog(context, { newAlbum: Album -> copyItemsInternal(context, items, newAlbum) })
     }
 
-    private fun prepareItemURIs(context: Context, action: Action): MutableMap<Uri, CoonItem> {
+    private fun prepareItemURIs(context: Context, action: Action): MutableMap<Uri, Item> {
         //Pending items map
-        val pendingItems: MutableMap<Uri, CoonItem> = HashMap()
+        val pendingItems: MutableMap<Uri, Item> = HashMap()
 
         //Get item URIs
         for (item in action.items) {
@@ -955,7 +955,7 @@ object Library {
         return pendingItems
     }
 
-    fun favouriteItems(activity: BaseActivity, items: Array<CoonItem>, launcher: ActivityResultLauncher<IntentSenderRequest>): Action? {
+    fun favouriteItems(activity: BaseActivity, items: Array<Item>, launcher: ActivityResultLauncher<IntentSenderRequest>): Action? {
         //Create action
         val action = Action(Action.TYPE_FAVOURITE, items)
 
@@ -999,7 +999,7 @@ object Library {
         evaluateAction(context, action)
     }
 
-    fun unfavouriteItems(activity: BaseActivity, items: Array<CoonItem>, launcher: ActivityResultLauncher<IntentSenderRequest>): Action? {
+    fun unfavouriteItems(activity: BaseActivity, items: Array<Item>, launcher: ActivityResultLauncher<IntentSenderRequest>): Action? {
         //Create action
         val action = Action(Action.TYPE_UNFAVOURITE, items)
 
@@ -1049,7 +1049,7 @@ object Library {
         evaluateAction(context, action)
     }
 
-    fun trashItems(activity: BaseActivity, items: Array<CoonItem>, launcher: ActivityResultLauncher<IntentSenderRequest>): Action? {
+    fun trashItems(activity: BaseActivity, items: Array<Item>, launcher: ActivityResultLauncher<IntentSenderRequest>): Action? {
         //Create action
         val action = Action(Action.TYPE_TRASH, items)
 
@@ -1117,7 +1117,7 @@ object Library {
         evaluateAction(context, action)
     }
 
-    fun restoreItems(activity: BaseActivity, items: Array<CoonItem>, launcher: ActivityResultLauncher<IntentSenderRequest>): Action? {
+    fun restoreItems(activity: BaseActivity, items: Array<Item>, launcher: ActivityResultLauncher<IntentSenderRequest>): Action? {
         //Create action
         val action = Action(Action.TYPE_RESTORE, items)
 
@@ -1187,8 +1187,8 @@ object Library {
         evaluateAction(context, action)
     }
 
-    private fun deleteItemsInternal(context: Context, items: Array<CoonItem>) {
-        performAction(context, Action.TYPE_DELETE, items) { action: Action, item: CoonItem ->
+    private fun deleteItemsInternal(context: Context, items: Array<Item>) {
+        performAction(context, Action.TYPE_DELETE, items) { action: Action, item: Item ->
             //Delete item file
             if (!item.file.delete()) {
                 //Failed to delete file -> Error
@@ -1222,7 +1222,7 @@ object Library {
         }
     }
 
-    fun deleteItems(context: Context, items: Array<CoonItem>) {
+    fun deleteItems(context: Context, items: Array<Item>) {
         //Create message
         val message = StringBuilder()
         message.append("Are you sure you want to permanently delete ")

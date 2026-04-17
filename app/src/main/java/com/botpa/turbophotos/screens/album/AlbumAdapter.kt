@@ -7,13 +7,13 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
-import com.botpa.turbophotos.gallery.CoonItem
+import com.botpa.turbophotos.gallery.Item
 import com.bumptech.glide.Glide
 import com.google.android.material.card.MaterialCardView
 
 class AlbumAdapter(
     private val context: Context,
-    private val items: List<CoonItem>,
+    private val items: List<Item>,
     private val selected: Set<Int>,
     var showMissingMetadataIcon: Boolean
 ) : RecyclerView.Adapter<AlbumAdapter.GalleryHolder>() {
@@ -31,7 +31,7 @@ class AlbumAdapter(
         val item = items[position]
 
         //Load item preview
-        CoonItem.load(context, holder.image, item)
+        Item.load(context, holder.image, item)
 
         //Toggle is video & missing info icons
         holder.isVideo.visibility = if (item.isVideo) View.VISIBLE else View.GONE

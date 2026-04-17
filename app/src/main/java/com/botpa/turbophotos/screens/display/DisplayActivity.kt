@@ -31,7 +31,7 @@ import androidx.recyclerview.widget.SnapHelper
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Album
 import com.botpa.turbophotos.gallery.BaseActivity
-import com.botpa.turbophotos.gallery.CoonItem
+import com.botpa.turbophotos.gallery.Item
 import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.Library.ActionEvent
 import com.botpa.turbophotos.gallery.StoragePairs
@@ -73,15 +73,15 @@ class DisplayActivity : BaseActivity() {
     private lateinit var displayLayoutManager: DisplayLayoutManager
     private lateinit var displayAdapter: DisplayAdapter
 
-    private lateinit var displayGallery: List<CoonItem>
+    private lateinit var displayGallery: List<Item>
     private var currentIndexInGallery = -1
 
-    private val displayItems: MutableList<CoonItem> = ArrayList()
+    private val displayItems: MutableList<Item> = ArrayList()
     private var currentIndexInDisplay = -1
 
     private var useInternalVideoPlayer: Boolean = true
 
-    private lateinit var currentItem: CoonItem
+    private lateinit var currentItem: Item
 
     private lateinit var displayList: RecyclerView
 
@@ -245,11 +245,11 @@ class DisplayActivity : BaseActivity() {
             isViewingExternal = true
 
             //Init gallery list
-            val gallery: MutableList<CoonItem> = ArrayList()
+            val gallery: MutableList<Item> = ArrayList()
             displayGallery = gallery
 
             //Create item from uri & add it to list
-            gallery.add(CoonItem.createFromUri(this, uri, Album("Temp")))
+            gallery.add(Item.createFromUri(this, uri, Album("Temp")))
 
             //Select first item
             selectItem(0)

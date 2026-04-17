@@ -1,9 +1,9 @@
 package com.botpa.turbophotos.gallery.actions
 
-import com.botpa.turbophotos.gallery.CoonItem
+import com.botpa.turbophotos.gallery.Item
 import com.botpa.turbophotos.gallery.Library
 
-class ActionHelper(item: CoonItem) {
+class ActionHelper(item: Item) {
 
     @JvmField var indexInGallery =      Library.gallery.indexOf(item)
     @JvmField var indexInTrash =        if (item.isTrashed) Library.trash.indexOf(item) else -1

@@ -6,7 +6,7 @@ import android.widget.HorizontalScrollView
 import android.widget.TextView
 import android.widget.Toast
 import com.botpa.turbophotos.R
-import com.botpa.turbophotos.gallery.CoonItem
+import com.botpa.turbophotos.gallery.Item
 import com.botpa.turbophotos.gallery.modals.CustomDrawer
 import com.botpa.turbophotos.util.Orion
 import com.fasterxml.jackson.databind.JsonNode
@@ -17,7 +17,7 @@ import java.util.Locale
 
 class DrawerInfo(
     context: Context,
-    private val item: CoonItem
+    private val item: Item
 ) : CustomDrawer(context, R.layout.drawer_display_info) {
 
     //Views (info)

@@ -9,7 +9,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Album
-import com.botpa.turbophotos.gallery.CoonItem
+import com.botpa.turbophotos.gallery.Item
 
 class DialogAlbumsAdapter(
     private val context: Context,
@@ -30,7 +30,7 @@ class DialogAlbumsAdapter(
         if (album.isEmpty())
             holder.image.setImageDrawable(null)
         else
-            CoonItem.load(context, holder.image, album.get(0))
+            Item.load(context, holder.image, album.get(0))
 
         //Update text
         holder.name.text = album.name
