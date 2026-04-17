@@ -437,7 +437,7 @@ class DisplayActivity : BaseActivity() {
                 //Play in external player
                 Intent(Intent.ACTION_VIEW)
             }
-            intent.setDataAndType(currentItem.file.absolutePath.toUri(), currentItem.mimeType)
+            intent.setDataAndType(Uri.fromFile(currentItem.file), currentItem.mimeType)
             startActivity(intent)
         }
 
