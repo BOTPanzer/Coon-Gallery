@@ -82,8 +82,9 @@ class OptionsManager(val activity: Activity, val options: MutableList<OptionsIte
             })
         } else {
             //Hide menu & layout
+            val direction = if (menu.translationX != 0.0f) menu.translationX.sign else 1.0f
             val width = activity.windowManager.currentWindowMetrics.bounds.width()
-            Orion.animateMoveX(menu, menu.translationX.sign * width / 4)
+            Orion.animateMoveX(menu, direction * width / 4)
             Orion.animateHide(layout)
 
             //Unregister back event
