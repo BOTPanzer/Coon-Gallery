@@ -48,13 +48,10 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.BaseActivity
 import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.gallery.modals.DialogSlider
-import com.botpa.turbophotos.gallery.options.OptionsAdapter
 import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.options.OptionsManager
 import com.botpa.turbophotos.gallery.views.ZoomableLayout
@@ -369,7 +366,8 @@ class VideoActivity : BaseActivity() {
         playerZoom.onMultiClick = { x, y, count ->
             //Get layout width
             val width = playerZoom.width
-            val doubleTapArea = width / 5
+            val maxArea = (150 * resources.displayMetrics.density).toInt()
+            val doubleTapArea = min(width / 5, maxArea)
 
             //Check position to see if should skip time
             if (x <= doubleTapArea || x >= width - doubleTapArea) {
