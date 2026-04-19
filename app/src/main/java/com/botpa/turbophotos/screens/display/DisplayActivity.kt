@@ -562,7 +562,6 @@ class DisplayActivity : BaseActivity() {
         val isFavourite = currentItem.isFavourite
 
         //Update options list
-        options.clear()
         if (isViewingExternal) {
             //Viewing external file
             if (!isTrashed) {
@@ -570,7 +569,6 @@ class DisplayActivity : BaseActivity() {
                 options.add(optionShare)
                 options.add(optionSetAs)
                 options.add(optionPiP)
-                options.add(optionSeparator)
             }
         } else {
             //Viewing gallery items
