@@ -47,6 +47,7 @@ import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
 import com.botpa.turbophotos.gallery.fastscroller.FastScroller
 import com.botpa.turbophotos.gallery.fastscroller.FastScrollerBuilder
+import com.botpa.turbophotos.gallery.options.OptionsGroup
 import com.botpa.turbophotos.gallery.options.OptionsManager
 
 @SuppressLint("SetTextI18n", "NotifyDataSetChanged")
@@ -119,10 +120,9 @@ class HomeActivity : BaseActivity() {
               | $$
               |_*/
 
-    private val options: MutableList<OptionsItem> = ArrayList()
+    private val options: MutableList<OptionsGroup> = ArrayList()
     private lateinit var optionsManager: OptionsManager
 
-    private val optionSeparator: OptionsItem = OptionsItem()
     private lateinit var optionSync: OptionsItem
     private lateinit var optionSettings: OptionsItem
     private lateinit var optionFilters: OptionsItem
@@ -593,10 +593,13 @@ class HomeActivity : BaseActivity() {
               |_*/
 
     private fun onUpdateOptions() {
-        options.add(optionSync)
-        options.add(optionSettings)
-        options.add(optionSeparator)
-        options.add(optionFilters)
+        options.add(OptionsGroup(mutableListOf<OptionsItem>().apply {
+            add(optionSync)
+            add(optionSettings)
+        }))
+        options.add(OptionsGroup(mutableListOf<OptionsItem>().apply {
+            add(optionFilters)
+        }))
     }
 
       /*$$$$$    /$$     /$$

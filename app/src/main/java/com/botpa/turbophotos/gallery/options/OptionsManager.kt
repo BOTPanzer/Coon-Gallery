@@ -14,7 +14,7 @@ import com.botpa.turbophotos.util.Orion
 import kotlin.math.sign
 
 @SuppressLint("NotifyDataSetChanged")
-class OptionsManager(val activity: Activity, val options: MutableList<OptionsItem>, private val backManager: BackManager, private val onUpdateOptions: () -> Unit) {
+class OptionsManager(val activity: Activity, val options: MutableList<OptionsGroup>, private val backManager: BackManager, private val onUpdateOptions: () -> Unit) {
 
     //Views
     val layout: View = activity.findViewById(R.id.optionsLayout)
@@ -22,20 +22,18 @@ class OptionsManager(val activity: Activity, val options: MutableList<OptionsIte
     val list: RecyclerView = activity.findViewById(R.id.optionsList)
 
     //Adapter
-    private val adapter: OptionsAdapter
+    private val adapter: OptionsGroupAdapter
 
 
     //Constructor
     init {
-        //Init options layout manager
+        //Init options layout manager & separator gap
         list.setLayoutManager(LinearLayoutManager(activity))
+        list.addItemDecoration(OptionsSeparator(5))
 
         //Init options adapter
-        adapter = OptionsAdapter(activity, options)
-        adapter.setOnClickListener { view: View, index: Int ->
-            //Get option
-            val option = options[index]
-
+        adapter = OptionsGroupAdapter(activity, options)
+        adapter.setOnClickListener { option: OptionsItem, index: Int ->
             //Get action
             val action = option.action ?: return@setOnClickListener
 

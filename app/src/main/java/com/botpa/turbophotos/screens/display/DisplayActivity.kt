@@ -35,6 +35,7 @@ import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.Library.ActionEvent
 import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.gallery.actions.Action
+import com.botpa.turbophotos.gallery.options.OptionsGroup
 import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.options.OptionsManager
 import com.botpa.turbophotos.gallery.views.ZoomableLayout
@@ -96,10 +97,9 @@ class DisplayActivity : BaseActivity() {
               | $$
               |_*/
 
-    private val options: MutableList<OptionsItem> = ArrayList()
+    private val options: MutableList<OptionsGroup> = ArrayList()
     private lateinit var optionsManager: OptionsManager
 
-    private val optionSeparator: OptionsItem = OptionsItem()
     private lateinit var optionRename: OptionsItem
     private lateinit var optionEdit: OptionsItem
     private lateinit var optionShare: OptionsItem
@@ -564,33 +564,41 @@ class DisplayActivity : BaseActivity() {
         if (isViewingExternal) {
             //Viewing external file
             if (!isTrashed) {
-                options.add(optionEdit)
-                options.add(optionShare)
-                options.add(optionSetAs)
-                options.add(optionPiP)
+                options.add(OptionsGroup(mutableListOf<OptionsItem>().apply {
+                    add(optionEdit)
+                    add(optionShare)
+                    add(optionSetAs)
+                    add(optionPiP)
+                }))
             }
         } else {
             //Viewing gallery items
             if (!isTrashed) {
-                options.add(optionRename)
-                options.add(optionEdit)
-                options.add(optionShare)
-                options.add(optionSetAs)
-                options.add(optionPiP)
-                options.add(optionSeparator)
-                if (isFavourite) {
-                    options.add(optionUnfavourite)
-                } else {
-                    options.add(optionFavourite)
-                }
-                options.add(optionMove)
-                options.add(optionCopy)
-                options.add(optionSeparator)
-                options.add(optionTrash)
-            } else {
-                options.add(optionRestore)
+                options.add(OptionsGroup(mutableListOf<OptionsItem>().apply {
+                    add(optionRename)
+                    add(optionEdit)
+                    add(optionShare)
+                    add(optionSetAs)
+                    add(optionPiP)
+                }))
+                options.add(OptionsGroup(mutableListOf<OptionsItem>().apply {
+                    if (isFavourite) {
+                        add(optionUnfavourite)
+                    } else {
+                        add(optionFavourite)
+                    }
+                    add(optionMove)
+                    add(optionCopy)
+                }))
             }
-            options.add(optionDelete)
+            options.add(OptionsGroup(mutableListOf<OptionsItem>().apply {
+                if (!isTrashed) {
+                    add(optionTrash)
+                } else {
+                    add(optionRestore)
+                }
+                add(optionDelete)
+            }))
         }
     }
 

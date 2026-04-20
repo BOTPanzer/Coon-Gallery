@@ -37,6 +37,7 @@ import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
 import com.botpa.turbophotos.gallery.fastscroller.FastScroller
 import com.botpa.turbophotos.gallery.fastscroller.FastScrollerBuilder
+import com.botpa.turbophotos.gallery.options.OptionsGroup
 import com.botpa.turbophotos.gallery.options.OptionsManager
 import com.botpa.turbophotos.screens.album.search.SearchDialog
 
@@ -112,10 +113,9 @@ class AlbumActivity : BaseActivity() {
               |_*/
 
     //Options
-    private val options: MutableList<OptionsItem> = ArrayList()
+    private val options: MutableList<OptionsGroup> = ArrayList()
     private lateinit var optionsManager: OptionsManager
 
-    private val optionSeparator: OptionsItem = OptionsItem()
     private lateinit var optionRename: OptionsItem
     private lateinit var optionEdit: OptionsItem
     private lateinit var optionShare: OptionsItem
@@ -639,26 +639,30 @@ class AlbumActivity : BaseActivity() {
         val isSelectingSingle = selectedIndexes.size == 1
 
         //Update options list
-        if (!inTrash && isSelectingSingle) options.add(optionRename)
-        if (!inTrash && isSelectingSingle) options.add(optionEdit)
-        if (!inTrash && isSelecting) options.add(optionShare)
-        if (!inTrash && isSelectingSingle) options.add(optionSetAs)
-        if (!inTrash) options.add(optionSeparator)
-        if (!inTrash) {
-            if (selectedIndexes.all { gallery[it].isFavourite }) {
-                options.add(optionUnfavourite)
-            } else if (selectedIndexes.all { !gallery[it].isFavourite }) {
-                options.add(optionFavourite)
+        options.add(OptionsGroup(mutableListOf<OptionsItem>().apply {
+            if (!inTrash && isSelectingSingle) add(optionRename)
+            if (!inTrash && isSelectingSingle) add(optionEdit)
+            if (!inTrash && isSelecting) add(optionShare)
+            if (!inTrash && isSelectingSingle) add(optionSetAs)
+        }))
+        options.add(OptionsGroup(mutableListOf<OptionsItem>().apply {
+            if (!inTrash) {
+                if (selectedIndexes.all { gallery[it].isFavourite }) {
+                    add(optionUnfavourite)
+                } else if (selectedIndexes.all { !gallery[it].isFavourite }) {
+                    add(optionFavourite)
+                }
             }
-        }
-        if (!inTrash && isSelecting) options.add(optionMove)
-        if (!inTrash && isSelecting) options.add(optionCopy)
-        if (!inTrash) options.add(optionSeparator)
-        if (!inTrash && isSelecting) options.add(optionTrash)
-        if (inTrash && isSelecting) options.add(optionRestore)
-        if (inTrash && !isSelecting) options.add(optionRestoreAll)
-        if (isSelecting) options.add(optionDelete)
-        if (inTrash && !isSelecting) options.add(optionDeleteAll)
+            if (!inTrash && isSelecting) add(optionMove)
+            if (!inTrash && isSelecting) add(optionCopy)
+        }))
+        options.add(OptionsGroup(mutableListOf<OptionsItem>().apply {
+            if (!inTrash && isSelecting) add(optionTrash)
+            if (inTrash && isSelecting) add(optionRestore)
+            if (inTrash && !isSelecting) add(optionRestoreAll)
+            if (isSelecting) add(optionDelete)
+            if (inTrash && !isSelecting) add(optionDeleteAll)
+        }))
     }
 
       /*$$$$$    /$$     /$$

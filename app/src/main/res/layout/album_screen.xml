@@ -287,21 +287,20 @@
         android:orientation="vertical"
         android:visibility="gone">
 
-        <androidx.cardview.widget.CardView
+        <LinearLayout
             android:id="@+id/optionsMenu"
             android:layout_width="220dp"
             android:layout_height="wrap_content"
             android:layout_marginBottom="70dp"
-            app:cardBackgroundColor="?attr/colorPrimary"
-            app:cardCornerRadius="15dp">
+            android:orientation="vertical">
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/optionsList"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingVertical="15dp" />
+                android:overScrollMode="never"/>
 
-        </androidx.cardview.widget.CardView>
+        </LinearLayout>
     </LinearLayout>
 
     <LinearLayout

@@ -52,6 +52,7 @@ import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.BaseActivity
 import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.gallery.modals.SliderDialog
+import com.botpa.turbophotos.gallery.options.OptionsGroup
 import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.options.OptionsManager
 import com.botpa.turbophotos.gallery.views.ZoomableLayout
@@ -147,10 +148,9 @@ class VideoActivity : BaseActivity() {
               | $$
               |_*/
 
-    private val options: MutableList<OptionsItem> = ArrayList()
+    private val options: MutableList<OptionsGroup> = ArrayList()
     private lateinit var optionsManager: OptionsManager
 
-    private val optionSeparator: OptionsItem = OptionsItem()
     private lateinit var optionPiP: OptionsItem
     private lateinit var optionSpeed: OptionsItem
 
@@ -845,8 +845,10 @@ class VideoActivity : BaseActivity() {
               |_*/
 
     private fun onUpdateOptions() {
-        options.add(optionPiP)
-        options.add(optionSpeed)
+        options.add(OptionsGroup(mutableListOf<OptionsItem>().apply {
+            add(optionPiP)
+            add(optionSpeed)
+        }))
     }
 
       /*$$$$$    /$$     /$$
