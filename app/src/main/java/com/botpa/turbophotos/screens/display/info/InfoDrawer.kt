@@ -8,7 +8,7 @@ import android.widget.TextView
 import android.widget.Toast
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Item
-import com.botpa.turbophotos.gallery.modals.CustomDrawer
+import com.botpa.turbophotos.gallery.modals.core.CustomDrawer
 import com.botpa.turbophotos.util.Orion
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode

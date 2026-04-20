@@ -51,7 +51,7 @@ import androidx.media3.ui.PlayerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.BaseActivity
 import com.botpa.turbophotos.gallery.StoragePairs
-import com.botpa.turbophotos.gallery.modals.prebuilt.SliderDialog
+import com.botpa.turbophotos.gallery.modals.SliderDialog
 import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.options.OptionsManager
 import com.botpa.turbophotos.gallery.views.ZoomableLayout

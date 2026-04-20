@@ -30,9 +30,9 @@ import com.botpa.turbophotos.BuildConfig
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.Link
-import com.botpa.turbophotos.gallery.modals.prebuilt.AlbumsDialog
-import com.botpa.turbophotos.gallery.modals.prebuilt.ExplorerDialog
-import com.botpa.turbophotos.gallery.modals.prebuilt.BulletPointsDialog
+import com.botpa.turbophotos.gallery.modals.AlbumsDialog
+import com.botpa.turbophotos.gallery.modals.ExplorerDialog
+import com.botpa.turbophotos.gallery.modals.BulletPointsDialog
 import com.botpa.turbophotos.gallery.views.Group
 import com.botpa.turbophotos.gallery.views.GroupDivider
 import com.botpa.turbophotos.gallery.views.GroupItems

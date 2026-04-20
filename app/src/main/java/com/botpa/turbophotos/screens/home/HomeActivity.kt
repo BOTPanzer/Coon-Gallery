@@ -38,7 +38,7 @@ import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.gallery.actions.Action
 import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.screens.album.AlbumActivity
-import com.botpa.turbophotos.screens.home.filters.DialogFilters
+import com.botpa.turbophotos.screens.home.filters.FiltersDialog
 import com.botpa.turbophotos.screens.home.filters.Filter
 import com.botpa.turbophotos.screens.settings.SettingsActivity
 import com.botpa.turbophotos.screens.sync.SyncActivity
@@ -519,7 +519,7 @@ class HomeActivity : BaseActivity() {
             )
 
             //Create dialog
-            DialogFilters(this, filters).buildAndShow()
+            FiltersDialog(this, filters).buildAndShow()
         }
     }
 

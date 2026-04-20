@@ -4,16 +4,16 @@ import android.content.Context
 import android.widget.ListView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.SearchMethod
-import com.botpa.turbophotos.gallery.modals.CustomDialog
+import com.botpa.turbophotos.gallery.modals.core.CustomDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
-class DialogSearch(context: Context, private val onSelect: (SearchMethod) -> Unit): CustomDialog(context, R.layout.dialog_search) {
+class SearchDialog(context: Context, private val onSelect: (SearchMethod) -> Unit): CustomDialog(context, R.layout.dialog_search) {
 
     //Views
     private lateinit var list: ListView
 
     //Adapter
-    private lateinit var adapter: DialogSearchAdapter
+    private lateinit var adapter: SearchDialogAdapter
     private val methods: List<SearchMethod> = listOf(SearchMethod.ContainsWords, SearchMethod.ContainsText)
 
 
@@ -43,7 +43,7 @@ class DialogSearch(context: Context, private val onSelect: (SearchMethod) -> Uni
 
     override fun onInitEnd() {
         //Init adapter
-        adapter = DialogSearchAdapter(context, methods)
+        adapter = SearchDialogAdapter(context, methods)
         list.adapter = adapter
     }
 

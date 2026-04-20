@@ -18,9 +18,9 @@ import com.botpa.turbophotos.gallery.Link.Companion.loadLinks
 import com.botpa.turbophotos.gallery.Link.Companion.relinkWithAlbum
 import com.botpa.turbophotos.gallery.actions.Action
 import com.botpa.turbophotos.gallery.actions.ActionError
-import com.botpa.turbophotos.gallery.modals.prebuilt.AlbumsDialog
-import com.botpa.turbophotos.gallery.modals.prebuilt.ErrorsDialog
-import com.botpa.turbophotos.gallery.modals.prebuilt.InputDialog
+import com.botpa.turbophotos.gallery.modals.AlbumsDialog
+import com.botpa.turbophotos.gallery.modals.ErrorsDialog
+import com.botpa.turbophotos.gallery.modals.InputDialog
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage.getBool
 

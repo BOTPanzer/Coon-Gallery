@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.gallery.modals
+package com.botpa.turbophotos.gallery.modals.core
 
 import android.content.Context
 import android.view.LayoutInflater

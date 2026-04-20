@@ -9,7 +9,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import com.botpa.turbophotos.R
 
-class DialogFiltersAdapter(context: Context, items: List<Filter>) : ArrayAdapter<Filter>(context, 0, items) {
+class FiltersDialogAdapter(context: Context, items: List<Filter>) : ArrayAdapter<Filter>(context, 0, items) {
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         //Inflate

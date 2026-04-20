@@ -10,11 +10,11 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Library
-import com.botpa.turbophotos.gallery.modals.CustomDialog
+import com.botpa.turbophotos.gallery.modals.core.CustomDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.util.regex.Pattern
 
-class DialogFilters(context: Context, private val filters: List<Filter>) : CustomDialog(context, R.layout.dialog_filters) {
+class FiltersDialog(context: Context, private val filters: List<Filter>) : CustomDialog(context, R.layout.dialog_filters) {
 
     //Views
     private lateinit var listLayout: View
@@ -24,7 +24,7 @@ class DialogFilters(context: Context, private val filters: List<Filter>) : Custo
     private lateinit var customButton: Button
 
     //Adapter
-    private var adapter: DialogFiltersAdapter = DialogFiltersAdapter(context, filters)
+    private var adapter: FiltersDialogAdapter = FiltersDialogAdapter(context, filters)
 
     //Text
     private val TEXT_CUSTOM: String = "Custom filter"

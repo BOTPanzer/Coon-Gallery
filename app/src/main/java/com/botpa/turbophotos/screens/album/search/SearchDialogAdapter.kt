@@ -9,7 +9,7 @@ import android.widget.TextView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.SearchMethod
 
-class DialogSearchAdapter(context: Context, items: List<SearchMethod>) : ArrayAdapter<SearchMethod>(context, 0, items) {
+class SearchDialogAdapter(context: Context, items: List<SearchMethod>) : ArrayAdapter<SearchMethod>(context, 0, items) {
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         //Inflate

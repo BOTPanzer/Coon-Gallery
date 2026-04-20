@@ -38,7 +38,7 @@ import com.botpa.turbophotos.util.Storage
 import com.botpa.turbophotos.gallery.fastscroller.FastScroller
 import com.botpa.turbophotos.gallery.fastscroller.FastScrollerBuilder
 import com.botpa.turbophotos.gallery.options.OptionsManager
-import com.botpa.turbophotos.screens.album.search.DialogSearch
+import com.botpa.turbophotos.screens.album.search.SearchDialog
 
 @SuppressLint("SetTextI18n", "NotifyDataSetChanged")
 class AlbumActivity : BaseActivity() {
@@ -477,7 +477,7 @@ class AlbumActivity : BaseActivity() {
         }
 
         searchMethod.setOnClickListener { view: View ->
-            DialogSearch(this) { method ->
+            SearchDialog(this) { method ->
                 //Update method
                 currentSearchMethod = method
                 searchMethodName.text = getSearchMethodName(currentSearchMethod)

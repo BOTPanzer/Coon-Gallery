@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.gallery.modals.prebuilt
+package com.botpa.turbophotos.gallery.modals
 
 import android.content.Context
 import android.os.Environment
@@ -11,7 +11,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import com.botpa.turbophotos.R
-import com.botpa.turbophotos.gallery.modals.CustomDialog
+import com.botpa.turbophotos.gallery.modals.core.CustomDialog
 import com.botpa.turbophotos.util.Orion
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.io.File

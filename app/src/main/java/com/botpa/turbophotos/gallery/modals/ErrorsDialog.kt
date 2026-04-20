@@ -1,10 +1,10 @@
-package com.botpa.turbophotos.gallery.modals.prebuilt
+package com.botpa.turbophotos.gallery.modals
 
 import android.content.Context
 import android.widget.ListView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.actions.ActionError
-import com.botpa.turbophotos.gallery.modals.CustomDialog
+import com.botpa.turbophotos.gallery.modals.core.CustomDialog
 import com.botpa.turbophotos.util.Orion
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
