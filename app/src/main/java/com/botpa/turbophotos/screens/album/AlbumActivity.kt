@@ -639,23 +639,23 @@ class AlbumActivity : BaseActivity() {
         val isSelectingSingle = selectedIndexes.size == 1
 
         //Update options list
-        options.add(OptionsGroup(mutableListOf<OptionsItem>().apply {
-            if (!inTrash && isSelectingSingle) add(optionRename)
-            if (!inTrash && isSelectingSingle) add(optionEdit)
-            if (!inTrash && isSelecting) add(optionShare)
-            if (!inTrash && isSelectingSingle) add(optionSetAs)
-        }))
-        options.add(OptionsGroup(mutableListOf<OptionsItem>().apply {
-            if (!inTrash) {
+        if (!inTrash) {
+            options.add(OptionsGroup(mutableListOf<OptionsItem>().apply {
+                if (isSelectingSingle) add(optionRename)
+                if (isSelectingSingle) add(optionEdit)
+                if (isSelecting) add(optionShare)
+                if (isSelectingSingle) add(optionSetAs)
+            }))
+            options.add(OptionsGroup(mutableListOf<OptionsItem>().apply {
                 if (selectedIndexes.all { gallery[it].isFavourite }) {
                     add(optionUnfavourite)
                 } else if (selectedIndexes.all { !gallery[it].isFavourite }) {
                     add(optionFavourite)
                 }
-            }
-            if (!inTrash && isSelecting) add(optionMove)
-            if (!inTrash && isSelecting) add(optionCopy)
-        }))
+                if (isSelecting) add(optionMove)
+                if (isSelecting) add(optionCopy)
+            }))
+        }
         options.add(OptionsGroup(mutableListOf<OptionsItem>().apply {
             if (!inTrash && isSelecting) add(optionTrash)
             if (inTrash && isSelecting) add(optionRestore)

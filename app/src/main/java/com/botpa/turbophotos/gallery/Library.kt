@@ -1172,8 +1172,8 @@ object Library {
 
             //Add to all & original album
             helper.indexInAll = performAddToAlbum(action, item, all)
-            helper.indexInFavourites = performAddToAlbum(action, item, favourites)
             helper.indexInAlbum = performAddToAlbum(action, item, originalAlbum)
+            if (item.isFavourite) helper.indexInFavourites = performAddToAlbum(action, item, favourites)
 
             //Check for album changes
             performCheckForAlbumChanges(action, helper.indexInAlbum, originalAlbum)
