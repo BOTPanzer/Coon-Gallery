@@ -13,7 +13,7 @@ Privacy-focused Android gallery with smart search support powered by metadata fi
 
 - Enable **smart search** with the power of **metadata files**.
   
-  - Is there a cat in a photo? Just search"cat" to find it!
+  - Is there a cat in a photo? Just search for "cat" to find it!
 
 - Wirelessly **backup your albums** to your computer.
   
@@ -21,23 +21,23 @@ Privacy-focused Android gallery with smart search support powered by metadata fi
 
 - Multiple actions to **manage your albums**.
   
-  - Almost everything you can find in other galleries: edit, share, move, copy, delete...
+  - Everything you can find in other galleries: edit, share, move, copy, delete...
 
 - Multiple **item selection** support.
   
   - Want to manage multiple files at a time? You can hold to select them!
 
-- Android **trash API** support.
+- Android **trash & favourites API** support.
   
-  - Trashed a file from the camera app? It will appear here too!
+  - Trashed or favourited a file from another app? It will appear here too!
 
 ## How to Run
 
-Choose wichever version you want from the [releases page](https://github.com/BOTPanzer/Coon-Gallery/releases) and download the apk or clone the repository and build it yourself using Android Studio.
+Choose whichever version you want from the [releases page](https://github.com/BOTPanzer/Coon-Gallery/releases) and download the apk or clone the repository and build it yourself using Android Studio.
 
 ## How to Use
 
-Excluding the normal gallery features, there are some new original things that Coon Gallery can do, these being **backing up your albums** to your PC and **enabling smart search** in the gallery. For these to work, you will need to setup *links* in the settings menu.
+Excluding the normal gallery features, there are some original features unique to Coon Gallery, these being **backing up your albums** to your PC and **enabling smart search** in the gallery. For these to work, you will need to set up *links* in the settings menu.
 
 ### Setup Links
 
