@@ -35,6 +35,7 @@ import com.botpa.turbophotos.gallery.modals.ExplorerDialog
 import com.botpa.turbophotos.gallery.modals.BulletPointsDialog
 import com.botpa.turbophotos.gallery.views.Group
 import com.botpa.turbophotos.gallery.views.GroupDivider
+import com.botpa.turbophotos.gallery.views.GroupItem
 import com.botpa.turbophotos.gallery.views.GroupItems
 import com.botpa.turbophotos.gallery.views.GroupTitle
 import com.botpa.turbophotos.gallery.views.IconButton
@@ -174,40 +175,48 @@ class SettingsActivity : AppCompatActivity() {
                         //Items
                         GroupItems {
                             //Backup
-                            SettingsItem(
-                                title = "Backup",
-                                description = "Create or load a backup of your settings."
-                            ) {
-                                //Backup
-                                IconButton(
-                                    onClick = onCreateBackup,
-                                    painter = painterResource(R.drawable.backup_create),
-                                    contentDescription = "Backup"
-                                )
+                            GroupItem {
+                                SettingsItem(
+                                    title = "Backup",
+                                    description = "Create or load a backup of your settings."
+                                ) {
+                                    //Backup
+                                    IconButton(
+                                        onClick = onCreateBackup,
+                                        painter = painterResource(R.drawable.backup_create),
+                                        contentDescription = "Backup"
+                                    )
 
-                                //Restore
-                                IconButton(
-                                    onClick = onChooseBackupFile,
-                                    painter = painterResource(R.drawable.backup_restore),
-                                    contentDescription = "Restore",
-                                    modifier = Modifier
-                                        .padding(start = 10.dp)
-                                )
+                                    //Restore
+                                    IconButton(
+                                        onClick = onChooseBackupFile,
+                                        painter = painterResource(R.drawable.backup_restore),
+                                        contentDescription = "Restore",
+                                        modifier = Modifier
+                                            .padding(start = 10.dp)
+                                    )
+                                }
                             }
 
                             //Divider
                             GroupDivider()
 
                             //Automatic metadata modification
-                            SettingsItem(
-                                title = "Metadata modification",
-                                description = "Modify album metadata automatically when moving, copying or deleting items from an album."
-                            ) {
-                                //Value
-                                Switch(
-                                    checked = view.appModifyMetadata,
-                                    onCheckedChange = { isChecked -> view.updateAppModifyMetadata(isChecked) }
-                                )
+                            GroupItem {
+                                SettingsItem(
+                                    title = "Metadata modification",
+                                    description = "Modify album metadata automatically when moving, copying or deleting items from an album."
+                                ) {
+                                    //Value
+                                    Switch(
+                                        checked = view.appModifyMetadata,
+                                        onCheckedChange = { isChecked ->
+                                            view.updateAppModifyMetadata(
+                                                isChecked
+                                            )
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
@@ -222,20 +231,24 @@ class SettingsActivity : AppCompatActivity() {
                         //Items
                         GroupItems {
                             //Items per row
-                            SettingsItem(
-                                title = "Items per row · ${view.homeItemsPerRow.toInt()} items",
-                                description = "The amount of albums to show per home screen row."
-                            ) {
-                                //Value
-                                Slider(
-                                    value = view.homeItemsPerRow,
-                                    onValueChange = { newValue -> view.homeItemsPerRow = newValue },
-                                    onValueChangeFinished = { view.saveHomeItemsPerRow() },
-                                    valueRange = 1f..5f,
-                                    steps = 3,
-                                    modifier = Modifier
-                                        .weight(0.5f)
-                                )
+                            GroupItem {
+                                SettingsItem(
+                                    title = "Items per row · ${view.homeItemsPerRow.toInt()} items",
+                                    description = "The amount of albums to show per home screen row."
+                                ) {
+                                    //Value
+                                    Slider(
+                                        value = view.homeItemsPerRow,
+                                        onValueChange = { newValue ->
+                                            view.homeItemsPerRow = newValue
+                                        },
+                                        onValueChangeFinished = { view.saveHomeItemsPerRow() },
+                                        valueRange = 1f..5f,
+                                        steps = 3,
+                                        modifier = Modifier
+                                            .weight(0.5f)
+                                    )
+                                }
                             }
                         }
                     }
@@ -250,35 +263,45 @@ class SettingsActivity : AppCompatActivity() {
                         //Items
                         GroupItems {
                             //Items per row
-                            SettingsItem(
-                                title = "Items per row · ${view.albumItemsPerRow.toInt()} items",
-                                description = "The amount of images/videos to show per album screen row."
-                            ) {
-                                //Value
-                                Slider(
-                                    value = view.albumItemsPerRow,
-                                    onValueChange = { newValue -> view.albumItemsPerRow = newValue },
-                                    onValueChangeFinished = { view.saveAlbumItemsPerRow() },
-                                    valueRange = 1f..5f,
-                                    steps = 3,
-                                    modifier = Modifier
-                                        .weight(0.5f)
-                                )
+                            GroupItem {
+                                SettingsItem(
+                                    title = "Items per row · ${view.albumItemsPerRow.toInt()} items",
+                                    description = "The amount of images/videos to show per album screen row."
+                                ) {
+                                    //Value
+                                    Slider(
+                                        value = view.albumItemsPerRow,
+                                        onValueChange = { newValue ->
+                                            view.albumItemsPerRow = newValue
+                                        },
+                                        onValueChangeFinished = { view.saveAlbumItemsPerRow() },
+                                        valueRange = 1f..5f,
+                                        steps = 3,
+                                        modifier = Modifier
+                                            .weight(0.5f)
+                                    )
+                                }
                             }
 
                             //Divider
                             GroupDivider()
 
                             //Show missing metadata icon
-                            SettingsItem(
-                                title = "Show missing metadata icon",
-                                description = "Show an icon on items without a metadata key if their album has metadata."
-                            ) {
-                                //Value
-                                Switch(
-                                    checked = view.albumShowMissingMetadataIcon,
-                                    onCheckedChange = { isChecked -> view.updateAlbumShowMissingMetadataIcon(isChecked) }
-                                )
+                            GroupItem {
+                                SettingsItem(
+                                    title = "Show missing metadata icon",
+                                    description = "Show an icon on items without a metadata key if their album has metadata."
+                                ) {
+                                    //Value
+                                    Switch(
+                                        checked = view.albumShowMissingMetadataIcon,
+                                        onCheckedChange = { isChecked ->
+                                            view.updateAlbumShowMissingMetadataIcon(
+                                                isChecked
+                                            )
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
@@ -293,70 +316,90 @@ class SettingsActivity : AppCompatActivity() {
                         //Items
                         GroupItems {
                             //Skip backwards amount
-                            SettingsItem(
-                                title = "Skip backwards · ${view.videoSkipBackwardsAmount.toLong()}s",
-                                description = "The amount of seconds to skip backwards when double tapping the screen on the left."
-                            ) {
-                                //Value
-                                Slider(
-                                    value = view.videoSkipBackwardsAmount,
-                                    onValueChange = { newValue -> view.videoSkipBackwardsAmount = newValue },
-                                    onValueChangeFinished = { view.saveVideoSkipBackwardsAmount() },
-                                    valueRange = 5f..25f,
-                                    steps = 3,
-                                    modifier = Modifier
-                                        .weight(0.5f)
-                                )
+                            GroupItem {
+                                SettingsItem(
+                                    title = "Skip backwards · ${view.videoSkipBackwardsAmount.toLong()}s",
+                                    description = "The amount of seconds to skip backwards when double tapping the screen on the left."
+                                ) {
+                                    //Value
+                                    Slider(
+                                        value = view.videoSkipBackwardsAmount,
+                                        onValueChange = { newValue ->
+                                            view.videoSkipBackwardsAmount = newValue
+                                        },
+                                        onValueChangeFinished = { view.saveVideoSkipBackwardsAmount() },
+                                        valueRange = 5f..25f,
+                                        steps = 3,
+                                        modifier = Modifier
+                                            .weight(0.5f)
+                                    )
+                                }
                             }
 
                             //Divider
                             GroupDivider()
 
                             //Skip forward amount
-                            SettingsItem(
-                                title = "Skip forward · ${view.videoSkipForwardAmount.toLong()}s",
-                                description = "The amount of seconds to skip forward when double tapping the screen on the right."
-                            ) {
-                                //Value
-                                Slider(
-                                    value = view.videoSkipForwardAmount,
-                                    onValueChange = { newValue -> view.videoSkipForwardAmount = newValue },
-                                    onValueChangeFinished = { view.saveVideoSkipForwardAmount() },
-                                    valueRange = 5f..25f,
-                                    steps = 3,
-                                    modifier = Modifier
-                                        .weight(0.5f)
-                                )
+                            GroupItem {
+                                SettingsItem(
+                                    title = "Skip forward · ${view.videoSkipForwardAmount.toLong()}s",
+                                    description = "The amount of seconds to skip forward when double tapping the screen on the right."
+                                ) {
+                                    //Value
+                                    Slider(
+                                        value = view.videoSkipForwardAmount,
+                                        onValueChange = { newValue ->
+                                            view.videoSkipForwardAmount = newValue
+                                        },
+                                        onValueChangeFinished = { view.saveVideoSkipForwardAmount() },
+                                        valueRange = 5f..25f,
+                                        steps = 3,
+                                        modifier = Modifier
+                                            .weight(0.5f)
+                                    )
+                                }
                             }
 
                             //Divider
                             GroupDivider()
 
                             //Use internal player
-                            SettingsItem(
-                                title = "Use internal video player",
-                                description = "Use internal video player instead of asking to use an external one when opening videos."
-                            ) {
-                                //Value
-                                Switch(
-                                    checked = view.videoUseInternalPlayer,
-                                    onCheckedChange = { isChecked -> view.updateVideoUseInternalPlayer(isChecked) }
-                                )
+                            GroupItem {
+                                SettingsItem(
+                                    title = "Use internal video player",
+                                    description = "Use internal video player instead of asking to use an external one when opening videos."
+                                ) {
+                                    //Value
+                                    Switch(
+                                        checked = view.videoUseInternalPlayer,
+                                        onCheckedChange = { isChecked ->
+                                            view.updateVideoUseInternalPlayer(
+                                                isChecked
+                                            )
+                                        }
+                                    )
+                                }
                             }
 
                             //Divider
                             GroupDivider()
 
                             //Ignore audio focus
-                            SettingsItem(
-                                title = "Ignore audio focus",
-                                description = "Don't pause content if other apps are playing audio."
-                            ) {
-                                //Value
-                                Switch(
-                                    checked = view.videoIgnoreAudioFocus,
-                                    onCheckedChange = { isChecked -> view.updateVideoIgnoreAudioFocus(isChecked) }
-                                )
+                            GroupItem {
+                                SettingsItem(
+                                    title = "Ignore audio focus",
+                                    description = "Don't pause content if other apps are playing audio."
+                                ) {
+                                    //Value
+                                    Switch(
+                                        checked = view.videoIgnoreAudioFocus,
+                                        onCheckedChange = { isChecked ->
+                                            view.updateVideoIgnoreAudioFocus(
+                                                isChecked
+                                            )
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
@@ -401,13 +444,15 @@ class SettingsActivity : AppCompatActivity() {
                         GroupItems {
                             Link.links.forEachIndexed { index, link ->
                                 //Add item
-                                LinkItem(
-                                    index = index,
-                                    link = link,
-                                    onChooseAlbum = onChooseLinkAlbum,
-                                    onChooseMetadata = onChooseLinkMetadata,
-                                    onDelete = { index -> view.removeLink(index) }
-                                )
+                                GroupItem {
+                                    LinkItem(
+                                        index = index,
+                                        link = link,
+                                        onChooseAlbum = onChooseLinkAlbum,
+                                        onChooseMetadata = onChooseLinkMetadata,
+                                        onDelete = { index -> view.removeLink(index) }
+                                    )
+                                }
 
                                 //Add divider between items
                                 if (index < Link.links.size - 1) GroupDivider()
@@ -434,39 +479,45 @@ class SettingsActivity : AppCompatActivity() {
                         //Items
                         GroupItems {
                             //Version
-                            SettingsItem(
-                                title = "Version",
-                                description = "Coon Gallery v${BuildConfig.VERSION_NAME}"
-                            ) {}
+                            GroupItem {
+                                SettingsItem(
+                                    title = "Version",
+                                    description = "Coon Gallery v${BuildConfig.VERSION_NAME}"
+                                ) {}
+                            }
 
                             //Divider
                             GroupDivider()
 
                             //Developer
-                            SettingsItem(
-                                title = "Developer",
-                                description = "Click to see the things I make!"
-                            ) {
-                                IconButton(
-                                    onClick = { uriHandler.openUri("https://botpa.vercel.app/") },
-                                    painter = painterResource(R.drawable.open),
-                                    contentDescription = "Portfolio"
-                                )
+                            GroupItem {
+                                SettingsItem(
+                                    title = "Developer",
+                                    description = "Click to see the things I make!"
+                                ) {
+                                    IconButton(
+                                        onClick = { uriHandler.openUri("https://botpa.vercel.app/") },
+                                        painter = painterResource(R.drawable.open),
+                                        contentDescription = "Portfolio"
+                                    )
+                                }
                             }
 
                             //Divider
                             GroupDivider()
 
                             //Github
-                            SettingsItem(
-                                title = "Github",
-                                description = "Click to check for updates!"
-                            ) {
-                                IconButton(
-                                    onClick = { uriHandler.openUri("https://github.com/BOTPanzer/Coon-Gallery") },
-                                    painter = painterResource(R.drawable.open),
-                                    contentDescription = "Github"
-                                )
+                            GroupItem {
+                                SettingsItem(
+                                    title = "Github",
+                                    description = "Click to check for updates!"
+                                ) {
+                                    IconButton(
+                                        onClick = { uriHandler.openUri("https://github.com/BOTPanzer/Coon-Gallery") },
+                                        painter = painterResource(R.drawable.open),
+                                        contentDescription = "Github"
+                                    )
+                                }
                             }
                         }
                     }

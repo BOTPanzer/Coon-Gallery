@@ -40,6 +40,7 @@ import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.gallery.views.Group
 import com.botpa.turbophotos.gallery.views.GroupDivider
+import com.botpa.turbophotos.gallery.views.GroupItem
 import com.botpa.turbophotos.gallery.views.GroupItems
 import com.botpa.turbophotos.gallery.views.GroupTitle
 import com.botpa.turbophotos.gallery.views.Layout
@@ -121,41 +122,47 @@ class SyncActivity : AppCompatActivity() {
                 //Items
                 GroupItems {
                     //Name input
-                    TextField(
-                        value = view.connectName,
-                        label = { Text("Name (optional)") },
-                        maxLines = 1,
-                        onValueChange = { newValue: String -> view.connectName = newValue },
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent,
-                            disabledContainerColor = Color.Transparent,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent
-                        ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    )
+                    GroupItem {
+                        TextField(
+                            value = view.connectName,
+                            label = { Text("Name (optional)") },
+                            maxLines = 1,
+                            onValueChange = { newValue: String -> view.connectName = newValue },
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent,
+                                disabledContainerColor = Color.Transparent,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 5.dp)
+                        )
+                    }
 
                     //Divider
                     GroupDivider()
 
                     //Code input
-                    TextField(
-                        value = view.connectCode,
-                        label = { Text("Code") },
-                        maxLines = 1,
-                        onValueChange = { newValue: String -> view.connectCode = newValue },
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent,
-                            disabledContainerColor = Color.Transparent,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent
-                        ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    )
+                    GroupItem {
+                        TextField(
+                            value = view.connectCode,
+                            label = { Text("Code") },
+                            maxLines = 1,
+                            onValueChange = { newValue: String -> view.connectCode = newValue },
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent,
+                                disabledContainerColor = Color.Transparent,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 5.dp)
+                        )
+                    }
                 }
 
                 //Connect button & connecting indicator
@@ -243,33 +250,35 @@ class SyncActivity : AppCompatActivity() {
                             } else {
                                 view.users.forEachIndexed { index, user ->
                                     //Add item
-                                    UserItem(
-                                        index = index,
-                                        user = user,
-                                        onConnect = { index, user ->
-                                            //Move user first in list
-                                            view.users.removeAt(index)
-                                            view.users.add(0, user)
-                                            saveUsers()
+                                    GroupItem {
+                                        UserItem(
+                                            index = index,
+                                            user = user,
+                                            onConnect = { index, user ->
+                                                //Move user first in list
+                                                view.users.removeAt(index)
+                                                view.users.add(0, user)
+                                                saveUsers()
 
-                                            //Connect to user
-                                            connect(user.code)
-                                        },
-                                        onSelect = { index, user ->
-                                            //Select user info
-                                            view.connectName = user.name
-                                            view.connectCode = user.code
+                                                //Connect to user
+                                                connect(user.code)
+                                            },
+                                            onSelect = { index, user ->
+                                                //Select user info
+                                                view.connectName = user.name
+                                                view.connectCode = user.code
 
-                                            //Hide keyboard
-                                            Orion.hideKeyboard(activity)
-                                            Orion.clearFocus(activity)
-                                        },
-                                        onDelete = { index ->
-                                            //Delete user
-                                            view.users.removeAt(index)
-                                            saveUsers()
-                                        }
-                                    )
+                                                //Hide keyboard
+                                                Orion.hideKeyboard(activity)
+                                                Orion.clearFocus(activity)
+                                            },
+                                            onDelete = { index ->
+                                                //Delete user
+                                                view.users.removeAt(index)
+                                                saveUsers()
+                                            }
+                                        )
+                                    }
 
                                     //Add divider between items
                                     if (index < view.users.size - 1) GroupDivider()
