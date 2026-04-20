@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.gallery.modals
+package com.botpa.turbophotos.gallery.modals.prebuilt
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -8,7 +8,7 @@ import android.widget.ArrayAdapter
 import android.widget.TextView
 import com.botpa.turbophotos.R
 
-class DialogBulletpointsAdapter(
+class BulletPointsDialogAdapter(
     context: Context,
     points: List<String>
 ) : ArrayAdapter<String>(context, 0, points) {

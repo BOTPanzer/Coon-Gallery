@@ -1,13 +1,14 @@
-package com.botpa.turbophotos.gallery.modals
+package com.botpa.turbophotos.gallery.modals.prebuilt
 
 import android.content.Context
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import com.botpa.turbophotos.R
+import com.botpa.turbophotos.gallery.modals.CustomDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.slider.Slider
 
-class DialogSlider(
+class SliderDialog(
     context: Context,
     private val title: String,
     private val value: Float,

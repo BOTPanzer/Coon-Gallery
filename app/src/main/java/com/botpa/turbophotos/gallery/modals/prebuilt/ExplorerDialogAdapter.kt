@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.gallery.modals
+package com.botpa.turbophotos.gallery.modals.prebuilt
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -11,7 +11,7 @@ import android.widget.TextView
 import com.botpa.turbophotos.R
 import java.io.File
 
-class DialogExplorerAdapter(
+class ExplorerDialogAdapter(
     context: Context,
     private val isSelectingFiles: Boolean = false,
     private val externalStorage: File,

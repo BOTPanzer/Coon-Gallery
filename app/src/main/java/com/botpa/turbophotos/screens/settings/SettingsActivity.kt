@@ -30,9 +30,9 @@ import com.botpa.turbophotos.BuildConfig
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.Link
-import com.botpa.turbophotos.gallery.modals.DialogAlbums
-import com.botpa.turbophotos.gallery.modals.DialogExplorer
-import com.botpa.turbophotos.gallery.modals.DialogBulletpoints
+import com.botpa.turbophotos.gallery.modals.prebuilt.AlbumsDialog
+import com.botpa.turbophotos.gallery.modals.prebuilt.ExplorerDialog
+import com.botpa.turbophotos.gallery.modals.prebuilt.BulletPointsDialog
 import com.botpa.turbophotos.gallery.views.Group
 import com.botpa.turbophotos.gallery.views.GroupDivider
 import com.botpa.turbophotos.gallery.views.GroupItems
@@ -81,7 +81,7 @@ class SettingsActivity : AppCompatActivity() {
         val onCreateBackup = remember {
             {
                 //Show select folder dialog
-                DialogExplorer(
+                ExplorerDialog(
                     context = activity,
                     isSelectingFiles = false,
                     onSelect = { folder ->
@@ -96,7 +96,7 @@ class SettingsActivity : AppCompatActivity() {
         val onChooseBackupFile = remember {
             {
                 //Show select file dialog
-                DialogExplorer(
+                ExplorerDialog(
                     context = activity,
                     isSelectingFiles = true,
                     fileExtension = "json",
@@ -114,12 +114,12 @@ class SettingsActivity : AppCompatActivity() {
         val onChooseLinkAlbum = remember<(Int) -> Unit> {
             { index ->
                 //Show select album dialog
-                DialogAlbums(
+                AlbumsDialog(
                     context = context,
                     albums = Library.albums,
                     onSelectAlbum = { album ->
                         //Choose album folder
-                        val folder = album.imagesFolder ?: return@DialogAlbums
+                        val folder = album.imagesFolder ?: return@AlbumsDialog
                         view.updateLinkAlbumFolder(activity, index, folder)
                     },
                     onSelectFolder = { folder ->
@@ -140,7 +140,7 @@ class SettingsActivity : AppCompatActivity() {
                     Toast.makeText(activity, "Add an album first.", Toast.LENGTH_SHORT).show()
                 } else {
                     //Show select file dialog
-                    DialogExplorer(
+                    ExplorerDialog(
                         context = context,
                         isSelectingFiles = true,
                         fileExtension = "json",
@@ -382,7 +382,7 @@ class SettingsActivity : AppCompatActivity() {
                             IconButton(
                                 onClick = {
                                     //Create info dialog
-                                    DialogBulletpoints(
+                                    BulletPointsDialog(
                                         context,
                                         "Links",
                                         "Links let you to backup your albums and enable smart search.",

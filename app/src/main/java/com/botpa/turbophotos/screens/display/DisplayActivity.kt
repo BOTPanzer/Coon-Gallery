@@ -20,7 +20,6 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.Insets
-import androidx.core.net.toUri
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
@@ -39,7 +38,7 @@ import com.botpa.turbophotos.gallery.actions.Action
 import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.options.OptionsManager
 import com.botpa.turbophotos.gallery.views.ZoomableLayout
-import com.botpa.turbophotos.screens.display.info.DrawerInfo
+import com.botpa.turbophotos.screens.display.info.InfoDrawer
 import com.botpa.turbophotos.screens.video.VideoActivity
 import com.botpa.turbophotos.util.BackManager
 import com.botpa.turbophotos.util.Orion
@@ -328,7 +327,7 @@ class DisplayActivity : BaseActivity() {
     private fun initListeners() {
         //Overlay
         overlayInfo.setOnClickListener {
-            DrawerInfo(this, currentItem).buildAndShow()
+            InfoDrawer(this, currentItem).buildAndShow()
         }
 
         overlayOptions.setOnClickListener { optionsManager.toggle(true) }

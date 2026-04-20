@@ -1,6 +1,7 @@
 package com.botpa.turbophotos.screens.display.info
 
 import android.content.Context
+import android.text.format.DateFormat
 import android.view.View
 import android.widget.HorizontalScrollView
 import android.widget.TextView
@@ -14,8 +15,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlin.math.round
 
-class DrawerInfo(
+class InfoDrawer(
     context: Context,
     private val item: Item
 ) : CustomDrawer(context, R.layout.drawer_display_info) {
@@ -23,7 +25,9 @@ class DrawerInfo(
     //Views (info)
     private lateinit var infoLayout: View
     private lateinit var infoName: TextView
+    private lateinit var infoPath: TextView
     private lateinit var infoDate: TextView
+    private lateinit var infoSize: TextView
     private lateinit var infoCaption: TextView
     private lateinit var infoLabelsScroll: HorizontalScrollView
     private lateinit var infoLabels: TextView
@@ -44,8 +48,14 @@ class DrawerInfo(
     override fun initViews() {
         //Info
         infoLayout = root.findViewById(R.id.infoLayout)
+
+        //Info (file)
         infoName = root.findViewById(R.id.infoName)
+        infoPath = root.findViewById(R.id.infoPath)
         infoDate = root.findViewById(R.id.infoDate)
+        infoSize = root.findViewById(R.id.infoSize)
+
+        //Info (search)
         infoCaption = root.findViewById(R.id.infoCaption)
         infoLabelsScroll = root.findViewById(R.id.infoLabelsScroll)
         infoLabels = root.findViewById(R.id.infoLabels)
@@ -136,12 +146,19 @@ class DrawerInfo(
     }
 
     override fun onInitEnd() {
-        //Create date text
+        //Get file info
+        val path = item.file.parent ?: ""
         val date = Date(item.lastModified * 1000)
-        val formatter1 = SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH)
-        val formatter2 = SimpleDateFormat("hh:mm.ss a", Locale.ENGLISH)
+        val dateFormatter = SimpleDateFormat(if (DateFormat.is24HourFormat(context)) "dd/MM/yyyy, HH:mm.ss" else "dd/MM/yyyy, hh:mm.ss a", Locale.ENGLISH)
+        val size = round(item.size.toFloat() / 10) / 100
 
-        //Load image info (caption & labels)
+        //Update file info
+        infoName.text = item.name
+        infoPath.text = path
+        infoDate.text = dateFormatter.format(date)
+        infoSize.text = if (size > 1000) "${round(size / 10) / 100} MB" else "$size KB"
+
+        //Get search info (caption, labels & text)
         var caption: String? = ""
         var labels = ""
         var text = ""
@@ -187,9 +204,7 @@ class DrawerInfo(
             //Error while parsing JSON
         }
 
-        //Update text
-        infoName.text = item.name
-        infoDate.text = "${formatter1.format(date)}, ${formatter2.format(date)}"
+        //Update search info
         infoCaption.text = caption
         infoLabels.text = labels
         infoText.text = text

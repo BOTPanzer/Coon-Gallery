@@ -18,9 +18,9 @@ import com.botpa.turbophotos.gallery.Link.Companion.loadLinks
 import com.botpa.turbophotos.gallery.Link.Companion.relinkWithAlbum
 import com.botpa.turbophotos.gallery.actions.Action
 import com.botpa.turbophotos.gallery.actions.ActionError
-import com.botpa.turbophotos.gallery.modals.DialogAlbums
-import com.botpa.turbophotos.gallery.modals.DialogErrors
-import com.botpa.turbophotos.gallery.modals.DialogInput
+import com.botpa.turbophotos.gallery.modals.prebuilt.AlbumsDialog
+import com.botpa.turbophotos.gallery.modals.prebuilt.ErrorsDialog
+import com.botpa.turbophotos.gallery.modals.prebuilt.InputDialog
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage.getBool
 
@@ -516,7 +516,7 @@ object Library {
     //Actions (dialogs)
     private fun showSelectAlbumDialog(context: Context, onSelect: (Album) -> Unit) {
         //Create dialog
-        DialogAlbums(context, albums, onSelect, { folder: File -> onSelect(getOrCreateAlbumFromFolder(folder)) }).buildAndShow()
+        AlbumsDialog(context, albums, onSelect, { folder: File -> onSelect(getOrCreateAlbumFromFolder(folder)) }).buildAndShow()
     }
 
     //Actions (base & util)
@@ -638,7 +638,7 @@ object Library {
         //Check if actions failed
         if (!action.errors.isEmpty()) {
             //Actions failed -> Show dialog
-            DialogErrors(context, action.errors).buildAndShow()
+            ErrorsDialog(context, action.errors).buildAndShow()
         }
 
         //Invoke action
@@ -659,7 +659,7 @@ object Library {
         val action = Action(Action.TYPE_RENAME, arrayOf(item))
 
         //Ask for a new name
-        val dialog = DialogInput(
+        val dialog = InputDialog(
             context,
             "Rename",
             "New name",

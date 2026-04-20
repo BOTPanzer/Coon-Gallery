@@ -4,28 +4,31 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingHorizontal="40dp">
+    android:paddingHorizontal="20dp"
+    android:paddingBottom="20dp">
 
     <androidx.cardview.widget.CardView
         android:layout_width="50dp"
         android:layout_height="4dp"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="18dp"
-        android:layout_marginBottom="18dp"
+        android:layout_marginTop="14dp"
+        android:layout_marginBottom="14dp"
         app:cardBackgroundColor="?attr/colorOnSurface"
         app:cardCornerRadius="3dp"
-        app:cardElevation="0dp" />
+        app:cardElevation="0dp">
 
-    <ScrollView
+    </androidx.cardview.widget.CardView>
+
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:fillViewport="true">
 
         <LinearLayout
             android:id="@+id/content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingBottom="40dp" />
-    </ScrollView>
+            android:orientation="vertical" />
+    </androidx.core.widget.NestedScrollView>
 
 </LinearLayout>

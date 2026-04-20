@@ -1,14 +1,15 @@
-package com.botpa.turbophotos.gallery.modals
+package com.botpa.turbophotos.gallery.modals.prebuilt
 
 import android.content.Context
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Album
+import com.botpa.turbophotos.gallery.modals.CustomDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.io.File
 
-class DialogAlbums(
+class AlbumsDialog(
     context: Context,
     private val albums: List<Album>,
     private val onSelectAlbum: (Album) -> Unit,
@@ -19,14 +20,14 @@ class DialogAlbums(
     private lateinit var list: RecyclerView
 
     //Adapter
-    private lateinit var adapter: DialogAlbumsAdapter
+    private lateinit var adapter: AlbumsDialogAdapter
     private lateinit var layoutManager: GridLayoutManager
 
 
     //Init
     override fun onInitStart() {
         //Init adapter & layout manager
-        adapter = DialogAlbumsAdapter(context, albums)
+        adapter = AlbumsDialogAdapter(context, albums)
         layoutManager = GridLayoutManager(context, 2)
     }
 
@@ -42,7 +43,7 @@ class DialogAlbums(
             .setNegativeButton("Cancel", null)
             .setNeutralButton("Select from folder",{ dialogInterface, which ->
                 //Select from folder
-                DialogExplorer(context, false, onSelectFolder).buildAndShow()
+                ExplorerDialog(context, false, onSelectFolder).buildAndShow()
             })
     }
 

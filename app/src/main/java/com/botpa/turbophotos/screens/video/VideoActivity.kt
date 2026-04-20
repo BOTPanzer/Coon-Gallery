@@ -51,7 +51,7 @@ import androidx.media3.ui.PlayerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.BaseActivity
 import com.botpa.turbophotos.gallery.StoragePairs
-import com.botpa.turbophotos.gallery.modals.DialogSlider
+import com.botpa.turbophotos.gallery.modals.prebuilt.SliderDialog
 import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.options.OptionsManager
 import com.botpa.turbophotos.gallery.views.ZoomableLayout
@@ -466,7 +466,7 @@ class VideoActivity : BaseActivity() {
 
         optionSpeed = OptionsItem(R.drawable.speed, "Playback speed") {
             //Create speed slider dialog
-            DialogSlider(this@VideoActivity, "Playback speed", player.playbackParameters.speed, 0.25f, 1.75f, 0.25f) { speed ->
+            SliderDialog(this@VideoActivity, "Playback speed", player.playbackParameters.speed, 0.25f, 1.75f, 0.25f) { speed ->
                 //Update speed
                 player.setPlaybackSpeed(speed)
             }.buildAndShow()

@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.gallery.modals
+package com.botpa.turbophotos.gallery.modals.prebuilt
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -9,7 +9,7 @@ import android.widget.TextView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.actions.ActionError
 
-class DialogErrorsAdapter(
+class ErrorsDialogAdapter(
     context: Context,
     errors: List<ActionError>
 ) : ArrayAdapter<ActionError>(context, 0, errors) {

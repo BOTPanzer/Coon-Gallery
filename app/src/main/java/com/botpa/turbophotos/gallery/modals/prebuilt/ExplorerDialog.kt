@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.gallery.modals
+package com.botpa.turbophotos.gallery.modals.prebuilt
 
 import android.content.Context
 import android.os.Environment
@@ -11,11 +11,12 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import com.botpa.turbophotos.R
+import com.botpa.turbophotos.gallery.modals.CustomDialog
 import com.botpa.turbophotos.util.Orion
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.io.File
 
-class DialogExplorer(
+class ExplorerDialog(
     context: Context,
     private val isSelectingFiles: Boolean = false,
     private val onSelect: (File) -> Unit,
@@ -32,7 +33,7 @@ class DialogExplorer(
     private lateinit var createButton: Button
 
     //Adapter
-    private lateinit var adapter: DialogExplorerAdapter
+    private lateinit var adapter: ExplorerDialogAdapter
 
     //Files & folders
     private lateinit var currentFolder: File
@@ -58,7 +59,7 @@ class DialogExplorer(
         currentFolder = startingFolder ?: externalStorage
 
         //Init adapter
-        adapter = DialogExplorerAdapter(context, isSelectingFiles, externalStorage, currentFolder, items)
+        adapter = ExplorerDialogAdapter(context, isSelectingFiles, externalStorage, currentFolder, items)
 
         //Init items list
         updateItemsList(currentFolder)

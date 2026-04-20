@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.gallery.modals
+package com.botpa.turbophotos.gallery.modals.prebuilt
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -11,10 +11,10 @@ import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Album
 import com.botpa.turbophotos.gallery.Item
 
-class DialogAlbumsAdapter(
+class AlbumsDialogAdapter(
     private val context: Context,
     private val albums: List<Album>
-) : RecyclerView.Adapter<DialogAlbumsAdapter.AlbumHolder>() {
+) : RecyclerView.Adapter<AlbumsDialogAdapter.AlbumHolder>() {
 
     //Adapter
     override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): AlbumHolder {

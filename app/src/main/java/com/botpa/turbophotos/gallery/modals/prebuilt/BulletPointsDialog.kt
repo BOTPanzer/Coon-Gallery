@@ -1,12 +1,13 @@
-package com.botpa.turbophotos.gallery.modals
+package com.botpa.turbophotos.gallery.modals.prebuilt
 
 import android.content.Context
 import android.widget.ListView
 import android.widget.TextView
 import com.botpa.turbophotos.R
+import com.botpa.turbophotos.gallery.modals.CustomDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
-class DialogBulletpoints(
+class BulletPointsDialog(
     context: Context,
     private val title: String,
     private val text: String,
@@ -18,13 +19,13 @@ class DialogBulletpoints(
     private lateinit var list: ListView
 
     //Adapter
-    private lateinit var adapter: DialogBulletpointsAdapter
+    private lateinit var adapter: BulletPointsDialogAdapter
 
 
     //Init
     override fun onInitStart() {
         //Init adapter
-        adapter = DialogBulletpointsAdapter(context, points)
+        adapter = BulletPointsDialogAdapter(context, points)
     }
 
     override fun initViews() {

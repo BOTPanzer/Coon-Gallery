@@ -1,13 +1,14 @@
-package com.botpa.turbophotos.gallery.modals
+package com.botpa.turbophotos.gallery.modals.prebuilt
 
 import android.content.Context
 import android.widget.ListView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.actions.ActionError
+import com.botpa.turbophotos.gallery.modals.CustomDialog
 import com.botpa.turbophotos.util.Orion
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
-class DialogErrors(
+class ErrorsDialog(
     context: Context,
     private val errors: List<ActionError>
 ) : CustomDialog(context, R.layout.dialog_errors) {
@@ -16,13 +17,13 @@ class DialogErrors(
     private lateinit var list: ListView
 
     //Adapter
-    private lateinit var adapter: DialogErrorsAdapter
+    private lateinit var adapter: ErrorsDialogAdapter
 
 
     //Init
     override fun onInitStart() {
         //Init adapter
-        adapter = DialogErrorsAdapter(context, errors)
+        adapter = ErrorsDialogAdapter(context, errors)
     }
 
     override fun initViews() {
