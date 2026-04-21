@@ -12,18 +12,18 @@ import com.bumptech.glide.Glide
 import com.google.android.material.card.MaterialCardView
 
 class AlbumAdapter(
-    private val context: Context,
+    context: Context,
     items: List<Item>,
     private val selected: Set<Int>,
     private var showMissingMetadataIcon: Boolean
-) : CustomAdapter<Item, AlbumAdapter.GalleryHolder>(items) {
+) : CustomAdapter<Item, AlbumAdapter.ItemHolder>(context, items) {
 
     //Adapter
-    override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): GalleryHolder {
-        return GalleryHolder(inflateView(context, R.layout.album_item, viewGroup))
+    override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ItemHolder {
+        return ItemHolder(inflateView(context, R.layout.album_item, viewGroup))
     }
 
-    override fun onInitViewHolder(holder: GalleryHolder, item: Item) {
+    override fun onInitViewHolder(holder: ItemHolder, item: Item) {
         //Load item preview
         Item.load(context, holder.image, item)
 
@@ -44,7 +44,7 @@ class AlbumAdapter(
         }
     }
 
-    override fun onViewRecycled(holder: GalleryHolder) {
+    override fun onViewRecycled(holder: ItemHolder) {
         super.onViewRecycled(holder)
 
         //Cancel pending loads
@@ -52,15 +52,15 @@ class AlbumAdapter(
     }
 
     //Holder
-    class GalleryHolder(root: View) : RecyclerView.ViewHolder(root) {
+    class ItemHolder(root: View) : RecyclerView.ViewHolder(root) {
 
-        var background: View = root.findViewById(R.id.background)
-        var imageCard: MaterialCardView = root.findViewById(R.id.imageCard)
-        var image: ImageView = root.findViewById(R.id.image)
-        var isVideo: View = root.findViewById(R.id.isVideo)
-        var isFavourite: View = root.findViewById(R.id.isFavourite)
-        var missingInfo: View = root.findViewById(R.id.missingInfo)
-        var isSelected: View = root.findViewById(R.id.isSelected)
+        val background: View = root.findViewById(R.id.background)
+        val imageCard: MaterialCardView = root.findViewById(R.id.imageCard)
+        val image: ImageView = root.findViewById(R.id.image)
+        val isVideo: View = root.findViewById(R.id.isVideo)
+        val isFavourite: View = root.findViewById(R.id.isFavourite)
+        val missingInfo: View = root.findViewById(R.id.missingInfo)
+        val isSelected: View = root.findViewById(R.id.isSelected)
 
     }
 

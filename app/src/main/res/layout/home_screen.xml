@@ -51,7 +51,7 @@
                 android:layout_marginHorizontal="15dp"
                 android:layout_marginVertical="10dp"
                 android:clickable="true"
-                app:cardBackgroundColor="?attr/colorSurface"
+                app:cardBackgroundColor="?attr/colorSurfaceContainer"
                 app:cardCornerRadius="40dp">
 
                 <LinearLayout

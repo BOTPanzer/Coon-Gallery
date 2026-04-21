@@ -10,17 +10,14 @@ import com.botpa.turbophotos.gallery.Item
 import com.botpa.turbophotos.gallery.modals.core.CustomAdapter
 import com.botpa.turbophotos.gallery.views.ZoomableLayout
 
-class DisplayAdapter(
-    private val context: Context,
-    items: List<Item>
-) : CustomAdapter<Item, DisplayAdapter.DisplayHolder>(items) {
+class DisplayAdapter(context: Context, items: List<Item>) : CustomAdapter<Item, DisplayAdapter.ItemHolder>(context, items) {
 
     //Adapter
-    override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): DisplayHolder {
-        return DisplayHolder(inflateView(context, R.layout.display_item, viewGroup))
+    override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ItemHolder {
+        return ItemHolder(inflateView(context, R.layout.display_item, viewGroup))
     }
 
-    override fun onInitViewHolder(holder: DisplayHolder, item: Item) {
+    override fun onInitViewHolder(holder: ItemHolder, item: Item) {
         //Load image
         Item.load(context, holder.image, item)
 
@@ -56,12 +53,12 @@ class DisplayAdapter(
     }
 
     //Holder
-    class DisplayHolder(root: View) : RecyclerView.ViewHolder(root) {
+    class ItemHolder(root: View) : RecyclerView.ViewHolder(root) {
 
-        var background: View = root.findViewById(R.id.background)
-        var zoom: ZoomableLayout = root.findViewById(R.id.zoom)
-        var image: ImageView = root.findViewById(R.id.image)
-        var play: View = root.findViewById(R.id.play)
+        val background: View = root.findViewById(R.id.background)
+        val zoom: ZoomableLayout = root.findViewById(R.id.zoom)
+        val image: ImageView = root.findViewById(R.id.image)
+        val play: View = root.findViewById(R.id.play)
 
     }
 

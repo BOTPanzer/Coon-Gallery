@@ -7,7 +7,8 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 
 abstract class CustomAdapter<T, VH: RecyclerView.ViewHolder>(
-    private val items: List<T>
+    protected val context: Context,
+    protected val items: List<T>
 ) : RecyclerView.Adapter<VH>() {
 
     //Adapter

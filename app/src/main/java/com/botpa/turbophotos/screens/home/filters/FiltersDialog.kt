@@ -8,6 +8,8 @@ import android.widget.ListView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.modals.core.CustomDialog
@@ -15,11 +17,11 @@ import com.botpa.turbophotos.gallery.views.ListSeparator
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.util.regex.Pattern
 
-class FiltersDialog(context: Context, private val filters: List<Filter>) : CustomDialog(context, R.layout.dialog_filters) {
+class FiltersDialog(context: Context, filters: List<Filter>) : CustomDialog(context, R.layout.dialog_filters) {
 
     //Views
     private lateinit var listLayout: View
-    private lateinit var list: ListView
+    private lateinit var list: RecyclerView
     private lateinit var customLayout: View
     private lateinit var customInput: EditText
     private lateinit var customButton: Button
@@ -52,9 +54,9 @@ class FiltersDialog(context: Context, private val filters: List<Filter>) : Custo
 
     override fun initListeners() {
         //Add listeners (list)
-        list.setOnItemClickListener { parent, view, position, id ->
+        adapter.onClick = { filter, position ->
             //Apply filter
-            Library.loadLibrary(context, adapter.getItem(position)!!.mimeType)
+            Library.loadLibrary(context, filter.mimeType)
 
             //Close dialog
             dialog.dismiss()
@@ -105,8 +107,10 @@ class FiltersDialog(context: Context, private val filters: List<Filter>) : Custo
     }
 
     override fun onInitEnd() {
-        //Assign adapter
+        //Assign adapter, layout manager to list & separator gap
         list.adapter = adapter
+        list.layoutManager = LinearLayoutManager(context)
+        list.addItemDecoration(ListSeparator(3))
     }
 
 }

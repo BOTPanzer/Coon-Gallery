@@ -11,10 +11,7 @@ import com.botpa.turbophotos.gallery.Album
 import com.botpa.turbophotos.gallery.Item
 import com.botpa.turbophotos.gallery.modals.core.CustomAdapter
 
-class AlbumsDialogAdapter(
-    private val context: Context,
-    albums: List<Album>
-) : CustomAdapter<Album, AlbumsDialogAdapter.AlbumHolder>(albums) {
+class AlbumsDialogAdapter(context: Context, albums: List<Album>) : CustomAdapter<Album, AlbumsDialogAdapter.AlbumHolder>(context, albums) {
 
     //Adapter
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): AlbumHolder {

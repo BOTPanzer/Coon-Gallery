@@ -101,7 +101,7 @@ fun GroupItems(modifier: Modifier = Modifier, content: @Composable ColumnScope.(
 @Composable
 fun GroupItem(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
         shape = RoundedCornerShape(5.dp),
         modifier = modifier
             .fillMaxWidth()

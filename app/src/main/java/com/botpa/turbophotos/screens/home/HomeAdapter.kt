@@ -124,29 +124,29 @@ class HomeAdapter(
     //Holders
     class HeaderHolder(root: View) : RecyclerView.ViewHolder(root) {
 
-        var all: View = root.findViewById(R.id.all)
-        var allImage: ImageView = root.findViewById(R.id.allImage)
-        var allIcon: ImageView = root.findViewById(R.id.allIcon)
-        var allInfo: TextView = root.findViewById(R.id.allInfo)
+        val all: View = root.findViewById(R.id.all)
+        val allImage: ImageView = root.findViewById(R.id.allImage)
+        val allIcon: ImageView = root.findViewById(R.id.allIcon)
+        val allInfo: TextView = root.findViewById(R.id.allInfo)
 
-        var favourites: View = root.findViewById(R.id.favourites)
-        var favouritesImage: ImageView = root.findViewById(R.id.favouritesImage)
-        var favouritesIcon: ImageView = root.findViewById(R.id.favouritesIcon)
-        var favouritesInfo: TextView = root.findViewById(R.id.favouritesInfo)
+        val favourites: View = root.findViewById(R.id.favourites)
+        val favouritesImage: ImageView = root.findViewById(R.id.favouritesImage)
+        val favouritesIcon: ImageView = root.findViewById(R.id.favouritesIcon)
+        val favouritesInfo: TextView = root.findViewById(R.id.favouritesInfo)
 
-        var trash: View = root.findViewById(R.id.trash)
-        var trashImage: ImageView = root.findViewById(R.id.trashImage)
-        var trashIcon: ImageView = root.findViewById(R.id.trashIcon)
-        var trashInfo: TextView = root.findViewById(R.id.trashInfo)
+        val trash: View = root.findViewById(R.id.trash)
+        val trashImage: ImageView = root.findViewById(R.id.trashImage)
+        val trashIcon: ImageView = root.findViewById(R.id.trashIcon)
+        val trashInfo: TextView = root.findViewById(R.id.trashInfo)
 
     }
 
     class AlbumHolder(root: View) : RecyclerView.ViewHolder(root) {
 
-        var background: View = root.findViewById(R.id.background)
-        var image: ImageView = root.findViewById(R.id.image)
-        var name: TextView = root.findViewById(R.id.name)
-        var info: TextView = root.findViewById(R.id.info)
+        val background: View = root.findViewById(R.id.background)
+        val image: ImageView = root.findViewById(R.id.image)
+        val name: TextView = root.findViewById(R.id.name)
+        val info: TextView = root.findViewById(R.id.info)
 
     }
 

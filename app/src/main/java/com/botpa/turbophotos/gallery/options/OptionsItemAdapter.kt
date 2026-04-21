@@ -10,9 +10,9 @@ import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.modals.core.CustomAdapter
 
 class OptionsItemAdapter(
-    private val context: Context,
+    context: Context,
     items: List<OptionsItem>,
-) : CustomAdapter<OptionsItem, OptionsItemAdapter.OptionHolder>(items) {
+) : CustomAdapter<OptionsItem, OptionsItemAdapter.OptionHolder>(context, items) {
 
     //Adapter
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): OptionHolder {
@@ -34,7 +34,7 @@ class OptionsItemAdapter(
     var onClick: ClickListener? = null
 
     fun interface ClickListener {
-        fun run(option: OptionsItem, index: Int)
+        fun run(option: OptionsItem, position: Int)
     }
 
     //Holder

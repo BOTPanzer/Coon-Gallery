@@ -359,7 +359,7 @@ class DisplayActivity : BaseActivity() {
             //Create params
             val p = PictureInPictureParams.Builder()
             try {
-                val image = (displayList.findViewHolderForAdapterPosition(currentIndexInDisplay) as DisplayAdapter.DisplayHolder).image
+                val image = (displayList.findViewHolderForAdapterPosition(currentIndexInDisplay) as DisplayAdapter.ItemHolder).image
                 p.setAspectRatio(Rational(image.width, image.height))
             } catch (_: Exception) {
                 p.setAspectRatio(Rational(9, 16))
