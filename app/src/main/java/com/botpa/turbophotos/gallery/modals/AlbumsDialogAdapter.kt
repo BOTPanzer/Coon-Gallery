@@ -1,7 +1,6 @@
 package com.botpa.turbophotos.gallery.modals
 
 import android.content.Context
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -10,54 +9,50 @@ import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Album
 import com.botpa.turbophotos.gallery.Item
+import com.botpa.turbophotos.gallery.modals.core.CustomAdapter
 
 class AlbumsDialogAdapter(
     private val context: Context,
-    private val albums: List<Album>
-) : RecyclerView.Adapter<AlbumsDialogAdapter.AlbumHolder>() {
+    albums: List<Album>
+) : CustomAdapter<Album, AlbumsDialogAdapter.AlbumHolder>(albums) {
 
     //Adapter
-    override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): AlbumHolder {
-        return AlbumHolder(LayoutInflater.from(context).inflate(R.layout.dialog_albums_item, viewGroup, false))
+    override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): AlbumHolder {
+        return AlbumHolder(inflateView(context, R.layout.dialog_albums_item, viewGroup))
     }
 
-    override fun onBindViewHolder(holder: AlbumHolder, i: Int) {
-        //Get holder position & album
-        val position = holder.bindingAdapterPosition
-        val album = albums[position]
-
+    override fun onInitViewHolder(holder: AlbumHolder, album: Album) {
         //Load album cover
-        if (album.isEmpty())
+        if (album.isEmpty()) {
             holder.image.setImageDrawable(null)
-        else
+        } else {
             Item.load(context, holder.image, album.get(0))
+        }
 
         //Update text
         holder.name.text = album.name
         holder.info.text = "${album.size()} items"
 
         //Add listeners
-        holder.item.setOnClickListener { view: View -> onClickListener?.onClick(view, album) }
-    }
-
-    override fun getItemCount(): Int {
-        return albums.size
+        holder.item.setOnClickListener { view: View ->
+            onClick?.run(view, album)
+        }
     }
 
     //Listeners
-    private var onClickListener: OnClickListener? = null
+    var onClick: ClickListener? = null
 
-    fun interface OnClickListener { fun onClick(view: View, album: Album) }
-
-    fun setOnClickListener(onClickListener: OnClickListener?) { this.onClickListener = onClickListener }
+    fun interface ClickListener {
+        fun run(view: View, album: Album)
+    }
 
     //Holder
-    class AlbumHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class AlbumHolder(root: View) : RecyclerView.ViewHolder(root) {
 
-        var item: View = itemView.findViewById(R.id.albumItem)
-        var image: ImageView = itemView.findViewById(R.id.albumImage)
-        var name: TextView = itemView.findViewById(R.id.albumName)
-        var info: TextView = itemView.findViewById(R.id.albumInfo)
+        var item: View = root.findViewById(R.id.albumItem)
+        var image: ImageView = root.findViewById(R.id.albumImage)
+        var name: TextView = root.findViewById(R.id.albumName)
+        var info: TextView = root.findViewById(R.id.albumInfo)
 
     }
 

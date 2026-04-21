@@ -2,7 +2,6 @@ package com.botpa.turbophotos.screens.home
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -12,6 +11,7 @@ import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Album
 import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.Item
+import com.botpa.turbophotos.gallery.modals.core.CustomAdapter
 import com.bumptech.glide.Glide
 
 @SuppressLint("SetTextI18n")
@@ -20,35 +20,26 @@ class HomeAdapter(
     private val albums: List<Album>
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
+    //Adapter
     companion object {
         private const val TYPE_HEADER = 0
         private const val TYPE_ALBUM = 1
     }
 
-    init {
-        setHasStableIds(true)
-    }
-
-    override fun getItemId(position: Int): Long {
-        // Return a unique constant for the header, and the album's hash or index for others
-        return if (position == 0) -1L else albums[position - getPositionOffset()].hashCode().toLong()
-    }
-
-    //Adapter
     override fun getItemViewType(position: Int): Int {
         return if (position == 0) TYPE_HEADER else TYPE_ALBUM
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return if (viewType == TYPE_HEADER) {
-            HeaderHolder(LayoutInflater.from(context).inflate(R.layout.home_header, parent, false))
+            HeaderHolder(CustomAdapter.inflateView(context, R.layout.home_header, parent))
         } else {
-            AlbumHolder(LayoutInflater.from(context).inflate(R.layout.home_item, parent, false))
+            AlbumHolder(CustomAdapter.inflateView(context, R.layout.home_item, parent))
         }
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        //Get holder position & album
+        //Get position
         val position = holder.bindingAdapterPosition - getPositionOffset()
 
         //Check holder type
@@ -98,11 +89,11 @@ class HomeAdapter(
         }
     }
 
-    override fun getItemCount(): Int {
-        return albums.size + getPositionOffset()
-    }
+    override fun getItemCount(): Int = albums.size + getPositionOffset()
 
-    //Helpers
+    //Util
+    private fun getPositionOffset(): Int = 1
+
     private fun loadAlbumCover(image: ImageView, album: Album): Boolean {
         if (album.isEmpty()) {
             image.setImageDrawable(null)
@@ -114,55 +105,48 @@ class HomeAdapter(
     }
 
     private fun addAlbumListener(view: View, album: Album) {
-        view.setOnClickListener { view -> if (album.isNotEmpty()) onClickListener?.onClick(view, album) }
+        view.setOnClickListener { view ->
+            if (album.isNotEmpty()) onClick?.run(view, album)
+        }
     }
 
-    private fun getPositionOffset(): Int {
-        //return if (Library.trash.isEmpty()) 1 else 2
-        return 1
-    }
+    fun getPositionFromIndex(index: Int): Int = index + getPositionOffset()
 
-    fun getPositionFromIndex(index: Int): Int {
-        return index + getPositionOffset()
-    }
-
-    fun getIndexFromAlbum(album: Album): Int {
-        return albums.indexOf(album)
-    }
+    fun getIndexFromAlbum(album: Album): Int = albums.indexOf(album)
 
     //Listeners
-    private var onClickListener: OnClickListener? = null
+    var onClick: ClickListener? = null
 
-    fun interface OnClickListener { fun onClick(view: View, album: Album) }
-
-    fun setOnClickListener(onClickListener: OnClickListener?) { this.onClickListener = onClickListener }
+    fun interface ClickListener {
+        fun run(view: View, album: Album)
+    }
 
     //Holders
-    class HeaderHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class HeaderHolder(root: View) : RecyclerView.ViewHolder(root) {
 
-        var all: View = itemView.findViewById(R.id.all)
-        var allImage: ImageView = itemView.findViewById(R.id.allImage)
-        var allIcon: ImageView = itemView.findViewById(R.id.allIcon)
-        var allInfo: TextView = itemView.findViewById(R.id.allInfo)
+        var all: View = root.findViewById(R.id.all)
+        var allImage: ImageView = root.findViewById(R.id.allImage)
+        var allIcon: ImageView = root.findViewById(R.id.allIcon)
+        var allInfo: TextView = root.findViewById(R.id.allInfo)
 
-        var favourites: View = itemView.findViewById(R.id.favourites)
-        var favouritesImage: ImageView = itemView.findViewById(R.id.favouritesImage)
-        var favouritesIcon: ImageView = itemView.findViewById(R.id.favouritesIcon)
-        var favouritesInfo: TextView = itemView.findViewById(R.id.favouritesInfo)
+        var favourites: View = root.findViewById(R.id.favourites)
+        var favouritesImage: ImageView = root.findViewById(R.id.favouritesImage)
+        var favouritesIcon: ImageView = root.findViewById(R.id.favouritesIcon)
+        var favouritesInfo: TextView = root.findViewById(R.id.favouritesInfo)
 
-        var trash: View = itemView.findViewById(R.id.trash)
-        var trashImage: ImageView = itemView.findViewById(R.id.trashImage)
-        var trashIcon: ImageView = itemView.findViewById(R.id.trashIcon)
-        var trashInfo: TextView = itemView.findViewById(R.id.trashInfo)
+        var trash: View = root.findViewById(R.id.trash)
+        var trashImage: ImageView = root.findViewById(R.id.trashImage)
+        var trashIcon: ImageView = root.findViewById(R.id.trashIcon)
+        var trashInfo: TextView = root.findViewById(R.id.trashInfo)
 
     }
 
-    class AlbumHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class AlbumHolder(root: View) : RecyclerView.ViewHolder(root) {
 
-        var background: View = itemView.findViewById(R.id.background)
-        var image: ImageView = itemView.findViewById(R.id.image)
-        var name: TextView = itemView.findViewById(R.id.name)
-        var info: TextView = itemView.findViewById(R.id.info)
+        var background: View = root.findViewById(R.id.background)
+        var image: ImageView = root.findViewById(R.id.image)
+        var name: TextView = root.findViewById(R.id.name)
+        var info: TextView = root.findViewById(R.id.info)
 
     }
 

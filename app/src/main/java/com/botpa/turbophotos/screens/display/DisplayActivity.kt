@@ -417,18 +417,18 @@ class DisplayActivity : BaseActivity() {
         displayList.setAdapter(displayAdapter)
 
         //Add adapter listeners
-        displayAdapter.setOnClickListener { zoom: ZoomableLayout, image: ImageView, index: Int ->
+        displayAdapter.onClick = { zoom: ZoomableLayout, image: ImageView, position: Int ->
             toggleOverlay(!overlayLayout.isVisible)
         }
-        displayAdapter.setOnZoomChangedListener { zoom: ZoomableLayout, image: ImageView, index: Int ->
+        displayAdapter.onZoomChanged = { zoom: ZoomableLayout, image: ImageView, position: Int ->
             //Enable scrolling only if not zoomed and one finger is over
             displayLayoutManager.setScrollEnabled(zoom.zoom <= 1 && zoom.pointers <= 1)
         }
-        displayAdapter.setOnPointersChangedListener { zoom: ZoomableLayout, image: ImageView, index: Int ->
+        displayAdapter.onPointersChanged = { zoom: ZoomableLayout, image: ImageView, position: Int ->
             //Enable scrolling only if not zoomed and one finger is over
             displayLayoutManager.setScrollEnabled(zoom.zoom <= 1 && zoom.pointers <= 1)
         }
-        displayAdapter.setOnPlayListener { zoom: ZoomableLayout, image: ImageView, index: Int ->
+        displayAdapter.onPlay = { zoom: ZoomableLayout, image: ImageView, position: Int ->
             val intent = if (useInternalVideoPlayer) {
                 //Play in internal player
                 Intent(this, VideoActivity::class.java)

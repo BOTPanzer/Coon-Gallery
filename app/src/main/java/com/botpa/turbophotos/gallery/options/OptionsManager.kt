@@ -7,6 +7,7 @@ import androidx.activity.BackEventCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
+import com.botpa.turbophotos.gallery.views.ListSeparator
 import com.botpa.turbophotos.util.BackAnimationEvent
 import com.botpa.turbophotos.util.BackManager
 import com.botpa.turbophotos.util.Ease
@@ -29,16 +30,16 @@ class OptionsManager(val activity: Activity, val options: MutableList<OptionsGro
     init {
         //Init options layout manager & separator gap
         list.setLayoutManager(LinearLayoutManager(activity))
-        list.addItemDecoration(OptionsSeparator(5))
+        list.addItemDecoration(ListSeparator(5))
 
         //Init options adapter
         adapter = OptionsGroupAdapter(activity, options)
-        adapter.setOnClickListener { option: OptionsItem, index: Int ->
+        adapter.onClick = { option: OptionsItem, index: Int ->
             //Get action
-            val action = option.action ?: return@setOnClickListener
+            val action = option.action
 
             //Invoke action & close menu
-            action.run()
+            action?.run()
             toggle(false)
         }
         list.setAdapter(adapter)

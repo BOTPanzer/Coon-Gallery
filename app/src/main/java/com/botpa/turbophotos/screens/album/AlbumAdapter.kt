@@ -1,35 +1,29 @@
 package com.botpa.turbophotos.screens.album
 
 import android.content.Context
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Item
+import com.botpa.turbophotos.gallery.modals.core.CustomAdapter
 import com.bumptech.glide.Glide
 import com.google.android.material.card.MaterialCardView
 
 class AlbumAdapter(
     private val context: Context,
-    private val items: List<Item>,
+    items: List<Item>,
     private val selected: Set<Int>,
-    var showMissingMetadataIcon: Boolean
-) : RecyclerView.Adapter<AlbumAdapter.GalleryHolder>() {
+    private var showMissingMetadataIcon: Boolean
+) : CustomAdapter<Item, AlbumAdapter.GalleryHolder>(items) {
 
     //Adapter
-    override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): GalleryHolder {
-        return GalleryHolder(LayoutInflater.from(context).inflate(R.layout.album_item, viewGroup, false))
+    override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): GalleryHolder {
+        return GalleryHolder(inflateView(context, R.layout.album_item, viewGroup))
     }
 
-    override fun onBindViewHolder(holder: GalleryHolder, i: Int) {
-        //Get holder position
-        val position = holder.bindingAdapterPosition
-
-        //Get item
-        val item = items[position]
-
+    override fun onInitViewHolder(holder: GalleryHolder, item: Item) {
         //Load item preview
         Item.load(context, holder.image, item)
 
@@ -39,7 +33,7 @@ class AlbumAdapter(
         holder.missingInfo.visibility = if (!showMissingMetadataIcon || item.album.hasMetadataKey(item.name)) View.GONE else View.VISIBLE
 
         //Toggle is selected
-        if (selected.contains(position)) {
+        if (selected.contains(holder.bindingAdapterPosition)) {
             holder.isSelected.visibility = View.VISIBLE
             holder.imageCard.scaleX = 0.8f
             holder.imageCard.scaleY = 0.8f
@@ -57,20 +51,16 @@ class AlbumAdapter(
         Glide.with(context).clear(holder.image)
     }
 
-    override fun getItemCount(): Int {
-        return items.size
-    }
-
     //Holder
-    class GalleryHolder(view: View) : RecyclerView.ViewHolder(view) {
+    class GalleryHolder(root: View) : RecyclerView.ViewHolder(root) {
 
-        var background: View = view.findViewById(R.id.background)
-        var imageCard: MaterialCardView = view.findViewById(R.id.imageCard)
-        var image: ImageView = view.findViewById(R.id.image)
-        var isVideo: View = view.findViewById(R.id.isVideo)
-        var isFavourite: View = view.findViewById(R.id.isFavourite)
-        var missingInfo: View = view.findViewById(R.id.missingInfo)
-        var isSelected: View = view.findViewById(R.id.isSelected)
+        var background: View = root.findViewById(R.id.background)
+        var imageCard: MaterialCardView = root.findViewById(R.id.imageCard)
+        var image: ImageView = root.findViewById(R.id.image)
+        var isVideo: View = root.findViewById(R.id.isVideo)
+        var isFavourite: View = root.findViewById(R.id.isFavourite)
+        var missingInfo: View = root.findViewById(R.id.missingInfo)
+        var isSelected: View = root.findViewById(R.id.isSelected)
 
     }
 

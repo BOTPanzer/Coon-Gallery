@@ -1,62 +1,48 @@
 package com.botpa.turbophotos.gallery.options
 
 import android.content.Context
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
+import com.botpa.turbophotos.gallery.modals.core.CustomAdapter
 
 class OptionsItemAdapter(
     private val context: Context,
-    private val items: List<OptionsItem>,
-) : RecyclerView.Adapter<OptionsItemAdapter.OptionHolder>() {
+    items: List<OptionsItem>,
+) : CustomAdapter<OptionsItem, OptionsItemAdapter.OptionHolder>(items) {
 
     //Adapter
-    override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): OptionHolder {
-        return OptionHolder(LayoutInflater.from(context).inflate(R.layout.options_item, viewGroup, false))
+    override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): OptionHolder {
+        return OptionHolder(inflateView(context, R.layout.options_item, viewGroup))
     }
 
-    override fun onBindViewHolder(holder: OptionHolder, i: Int) {
-        //Get holder position
-        val position = holder.bindingAdapterPosition
-
-        //Get item
-        val item = items[position]
-
+    override fun onInitViewHolder(holder: OptionHolder, item: OptionsItem) {
         //Update info
         holder.icon.setImageResource(item.icon)
         holder.name.text = item.name
 
-        //Add click listeners
+        //Add listeners
         holder.item.setOnClickListener { view: View ->
-            onClickListener?.onClick(item, holder.bindingAdapterPosition)
+            onClick?.run(item, holder.bindingAdapterPosition)
         }
     }
 
-    override fun getItemCount(): Int {
-        return items.size
-    }
-
     //Listeners
-    private var onClickListener: OnClickListener? = null
+    var onClick: ClickListener? = null
 
-    fun interface OnClickListener {
-        fun onClick(option: OptionsItem, index: Int)
-    }
-
-    fun setOnClickListener(onClickListener: OnClickListener?) {
-        this.onClickListener = onClickListener
+    fun interface ClickListener {
+        fun run(option: OptionsItem, index: Int)
     }
 
     //Holder
-    class OptionHolder(view: View) : RecyclerView.ViewHolder(view) {
+    class OptionHolder(root: View) : RecyclerView.ViewHolder(root) {
 
-        val item: View = view.findViewById(R.id.optionItem)
-        val icon: ImageView = view.findViewById(R.id.optionIcon)
-        val name: TextView = view.findViewById(R.id.optionName)
+        val item: View = root.findViewById(R.id.optionItem)
+        val icon: ImageView = root.findViewById(R.id.optionIcon)
+        val name: TextView = root.findViewById(R.id.optionName)
 
     }
 

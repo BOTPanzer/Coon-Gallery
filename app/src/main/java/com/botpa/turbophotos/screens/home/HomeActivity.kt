@@ -536,7 +536,7 @@ class HomeActivity : BaseActivity() {
 
         //Init home adapter
         homeAdapter = HomeAdapter(this, Library.albums)
-        homeAdapter.setOnClickListener { view: View, album: Album ->
+        homeAdapter.onClick = { view: View, album: Album ->
             //Create open animation
             val startX = view.left + (view.width / 2)
             val startY = view.top + (view.height / 2)

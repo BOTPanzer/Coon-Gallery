@@ -11,6 +11,7 @@ import androidx.core.view.isVisible
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.modals.core.CustomDialog
+import com.botpa.turbophotos.gallery.views.ListSeparator
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.util.regex.Pattern
 

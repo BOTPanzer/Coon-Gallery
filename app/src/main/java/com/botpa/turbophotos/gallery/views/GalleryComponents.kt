@@ -112,7 +112,7 @@ fun GroupItem(modifier: Modifier = Modifier, content: @Composable ColumnScope.()
 
 @Composable
 fun GroupDivider() {
-    Spacer(modifier = Modifier.height(5.dp))
+    Spacer(modifier = Modifier.height(3.dp))
 }
 
 //Buttons
