@@ -59,7 +59,7 @@ class ExplorerDialog(
         currentFolder = startingFolder ?: externalStorage
 
         //Init adapter
-        adapter = ExplorerDialogAdapter(context, isSelectingFiles, externalStorage, currentFolder, items)
+        adapter = ExplorerDialogAdapter(context, items, isSelectingFiles, externalStorage, currentFolder)
 
         //Init items list
         updateItemsList(currentFolder)

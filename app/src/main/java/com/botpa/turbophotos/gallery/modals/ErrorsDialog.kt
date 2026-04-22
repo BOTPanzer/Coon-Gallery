@@ -2,9 +2,12 @@ package com.botpa.turbophotos.gallery.modals
 
 import android.content.Context
 import android.widget.ListView
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.actions.ActionError
 import com.botpa.turbophotos.gallery.modals.core.CustomDialog
+import com.botpa.turbophotos.gallery.views.ListSeparator
 import com.botpa.turbophotos.util.Orion
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
@@ -14,7 +17,7 @@ class ErrorsDialog(
 ) : CustomDialog(context, R.layout.dialog_errors) {
 
     //Views
-    private lateinit var list: ListView
+    private lateinit var list: RecyclerView
 
     //Adapter
     private lateinit var adapter: ErrorsDialogAdapter
@@ -40,16 +43,17 @@ class ErrorsDialog(
 
     override fun initListeners() {
         //Copy errors
-        list.setOnItemClickListener { parent, view, position, id ->
+        adapter.onClick = { error, position ->
             //Copy reason to clipboard
-            val error: ActionError = errors[position]
             Orion.copyToClip(context, "${error.item.name}: ${error.reason}")
         }
     }
 
     override fun onInitEnd() {
-        //Assign adapter to list
+        //Assign adapter, layout manager to list & separator gap
         list.adapter = adapter
+        list.layoutManager = LinearLayoutManager(context)
+        list.addItemDecoration(ListSeparator(3))
     }
 
 }

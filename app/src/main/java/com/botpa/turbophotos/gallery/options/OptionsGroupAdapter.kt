@@ -8,10 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.modals.core.CustomAdapter
 
-class OptionsGroupAdapter(
-    context: Context,
-    items: List<OptionsGroup>,
-) : CustomAdapter<OptionsGroup, OptionsGroupAdapter.OptionHolder>(context, items) {
+class OptionsGroupAdapter(context: Context, items: List<OptionsGroup>) : CustomAdapter<OptionsGroup, OptionsGroupAdapter.OptionHolder>(context, items) {
 
     //Adapter
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): OptionHolder {

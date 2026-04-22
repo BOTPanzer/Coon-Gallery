@@ -13,10 +13,10 @@ import java.io.File
 
 class ExplorerDialogAdapter(
     context: Context,
+    items: List<File>,
     private val isSelectingFiles: Boolean = false,
     private val externalStorage: File,
-    private var currentFolder: File,
-    items: List<File>
+    private var currentFolder: File
 ) : ArrayAdapter<File>(context, 0, items) {
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
@@ -62,7 +62,6 @@ class ExplorerDialogAdapter(
     val positionOffset: Int get() = 1
 
     //Current folder
-    val currentFolderName: String get() = if (currentFolder == externalStorage) "External storage" else currentFolder.name
     val currentFolderPath: String get() = currentFolder.absolutePath
     val currentFolderParent: File? get() = currentFolder.parentFile
 

@@ -7,12 +7,9 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
-import com.botpa.turbophotos.gallery.modals.core.CustomAdapter
+import com.botpa.turbophotos.gallery.modals.core.SimpleCustomAdapter
 
-class OptionsItemAdapter(
-    context: Context,
-    items: List<OptionsItem>,
-) : CustomAdapter<OptionsItem, OptionsItemAdapter.OptionHolder>(context, items) {
+class OptionsItemAdapter(context: Context, items: List<OptionsItem>) : SimpleCustomAdapter<OptionsItem, OptionsItemAdapter.OptionHolder>(context, items) {
 
     //Adapter
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): OptionHolder {
@@ -28,13 +25,6 @@ class OptionsItemAdapter(
         holder.item.setOnClickListener { view: View ->
             onClick?.run(item, holder.bindingAdapterPosition)
         }
-    }
-
-    //Listeners
-    var onClick: ClickListener? = null
-
-    fun interface ClickListener {
-        fun run(option: OptionsItem, position: Int)
     }
 
     //Holder
