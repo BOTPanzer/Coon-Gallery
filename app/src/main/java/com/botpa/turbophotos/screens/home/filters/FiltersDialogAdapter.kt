@@ -7,12 +7,9 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
-import com.botpa.turbophotos.gallery.modals.core.CustomAdapter
+import com.botpa.turbophotos.gallery.modals.core.SimpleCustomAdapter
 
-class FiltersDialogAdapter(
-    context: Context,
-    items: List<Filter>
-) : CustomAdapter<Filter, FiltersDialogAdapter.FilterHolder>(context, items) {
+class FiltersDialogAdapter(context: Context, items: List<Filter>) : SimpleCustomAdapter<Filter, FiltersDialogAdapter.FilterHolder>(context, items) {
 
     //Adapter
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): FilterHolder {
@@ -28,13 +25,6 @@ class FiltersDialogAdapter(
         holder.item.setOnClickListener { view ->
             onClick?.run(item, holder.bindingAdapterPosition)
         }
-    }
-
-    //Listeners
-    var onClick: ClickListener? = null
-
-    fun interface ClickListener {
-        fun run(filter: Filter, position: Int)
     }
 
     //Holder

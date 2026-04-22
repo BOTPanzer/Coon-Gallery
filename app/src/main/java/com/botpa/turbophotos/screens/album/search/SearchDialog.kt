@@ -1,16 +1,18 @@
 package com.botpa.turbophotos.screens.album.search
 
 import android.content.Context
-import android.widget.ListView
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.SearchMethod
 import com.botpa.turbophotos.gallery.modals.core.CustomDialog
+import com.botpa.turbophotos.gallery.views.ListSeparator
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class SearchDialog(context: Context, private val onSelect: (SearchMethod) -> Unit): CustomDialog(context, R.layout.dialog_search) {
 
     //Views
-    private lateinit var list: ListView
+    private lateinit var list: RecyclerView
 
     //Adapter
     private lateinit var adapter: SearchDialogAdapter
@@ -18,6 +20,11 @@ class SearchDialog(context: Context, private val onSelect: (SearchMethod) -> Uni
 
 
     //Init
+    override fun onInitStart() {
+        //Init adapter
+        adapter = SearchDialogAdapter(context, methods)
+    }
+
     override fun initViews() {
         //Init views
         list = root.findViewById(R.id.list)
@@ -32,9 +39,9 @@ class SearchDialog(context: Context, private val onSelect: (SearchMethod) -> Uni
 
     override fun initListeners() {
         //Add listeners (list)
-        list.setOnItemClickListener { parent, view, position, id ->
-            //Call on method
-            onSelect.invoke(methods[position])
+        adapter.onClick = { method, position ->
+            //Select method
+            onSelect.invoke(method)
 
             //Close dialog
             dialog.dismiss()
@@ -42,9 +49,10 @@ class SearchDialog(context: Context, private val onSelect: (SearchMethod) -> Uni
     }
 
     override fun onInitEnd() {
-        //Init adapter
-        adapter = SearchDialogAdapter(context, methods)
+        //Assign adapter, layout manager to list & separator gap
         list.adapter = adapter
+        list.layoutManager = LinearLayoutManager(context)
+        list.addItemDecoration(ListSeparator(3))
     }
 
 }

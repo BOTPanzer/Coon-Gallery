@@ -1,14 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical"
+    android:paddingHorizontal="20dp"
     android:paddingTop="12dp">
 
-    <ListView
-        android:id="@+id/list"
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="#00000000"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="0dp">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:overScrollMode="never" />
+    </androidx.cardview.widget.CardView>
 
 </LinearLayout>
