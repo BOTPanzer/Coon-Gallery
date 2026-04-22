@@ -8,7 +8,7 @@
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
+        app:cardBackgroundColor="?attr/colorSurfaceContainerHighest"
         app:cardCornerRadius="5dp"
         app:cardElevation="0dp">
 
@@ -18,7 +18,7 @@
             android:background="?attr/selectableItemBackground"
             android:orientation="vertical"
             android:paddingHorizontal="16dp"
-            android:paddingVertical="10dp">
+            android:paddingVertical="12dp">
 
             <TextView
                 android:id="@+id/errorItem"

@@ -4,21 +4,22 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:paddingHorizontal="20dp"
     android:paddingTop="12dp">
 
     <TextView
         android:id="@+id/pointsInfo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
         android:text="Info"
         android:textColor="?attr/colorOnSurface" />
 
     <ListView
         android:id="@+id/pointsList"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
+        android:divider="@null"
         android:listSelector="@android:color/transparent"
-        android:divider="@null" />
+        android:overScrollMode="never" />
 
 </LinearLayout>

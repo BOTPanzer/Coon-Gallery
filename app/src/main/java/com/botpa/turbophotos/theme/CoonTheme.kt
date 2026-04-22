@@ -12,11 +12,6 @@ import androidx.compose.ui.text.font.FontWeight
 import com.botpa.turbophotos.R
 
 //Fonts
-val FONT_COMFORTAA = FontFamily(
-    Font(R.font.comfortaa_medium, FontWeight.Medium),
-    Font(R.font.comfortaa_bold, FontWeight.Bold),
-)
-
 val FONT_POPPINS = FontFamily(
     Font(R.font.poppins, FontWeight.Normal),
 )
@@ -34,9 +29,9 @@ fun CoonTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable (
 
     //Create typography
     val appTypography = androidx.compose.material3.Typography(
-        headlineLarge = androidx.compose.material3.Typography().headlineLarge.copy(fontFamily = FONT_COMFORTAA),
-        headlineMedium = androidx.compose.material3.Typography().headlineMedium.copy(fontFamily = FONT_COMFORTAA),
-        headlineSmall = androidx.compose.material3.Typography().headlineSmall.copy(fontFamily = FONT_COMFORTAA),
+        headlineLarge = androidx.compose.material3.Typography().headlineLarge.copy(fontFamily = FONT_OPIFICIO),
+        headlineMedium = androidx.compose.material3.Typography().headlineMedium.copy(fontFamily = FONT_OPIFICIO),
+        headlineSmall = androidx.compose.material3.Typography().headlineSmall.copy(fontFamily = FONT_OPIFICIO),
         bodyLarge = androidx.compose.material3.Typography().bodyLarge.copy(fontFamily = FONT_POPPINS),
         bodyMedium = androidx.compose.material3.Typography().bodyMedium.copy(fontFamily = FONT_POPPINS),
         bodySmall = androidx.compose.material3.Typography().bodySmall.copy(fontFamily = FONT_POPPINS)

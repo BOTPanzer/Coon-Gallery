@@ -8,7 +8,7 @@
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
+        app:cardBackgroundColor="?attr/colorSurfaceContainerHighest"
         app:cardCornerRadius="5dp"
         app:cardElevation="0dp">
 
@@ -18,8 +18,7 @@
             android:background="?attr/selectableItemBackground"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingHorizontal="20dp"
-            android:paddingVertical="10dp">
+            android:paddingHorizontal="16dp">
 
             <ImageView
                 android:id="@+id/filterIcon"
@@ -33,6 +32,7 @@
                 android:id="@+id/filterName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:paddingTop="3dp"
                 android:text="Filter name"
                 android:textColor="?attr/colorOnSurface" />
 

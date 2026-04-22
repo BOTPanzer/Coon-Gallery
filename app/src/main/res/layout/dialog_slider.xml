@@ -22,7 +22,7 @@
         android:id="@+id/sliderText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:fontFamily="@font/comfortaa_bold"
+        android:fontFamily="@font/victor_mono"
         android:gravity="center"
         android:text="0.0" />
 

@@ -184,7 +184,6 @@
             android:layout_height="60dp"
             android:layout_marginHorizontal="50dp"
             android:layout_marginBottom="5dp"
-            android:fontFamily="@font/comfortaa_medium"
             android:text="Write" />
 
         <Button
@@ -193,7 +192,6 @@
             android:layout_height="60dp"
             android:layout_marginHorizontal="50dp"
             android:layout_marginBottom="5dp"
-            android:fontFamily="@font/comfortaa_medium"
             android:text="Media" />
 
         <Button
@@ -201,7 +199,6 @@
             android:layout_width="match_parent"
             android:layout_height="60dp"
             android:layout_marginHorizontal="50dp"
-            android:fontFamily="@font/comfortaa_medium"
             android:text="Notifications" />
 
     </LinearLayout>

@@ -33,8 +33,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.botpa.turbophotos.theme.FONT_COMFORTAA
 import com.botpa.turbophotos.theme.FONT_OPIFICIO
+import com.botpa.turbophotos.theme.FONT_POPPINS
 
 //General
 @OptIn(ExperimentalMaterial3Api::class)
@@ -143,7 +143,7 @@ fun SimpleButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifie
     ) {
         Text(
             text = text,
-            fontFamily = FONT_COMFORTAA,
+            fontFamily = FONT_POPPINS,
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp
         )
