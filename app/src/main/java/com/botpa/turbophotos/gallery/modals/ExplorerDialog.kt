@@ -44,14 +44,13 @@ class ExplorerDialog(
 
     //Text
     companion object {
+        //Generic
+        private const val TEXT_CREATE: String = "Create a new one"
+        private const val TEXT_SELECT: String = "Select existing"
         //File picker
         private const val TEXT_INPUT_FILE: String = "File name"
-        private const val TEXT_CREATE_FILE: String = "Create new file"
-        private const val TEXT_SELECT_FILE: String = "Select existing file"
         //Folder picker
         private const val TEXT_INPUT_FOLDER: String = "Folder name"
-        private const val TEXT_CREATE_FOLDER: String = "Create new folder"
-        private const val TEXT_SELECT_FOLDER: String = "Select existing folder"
     }
 
 
@@ -81,7 +80,7 @@ class ExplorerDialog(
         //Init dialog
         return builder.apply {
             setTitle(if (isSelectingFiles) "Select a file" else "Select a folder")
-            setNeutralButton(getCreateText(), null)
+            setNeutralButton(TEXT_CREATE, null)
             setNegativeButton("Cancel", null)
         }
     }
@@ -193,7 +192,7 @@ class ExplorerDialog(
                 createInput.requestFocus()
 
                 //Update neutral button
-                neutralButton.text = getSelectText()
+                neutralButton.text = TEXT_SELECT
             } else {
                 //Toggle menus (show filters list)
                 foldersLayout.visibility = View.VISIBLE
@@ -203,7 +202,7 @@ class ExplorerDialog(
                 createInput.clearFocus()
 
                 //Update neutral button
-                neutralButton.text = getCreateText()
+                neutralButton.text = TEXT_CREATE
             }
         }
     }
@@ -218,8 +217,8 @@ class ExplorerDialog(
         updateCurrentFolderName()
 
         //Update create menu
-        createInput.hint = getInputHint()
-        createButton.text = getCreateText()
+        createInput.hint = if (isSelectingFiles) TEXT_INPUT_FILE else TEXT_INPUT_FOLDER
+        createButton.text = TEXT_CREATE
     }
 
     //Helpers
@@ -256,18 +255,6 @@ class ExplorerDialog(
 
         //Sort items
         items.sortWith(compareBy<File> { !it.isDirectory }.thenBy { it.name.lowercase() })
-    }
-
-    private fun getInputHint(): String {
-        return if (isSelectingFiles) TEXT_INPUT_FILE else TEXT_INPUT_FOLDER
-    }
-
-    private fun getCreateText(): String {
-        return if (isSelectingFiles) TEXT_CREATE_FILE else TEXT_CREATE_FOLDER
-    }
-
-    private fun getSelectText(): String {
-        return if (isSelectingFiles) TEXT_SELECT_FILE else TEXT_SELECT_FOLDER
     }
 
 }
