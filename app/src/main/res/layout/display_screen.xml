@@ -73,7 +73,7 @@
                                 android:textSize="16sp" />
 
                             <ImageView
-                                android:id="@+id/overlayFavourite"
+                                android:id="@+id/overlayIsFavourite"
                                 android:layout_width="24dp"
                                 android:layout_height="24dp"
                                 android:layout_marginStart="10dp"
@@ -111,46 +111,138 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1" />
 
-                            <androidx.cardview.widget.CardView
-                                android:id="@+id/overlayInfo"
-                                android:layout_width="40dp"
-                                android:layout_height="40dp"
-                                app:cardBackgroundColor="#00000000"
-                                app:cardCornerRadius="20dp"
-                                app:cardElevation="0dp">
-
-                                <ImageView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:background="?attr/selectableItemBackground"
-                                    android:padding="8dp"
-                                    app:srcCompat="@drawable/info"
-                                    app:tint="?attr/colorOnSurface" />
-
-                            </androidx.cardview.widget.CardView>
-
-                            <Space
+                            <FrameLayout
+                                android:id="@+id/overlayInfoContainer"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:layout_weight="1" />
+                                android:layout_weight="1">
 
-                            <androidx.cardview.widget.CardView
-                                android:id="@+id/overlayOptions"
-                                android:layout_width="40dp"
-                                android:layout_height="40dp"
-                                app:cardBackgroundColor="#00000000"
-                                app:cardCornerRadius="20dp"
-                                app:cardElevation="0dp">
+                                <androidx.cardview.widget.CardView
+                                    android:id="@+id/overlayInfo"
+                                    android:layout_width="40dp"
+                                    android:layout_height="40dp"
+                                    android:layout_gravity="center_horizontal"
+                                    app:cardBackgroundColor="#00000000"
+                                    app:cardCornerRadius="20dp"
+                                    app:cardElevation="0dp">
 
-                                <ImageView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:background="?attr/selectableItemBackground"
-                                    android:padding="8dp"
-                                    app:srcCompat="@drawable/more"
-                                    app:tint="?attr/colorOnSurface" />
+                                    <ImageView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:background="?attr/selectableItemBackground"
+                                        android:padding="8dp"
+                                        app:srcCompat="@drawable/info"
+                                        app:tint="?attr/colorOnSurface" />
 
-                            </androidx.cardview.widget.CardView>
+                                </androidx.cardview.widget.CardView>
+
+                            </FrameLayout>
+
+                            <FrameLayout
+                                android:id="@+id/overlayEditContainer"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1">
+
+                                <androidx.cardview.widget.CardView
+                                    android:id="@+id/overlayEdit"
+                                    android:layout_width="40dp"
+                                    android:layout_height="40dp"
+                                    android:layout_gravity="center_horizontal"
+                                    app:cardBackgroundColor="#00000000"
+                                    app:cardCornerRadius="20dp"
+                                    app:cardElevation="0dp">
+
+                                    <ImageView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:background="?attr/selectableItemBackground"
+                                        android:padding="8dp"
+                                        app:srcCompat="@drawable/edit"
+                                        app:tint="?attr/colorOnSurface" />
+
+                                </androidx.cardview.widget.CardView>
+                            </FrameLayout>
+
+                            <FrameLayout
+                                android:id="@+id/overlayShareContainer"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1">
+
+                                <androidx.cardview.widget.CardView
+                                    android:id="@+id/overlayShare"
+                                    android:layout_width="40dp"
+                                    android:layout_height="40dp"
+                                    android:layout_gravity="center_horizontal"
+                                    app:cardBackgroundColor="#00000000"
+                                    app:cardCornerRadius="20dp"
+                                    app:cardElevation="0dp">
+
+                                    <ImageView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:background="?attr/selectableItemBackground"
+                                        android:padding="8dp"
+                                        app:srcCompat="@drawable/share"
+                                        app:tint="?attr/colorOnSurface" />
+
+                                </androidx.cardview.widget.CardView>
+                            </FrameLayout>
+
+                            <FrameLayout
+                                android:id="@+id/overlayFavouriteContainer"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1">
+
+                                <androidx.cardview.widget.CardView
+                                    android:id="@+id/overlayFavourite"
+                                    android:layout_width="40dp"
+                                    android:layout_height="40dp"
+                                    android:layout_gravity="center_horizontal"
+                                    app:cardBackgroundColor="#00000000"
+                                    app:cardCornerRadius="20dp"
+                                    app:cardElevation="0dp">
+
+                                    <ImageView
+                                        android:id="@+id/overlayFavouriteImage"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:background="?attr/selectableItemBackground"
+                                        android:padding="8dp"
+                                        app:srcCompat="@drawable/favourite_on"
+                                        app:tint="?attr/colorOnSurface" />
+
+                                </androidx.cardview.widget.CardView>
+
+                            </FrameLayout>
+
+                            <FrameLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1">
+
+                                <androidx.cardview.widget.CardView
+                                    android:id="@+id/overlayOptions"
+                                    android:layout_width="40dp"
+                                    android:layout_height="40dp"
+                                    android:layout_gravity="center_horizontal"
+                                    app:cardBackgroundColor="#00000000"
+                                    app:cardCornerRadius="20dp"
+                                    app:cardElevation="0dp">
+
+                                    <ImageView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:background="?attr/selectableItemBackground"
+                                        android:padding="8dp"
+                                        app:srcCompat="@drawable/more"
+                                        app:tint="?attr/colorOnSurface" />
+
+                                </androidx.cardview.widget.CardView>
+
+                            </FrameLayout>
 
                             <Space
                                 android:layout_width="0dp"

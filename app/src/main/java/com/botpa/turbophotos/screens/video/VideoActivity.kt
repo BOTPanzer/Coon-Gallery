@@ -447,8 +447,6 @@ class VideoActivity : BaseActivity() {
         })
 
         //Options
-        optionsManager.layout.setOnClickListener { optionsManager.toggle(false) }
-
         optionPiP = OptionsItem(R.drawable.pip, "Open in PiP") {
             //Create params
             val p = PictureInPictureParams.Builder()

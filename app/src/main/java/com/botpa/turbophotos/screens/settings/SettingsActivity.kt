@@ -296,9 +296,91 @@ class SettingsActivity : AppCompatActivity() {
                                     Switch(
                                         checked = view.albumShowMissingMetadataIcon,
                                         onCheckedChange = { isChecked ->
-                                            view.updateAlbumShowMissingMetadataIcon(
-                                                isChecked
-                                            )
+                                            view.updateAlbumShowMissingMetadataIcon(isChecked)
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                //Display screen
+                item {
+                    Group {
+                        //Title
+                        GroupTitle("Display Screen")
+
+                        //Items
+                        GroupItems {
+                            //Info shortcut
+                            GroupItem {
+                                SettingsItem(
+                                    title = "Info shortcut",
+                                    description = "Show an info shortcut at the bottom of the screen."
+                                ) {
+                                    //Value
+                                    Switch(
+                                        checked = view.displayShowInfo,
+                                        onCheckedChange = { isChecked ->
+                                            view.updateDisplayShowInfo(isChecked)
+                                        }
+                                    )
+                                }
+                            }
+
+                            //Divider
+                            GroupDivider()
+
+                            //Edit shortcut
+                            GroupItem {
+                                SettingsItem(
+                                    title = "Edit shortcut",
+                                    description = "Show an edit shortcut at the bottom of the screen."
+                                ) {
+                                    //Value
+                                    Switch(
+                                        checked = view.displayShowEdit,
+                                        onCheckedChange = { isChecked ->
+                                            view.updateDisplayShowEdit(isChecked)
+                                        }
+                                    )
+                                }
+                            }
+
+                            //Divider
+                            GroupDivider()
+
+                            //Share shortcut
+                            GroupItem {
+                                SettingsItem(
+                                    title = "Share shortcut",
+                                    description = "Show a share shortcut at the bottom of the screen."
+                                ) {
+                                    //Value
+                                    Switch(
+                                        checked = view.displayShowShare,
+                                        onCheckedChange = { isChecked ->
+                                            view.updateDisplayShowShare(isChecked)
+                                        }
+                                    )
+                                }
+                            }
+
+                            //Divider
+                            GroupDivider()
+
+                            //Favourite shortcut
+                            GroupItem {
+                                SettingsItem(
+                                    title = "Favourite shortcut",
+                                    description = "Show a favourite shortcut at the bottom of the screen."
+                                ) {
+                                    //Value
+                                    Switch(
+                                        checked = view.displayShowFavourite,
+                                        onCheckedChange = { isChecked ->
+                                            view.updateDisplayShowFavourite(isChecked)
                                         }
                                     )
                                 }

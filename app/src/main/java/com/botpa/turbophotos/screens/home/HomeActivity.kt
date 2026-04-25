@@ -492,8 +492,6 @@ class HomeActivity : BaseActivity() {
         }
 
         //Options
-        optionsManager.layout.setOnClickListener { view: View -> optionsManager.toggle(false) }
-
         optionSync = OptionsItem(R.drawable.sync, "Sync") {
             //Not loaded
             if (!isLibraryLoaded) return@OptionsItem

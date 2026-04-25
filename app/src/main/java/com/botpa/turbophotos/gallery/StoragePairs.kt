@@ -16,6 +16,12 @@ object StoragePairs {
     @JvmField val ALBUM_SHOW_MISSING_METADATA_ICON: Storage.StoragePair<Boolean> = Storage.StoragePair("Album.showMissingMetadataIcon", false)
     @JvmField val ALBUM_SEARCH_METHOD: Storage.StoragePair<String> = Storage.StoragePair("Album.searchMethod", SearchMethod.ContainsWords.name)
 
+    //Display screen
+    @JvmField val DISPLAY_SHOW_INFO: Storage.StoragePair<Boolean> = Storage.StoragePair("Display.showInfo", true)
+    @JvmField val DISPLAY_SHOW_EDIT: Storage.StoragePair<Boolean> = Storage.StoragePair("Display.showEdit", false)
+    @JvmField val DISPLAY_SHOW_SHARE: Storage.StoragePair<Boolean> = Storage.StoragePair("Display.showShare", false)
+    @JvmField val DISPLAY_SHOW_FAVOURITE: Storage.StoragePair<Boolean> = Storage.StoragePair("Display.showFavourite", false)
+
     //Video player
     @JvmField val VIDEO_LOOP: Storage.StoragePair<Boolean> = Storage.StoragePair("Video.loop", true)
     @JvmField val VIDEO_SKIP_BACKWARDS: Storage.StoragePair<Long> = Storage.StoragePair("Video.skipBackwards", 10)

@@ -80,6 +80,10 @@ class DisplayActivity : BaseActivity() {
     private var currentIndexInDisplay = -1
 
     private var useInternalVideoPlayer: Boolean = true
+    private var showInfo: Boolean = true
+    private var showEdit: Boolean = false
+    private var showShare: Boolean = false
+    private var showFavourite: Boolean = false
 
     private lateinit var currentItem: Item
 
@@ -100,6 +104,7 @@ class DisplayActivity : BaseActivity() {
     private val options: MutableList<OptionsGroup> = ArrayList()
     private lateinit var optionsManager: OptionsManager
 
+    private lateinit var optionInfo: OptionsItem
     private lateinit var optionRename: OptionsItem
     private lateinit var optionEdit: OptionsItem
     private lateinit var optionShare: OptionsItem
@@ -125,8 +130,18 @@ class DisplayActivity : BaseActivity() {
     //Views (overlay)
     private lateinit var overlayLayout: View
     private lateinit var overlayTitle: TextView
-    private lateinit var overlayFavourite: View
+    private lateinit var overlayIsFavourite: View
+
+    //Views (overlay options)
+    private lateinit var overlayInfoContainer: View
     private lateinit var overlayInfo: View
+    private lateinit var overlayEditContainer: View
+    private lateinit var overlayEdit: View
+    private lateinit var overlayShareContainer: View
+    private lateinit var overlayShare: View
+    private lateinit var overlayFavouriteContainer: View
+    private lateinit var overlayFavourite: View
+    private lateinit var overlayFavouriteImage: ImageView
     private lateinit var overlayOptions: View
 
 
@@ -179,6 +194,10 @@ class DisplayActivity : BaseActivity() {
 
         //Update settings
         useInternalVideoPlayer = Storage.getBool(StoragePairs.VIDEO_USE_INTERNAL_PLAYER)
+        showInfo = Storage.getBool(StoragePairs.DISPLAY_SHOW_INFO)
+        showEdit = Storage.getBool(StoragePairs.DISPLAY_SHOW_EDIT)
+        showShare = Storage.getBool(StoragePairs.DISPLAY_SHOW_SHARE)
+        showFavourite = Storage.getBool(StoragePairs.DISPLAY_SHOW_FAVOURITE)
 
         //Not init
         if (!isInit) return
@@ -189,6 +208,9 @@ class DisplayActivity : BaseActivity() {
             displayAdapter.notifyItemChanged(currentIndexInDisplay)
             Library.sortLibrary()
         }
+
+        //Update overlay buttons
+        updateOverlayButtons()
     }
 
     override fun onNewIntent(intent: Intent, caller: ComponentCaller) {
@@ -231,6 +253,9 @@ class DisplayActivity : BaseActivity() {
 
         //Handle intent
         handleIntent(intent)
+
+        //Update overlay buttons
+        updateOverlayButtons()
 
         //Mark as init
         isInit = true
@@ -298,8 +323,18 @@ class DisplayActivity : BaseActivity() {
         //Views (overlay)
         overlayLayout = findViewById(R.id.overlayLayout)
         overlayTitle = findViewById(R.id.overlayTitle)
-        overlayFavourite = findViewById(R.id.overlayFavourite)
+        overlayIsFavourite = findViewById(R.id.overlayIsFavourite)
+
+        //Views (overlay buttons)
+        overlayInfoContainer = findViewById(R.id.overlayInfoContainer)
         overlayInfo = findViewById(R.id.overlayInfo)
+        overlayEditContainer = findViewById(R.id.overlayEditContainer)
+        overlayEdit = findViewById(R.id.overlayEdit)
+        overlayShareContainer = findViewById(R.id.overlayShareContainer)
+        overlayShare = findViewById(R.id.overlayShare)
+        overlayFavouriteContainer = findViewById(R.id.overlayFavouriteContainer)
+        overlayFavourite = findViewById(R.id.overlayFavourite)
+        overlayFavouriteImage = findViewById(R.id.overlayFavouriteImage)
         overlayOptions = findViewById(R.id.overlayOptions)
 
 
@@ -326,15 +361,17 @@ class DisplayActivity : BaseActivity() {
 
     private fun initListeners() {
         //Overlay
-        overlayInfo.setOnClickListener {
-            InfoDrawer(this, currentItem).buildAndShow()
-        }
+        overlayInfo.setOnClickListener { optionInfo.action.invoke() }
+
+        overlayEdit.setOnClickListener { optionEdit.action.invoke() }
+
+        overlayShare.setOnClickListener { optionShare.action.invoke() }
+
+        overlayFavourite.setOnClickListener { (if (currentItem.isFavourite) optionUnfavourite else optionFavourite).action.invoke() }
 
         overlayOptions.setOnClickListener { optionsManager.toggle(true) }
 
         //Options
-        optionsManager.layout.setOnClickListener { optionsManager.toggle(false) }
-
         optionRename = OptionsItem(R.drawable.rename, "Rename") {
             //Rename
             Library.renameItem(this, currentItem)
@@ -367,6 +404,11 @@ class DisplayActivity : BaseActivity() {
 
             //Enter PiP
             isInPiP = enterPictureInPictureMode(p.build())
+        }
+
+        optionInfo = OptionsItem(R.drawable.info, "Info") {
+            //Toggle info
+            InfoDrawer(this, currentItem).buildAndShow()
         }
 
         optionFavourite = OptionsItem(R.drawable.favourite_on, "Favourite") {
@@ -481,6 +523,13 @@ class DisplayActivity : BaseActivity() {
         }
     }
 
+    private fun updateOverlayButtons() {
+        overlayInfoContainer.visibility = if (showInfo) View.VISIBLE else View.GONE
+        overlayEditContainer.visibility = if (showEdit) View.VISIBLE else View.GONE
+        overlayShareContainer.visibility = if (showShare) View.VISIBLE else View.GONE
+        overlayFavouriteContainer.visibility = if (showFavourite) View.VISIBLE else View.GONE
+    }
+
     //Current item
     private fun selectItem(index: Int) {
         //Empty display gallery
@@ -523,7 +572,8 @@ class DisplayActivity : BaseActivity() {
 
         //Change image name & favourite state
         overlayTitle.text = currentItem.name
-        overlayFavourite.visibility = if (currentItem.isFavourite) View.VISIBLE else View.GONE
+        overlayIsFavourite.visibility = if (currentItem.isFavourite) View.VISIBLE else View.GONE
+        overlayFavouriteImage.setImageResource(if (currentItem.isFavourite) R.drawable.favourite_off else R.drawable.favourite_on)
     }
 
     //PiP
@@ -565,8 +615,9 @@ class DisplayActivity : BaseActivity() {
             //Viewing external file
             if (!isTrashed) {
                 options.add(OptionsGroup(mutableListOf<OptionsItem>().apply {
-                    add(optionEdit)
-                    add(optionShare)
+                    if (!showInfo) add(optionInfo)
+                    if (!showEdit) add(optionEdit)
+                    if (!showShare) add(optionShare)
                     add(optionSetAs)
                     add(optionPiP)
                 }))
@@ -575,17 +626,20 @@ class DisplayActivity : BaseActivity() {
             //Viewing gallery items
             if (!isTrashed) {
                 options.add(OptionsGroup(mutableListOf<OptionsItem>().apply {
+                    if (!showInfo) add(optionInfo)
                     add(optionRename)
-                    add(optionEdit)
-                    add(optionShare)
+                    if (!showEdit) add(optionEdit)
+                    if (!showShare) add(optionShare)
                     add(optionSetAs)
                     add(optionPiP)
                 }))
                 options.add(OptionsGroup(mutableListOf<OptionsItem>().apply {
-                    if (isFavourite) {
-                        add(optionUnfavourite)
-                    } else {
-                        add(optionFavourite)
+                    if (!showFavourite) {
+                        if (isFavourite) {
+                            add(optionUnfavourite)
+                        } else {
+                            add(optionFavourite)
+                        }
                     }
                     add(optionMove)
                     add(optionCopy)

@@ -491,8 +491,6 @@ class AlbumActivity : BaseActivity() {
         searchClose.setOnClickListener { view: View -> showSearchLayout(false) }
 
         //Options
-        optionsManager.layout.setOnClickListener { view: View -> optionsManager.toggle(false) }
-
         optionRename = OptionsItem(R.drawable.rename, "Rename") {
             //Only allow 1 selection
             if (selectedIndexes.size != 1) return@OptionsItem

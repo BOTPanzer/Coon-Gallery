@@ -28,6 +28,9 @@ class OptionsManager(val activity: Activity, val options: MutableList<OptionsGro
 
     //Constructor
     init {
+        //Add hide listener
+        layout.setOnClickListener { toggle(false) }
+
         //Init options layout manager & separator gap
         list.setLayoutManager(LinearLayoutManager(activity))
         list.addItemDecoration(ListSeparator(5))
@@ -39,7 +42,7 @@ class OptionsManager(val activity: Activity, val options: MutableList<OptionsGro
             val action = option.action
 
             //Invoke action & close menu
-            action?.run()
+            action.invoke()
             toggle(false)
         }
         list.setAdapter(adapter)
