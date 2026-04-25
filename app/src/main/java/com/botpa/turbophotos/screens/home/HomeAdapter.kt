@@ -40,7 +40,7 @@ class HomeAdapter(
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         //Get position
-        val position = holder.bindingAdapterPosition - getPositionOffset()
+        val position = holder.bindingAdapterPosition - positionOffset
 
         //Check holder type
         if (holder is HeaderHolder) {
@@ -89,10 +89,10 @@ class HomeAdapter(
         }
     }
 
-    override fun getItemCount(): Int = albums.size + getPositionOffset()
+    override fun getItemCount(): Int = albums.size + positionOffset
 
     //Util
-    private fun getPositionOffset(): Int = 1
+    private val positionOffset: Int get() = 1
 
     private fun loadAlbumCover(image: ImageView, album: Album): Boolean {
         if (album.isEmpty()) {
@@ -110,7 +110,7 @@ class HomeAdapter(
         }
     }
 
-    fun getPositionFromIndex(index: Int): Int = index + getPositionOffset()
+    fun getPositionFromIndex(index: Int): Int = index + positionOffset
 
     fun getIndexFromAlbum(album: Album): Int = albums.indexOf(album)
 

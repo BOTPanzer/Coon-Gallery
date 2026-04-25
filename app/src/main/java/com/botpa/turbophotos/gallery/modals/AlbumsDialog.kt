@@ -49,7 +49,7 @@ class AlbumsDialog(
 
     override fun initListeners() {
         //Select albums
-        adapter.onClick = { view, album ->
+        adapter.onClick = { album, position ->
             //Select album
             onSelectAlbum(album)
 

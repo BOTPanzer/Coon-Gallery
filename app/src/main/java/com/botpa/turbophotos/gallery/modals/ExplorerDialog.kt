@@ -5,13 +5,15 @@ import android.os.Environment
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
-import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.modals.core.CustomDialog
+import com.botpa.turbophotos.gallery.views.ListSeparator
 import com.botpa.turbophotos.util.Orion
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.io.File
@@ -27,7 +29,7 @@ class ExplorerDialog(
     //Views
     private lateinit var folderPath: TextView
     private lateinit var foldersLayout: View
-    private lateinit var foldersList: ListView
+    private lateinit var foldersList: RecyclerView
     private lateinit var createLayout: View
     private lateinit var createInput: EditText
     private lateinit var createButton: Button
@@ -86,7 +88,7 @@ class ExplorerDialog(
 
     override fun initListeners() {
         //List (select & open a folder)
-        adapter.setOnSelectListener { index ->
+        adapter.onSelect = { index ->
             //Select file
             onSelect(items[index])
 
@@ -94,7 +96,7 @@ class ExplorerDialog(
             dialog.dismiss()
         }
 
-        adapter.setOnOpenListener { index ->
+        adapter.onOpen = { index ->
             //Get item
             val item = if (index < 0) {
                 //Back button
@@ -108,25 +110,20 @@ class ExplorerDialog(
             if (item == null) {
                 //Invalid item
                 Toast.makeText(context, "Invalid item", Toast.LENGTH_SHORT).show()
-                return@setOnOpenListener
+            } else if (item.isDirectory) {
+                //Check if folder can be read and written to
+                if (!item.canRead() || !item.canWrite()) {
+                    //Folder can't be read/written to
+                    Toast.makeText(context, "Missing permissions to use that folder", Toast.LENGTH_SHORT).show()
+                } else {
+                    //Update adapter & dialog
+                    updateItemsList(item)
+                    adapter.setCurrentFolder(item)
+                    adapter.notifyDataSetChanged()
+                    foldersList.scrollToPosition(0)
+                    updateCurrentFolderName()
+                }
             }
-
-            //Check if item is not a folder
-            if (!item.isDirectory) return@setOnOpenListener
-
-            //Check if folder can be read and written to
-            if (!item.canRead() || !item.canWrite()) {
-                //Folder can't be read/written to
-                Toast.makeText(context, "Missing permissions to use that folder", Toast.LENGTH_SHORT).show()
-                return@setOnOpenListener
-            }
-
-            //Update adapter & dialog
-            updateItemsList(item)
-            adapter.setCurrentFolder(item)
-            adapter.notifyDataSetChanged()
-            foldersList.setSelectionAfterHeaderView() //Scroll to top
-            updateCurrentFolderName()
         }
 
         //Create a folder
@@ -212,8 +209,10 @@ class ExplorerDialog(
     }
 
     override fun onInitEnd() {
-        //Assign adapter to list
+        //Assign adapter, layout manager to list & separator gap
         foldersList.adapter = adapter
+        foldersList.layoutManager = LinearLayoutManager(context)
+        foldersList.addItemDecoration(ListSeparator(3))
 
         //Update current folder name
         updateCurrentFolderName()

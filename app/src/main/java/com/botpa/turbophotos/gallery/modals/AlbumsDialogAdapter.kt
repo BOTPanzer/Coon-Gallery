@@ -9,9 +9,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Album
 import com.botpa.turbophotos.gallery.Item
-import com.botpa.turbophotos.gallery.modals.core.CustomAdapter
+import com.botpa.turbophotos.gallery.modals.core.SimpleCustomAdapter
 
-class AlbumsDialogAdapter(context: Context, albums: List<Album>) : CustomAdapter<Album, AlbumsDialogAdapter.AlbumHolder>(context, albums) {
+class AlbumsDialogAdapter(context: Context, albums: List<Album>) : SimpleCustomAdapter<Album, AlbumsDialogAdapter.AlbumHolder>(context, albums) {
 
     //Adapter
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): AlbumHolder {
@@ -32,24 +32,17 @@ class AlbumsDialogAdapter(context: Context, albums: List<Album>) : CustomAdapter
 
         //Add listeners
         holder.item.setOnClickListener { view: View ->
-            onClick?.run(view, album)
+            onClick?.run(album, holder.bindingAdapterPosition)
         }
-    }
-
-    //Listeners
-    var onClick: ClickListener? = null
-
-    fun interface ClickListener {
-        fun run(view: View, album: Album)
     }
 
     //Holder
     class AlbumHolder(root: View) : RecyclerView.ViewHolder(root) {
 
-        var item: View = root.findViewById(R.id.albumItem)
-        var image: ImageView = root.findViewById(R.id.albumImage)
-        var name: TextView = root.findViewById(R.id.albumName)
-        var info: TextView = root.findViewById(R.id.albumInfo)
+        val item: View = root.findViewById(R.id.albumItem)
+        val image: ImageView = root.findViewById(R.id.albumImage)
+        val name: TextView = root.findViewById(R.id.albumName)
+        val info: TextView = root.findViewById(R.id.albumInfo)
 
     }
 
