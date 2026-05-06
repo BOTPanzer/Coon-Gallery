@@ -18,7 +18,7 @@ class AlbumsDialogAdapter(context: Context, albums: List<Album>) : SimpleCustomA
         return AlbumHolder(inflateView(context, R.layout.dialog_albums_item, viewGroup))
     }
 
-    override fun onInitViewHolder(holder: AlbumHolder, album: Album) {
+    override fun onInitItemHolder(holder: AlbumHolder, album: Album) {
         //Load album cover
         if (album.isEmpty()) {
             holder.image.setImageDrawable(null)

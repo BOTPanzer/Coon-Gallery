@@ -16,7 +16,7 @@ class SearchDialogAdapter(context: Context, items: List<SearchMethod>) : SimpleC
         return SearchHolder(inflateView(context, R.layout.dialog_search_item, viewGroup))
     }
 
-    override fun onInitViewHolder(holder: SearchHolder, item: SearchMethod) {
+    override fun onInitItemHolder(holder: SearchHolder, item: SearchMethod) {
         //Update info
         when (item) {
             SearchMethod.ContainsWords -> {

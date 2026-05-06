@@ -13,6 +13,7 @@ import kotlin.math.min
 class DragSelectTouchListener(
     private val context: Context,
     private val recyclerView: RecyclerView,
+    private val startOffset: Int = 0,
     private val onSelectRange: (from: Int, to: Int, min: Int, max: Int) -> Unit,
     private val onSingleTap: (position: Int) -> Unit,
     private val onDragSelectingChanged: (isDragSelecting: Boolean) -> Unit
@@ -31,7 +32,7 @@ class DragSelectTouchListener(
     private var maxPosition = RecyclerView.NO_POSITION
 
     //Automatic scrolling when touching the border
-    private var maxScrollSpeed = 2000f   //Pixels per second
+    private var maxScrollSpeed = 2000f  //Pixels per second
     private var currentScrollSpeed = 0  //Pixels per second
     private val scrollHandler = Handler(Looper.getMainLooper())
     private val autoScrollRunnable = object : Runnable {
@@ -65,12 +66,9 @@ class DragSelectTouchListener(
             lastX = event.x
             lastY = event.y
 
-            //Get hovered view
-            val view = recyclerView.findChildViewUnder(lastX, lastY) ?: return
-
-            //Get view position
-            val pos = recyclerView.getChildAdapterPosition(view)
-            if (pos == RecyclerView.NO_POSITION) return
+            //Get hovered view position
+            val pos = getHoveredViewPosition(lastX, lastY)
+            if (pos < startOffset) return
 
             //Start drag selection
             setIsDragSelecting(true)
@@ -83,10 +81,10 @@ class DragSelectTouchListener(
 
             //Select first item
             onSelectRange(
-                startPosition,
-                lastPosition,
-                minPosition,
-                maxPosition
+                startPosition - startOffset,
+                lastPosition - startOffset,
+                minPosition - startOffset,
+                maxPosition - startOffset
             )
         }
 
@@ -95,15 +93,12 @@ class DragSelectTouchListener(
             lastX = event.x
             lastY = event.y
 
-            //Get hovered view
-            val view = recyclerView.findChildViewUnder(lastX, lastY) ?: return true
-
-            //Get view position
-            val pos = recyclerView.getChildAdapterPosition(view)
-            if (pos == RecyclerView.NO_POSITION) return true
+            //Get hovered view position
+            val pos = getHoveredViewPosition(lastX, lastY)
+            if (pos < startOffset) return true
 
             //Single tap
-            onSingleTap(pos)
+            onSingleTap(pos - startOffset)
             return true
         }
 
@@ -168,24 +163,21 @@ class DragSelectTouchListener(
     }
 
     private fun updateSelection() {
-        //Get hovered view
-        val view = recyclerView.findChildViewUnder(lastX, lastY) ?: return
-
-        //Get view position
-        val pos = recyclerView.getChildAdapterPosition(view)
-        if (pos == RecyclerView.NO_POSITION || pos == lastPosition) return
+        //Get hovered view position
+        val pos = getHoveredViewPosition(lastX, lastY)
+        if (pos < startOffset || pos == lastPosition) return
 
         //Update positions
         lastPosition = pos
-        minPosition = minOf(minPosition, pos)
-        maxPosition = maxOf(maxPosition, pos)
+        minPosition = min(minPosition, pos)
+        maxPosition = max(maxPosition, pos)
 
         //Select range
         onSelectRange(
-            min(startPosition, lastPosition),
-            max(startPosition, lastPosition),
-            minPosition,
-            maxPosition
+            min(startPosition, lastPosition) - startOffset,
+            max(startPosition, lastPosition) - startOffset,
+            minPosition - startOffset,
+            maxPosition - startOffset
         )
     }
 
@@ -222,6 +214,14 @@ class DragSelectTouchListener(
         } else {
             event.x >= viewWidth - touchTargetWidth
         }
+    }
+
+    private fun getHoveredViewPosition(x: Float, y: Float): Int {
+        //Get hovered view
+        val view = recyclerView.findChildViewUnder(lastX, lastY) ?: return -1
+
+        //Get view position
+        return recyclerView.getChildAdapterPosition(view)
     }
 
 }

@@ -15,7 +15,7 @@ class OptionsGroupAdapter(context: Context, items: List<OptionsGroup>) : CustomA
         return OptionHolder(inflateView(context, R.layout.options_group, viewGroup))
     }
 
-    override fun onInitViewHolder(holder: OptionHolder, item: OptionsGroup) {
+    override fun onInitItemHolder(holder: OptionHolder, item: OptionsGroup) {
         //Create adapter
         val adapter = OptionsItemAdapter(context, item.options)
         adapter.onClick = { option, index ->

@@ -19,7 +19,7 @@ class ErrorsDialogAdapter(
         return ErrorHolder(inflateView(context, R.layout.dialog_errors_item, viewGroup))
     }
 
-    override fun onInitViewHolder(holder: ErrorHolder, error: ActionError) {
+    override fun onInitItemHolder(holder: ErrorHolder, error: ActionError) {
         //Update info
         holder.name.text = error.item.name
         holder.reason.text = error.reason

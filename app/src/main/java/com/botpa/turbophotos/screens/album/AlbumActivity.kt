@@ -39,6 +39,7 @@ import com.botpa.turbophotos.gallery.fastscroller.FastScroller
 import com.botpa.turbophotos.gallery.fastscroller.FastScrollerBuilder
 import com.botpa.turbophotos.gallery.options.OptionsGroup
 import com.botpa.turbophotos.gallery.options.OptionsManager
+import com.botpa.turbophotos.gallery.views.ListSeparator
 import com.botpa.turbophotos.screens.album.search.SearchDialog
 
 @SuppressLint("SetTextI18n", "NotifyDataSetChanged")
@@ -146,7 +147,6 @@ class AlbumActivity : BaseActivity() {
     //Views (navbar)
     private lateinit var navbarLayout: View
     private lateinit var navbarTitle: TextView
-    private lateinit var navbarSubtitle: TextView
     private lateinit var navbarSearch: View
     private lateinit var navbarOptions: View
 
@@ -290,7 +290,7 @@ class AlbumActivity : BaseActivity() {
             if (!updated) return@runOnUiThread
 
             //Unselect all
-            unselectAll()
+            deselectAll()
 
             //Refresh list
             selectAlbum(currentAlbum)
@@ -311,23 +311,23 @@ class AlbumActivity : BaseActivity() {
         //Renamed file
         if (action.isOfType(Action.TYPE_RENAME)) {
             //Unselect item
-            unselectAll()
+            deselectAll()
             return
         }
 
         //Update items
         for (indexInGallery in action.modifiedIndexesInGallery) {
-            albumAdapter.notifyItemChanged(indexInGallery)
+            albumAdapter.notifyItemChanged(albumAdapter.getPositionFromIndex(indexInGallery))
         }
 
         //Remove items
         for (indexInGallery in action.removedIndexesInGallery) {
             selectedIndexes.remove(indexInGallery)
-            albumAdapter.notifyItemRemoved(indexInGallery)
+            albumAdapter.notifyItemRemoved(albumAdapter.getPositionFromIndex(indexInGallery))
         }
 
         //Remove select back callback if no more items are selected
-        if (selectedIndexes.isEmpty()) unselectAll()
+        if (selectedIndexes.isEmpty()) deselectAll()
     }
 
     //Views
@@ -335,7 +335,6 @@ class AlbumActivity : BaseActivity() {
         //Navbar
         navbarLayout = findViewById(R.id.navbarLayout)
         navbarTitle = findViewById(R.id.navbarTitle)
-        navbarSubtitle = findViewById(R.id.navbarSubtitle)
         navbarSearch = findViewById(R.id.navbarSearch)
         navbarOptions = findViewById(R.id.navbarOptions)
 
@@ -439,6 +438,7 @@ class AlbumActivity : BaseActivity() {
         albumList.addOnItemTouchListener(DragSelectTouchListener(
             this,
             albumList,
+            startOffset = 1,
             onSelectRange = { from, to, min, max ->
                 //Select range items
                 selectRange(from..to)
@@ -447,13 +447,13 @@ class AlbumActivity : BaseActivity() {
                 if (min < from) deselectRange(min..(from - 1))
                 if (max > to) deselectRange((to + 1)..max)
             },
-            onSingleTap = { position ->
+            onSingleTap = { index ->
                 if (selectedIndexes.isNotEmpty()) {
                     //Toggle item
-                    toggleSelected(position)
+                    toggleSelected(index)
                 } else {
                     //Open item
-                    openItem(position)
+                    openItem(index)
                 }
             },
             onDragSelectingChanged = { isDragSelecting ->
@@ -570,19 +570,29 @@ class AlbumActivity : BaseActivity() {
     private fun initAlbumList() {
         //Init album layout manager
         albumLayoutManager = GridLayoutManager(this, listItemsPerRow)
+        albumLayoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+            override fun getSpanSize(position: Int): Int {
+                return if (albumAdapter.getItemViewType(position) == 0) albumLayoutManager.spanCount else 1
+            }
+        }
         albumList.setLayoutManager(albumLayoutManager)
 
         //Init album adapter
-        albumAdapter = AlbumAdapter(this, gallery, selectedIndexes, Storage.getBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON))
+        albumAdapter = AlbumAdapter(this, gallery, "", "", selectedIndexes, Storage.getBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON))
         albumList.setAdapter(albumAdapter)
 
         //Init home fast scroller
-        albumFastScroller = FastScrollerBuilder(albumList).build()
+        albumFastScroller = FastScrollerBuilder(albumList)
+            .setHasHeader(true)
+            .build()
     }
 
     private fun selectAlbum(album: Album) {
         //Select album
-        this.currentAlbum = album
+        currentAlbum = album
+
+        //Update adapter header
+        albumAdapter.title = currentAlbum.name
 
         //Check if in trash (trash always shows options cause of "Delete all" action)
         inTrash = (album == Library.trash)
@@ -705,7 +715,12 @@ class AlbumActivity : BaseActivity() {
     //Navbar
     private fun updateNavbarTitle() {
         //Update navbar title
-        navbarTitle.text = "${currentAlbum.name}${if (selectedIndexes.isEmpty()) "" else " (${selectedIndexes.size} selected)"}"
+        if (selectedIndexes.isEmpty()) {
+            navbarTitle.visibility = View.GONE
+        } else {
+            navbarTitle.visibility = View.VISIBLE
+            navbarTitle.text = "${selectedIndexes.size} ${if (selectedIndexes.size > 1) "items" else "item"} selected"
+        }
     }
 
     //Metadata
@@ -738,16 +753,16 @@ class AlbumActivity : BaseActivity() {
         //Check if its the first item to be selected
         if (selectedIndexes.isEmpty()) {
             //Add back event
-            backManager.register("selected") { this.unselectAll() }
+            backManager.register("selected") { deselectAll() }
 
-            //Show options button
+            //Show options
             if (!inTrash) navbarOptions.visibility = View.VISIBLE
         }
 
         //Select items & update adapter
-        val selected = ArrayList<Int>()
-        for (index in range) if (selectedIndexes.add(index)) selected.add(index)
-        for (index in selected) albumAdapter.notifyItemChanged(index)
+        val selectedViews = ArrayList<Int>()
+        for (index in range) if (selectedIndexes.add(index)) selectedViews.add(index)
+        for (index in selectedViews) albumAdapter.notifyItemChanged(albumAdapter.getPositionFromIndex(index))
 
         //Update navbar title
         updateNavbarTitle()
@@ -758,17 +773,17 @@ class AlbumActivity : BaseActivity() {
         if (range.isEmpty()) return
 
         //Deselect items & update adapter
-        val deselected = ArrayList<Int>()
-        for (index in range) if (selectedIndexes.remove(index)) deselected.add(index)
-        for (index in deselected) albumAdapter.notifyItemChanged(index)
+        val deselectedViews = ArrayList<Int>()
+        for (index in range) if (selectedIndexes.remove(index)) deselectedViews.add(index)
+        for (index in deselectedViews) albumAdapter.notifyItemChanged(albumAdapter.getPositionFromIndex(index))
 
         //Check if no more items are selected
         if (selectedIndexes.isEmpty()) {
-            //Add back event
-            backManager.register("selected") { this.unselectAll() }
+            //Remove back event
+            backManager.unregister("selected")
 
-            //Show options button
-            if (!inTrash) navbarOptions.visibility = View.VISIBLE
+            //Hide options
+            if (!inTrash) navbarOptions.visibility = View.GONE
         }
 
         //Update navbar title
@@ -786,18 +801,18 @@ class AlbumActivity : BaseActivity() {
         }
     }
 
-    private fun unselectAll() {
+    private fun deselectAll() {
         //Remove back event
         backManager.unregister("selected")
 
         //Hide options
         if (!inTrash) navbarOptions.visibility = View.GONE
 
-        //Unselect all
+        //Deselect all
         if (!selectedIndexes.isEmpty()) {
             val temp = HashSet<Int>(selectedIndexes)
             selectedIndexes.clear()
-            for (index in temp) albumAdapter.notifyItemChanged(index)
+            for (index in temp) albumAdapter.notifyItemChanged(albumAdapter.getPositionFromIndex(index))
         }
 
         //Update navbar title
@@ -811,10 +826,6 @@ class AlbumActivity : BaseActivity() {
 
         //Loading or searching
         if (isSearching || (!isMetadataLoaded && isFiltering)) return
-
-        //Update subtitle
-        navbarSubtitle.text = if (isFiltering) "Search: $filter" else ""
-        navbarSubtitle.visibility = if (isFiltering) View.VISIBLE else View.GONE
 
         //Start search
         isSearching = true
@@ -838,6 +849,9 @@ class AlbumActivity : BaseActivity() {
 
             //Update items
             runOnUiThread {
+                //Update subtitle
+                albumAdapter.subtitle = "${gallery.size} items${if (isFiltering) " - Search: $filter" else ""}"
+
                 //Update adapter
                 albumAdapter.notifyDataSetChanged()
 

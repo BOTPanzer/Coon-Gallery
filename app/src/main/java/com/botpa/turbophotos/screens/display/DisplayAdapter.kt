@@ -17,7 +17,7 @@ class DisplayAdapter(context: Context, items: List<Item>) : CustomAdapter<Item, 
         return ItemHolder(inflateView(context, R.layout.display_item, viewGroup))
     }
 
-    override fun onInitViewHolder(holder: ItemHolder, item: Item) {
+    override fun onInitItemHolder(holder: ItemHolder, item: Item) {
         //Load image
         Item.load(context, holder.image, item)
 

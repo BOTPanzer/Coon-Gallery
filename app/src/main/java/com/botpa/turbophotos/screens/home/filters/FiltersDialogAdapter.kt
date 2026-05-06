@@ -16,7 +16,7 @@ class FiltersDialogAdapter(context: Context, items: List<Filter>) : SimpleCustom
         return FilterHolder(inflateView(context, R.layout.dialog_filters_item, viewGroup))
     }
 
-    override fun onInitViewHolder(holder: FilterHolder, item: Filter) {
+    override fun onInitItemHolder(holder: FilterHolder, item: Filter) {
         //Update info
         holder.icon.setImageResource(item.icon)
         holder.name.text = item.name

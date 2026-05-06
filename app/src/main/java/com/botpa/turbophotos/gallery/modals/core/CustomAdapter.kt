@@ -14,13 +14,13 @@ abstract class CustomAdapter<T, VH: RecyclerView.ViewHolder>(
     //Adapter
     override fun onBindViewHolder(holder: VH, position: Int) {
         //Init item
-        onInitViewHolder(holder, items[position])
+        onInitItemHolder(holder, items[position])
     }
 
     override fun getItemCount(): Int = items.size
 
     //Custom
-    protected open fun onInitViewHolder(holder: VH, item: T) {}
+    protected open fun onInitItemHolder(holder: VH, item: T) {}
 
     //Util
     companion object {

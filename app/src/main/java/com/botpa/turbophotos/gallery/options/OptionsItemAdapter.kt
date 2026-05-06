@@ -16,7 +16,7 @@ class OptionsItemAdapter(context: Context, items: List<OptionsItem>) : SimpleCus
         return OptionHolder(inflateView(context, R.layout.options_item, viewGroup))
     }
 
-    override fun onInitViewHolder(holder: OptionHolder, item: OptionsItem) {
+    override fun onInitItemHolder(holder: OptionHolder, item: OptionsItem) {
         //Update info
         holder.icon.setImageResource(item.icon)
         holder.name.text = item.name

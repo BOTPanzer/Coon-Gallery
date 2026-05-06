@@ -11,73 +11,57 @@ import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Album
 import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.Item
-import com.botpa.turbophotos.gallery.modals.core.CustomAdapter
+import com.botpa.turbophotos.gallery.modals.core.CustomHeaderAdapter
 import com.bumptech.glide.Glide
 
 @SuppressLint("SetTextI18n")
 class HomeAdapter(
-    private val context: Context,
-    private val albums: List<Album>
-) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+    context: Context,
+    albums: List<Album>
+) : CustomHeaderAdapter<Album, HomeAdapter.HeaderHolder, HomeAdapter.AlbumHolder>(context, albums) {
 
     //Adapter
-    companion object {
-        private const val TYPE_HEADER = 0
-        private const val TYPE_ALBUM = 1
-    }
-
-    override fun getItemViewType(position: Int): Int {
-        return if (position == 0) TYPE_HEADER else TYPE_ALBUM
-    }
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return if (viewType == TYPE_HEADER) {
-            HeaderHolder(CustomAdapter.inflateView(context, R.layout.home_header, parent))
+            HeaderHolder(inflateView(context, R.layout.home_header, parent))
         } else {
-            AlbumHolder(CustomAdapter.inflateView(context, R.layout.home_item, parent))
+            AlbumHolder(inflateView(context, R.layout.home_item, parent))
         }
     }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        //Get position
-        val position = holder.bindingAdapterPosition - positionOffset
+    override fun onInitHeaderHolder(holder: HeaderHolder) {
+        //Load album covers
+        val allImageLoaded = loadAlbumCover(holder.allImage, Library.all)
+        holder.allImage.visibility = if (allImageLoaded) View.VISIBLE else View.GONE
+        holder.allIcon.visibility = if (allImageLoaded) View.GONE else View.VISIBLE
+        val allFavouritesLoaded = loadAlbumCover(holder.favouritesImage, Library.favourites)
+        holder.favouritesImage.visibility = if (allFavouritesLoaded) View.VISIBLE else View.GONE
+        holder.favouritesIcon.visibility = if (allFavouritesLoaded) View.GONE else View.VISIBLE
+        val allTrashLoaded = loadAlbumCover(holder.trashImage, Library.trash)
+        holder.trashImage.visibility = if (allTrashLoaded) View.VISIBLE else View.GONE
+        holder.trashIcon.visibility = if (allTrashLoaded) View.GONE else View.VISIBLE
 
-        //Check holder type
-        if (holder is HeaderHolder) {
-            //Load album covers
-            val allImageLoaded = loadAlbumCover(holder.allImage, Library.all)
-            holder.allImage.visibility = if (allImageLoaded) View.VISIBLE else View.GONE
-            holder.allIcon.visibility = if (allImageLoaded) View.GONE else View.VISIBLE
-            val allFavouritesLoaded = loadAlbumCover(holder.favouritesImage, Library.favourites)
-            holder.favouritesImage.visibility = if (allFavouritesLoaded) View.VISIBLE else View.GONE
-            holder.favouritesIcon.visibility = if (allFavouritesLoaded) View.GONE else View.VISIBLE
-            val allTrashLoaded = loadAlbumCover(holder.trashImage, Library.trash)
-            holder.trashImage.visibility = if (allTrashLoaded) View.VISIBLE else View.GONE
-            holder.trashIcon.visibility = if (allTrashLoaded) View.GONE else View.VISIBLE
+        //Update text
+        holder.allInfo.text = "${Library.all.size()} items"
+        holder.favouritesInfo.text = "${Library.favourites.size()} items"
+        holder.trashInfo.text = "${Library.trash.size()} items"
 
-            //Update text
-            holder.allInfo.text = "${Library.all.size()} items"
-            holder.favouritesInfo.text = "${Library.favourites.size()} items"
-            holder.trashInfo.text = "${Library.trash.size()} items"
+        //Add listeners
+        addAlbumListener(holder.all, Library.all)
+        addAlbumListener(holder.favourites, Library.favourites)
+        addAlbumListener(holder.trash, Library.trash)
+    }
 
-            //Add listeners
-            addAlbumListener(holder.all, Library.all)
-            addAlbumListener(holder.favourites, Library.favourites)
-            addAlbumListener(holder.trash, Library.trash)
-        } else if (holder is AlbumHolder) {
-            //Get album
-            val album = albums[position]
+    override fun onInitItemHolder(holder: AlbumHolder, album: Album) {
+        //Load album cover
+        loadAlbumCover(holder.image, album)
 
-            //Load album cover
-            loadAlbumCover(holder.image, album)
+        //Update text
+        holder.name.text = album.name
+        holder.info.text = "${album.size()} items"
 
-            //Update text
-            holder.name.text = album.name
-            holder.info.text = "${album.size()} items"
-
-            //Add listeners
-            addAlbumListener(holder.background, album)
-        }
+        //Add listeners
+        addAlbumListener(holder.root, album)
     }
 
     override fun onViewRecycled(holder: RecyclerView.ViewHolder) {
@@ -89,11 +73,7 @@ class HomeAdapter(
         }
     }
 
-    override fun getItemCount(): Int = albums.size + positionOffset
-
     //Util
-    private val positionOffset: Int get() = 1
-
     private fun loadAlbumCover(image: ImageView, album: Album): Boolean {
         if (album.isEmpty()) {
             image.setImageDrawable(null)
@@ -110,9 +90,7 @@ class HomeAdapter(
         }
     }
 
-    fun getPositionFromIndex(index: Int): Int = index + positionOffset
-
-    fun getIndexFromAlbum(album: Album): Int = albums.indexOf(album)
+    fun getIndexFromAlbum(album: Album): Int = items.indexOf(album)
 
     //Listeners
     var onClick: ClickListener? = null
@@ -141,9 +119,8 @@ class HomeAdapter(
 
     }
 
-    class AlbumHolder(root: View) : RecyclerView.ViewHolder(root) {
+    class AlbumHolder(val root: View) : RecyclerView.ViewHolder(root) {
 
-        val background: View = root.findViewById(R.id.background)
         val image: ImageView = root.findViewById(R.id.image)
         val name: TextView = root.findViewById(R.id.name)
         val info: TextView = root.findViewById(R.id.info)
