@@ -49,6 +49,7 @@ import com.botpa.turbophotos.gallery.fastscroller.FastScroller
 import com.botpa.turbophotos.gallery.fastscroller.FastScrollerBuilder
 import com.botpa.turbophotos.gallery.options.OptionsGroup
 import com.botpa.turbophotos.gallery.options.OptionsManager
+import com.botpa.turbophotos.gallery.views.GridListSeparator
 
 @SuppressLint("SetTextI18n", "NotifyDataSetChanged")
 class HomeActivity : BaseActivity() {
@@ -102,6 +103,7 @@ class HomeActivity : BaseActivity() {
 
     //List
     private lateinit var homeLayoutManager: GridLayoutManager
+    private lateinit var homeDecorator: GridListSeparator
     private lateinit var homeAdapter: HomeAdapter
 
     private lateinit var homeRefreshLayout: SwipeRefreshLayout
@@ -438,7 +440,7 @@ class HomeActivity : BaseActivity() {
             intArrayOf(WindowInsetsCompat.Type.systemBars())
         ) { view: View, insets: Insets, duration: Float ->
             homeRefreshLayout.setProgressViewOffset(false, 0, insets.top + 50)
-            homeList.setPadding(0, insets.top, 0, listMinBottomPadding + insets.bottom)
+            homeList.setPadding(homeList.paddingLeft, insets.top, homeList.paddingRight, listMinBottomPadding + insets.bottom)
             homeFastScroller.setPadding(0, homeList.paddingTop, 0, homeList.paddingBottom)
         }
 
@@ -531,6 +533,8 @@ class HomeActivity : BaseActivity() {
             }
         }
         homeList.setLayoutManager(homeLayoutManager)
+        homeDecorator = GridListSeparator(20, homeLayoutManager.spanCount, 1)
+        homeList.addItemDecoration(homeDecorator)
 
         //Init home adapter
         homeAdapter = HomeAdapter(this, Library.albums)
@@ -629,6 +633,8 @@ class HomeActivity : BaseActivity() {
         val newItemsPerRow = listItemsPerRow
         if (homeLayoutManager.spanCount != newItemsPerRow) {
             homeLayoutManager.setSpanCount(newItemsPerRow)
+            homeDecorator.spanCount = newItemsPerRow
+            homeList.invalidateItemDecorations()
         }
     }
 

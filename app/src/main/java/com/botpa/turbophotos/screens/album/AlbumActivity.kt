@@ -39,7 +39,7 @@ import com.botpa.turbophotos.gallery.fastscroller.FastScroller
 import com.botpa.turbophotos.gallery.fastscroller.FastScrollerBuilder
 import com.botpa.turbophotos.gallery.options.OptionsGroup
 import com.botpa.turbophotos.gallery.options.OptionsManager
-import com.botpa.turbophotos.gallery.views.ListSeparator
+import com.botpa.turbophotos.gallery.views.GridListSeparator
 import com.botpa.turbophotos.screens.album.search.SearchDialog
 
 @SuppressLint("SetTextI18n", "NotifyDataSetChanged")
@@ -69,6 +69,7 @@ class AlbumActivity : BaseActivity() {
 
     //List
     private lateinit var albumLayoutManager: GridLayoutManager
+    private lateinit var albumDecorator: GridListSeparator
     private lateinit var albumAdapter: AlbumAdapter
 
     private val gallery: List<Item>
@@ -576,6 +577,8 @@ class AlbumActivity : BaseActivity() {
             }
         }
         albumList.setLayoutManager(albumLayoutManager)
+        albumDecorator = GridListSeparator(5, albumLayoutManager.spanCount, 1)
+        albumList.addItemDecoration(albumDecorator)
 
         //Init album adapter
         albumAdapter = AlbumAdapter(this, gallery, "", "", selectedIndexes, Storage.getBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON))
@@ -709,6 +712,8 @@ class AlbumActivity : BaseActivity() {
         val newItemsPerRow = listItemsPerRow
         if (albumLayoutManager.spanCount != newItemsPerRow) {
             albumLayoutManager.setSpanCount(newItemsPerRow)
+            albumDecorator.spanCount = newItemsPerRow
+            albumList.invalidateItemDecorations()
         }
     }
 
