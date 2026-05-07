@@ -18,8 +18,8 @@ object StoragePairs {
 
     //Display screen
     @JvmField val DISPLAY_SHOW_INFO: Storage.StoragePair<Boolean> = Storage.StoragePair("Display.showInfo", true)
-    @JvmField val DISPLAY_SHOW_EDIT: Storage.StoragePair<Boolean> = Storage.StoragePair("Display.showEdit", false)
-    @JvmField val DISPLAY_SHOW_SHARE: Storage.StoragePair<Boolean> = Storage.StoragePair("Display.showShare", false)
+    @JvmField val DISPLAY_SHOW_EDIT: Storage.StoragePair<Boolean> = Storage.StoragePair("Display.showEdit", true)
+    @JvmField val DISPLAY_SHOW_SHARE: Storage.StoragePair<Boolean> = Storage.StoragePair("Display.showShare", true)
     @JvmField val DISPLAY_SHOW_FAVOURITE: Storage.StoragePair<Boolean> = Storage.StoragePair("Display.showFavourite", false)
 
     //Video player
