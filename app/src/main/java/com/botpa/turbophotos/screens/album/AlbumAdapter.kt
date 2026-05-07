@@ -5,6 +5,7 @@ import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
@@ -19,6 +20,7 @@ class AlbumAdapter(
     items: List<Item>,
     var title: String,
     var subtitle: String,
+    var topMargin: Int,
     private val selected: Set<Int>,
     private var showMissingMetadataIcon: Boolean
 ) : CustomHeaderAdapter<Item, AlbumAdapter.HeaderHolder, AlbumAdapter.ItemHolder>(context, items) {
@@ -43,6 +45,11 @@ class AlbumAdapter(
         //Update text
         holder.title.text = title
         holder.info.text = subtitle
+
+        //Update top margin
+        val params = holder.topMargin.layoutParams as LinearLayout.LayoutParams
+        params.height = this@AlbumAdapter.topMargin
+        holder.topMargin.layoutParams = params
     }
 
     override fun onInitItemHolder(holder: ItemHolder, item: Item) {
@@ -78,6 +85,7 @@ class AlbumAdapter(
     //Holders
     class HeaderHolder(root: View) : RecyclerView.ViewHolder(root) {
 
+        val topMargin: View = root.findViewById(R.id.variableHeight)
         val image: ImageView = root.findViewById(R.id.image)
         val title: TextView = root.findViewById(R.id.title)
         val info: TextView = root.findViewById(R.id.info)

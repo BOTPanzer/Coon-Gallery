@@ -18,7 +18,7 @@
             android:layout_height="match_parent"
             android:clickable="false"
             app:cardBackgroundColor="#00FFFFFF"
-            app:cardCornerRadius="5dp"
+            app:cardCornerRadius="0dp"
             app:cardElevation="0dp"
             app:strokeColor="#00000000"
             app:strokeWidth="8dp">

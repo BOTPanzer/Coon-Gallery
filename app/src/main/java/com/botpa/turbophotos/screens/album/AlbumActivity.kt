@@ -367,8 +367,10 @@ class AlbumActivity : BaseActivity() {
             intArrayOf(WindowInsetsCompat.Type.systemBars())
         ) { view: View, insets: Insets, duration: Float ->
             albumRefreshLayout.setProgressViewOffset(false, 0, insets.top + 50)
-            albumList.setPadding(0, insets.top, 0, listMinBottomPadding + insets.bottom)
-            albumFastScroller.setPadding(0, albumList.paddingTop, 0, albumList.paddingBottom)
+            albumList.setPadding(0, 0, 0, listMinBottomPadding + insets.bottom)
+            albumFastScroller.setPadding(0, insets.top, 0, albumList.paddingBottom)
+            albumAdapter.topMargin = insets.top
+            albumAdapter.notifyItemChanged(0)
         }
 
         //Insets (layout)
@@ -577,11 +579,11 @@ class AlbumActivity : BaseActivity() {
             }
         }
         albumList.setLayoutManager(albumLayoutManager)
-        albumDecorator = GridListSeparator(5, albumLayoutManager.spanCount, 1)
+        albumDecorator = GridListSeparator(2, albumLayoutManager.spanCount, 1)
         albumList.addItemDecoration(albumDecorator)
 
         //Init album adapter
-        albumAdapter = AlbumAdapter(this, gallery, "", "", selectedIndexes, Storage.getBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON))
+        albumAdapter = AlbumAdapter(this, gallery, "", "", 0, selectedIndexes, Storage.getBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON))
         albumList.setAdapter(albumAdapter)
 
         //Init home fast scroller
