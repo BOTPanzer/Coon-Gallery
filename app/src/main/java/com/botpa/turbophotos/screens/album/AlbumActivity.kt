@@ -319,12 +319,18 @@ class AlbumActivity : BaseActivity() {
         //Update items
         for (indexInGallery in action.modifiedIndexesInGallery) {
             albumAdapter.notifyItemChanged(albumAdapter.getPositionFromIndex(indexInGallery))
+
+            //Refresh banner
+            if (indexInGallery == 0) albumAdapter.notifyItemChanged(0)
         }
 
         //Remove items
         for (indexInGallery in action.removedIndexesInGallery) {
             selectedIndexes.remove(indexInGallery)
             albumAdapter.notifyItemRemoved(albumAdapter.getPositionFromIndex(indexInGallery))
+
+            //Refresh banner
+            if (indexInGallery == 0) albumAdapter.notifyItemChanged(0)
         }
 
         //Remove select back callback if no more items are selected
