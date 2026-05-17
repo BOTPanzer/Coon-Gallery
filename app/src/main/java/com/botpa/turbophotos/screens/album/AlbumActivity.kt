@@ -366,11 +366,18 @@ class AlbumActivity : BaseActivity() {
             findViewById(R.id.content),
             intArrayOf(WindowInsetsCompat.Type.systemBars())
         ) { view: View, insets: Insets, duration: Float ->
+            //Swipe refresh top margin
             albumRefreshLayout.setProgressViewOffset(false, 0, insets.top + 50)
+
+            //Album list search layout + keyboard margin
             albumList.setPadding(0, 0, 0, listMinBottomPadding + insets.bottom)
             albumFastScroller.setPadding(0, insets.top, 0, albumList.paddingBottom)
-            albumAdapter.topMargin = insets.top
-            albumAdapter.notifyItemChanged(0)
+
+            //Album list notifications bar margin
+            if (albumAdapter.topMargin == 0) {
+                albumAdapter.topMargin = insets.top
+                albumAdapter.notifyItemChanged(0)
+            }
         }
 
         //Insets (layout)
@@ -843,8 +850,11 @@ class AlbumActivity : BaseActivity() {
         showSearchLayout(false)
 
         //Update back manager
-        if (isFiltering) backManager.register("search") { this.filterItems() }
-        else backManager.unregister("search")
+        if (isFiltering) {
+            backManager.register("search") { this.filterItems() }
+        } else {
+            backManager.unregister("search")
+        }
 
         //Clear selected items
         selectedIndexes.clear()
