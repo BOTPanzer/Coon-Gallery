@@ -156,8 +156,8 @@
                                     android:layout_height="match_parent"
                                     android:background="?attr/selectableItemBackground"
                                     android:padding="8dp"
-                                    android:rotation="90"
-                                    app:srcCompat="@drawable/search"
+                                    android:rotation="180"
+                                    app:srcCompat="@drawable/back"
                                     app:tint="?attr/colorOnSurface" />
 
                             </androidx.cardview.widget.CardView>
