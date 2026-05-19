@@ -10,6 +10,7 @@ import android.view.View
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.activity.BackEventCompat
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.graphics.Insets
@@ -41,6 +42,8 @@ import com.botpa.turbophotos.gallery.options.OptionsGroup
 import com.botpa.turbophotos.gallery.options.OptionsManager
 import com.botpa.turbophotos.gallery.views.GridListSeparator
 import com.botpa.turbophotos.screens.album.search.SearchDialog
+import com.botpa.turbophotos.util.BackAnimationEvent
+import com.botpa.turbophotos.util.Ease
 
 @SuppressLint("SetTextI18n", "NotifyDataSetChanged")
 class AlbumActivity : BaseActivity() {
@@ -857,8 +860,41 @@ class AlbumActivity : BaseActivity() {
 
         //Update back manager
         if (isFiltering) {
-            backManager.register("search") { this.filterItems() }
+            //Register back event
+            backManager.register("search", object : BackAnimationEvent {
+
+                override fun onProgress(backEvent: BackEventCompat) {
+                    //Get info
+                    val easeOut = Ease.outCubic(backEvent.progress)
+
+                    //Animate
+                    albumList.alpha = 1.0f - easeOut * 0.8f
+                }
+
+                override fun onInvoked() {
+                    //Get info
+                    val currentAlpha = albumList.alpha
+
+                    //Hide list, filter items & show list again
+                    albumList.animate()
+                        .alpha(0.0f)
+                        .setDuration((Orion.DEFAULT_ANIMATION_DURATION * currentAlpha).toLong())
+                        .withEndAction {
+                            //Filter items
+                            filterItems()
+
+                            //Show list
+                            albumList.animate()
+                                .alpha(1.0f)
+                                .setDuration(Orion.DEFAULT_ANIMATION_DURATION.toLong())
+                                .start()
+                        }
+                        .start()
+                }
+
+            })
         } else {
+            //Unregister back event
             backManager.unregister("search")
         }
 
