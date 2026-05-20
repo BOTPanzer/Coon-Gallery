@@ -54,6 +54,7 @@ dependencies {
     implementation(libs.media3.ui)
     implementation(libs.media3.common)
     implementation(libs.media)
+    implementation(libs.exifinterface)
 
     //Layout
     implementation(libs.constraintlayout)

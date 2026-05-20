@@ -20,6 +20,7 @@
     </androidx.cardview.widget.CardView>
 
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/contentScroll"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true">

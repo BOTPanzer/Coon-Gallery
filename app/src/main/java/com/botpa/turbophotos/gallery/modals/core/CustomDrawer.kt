@@ -4,6 +4,7 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.widget.NestedScrollView
 import com.botpa.turbophotos.R
 import com.google.android.material.bottomsheet.BottomSheetDialog
 
@@ -11,6 +12,7 @@ open class CustomDrawer(protected val context: Context, private val resource: In
 
     //Views
     private lateinit var base: View
+    protected lateinit var scroll: NestedScrollView
     protected lateinit var root: View
 
     //Dialog
@@ -34,6 +36,7 @@ open class CustomDrawer(protected val context: Context, private val resource: In
     fun buildAndShow() {
         //Init root
         base = LayoutInflater.from(context).inflate(R.layout.drawer_base, null)
+        scroll = base.findViewById(R.id.contentScroll)
         root = LayoutInflater.from(context).inflate(resource, null)
         base.findViewById<ViewGroup>(R.id.content).addView(root)
 
@@ -55,4 +58,5 @@ open class CustomDrawer(protected val context: Context, private val resource: In
         //End
         onInitEnd()
     }
+
 }
