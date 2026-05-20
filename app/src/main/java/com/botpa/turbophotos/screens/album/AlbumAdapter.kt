@@ -66,10 +66,12 @@ class AlbumAdapter(
             holder.isSelected.visibility = View.VISIBLE
             holder.imageCard.scaleX = 0.8f
             holder.imageCard.scaleY = 0.8f
+            holder.imageCard.radius = 10.0f * context.resources.displayMetrics.density
         } else {
             holder.isSelected.visibility = View.GONE
             holder.imageCard.scaleX = 1.0f
             holder.imageCard.scaleY = 1.0f
+            holder.imageCard.radius = 0.0f
         }
     }
 

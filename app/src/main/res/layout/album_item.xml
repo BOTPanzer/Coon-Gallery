@@ -113,7 +113,8 @@
                 app:cardBackgroundColor="?attr/colorPrimary"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="0dp"
-                app:strokeColor="?attr/colorSurface">
+                app:strokeColor="?attr/colorSurface"
+                app:strokeWidth="2dp">
 
                 <ImageView
                     android:layout_width="match_parent"
