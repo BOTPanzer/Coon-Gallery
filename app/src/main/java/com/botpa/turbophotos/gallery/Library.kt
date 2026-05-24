@@ -9,11 +9,9 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
-
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.core.content.MimeTypeFilter
-
 import com.botpa.turbophotos.gallery.Link.Companion.loadLinks
 import com.botpa.turbophotos.gallery.Link.Companion.relinkWithAlbum
 import com.botpa.turbophotos.gallery.actions.Action
@@ -23,12 +21,9 @@ import com.botpa.turbophotos.gallery.modals.ErrorsDialog
 import com.botpa.turbophotos.gallery.modals.InputDialog
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage.getBool
-
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-
 import java.io.File
 import java.util.Locale
-
 import kotlin.Array
 import kotlin.Boolean
 import kotlin.Exception
@@ -478,13 +473,12 @@ object Library {
         }
     }
 
-    fun filterGallery(filter: String, album: Album, method: SearchMethod) {
+    fun filterAlbum(filter: String, album: Album, method: SearchMethod): MutableList<Item> {
         //Check if filtering
         val isFiltering = !filter.isEmpty()
 
-        //Save album & reset gallery
-        galleryAlbum = album
-        _gallery.clear()
+        //Create empty list
+        val filteredAlbum = ArrayList<Item>()
 
         //Look for items that contain the filter
         for (item in album.items) {
@@ -492,8 +486,20 @@ object Library {
             if (isFiltering && !filterItem(item, filter.lowercase(Locale.getDefault()), method)) continue
 
             //Add item
-            _gallery.add(item)
+            filteredAlbum.add(item)
         }
+
+        //Return list
+        return filteredAlbum
+    }
+
+    fun setGalleryInfo(album: Album?, items: MutableList<Item>) {
+        //Save album
+        galleryAlbum = album
+
+        //Clear gallery & add new items
+        _gallery.clear()
+        _gallery.addAll(items)
     }
 
     //Actions (events)

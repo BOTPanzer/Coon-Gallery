@@ -234,6 +234,9 @@ class AlbumActivity : BaseActivity() {
         //Remove events
         Library.removeOnRefreshEvent(onRefresh)
         Library.removeOnActionEvent(onAction)
+
+        //Reset gallery
+        Library.setGalleryInfo(null, ArrayList())
     }
 
     override fun onResume() {
@@ -758,8 +761,8 @@ class AlbumActivity : BaseActivity() {
 
             //Update items
             runOnUiThread {
-                //Update album list
-                albumAdapter.notifyDataSetChanged()
+                //Refresh album list (if missing metadata icons are enabled)
+                if (albumAdapter.showMissingMetadataIcon) albumAdapter.notifyDataSetChanged()
 
                 //Finish loading
                 loadingIndicator.hide()
@@ -872,24 +875,8 @@ class AlbumActivity : BaseActivity() {
                 }
 
                 override fun onInvoked() {
-                    //Get info
-                    val currentAlpha = albumList.alpha
-
-                    //Hide list, filter items & show list again
-                    albumList.animate()
-                        .alpha(0.0f)
-                        .setDuration((Orion.DEFAULT_ANIMATION_DURATION * currentAlpha).toLong())
-                        .withEndAction {
-                            //Filter items
-                            filterItems()
-
-                            //Show list
-                            albumList.animate()
-                                .alpha(1.0f)
-                                .setDuration(Orion.DEFAULT_ANIMATION_DURATION.toLong())
-                                .start()
-                        }
-                        .start()
+                    //Filter items
+                    filterItems()
                 }
 
             })
@@ -903,24 +890,38 @@ class AlbumActivity : BaseActivity() {
 
         //Filter items
         Thread {
-            //Filter library gallery list
-            Library.filterGallery(filter, currentAlbum, currentSearchMethod)
+            //Filter album list
+            val filteredAlbumItems = Library.filterAlbum(filter, currentAlbum, currentSearchMethod)
 
             //Update items
             runOnUiThread {
-                //Update subtitle
-                albumAdapter.subtitle = "${gallery.size} items${if (isFiltering) " - Search: $filter" else ""}"
+                //Hide list, update items & show list again
+                albumList.animate()
+                    .alpha(0.0f)
+                    .setDuration((Orion.DEFAULT_ANIMATION_DURATION * albumList.alpha).toLong())
+                    .withEndAction {
+                        //Update subtitle
+                        albumAdapter.subtitle = "${gallery.size} items${if (isFiltering) " - Search: $filter" else ""}"
 
-                //Update adapter
-                albumAdapter.notifyDataSetChanged()
+                        //Scroll to top
+                        albumList.stopScroll()
+                        if (scrollToTop) albumList.scrollToPosition(0)
 
-                //Scroll to top
-                albumList.stopScroll()
-                if (scrollToTop) albumList.scrollToPosition(0)
+                        //Update items
+                        Library.setGalleryInfo(currentAlbum, filteredAlbumItems) //List changes must be done in UI thread
+                        albumAdapter.notifyDataSetChanged()
 
-                //Finish searching
-                if (isFiltering) loadingIndicator.hide()
-                isSearching = false
+                        //Finish searching
+                        if (isFiltering) loadingIndicator.hide()
+                        isSearching = false
+
+                        //Show list
+                        albumList.animate()
+                            .alpha(1.0f)
+                            .setDuration(Orion.DEFAULT_ANIMATION_DURATION.toLong())
+                            .start()
+                    }
+                    .start()
             }
         }.start()
     }

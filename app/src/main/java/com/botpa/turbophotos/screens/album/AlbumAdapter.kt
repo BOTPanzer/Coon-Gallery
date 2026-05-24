@@ -21,8 +21,8 @@ class AlbumAdapter(
     var title: String,
     var subtitle: String,
     var topMargin: Int,
-    private val selected: Set<Int>,
-    private var showMissingMetadataIcon: Boolean
+    private val selectedIndexes: Set<Int>,
+    val showMissingMetadataIcon: Boolean
 ) : CustomHeaderAdapter<Item, AlbumAdapter.HeaderHolder, AlbumAdapter.ItemHolder>(context, items) {
 
     //Adapter
@@ -62,7 +62,7 @@ class AlbumAdapter(
         holder.missingInfo.visibility = if (!showMissingMetadataIcon || item.album.hasMetadataKey(item.name)) View.GONE else View.VISIBLE
 
         //Toggle is selected
-        if (selected.contains(holder.bindingAdapterPosition - positionOffset)) {
+        if (selectedIndexes.contains(holder.bindingAdapterPosition - positionOffset)) {
             holder.isSelected.visibility = View.VISIBLE
             holder.imageCard.scaleX = 0.8f
             holder.imageCard.scaleY = 0.8f
