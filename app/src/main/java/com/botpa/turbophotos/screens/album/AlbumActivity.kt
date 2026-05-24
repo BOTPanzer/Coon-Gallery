@@ -495,7 +495,7 @@ class AlbumActivity : BaseActivity() {
             val search = searchInput.text.toString()
 
             //Filter items with search
-            filterItems(search, true)
+            filterItems(search)
         }
 
         searchMethod.setOnClickListener { view: View ->
@@ -506,7 +506,7 @@ class AlbumActivity : BaseActivity() {
                 Storage.putString(StoragePairs.ALBUM_SEARCH_METHOD, currentSearchMethod.name)
 
                 //Filter
-                if (currentSearch.isNotEmpty()) filterItems(currentSearch, true)
+                if (currentSearch.isNotEmpty()) filterItems(currentSearch)
             }.buildAndShow()
         }
 
@@ -846,7 +846,7 @@ class AlbumActivity : BaseActivity() {
     }
 
     //Items & search
-    private fun filterItems(filter: String = "", scrollToTop: Boolean = false) {
+    private fun filterItems(filter: String = "") {
         //Check if filtering
         val isFiltering = !filter.isEmpty()
 
@@ -900,16 +900,16 @@ class AlbumActivity : BaseActivity() {
                     .alpha(0.0f)
                     .setDuration((Orion.DEFAULT_ANIMATION_DURATION * albumList.alpha).toLong())
                     .withEndAction {
-                        //Scroll to top
-                        albumList.stopScroll()
-                        if (scrollToTop) albumList.scrollToPosition(0)
-
                         //Update items
                         Library.setGalleryInfo(currentAlbum, filteredAlbumItems) //List changes must be done in UI thread
                         albumAdapter.notifyDataSetChanged()
 
                         //Update subtitle
                         albumAdapter.subtitle = "${gallery.size} items${if (isFiltering) " - Search: $filter" else ""}"
+
+                        //Scroll to top
+                        albumList.stopScroll()
+                        albumList.scrollToPosition(0)
 
                         //Finish searching
                         if (isFiltering) loadingIndicator.hide()
