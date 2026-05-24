@@ -1,6 +1,8 @@
 package com.botpa.turbophotos.screens.display.info
 
 import android.content.Context
+import android.graphics.BitmapFactory
+import android.media.MediaMetadataRetriever
 import android.text.format.DateFormat
 import android.view.View
 import android.widget.TextView
@@ -15,6 +17,7 @@ import com.botpa.turbophotos.gallery.views.ListSeparator
 import com.botpa.turbophotos.util.Orion
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import java.io.FileInputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -173,16 +176,15 @@ class InfoDrawer(
         val date = Date(item.lastModified * 1000)
         val dateFormatter = SimpleDateFormat(if (DateFormat.is24HourFormat(context)) "dd/MM/yyyy, HH:mm.ss" else "dd/MM/yyyy, hh:mm.ss a", Locale.ENGLISH)
         val size = round(item.size.toFloat() / 10) / 100
-        val width = exif.getAttributeInt(ExifInterface.TAG_IMAGE_WIDTH, 0)
-        val height = exif.getAttributeInt(ExifInterface.TAG_IMAGE_LENGTH, 0)
+        val resolution = getItemResolution(item, exif)
 
         //Create items list (file)
         infoFileItems.add(Info("Name", item.name))
         infoFileItems.add(Info("Path", path))
         infoFileItems.add(Info("Date", dateFormatter.format(date)))
         infoFileItems.add(Info("Size", if (size > 1000) "${round(size / 10) / 100} MB" else "$size KB"))
-        if (width * height > 0) {
-            infoFileItems.add(Info("Resolution", "${width}x${height}"))
+        if (resolution.first > 0 && resolution.second > 0) {
+            infoFileItems.add(Info("Resolution", "${resolution.first}x${resolution.second}"))
         }
 
         //Init list (file)
@@ -276,6 +278,7 @@ class InfoDrawer(
         initList(infoCameraLayout, infoCameraList, infoCameraItems)
     }
 
+    //Helpers
     fun initList(layout: View, list: RecyclerView, items: List<Info>) {
         if (items.isEmpty()) {
             //Empty -> Hide list
@@ -286,6 +289,60 @@ class InfoDrawer(
             list.layoutManager = LinearLayoutManager(context)
             list.addItemDecoration(ListSeparator(3))
         }
+    }
+
+    fun getItemResolution(item: Item, exif: ExifInterface): Pair<Int, Int> {
+        //Get info from exif
+        try {
+            val width = exif.getAttributeInt(ExifInterface.TAG_IMAGE_WIDTH, 0)
+            val height = exif.getAttributeInt(ExifInterface.TAG_IMAGE_LENGTH, 0)
+            if (width > 0 && height > 0) {
+                return Pair(width, height)
+            }
+        } catch (e: Exception) {
+            //File has no exif data
+        }
+
+        //Exif failed -> Use alternative methods
+        return if (item.isVideo) {
+            getVideoResolution(item)
+        } else {
+            getImageResolution(item)
+        }
+    }
+
+    fun getImageResolution(item: Item): Pair<Int, Int> {
+        val options = BitmapFactory.Options().apply {
+            inJustDecodeBounds = true
+        }
+        BitmapFactory.decodeFile(item.file.absolutePath, options)
+        return Pair(options.outWidth, options.outHeight)
+    }
+
+    fun getVideoResolution(item: Item): Pair<Int, Int> {
+        val retriever = MediaMetadataRetriever()
+        try {
+            //Read file
+            FileInputStream(item.file).use { inputStream ->
+                retriever.setDataSource(inputStream.fd)
+
+                val width = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toIntOrNull() ?: 0
+                val height = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toIntOrNull() ?: 0
+
+                //Check rotation metadata
+                val rotation = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION)?.toIntOrNull() ?: 0
+                return if (rotation == 90 || rotation == 270) {
+                    Pair(height, width)
+                } else {
+                    Pair(width, height)
+                }
+            }
+        } catch (e: Exception) {
+            //Failed
+        } finally {
+            retriever.release()
+        }
+        return Pair(0, 0)
     }
 
 }
