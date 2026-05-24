@@ -29,7 +29,7 @@
 
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 app:cardBackgroundColor="#00FFFFFF"
                 app:cardCornerRadius="20dp"
                 app:cardElevation="0dp">
@@ -47,7 +47,7 @@
         <LinearLayout
             android:id="@+id/infoCameraLayout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginBottom="20dp"
             android:orientation="vertical">
 
@@ -62,7 +62,7 @@
 
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 app:cardBackgroundColor="#00FFFFFF"
                 app:cardCornerRadius="20dp"
                 app:cardElevation="0dp">
@@ -94,7 +94,7 @@
 
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 app:cardBackgroundColor="#00FFFFFF"
                 app:cardCornerRadius="20dp"
                 app:cardElevation="0dp">
@@ -106,27 +106,28 @@
                     android:overScrollMode="never" />
 
             </androidx.cardview.widget.CardView>
+
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="horizontal">
 
             <Button
                 android:id="@+id/infoClose"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Close" />
 
             <Button
                 android:id="@+id/infoEdit"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
                 android:layout_weight="1"
-                android:text="Edit" />
+                android:text="Edit search metadata" />
 
         </LinearLayout>
 
@@ -141,7 +142,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginBottom="20dp"
             android:orientation="vertical">
 
@@ -156,14 +157,14 @@
 
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 app:cardBackgroundColor="#00FFFFFF"
                 app:cardCornerRadius="20dp"
                 app:cardElevation="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:orientation="vertical">
 
                     <androidx.cardview.widget.CardView
@@ -197,7 +198,7 @@
                                 android:hint="Caption"
                                 android:textColor="?attr/colorOnSurface"
                                 android:textColorHighlight="?attr/colorPrimary"
-                                android:textColorHint="?attr/colorOnSurface"
+                                android:textColorHint="#757575"
                                 android:textColorLink="?attr/colorOnSurface"
                                 android:textSize="14sp"
                                 android:theme="@style/EditTextStyle" />
@@ -235,7 +236,7 @@
                                 android:hint="Labels (coma separated)"
                                 android:textColor="?attr/colorOnSurface"
                                 android:textColorHighlight="?attr/colorPrimary"
-                                android:textColorHint="?attr/colorOnSurface"
+                                android:textColorHint="#757575"
                                 android:textColorLink="?attr/colorOnSurface"
                                 android:textSize="14sp"
                                 android:theme="@style/EditTextStyle" />

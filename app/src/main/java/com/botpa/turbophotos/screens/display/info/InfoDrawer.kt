@@ -108,7 +108,7 @@ class InfoDrawer(
             }
 
             //Update edit info
-            for (i in 0 until infoSearchItems.size - 1) {
+            for (i in 0 until infoSearchItems.size) {
                 val item = infoSearchItems[i]
                 when (item.name) {
                     "Caption" -> {
@@ -168,9 +168,15 @@ class InfoDrawer(
     }
 
     override fun onInitEnd() {
-        //Get exif
-        val exif = ExifInterface(item.file.absolutePath)
+        //Toggle edit button
+        infoEdit.isEnabled = item.album.hasMetadata()
 
+        //Load info
+        loadInfo(ExifInterface(item.file.absolutePath))
+    }
+
+    //Helpers
+    fun loadInfo(exif: ExifInterface) {
         //Get info (file)
         val path = item.file.parent ?: ""
         val date = Date(item.lastModified * 1000)
@@ -189,6 +195,33 @@ class InfoDrawer(
 
         //Init list (file)
         initList(infoFileLayout, infoFileList, infoFileItems)
+
+        //Get info (camera)
+        val cameraMake = exif.getAttribute(ExifInterface.TAG_MAKE)
+        val cameraModel = exif.getAttribute(ExifInterface.TAG_MODEL)
+        val iso = exif.getAttribute(ExifInterface.TAG_PHOTOGRAPHIC_SENSITIVITY)
+        val aperture = exif.getAttribute(ExifInterface.TAG_F_NUMBER)
+        val shutterSpeed = exif.getAttribute(ExifInterface.TAG_EXPOSURE_TIME)
+
+        //Create items list (camera)
+        if (cameraMake != null) {
+            infoCameraItems.add(Info("Brand", cameraMake))
+        }
+        if (cameraModel != null) {
+            infoCameraItems.add(Info("Model", cameraModel))
+        }
+        if (iso != null) {
+            infoCameraItems.add(Info("ISO", iso))
+        }
+        if (aperture != null) {
+            infoCameraItems.add(Info("Aperture", aperture))
+        }
+        if (shutterSpeed != null) {
+            infoCameraItems.add(Info("Shutter Speed", shutterSpeed))
+        }
+
+        //Init list (camera)
+        initList(infoCameraLayout, infoCameraList, infoCameraItems)
 
         //Get info (search: caption, labels & text)
         var caption = ""
@@ -249,36 +282,8 @@ class InfoDrawer(
 
         //Init list (file)
         initList(infoSearchLayout, infoSearchList, infoSearchItems)
-
-        //Get info (camera)
-        val cameraMake = exif.getAttribute(ExifInterface.TAG_MAKE)
-        val cameraModel = exif.getAttribute(ExifInterface.TAG_MODEL)
-        val iso = exif.getAttribute(ExifInterface.TAG_PHOTOGRAPHIC_SENSITIVITY)
-        val aperture = exif.getAttribute(ExifInterface.TAG_F_NUMBER)
-        val shutterSpeed = exif.getAttribute(ExifInterface.TAG_EXPOSURE_TIME)
-
-        //Create items list (camera)
-        if (cameraMake != null) {
-            infoCameraItems.add(Info("Brand", cameraMake))
-        }
-        if (cameraModel != null) {
-            infoCameraItems.add(Info("Model", cameraModel))
-        }
-        if (iso != null) {
-            infoCameraItems.add(Info("ISO", iso))
-        }
-        if (aperture != null) {
-            infoCameraItems.add(Info("Aperture", aperture))
-        }
-        if (shutterSpeed != null) {
-            infoCameraItems.add(Info("Shutter Speed", shutterSpeed))
-        }
-
-        //Init list (camera)
-        initList(infoCameraLayout, infoCameraList, infoCameraItems)
     }
 
-    //Helpers
     fun initList(layout: View, list: RecyclerView, items: List<Info>) {
         if (items.isEmpty()) {
             //Empty -> Hide list
