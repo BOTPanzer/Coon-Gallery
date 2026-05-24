@@ -35,7 +35,9 @@ import androidx.core.graphics.Insets
 import androidx.core.graphics.scale
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import com.botpa.turbophotos.R
@@ -904,6 +906,20 @@ object Orion {
         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clip = ClipData.newPlainText("", string)
         clipboard.setPrimaryClip(clip)
+    }
+
+    //System UI
+    fun toggleSystemUI(activity: Activity, show: Boolean) {
+        //Get controller
+        val controller = WindowCompat.getInsetsController(activity.window, activity.window.decorView)
+
+        //Toggle system UI
+        if (show) {
+            controller.show(WindowInsetsCompat.Type.systemBars())
+        } else {
+            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            controller.hide(WindowInsetsCompat.Type.systemBars())
+        }
     }
 
 }

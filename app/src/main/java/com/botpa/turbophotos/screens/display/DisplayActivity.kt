@@ -20,7 +20,6 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.Insets
-import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
@@ -515,11 +514,11 @@ class DisplayActivity : BaseActivity() {
         if (show) {
             //Show
             Orion.animateShow(overlayLayout, 500)
-            toggleSystemUI(true)
+            Orion.toggleSystemUI(this, true)
         } else {
             //Hide
             Orion.animateHide(overlayLayout, 500)
-            toggleSystemUI(false)
+            Orion.toggleSystemUI(this, false)
         }
     }
 
@@ -653,28 +652,6 @@ class DisplayActivity : BaseActivity() {
                 }
                 add(optionDelete)
             }))
-        }
-    }
-
-      /*$$$$$    /$$     /$$
-     /$$__  $$  | $$    | $$
-    | $$  \ $$ /$$$$$$  | $$$$$$$   /$$$$$$   /$$$$$$
-    | $$  | $$|_  $$_/  | $$__  $$ /$$__  $$ /$$__  $$
-    | $$  | $$  | $$    | $$  \ $$| $$$$$$$$| $$  \__/
-    | $$  | $$  | $$ /$$| $$  | $$| $$_____/| $$
-    |  $$$$$$/  |  $$$$/| $$  | $$|  $$$$$$$| $$
-     \______/    \___/  |__/  |__/ \_______/|_*/
-
-    //Util
-    private fun toggleSystemUI(show: Boolean) {
-        //Get controller
-        val controller = WindowCompat.getInsetsController(window, overlayLayout)
-
-        //Toggle system UI
-        if (show) {
-            controller.show(WindowInsetsCompat.Type.systemBars())
-        } else {
-            controller.hide(WindowInsetsCompat.Type.systemBars())
         }
     }
 

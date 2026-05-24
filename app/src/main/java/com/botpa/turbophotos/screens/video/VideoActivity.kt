@@ -678,14 +678,14 @@ class VideoActivity : BaseActivity() {
         if (show) {
             //Show
             Orion.animateShow(overlayLayout)
-            toggleSystemUI(true)
+            Orion.toggleSystemUI(this, true)
 
             //Start update time loop
             if (player.isPlaying) enableUpdateTimeLoop(true)
         } else {
             //Hide
             Orion.animateHide(overlayLayout)
-            toggleSystemUI(false)
+            Orion.toggleSystemUI(this, false)
 
             //Stop update time loop
             enableUpdateTimeLoop(false)
@@ -859,18 +859,6 @@ class VideoActivity : BaseActivity() {
      \______/    \___/  |__/  |__/ \_______/|_*/
 
     //Util
-    private fun toggleSystemUI(show: Boolean) {
-        //Get controller
-        val controller = WindowCompat.getInsetsController(window, overlayLayout)
-
-        //Toggle system UI
-        if (show) {
-            controller.show(WindowInsetsCompat.Type.systemBars())
-        } else {
-            controller.hide(WindowInsetsCompat.Type.systemBars())
-        }
-    }
-
     private fun formatMilliseconds(ms: Long): String {
         val totalSeconds = ms / 1000
         val minutes = totalSeconds / 60
