@@ -900,9 +900,6 @@ class AlbumActivity : BaseActivity() {
                     .alpha(0.0f)
                     .setDuration((Orion.DEFAULT_ANIMATION_DURATION * albumList.alpha).toLong())
                     .withEndAction {
-                        //Update subtitle
-                        albumAdapter.subtitle = "${gallery.size} items${if (isFiltering) " - Search: $filter" else ""}"
-
                         //Scroll to top
                         albumList.stopScroll()
                         if (scrollToTop) albumList.scrollToPosition(0)
@@ -910,6 +907,9 @@ class AlbumActivity : BaseActivity() {
                         //Update items
                         Library.setGalleryInfo(currentAlbum, filteredAlbumItems) //List changes must be done in UI thread
                         albumAdapter.notifyDataSetChanged()
+
+                        //Update subtitle
+                        albumAdapter.subtitle = "${gallery.size} items${if (isFiltering) " - Search: $filter" else ""}"
 
                         //Finish searching
                         if (isFiltering) loadingIndicator.hide()
