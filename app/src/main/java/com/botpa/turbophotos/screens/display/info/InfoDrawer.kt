@@ -97,16 +97,6 @@ class InfoDrawer(
                 return@setOnClickListener
             }
 
-            //No metadata
-            if (!item.hasMetadata()) {
-                Toast.makeText(
-                    context,
-                    "This item does not have a key in its album metadata",
-                    Toast.LENGTH_SHORT
-                ).show()
-                return@setOnClickListener
-            }
-
             //Update edit info
             for (i in 0 until infoSearchItems.size) {
                 val item = infoSearchItems[i]
@@ -146,13 +136,15 @@ class InfoDrawer(
             val labelsArray: Array<String> = labels.split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
             for (i in labelsArray.indices) labelsArray[i] = labelsArray[i].trim { it <= ' ' }
 
-            //Update metadata
+            //Get metadata info
             val key = item.name
-            val hasMetadata = item.hasMetadata()
             val metadata = item.getMetadata() ?: Orion.emptyJson
-            if (!hasMetadata) item.album.metadata!!.set<JsonNode>(key, metadata)
+            val hasMetadata = item.hasMetadata()
+
+            //Update metadata key
             metadata.put("caption", caption)
             metadata.set<JsonNode>("labels", Orion.arrayToJson(labelsArray))
+            if (!hasMetadata) item.album.metadata!!.set<JsonNode>(key, metadata)
 
             //Save
             val saved = item.album.saveMetadata()
