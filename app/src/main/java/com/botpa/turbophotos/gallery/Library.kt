@@ -422,13 +422,21 @@ object Library {
         //Check if all words are contained
         return words.all { word ->
             //Check caption
-            val inCaption = caption.split(" ").any { it.equals(word, ignoreCase = true) }
+            val inCaption = caption.trim().split(" ").any {
+                it.equals(word, ignoreCase = true)
+            }
 
             //Check labels
-            val inLabels = labels.any { it.equals(word, ignoreCase = true) }
+            val inLabels = labels.any {
+                it.equals(word, ignoreCase = true)
+            }
 
             //Check text
-            val inTexts = texts.any { it.equals(word, ignoreCase = true) }
+            val inTexts = texts.any { text ->
+                text.trim().split(" ").any {
+                    it.equals(word, ignoreCase = true)
+                }
+            }
 
             //Contained in any
             inCaption || inLabels || inTexts
