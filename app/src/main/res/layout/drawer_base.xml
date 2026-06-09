@@ -1,6 +1,5 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -19,10 +18,10 @@
 
     </androidx.cardview.widget.CardView>
 
-    <androidx.core.widget.NestedScrollView
+    <com.botpa.turbophotos.gallery.views.BottomSheetScrollView
         android:id="@+id/contentScroll"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:fillViewport="true">
 
         <LinearLayout
@@ -30,6 +29,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical" />
-    </androidx.core.widget.NestedScrollView>
+    </com.botpa.turbophotos.gallery.views.BottomSheetScrollView>
 
 </LinearLayout>
