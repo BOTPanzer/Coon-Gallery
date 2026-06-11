@@ -153,11 +153,10 @@ class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(conte
                 //Reset mode
                 mode = NONE
 
-                //Check if clicked
-                val xDiff = abs((curr.x - start.x).toDouble()).toInt()
-                val yDiff = abs((curr.y - start.y).toDouble()).toInt()
-                val clickAreaRadius = swipeDistance * 2
-                if (xDiff < clickAreaRadius && yDiff < clickAreaRadius) performClick()
+                //Check if clicked (pointer didn't move)
+                val xDiff = (curr.x - start.x).toInt()
+                val yDiff = (curr.y - start.y).toInt()
+                if (xDiff == 0 && yDiff == 0) performClick()
 
                 //Pointer up
                 pointers--
