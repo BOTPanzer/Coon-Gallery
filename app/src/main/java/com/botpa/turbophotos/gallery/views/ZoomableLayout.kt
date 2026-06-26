@@ -11,7 +11,6 @@ import android.view.View
 import android.view.ViewConfiguration
 import android.widget.FrameLayout
 import com.botpa.turbophotos.util.Orion
-import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import androidx.core.view.isNotEmpty
@@ -26,11 +25,12 @@ class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(conte
     //Content
     private val child: View? get() = if (isNotEmpty()) getChildAt(0) else null
 
-    //Drag modes
+    //Action modes
     private companion object {
         const val NONE: Int = 0
-        const val DRAG: Int = 1
-        const val ZOOM: Int = 2
+        const val TAP: Int = 1
+        const val DRAG: Int = 2
+        const val ZOOM: Int = 3
     }
     private var mode: Int = NONE
 
@@ -49,6 +49,9 @@ class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(conte
     private var contentSize: PointF = PointF()
     private var originalSize: PointF = PointF()
     private var originalSpace: PointF = PointF()
+
+    //Drag
+    private val minDragAmount: Float = 5f
 
     //Zoom & Scale
     private var margin: PointF = PointF()
@@ -131,7 +134,7 @@ class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(conte
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> {
                 //Change mode
-                mode = if (pointers == 0) NONE else if (pointers == 1) DRAG else ZOOM
+                mode = if (pointers == 0) NONE else if (pointers == 1) TAP else ZOOM
 
                 //Save position
                 last.set(curr)
@@ -148,29 +151,30 @@ class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(conte
                 pointers--
                 onPointersChanged?.run()
             }
-
             MotionEvent.ACTION_UP -> {
+                //Check if clicked
+                if (mode == TAP) performClick()
+
                 //Reset mode
                 mode = NONE
-
-                //Check if clicked (pointer didn't move)
-                val xDiff = (curr.x - start.x).toInt()
-                val yDiff = (curr.y - start.y).toInt()
-                if (xDiff == 0 && yDiff == 0) performClick()
 
                 //Pointer up
                 pointers--
                 onPointersChanged?.run()
             }
-
             MotionEvent.ACTION_MOVE -> {
-                //If the mode is ZOOM or if the mode is DRAG and already zoomed
-                if (mode == ZOOM || (mode == DRAG && zoom > minZoom)) {
-                    //Calculate movement delta
-                    val delta = PointF(curr.x - last.x, curr.y - last.y)
+                //Calculate movement delta
+                val delta = PointF(curr.x - last.x, curr.y - last.y)
 
+                //Check if changing from tap to drag or already zooming/dragging
+                if (mode == TAP && delta.length() >= minDragAmount) {
+                    //Start dragging
+                    mode = DRAG
+
+                    //Update last touch
+                    last.set(curr)
+                } else if (mode == ZOOM || (mode == DRAG && zoom > minZoom)) {
                     //Calculate size after applying current scale
-                    //val scaledSize = PointF(viewSize.x * zoom, viewSize.y * zoom)
                     val scaledSize = PointF(
                         (originalSize.x * zoom).roundToInt().toFloat(),
                         (originalSize.y * zoom).roundToInt().toFloat()
