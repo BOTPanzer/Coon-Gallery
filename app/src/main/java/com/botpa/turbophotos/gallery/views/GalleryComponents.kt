@@ -1,9 +1,11 @@
 package com.botpa.turbophotos.gallery.views
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -25,11 +27,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -81,6 +85,15 @@ fun GroupTitle(title: String, modifier: Modifier = Modifier) {
         fontFamily = FONT_OPIFICIO,
         fontWeight = FontWeight.Bold,
         fontSize = 18.sp,
+        modifier = modifier
+    )
+}
+
+@Composable
+fun GroupDescription(description: String, modifier: Modifier = Modifier) {
+    Text(
+        text = description,
+        fontSize = 14.sp,
         modifier = modifier
     )
 }
@@ -146,6 +159,43 @@ fun SimpleButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifie
             fontFamily = FONT_POPPINS,
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp
+        )
+    }
+}
+
+//Permissions
+@Composable
+fun PermissionItem(name: String, description: String, hasPermission: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    //Add click event
+    var mod = modifier
+    if (!hasPermission) {
+        mod = modifier.combinedClickable(onClick = { if (!hasPermission) onClick() })
+    }
+
+    //Item
+    Column(
+        modifier = mod
+            .fillMaxWidth()
+            .padding(horizontal = groupItemPaddingHorizontal, vertical = groupItemPaddingVertical)
+            .alpha(if (hasPermission) 0.5f else 1f)
+    ) {
+        //Name
+        Text(
+            text = name,
+            fontFamily = FONT_OPIFICIO,
+            fontSize = 16.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier
+                .fillMaxWidth()
+        )
+
+        //Description
+        Text(
+            text = description,
+            fontSize = 13.sp,
+            modifier = Modifier
+                .fillMaxWidth()
         )
     }
 }

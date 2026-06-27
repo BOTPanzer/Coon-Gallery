@@ -1,18 +1,24 @@
 package com.botpa.turbophotos.screens.sync
 
+import android.Manifest
 import android.app.Activity
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
@@ -39,11 +45,13 @@ import androidx.lifecycle.Observer
 import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.gallery.views.Group
+import com.botpa.turbophotos.gallery.views.GroupDescription
 import com.botpa.turbophotos.gallery.views.GroupDivider
 import com.botpa.turbophotos.gallery.views.GroupItem
 import com.botpa.turbophotos.gallery.views.GroupItems
 import com.botpa.turbophotos.gallery.views.GroupTitle
 import com.botpa.turbophotos.gallery.views.Layout
+import com.botpa.turbophotos.gallery.views.PermissionItem
 import com.botpa.turbophotos.gallery.views.SimpleButton
 import com.botpa.turbophotos.gallery.views.groupItemPaddingHorizontal
 import com.botpa.turbophotos.gallery.views.groupItemPaddingVertical
@@ -68,6 +76,9 @@ class SyncActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        //Ask for permissions
+        view.checkPermissions(this)
+
         //Load users
         loadUsers()
 
@@ -77,7 +88,7 @@ class SyncActivity : AppCompatActivity() {
         //Content
         setContent {
             CoonTheme {
-                SettingsLayout()
+                SyncLayout()
             }
         }
     }
@@ -94,12 +105,86 @@ class SyncActivity : AppCompatActivity() {
 
     //Layout
     @Composable
-    private fun SettingsLayout() {
+    private fun SyncLayout() {
         Layout("Sync") {
-            when (view.connectionStatus) {
-                SyncService.STATUS_OFFLINE -> ConnectLayout(it, this, false)
-                SyncService.STATUS_CONNECTING -> ConnectLayout(it, this, true)
-                SyncService.STATUS_ONLINE -> LogsLayout(it)
+            if (!view.hasPermissions) {
+                //Ask for permissions
+                PermissionsLayout(it)
+            } else {
+                //Show sync screen
+                when (view.connectionStatus) {
+                    SyncService.STATUS_OFFLINE -> ConnectLayout(it, this, false)
+                    SyncService.STATUS_CONNECTING -> ConnectLayout(it, this, true)
+                    SyncService.STATUS_ONLINE -> LogsLayout(it)
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun PermissionsLayout(it: PaddingValues) {
+        //Permission requests
+        val requestPermissionNotifications = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestPermission()
+        ) { isGranted ->
+            view.onNotificationPermissionResult(this, isGranted)
+        }
+        val requestLocalNetworkPermission = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestPermission()
+        ) { isGranted ->
+            view.onLocalNetworkPermissionResult(this, isGranted)
+        }
+
+        //Layout
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight()
+                .padding(it)
+                .padding(horizontal = 20.dp)
+                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
+        ) {
+            Group {
+                //Title & description
+                GroupTitle("Permissions")
+                GroupDescription("The following permissions are required for the sync service to work:")
+
+                //Items
+                GroupItems {
+                    //Item
+                    GroupItem {
+                        PermissionItem(
+                            name = "Notifications",
+                            description = "Required for the sync service to work in the background.",
+                            hasPermission = view.hasPermissionNotifications,
+                            onClick = {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                    requestPermissionNotifications.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                }
+                            }
+                        )
+                    }
+
+                    //Divider
+                    GroupDivider()
+
+                    //Item
+                    GroupItem {
+                        PermissionItem(
+                            name = "Local Area Network",
+                            description = "Required for the sync service to connect.",
+                            hasPermission = view.hasPermissionLocalNetwork,
+                            onClick = {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.CINNAMON_BUN) {
+                                    requestLocalNetworkPermission.launch(Manifest.permission.ACCESS_LOCAL_NETWORK)
+                                }
+                            }
+                        )
+                    }
+                }
+
+                //Invisible space
+                GroupTitle("")
             }
         }
     }

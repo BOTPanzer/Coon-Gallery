@@ -90,16 +90,10 @@ class HomeActivity : BaseActivity() {
     private var shouldCheckPermissions = false
     private var hasPermissionWrite = false
     private var hasPermissionMedia = false
-    private var hasPermissionNotifications = false
-    private val requestPermissionNotifications = registerForActivityResult(RequestPermission()) { isGranted: Boolean ->
-        hasPermissionNotifications = isGranted
-        checkPermissions()
-    }
 
     private lateinit var permissionLayout: View
     private lateinit var permissionWrite: View
     private lateinit var permissionMedia: View
-    private lateinit var permissionNotifications: View
 
     //List
     private lateinit var homeLayoutManager: GridLayoutManager
@@ -240,13 +234,8 @@ class HomeActivity : BaseActivity() {
             permissionMedia.alpha = 0.5f
         }
 
-        if (NotificationManagerCompat.from(this).areNotificationsEnabled()) {
-            hasPermissionNotifications = true
-            permissionNotifications.alpha = 0.5f
-        }
-
         //Check if permissions are granted
-        if (hasPermissionWrite && hasPermissionMedia && hasPermissionNotifications) {
+        if (hasPermissionWrite && hasPermissionMedia) {
             //Hide permission layout
             permissionLayout.visibility = View.GONE
 
@@ -285,16 +274,6 @@ class HomeActivity : BaseActivity() {
                         arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
                         0
                     )
-                }
-            }
-
-            permissionNotifications.setOnClickListener { view: View ->
-                //Already has permission
-                if (hasPermissionNotifications) return@setOnClickListener
-
-                //Ask for permission
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    requestPermissionNotifications.launch(Manifest.permission.POST_NOTIFICATIONS)
                 }
             }
         }
@@ -415,7 +394,6 @@ class HomeActivity : BaseActivity() {
         permissionLayout = findViewById(R.id.permissionLayout)
         permissionWrite = findViewById(R.id.permissionWrite)
         permissionMedia = findViewById(R.id.permissionMedia)
-        permissionNotifications = findViewById(R.id.permissionNotifications)
 
         //Navbar
         navbarSubtitle = findViewById(R.id.navbarSubtitle)
