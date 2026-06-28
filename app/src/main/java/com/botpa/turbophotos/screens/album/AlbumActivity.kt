@@ -2,16 +2,14 @@ package com.botpa.turbophotos.screens.album
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.content.pm.ActivityInfo
 import android.content.res.Configuration
-import android.os.Bundle
 import android.view.KeyEvent
 import android.view.View
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.BackEventCompat
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
@@ -21,29 +19,29 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.botpa.turbophotos.R
-import com.botpa.turbophotos.screens.display.DisplayActivity
 import com.botpa.turbophotos.gallery.Album
-import com.botpa.turbophotos.gallery.Item
 import com.botpa.turbophotos.gallery.BaseActivity
+import com.botpa.turbophotos.gallery.Item
 import com.botpa.turbophotos.gallery.Library
-import com.botpa.turbophotos.gallery.Library.RefreshEvent
 import com.botpa.turbophotos.gallery.Library.ActionEvent
+import com.botpa.turbophotos.gallery.Library.RefreshEvent
 import com.botpa.turbophotos.gallery.LoadingIndicator
 import com.botpa.turbophotos.gallery.SearchMethod
-import com.botpa.turbophotos.gallery.actions.Action
-import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.StoragePairs
-import com.botpa.turbophotos.util.BackManager
-import com.botpa.turbophotos.util.Orion
-import com.botpa.turbophotos.util.Storage
+import com.botpa.turbophotos.gallery.actions.Action
 import com.botpa.turbophotos.gallery.fastscroller.FastScroller
 import com.botpa.turbophotos.gallery.fastscroller.FastScrollerBuilder
 import com.botpa.turbophotos.gallery.options.OptionsGroup
+import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.options.OptionsManager
+import com.botpa.turbophotos.gallery.permissions.PermissionType
 import com.botpa.turbophotos.gallery.views.GridListSeparator
 import com.botpa.turbophotos.screens.album.search.SearchDialog
+import com.botpa.turbophotos.screens.display.DisplayActivity
 import com.botpa.turbophotos.util.BackAnimationEvent
 import com.botpa.turbophotos.util.Ease
+import com.botpa.turbophotos.util.Orion
+import com.botpa.turbophotos.util.Storage
 
 @SuppressLint("SetTextI18n", "NotifyDataSetChanged")
 class AlbumActivity : BaseActivity() {
@@ -58,7 +56,9 @@ class AlbumActivity : BaseActivity() {
     |__/  |__/|__/|_______/  \______/ |__/ |__/ |_*/
 
     //Activity
-    private lateinit var backManager: BackManager
+    override val permissions: List<PermissionType> = listOf(PermissionType.Storage, PermissionType.Media)
+    override val contentViewResource: Int = R.layout.album_screen
+
     private var isMetadataLoaded = false
     private var isSearching = false
     private var isInit = false
@@ -205,146 +205,16 @@ class AlbumActivity : BaseActivity() {
     |__/  |__/|__/|_______/  \______/ |__/ |__/ |_*/
 
     //Activity
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        this.enableEdgeToEdge()
-        setContentView(R.layout.album_screen)
-
-        //Enable HDR
-        window.colorMode = ActivityInfo.COLOR_MODE_HDR
-
+    override fun onBeforeInitViews() {
         //Add events
         Library.addOnRefreshEvent(onRefresh)
         Library.addOnActionEvent(onAction)
 
-        //Init components
-        backManager = BackManager(this, onBackPressedDispatcher)
+        //Init options
         optionsManager = OptionsManager(this, options, backManager) { onUpdateOptions() }
-        initViews()
-        initListeners()
-        initAlbumList()
-
-        //Init activity
-        initActivity()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-
-        //Remove events
-        Library.removeOnRefreshEvent(onRefresh)
-        Library.removeOnActionEvent(onAction)
-
-        //Reset gallery
-        Library.setGalleryInfo(null, ArrayList())
-    }
-
-    override fun onResume() {
-        super.onResume()
-
-        //Not init
-        if (!isInit) return
-
-        //Update search method
-        updateSearchMethod()
-    }
-
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-
-        //Update list items per row
-        updateListItemsPerRow()
-    }
-
-    private fun initActivity() {
-        //Check if intent is valid
-        val intent = getIntent()
-        if (intent == null) {
-            finish()
-            return
-        }
-
-        //Update is picking
-        isPicking = intent.getBooleanExtra("isPicking", false)
-
-        //Check if intent has album name or index
-        if (intent.hasExtra("albumName")) {
-            //Has name -> Check it
-            when (intent.getStringExtra("albumName")) {
-                "trash" -> selectAlbum(Library.trash)
-                "all" -> selectAlbum(Library.all)
-                "favourites" -> selectAlbum(Library.favourites)
-                else -> finish()
-            }
-        } else {
-            //No name -> Check index
-            val index = intent.getIntExtra("albumIndex", -1)
-            if (index < 0 || index >= Library.albums.size) {
-                finish()
-                return
-            }
-            selectAlbum(Library.albums.get(index))
-        }
-
-        //Mark as init
-        isInit = true
-    }
-
-    //Events
-    private fun manageRefresh(updated: Boolean) {
-        runOnUiThread {
-            //Nothing updated
-            if (!updated) return@runOnUiThread
-
-            //Unselect all
-            deselectAll()
-
-            //Refresh list
-            selectAlbum(currentAlbum)
-        }
-    }
-
-    private fun manageAction(action: Action) {
-        //No action
-        if (action.isOfType(Action.TYPE_NONE)) return
-
-        //Check if gallery is empty
-        if (gallery.isEmpty()) {
-            //Is empty -> Close display
-            finish()
-            return
-        }
-
-        //Renamed file
-        if (action.isOfType(Action.TYPE_RENAME)) {
-            //Unselect item
-            deselectAll()
-            return
-        }
-
-        //Update items
-        for (indexInGallery in action.modifiedIndexesInGallery) {
-            albumAdapter.notifyItemChanged(albumAdapter.getPositionFromIndex(indexInGallery))
-
-            //Refresh banner
-            if (indexInGallery == 0) albumAdapter.notifyItemChanged(0)
-        }
-
-        //Remove items
-        for (indexInGallery in action.removedIndexesInGallery) {
-            selectedIndexes.remove(indexInGallery)
-            albumAdapter.notifyItemRemoved(albumAdapter.getPositionFromIndex(indexInGallery))
-
-            //Refresh banner
-            if (indexInGallery == 0) albumAdapter.notifyItemChanged(0)
-        }
-
-        //Remove select back callback if no more items are selected
-        if (selectedIndexes.isEmpty()) deselectAll()
-    }
-
-    //Views
-    private fun initViews() {
+    override fun onInitViews() {
         //Navbar
         navbarLayout = findViewById(R.id.navbarLayout)
         navbarTitle = findViewById(R.id.navbarTitle)
@@ -442,7 +312,7 @@ class AlbumActivity : BaseActivity() {
         )
     }
 
-    private fun initListeners() {
+    override fun onInitListeners() {
         //Navbar
         navbarSearch.setOnClickListener { view: View -> showSearchLayout(true) }
 
@@ -586,6 +456,131 @@ class AlbumActivity : BaseActivity() {
             //Delete all items
             Library.deleteItems(this, currentAlbum.items.toTypedArray<Item>())
         }
+    }
+
+    override fun onAfterInitViews() {
+        //Init components
+        initAlbumList()
+    }
+
+    override fun onPermissionsGranted() {
+        //Check if intent is valid
+        val intent = getIntent()
+        if (intent == null) {
+            finish()
+            return
+        }
+
+        //Update is picking
+        isPicking = intent.getBooleanExtra("isPicking", false)
+
+        //Check if intent has album name or index
+        if (intent.hasExtra("albumName")) {
+            //Has name -> Check it
+            when (intent.getStringExtra("albumName")) {
+                "trash" -> selectAlbum(Library.trash)
+                "all" -> selectAlbum(Library.all)
+                "favourites" -> selectAlbum(Library.favourites)
+                else -> finish()
+            }
+        } else {
+            //No name -> Check index
+            val index = intent.getIntExtra("albumIndex", -1)
+            if (index < 0 || index >= Library.albums.size) {
+                finish()
+                return
+            }
+            selectAlbum(Library.albums.get(index))
+        }
+
+        //Mark as init
+        isInit = true
+    }
+
+    override fun onPermissionsDenied() {
+        Toast.makeText(this, "Missing permissions.", Toast.LENGTH_SHORT).show()
+        finish()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        //Remove events
+        Library.removeOnRefreshEvent(onRefresh)
+        Library.removeOnActionEvent(onAction)
+
+        //Reset gallery
+        Library.setGalleryInfo(null, ArrayList())
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        //Not init
+        if (!isInit) return
+
+        //Update search method
+        updateSearchMethod()
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+
+        //Update list items per row
+        updateListItemsPerRow()
+    }
+
+    //Events
+    private fun manageRefresh(updated: Boolean) {
+        runOnUiThread {
+            //Nothing updated
+            if (!updated) return@runOnUiThread
+
+            //Unselect all
+            deselectAll()
+
+            //Refresh list
+            selectAlbum(currentAlbum)
+        }
+    }
+
+    private fun manageAction(action: Action) {
+        //No action
+        if (action.isOfType(Action.TYPE_NONE)) return
+
+        //Check if gallery is empty
+        if (gallery.isEmpty()) {
+            //Is empty -> Close display
+            finish()
+            return
+        }
+
+        //Renamed file
+        if (action.isOfType(Action.TYPE_RENAME)) {
+            //Unselect item
+            deselectAll()
+            return
+        }
+
+        //Update items
+        for (indexInGallery in action.modifiedIndexesInGallery) {
+            albumAdapter.notifyItemChanged(albumAdapter.getPositionFromIndex(indexInGallery))
+
+            //Refresh banner
+            if (indexInGallery == 0) albumAdapter.notifyItemChanged(0)
+        }
+
+        //Remove items
+        for (indexInGallery in action.removedIndexesInGallery) {
+            selectedIndexes.remove(indexInGallery)
+            albumAdapter.notifyItemRemoved(albumAdapter.getPositionFromIndex(indexInGallery))
+
+            //Refresh banner
+            if (indexInGallery == 0) albumAdapter.notifyItemChanged(0)
+        }
+
+        //Remove select back callback if no more items are selected
+        if (selectedIndexes.isEmpty()) deselectAll()
     }
 
     //Album

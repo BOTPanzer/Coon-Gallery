@@ -1,15 +1,29 @@
 package com.botpa.turbophotos.gallery
 
+import android.content.pm.ActivityInfo
+import android.os.Bundle
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts.StartIntentSenderForResult
 import androidx.appcompat.app.AppCompatActivity
 import com.botpa.turbophotos.gallery.actions.Action
 import com.botpa.turbophotos.gallery.actions.ActionError
+import com.botpa.turbophotos.gallery.permissions.PermissionManager
+import com.botpa.turbophotos.gallery.permissions.PermissionType
+import com.botpa.turbophotos.util.BackManager
 import com.botpa.turbophotos.util.Orion
+import com.botpa.turbophotos.util.Storage
 
 open class BaseActivity : AppCompatActivity() {
 
-    //Trash actions (trash/restore items)
+    //Components
+    protected lateinit var backManager: BackManager
+    protected lateinit var permissionManager: PermissionManager
+
+    protected open val permissions: List<PermissionType> = emptyList()
+    protected open val contentViewResource: Int = 0
+
+    //Gallery actions
     private var pendingAction: Action? = null //The pending action
     private val actionLauncher = registerForActivityResult(StartIntentSenderForResult()) { result: ActivityResult ->
         //Get action
@@ -39,6 +53,53 @@ open class BaseActivity : AppCompatActivity() {
         pendingAction = null
     }
 
+
+    //Activity
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        this.enableEdgeToEdge()
+        setContentView(contentViewResource)
+
+        //Enable HDR
+        window.colorMode = ActivityInfo.COLOR_MODE_HDR
+
+        //Init components
+        backManager = BackManager(this, onBackPressedDispatcher)
+        permissionManager = PermissionManager(this, permissions)
+        Storage.init(this)
+
+        //Init views
+        onBeforeInitViews()
+        onInitViews()
+        onInitListeners()
+        onAfterInitViews()
+
+        //Check permissions
+        checkPermissions()
+    }
+
+    protected open fun onBeforeInitViews() {}
+
+    protected open fun onInitViews() {}
+
+    protected open fun onInitListeners() {}
+
+    protected open fun onAfterInitViews() {}
+
+    protected fun checkPermissions() {
+        //Check if permissions are granted
+        if (permissionManager.hasAllPermissions) {
+            //Granted
+            onPermissionsGranted()
+        } else {
+            //Denied
+            onPermissionsDenied()
+        }
+    }
+
+    protected open fun onPermissionsGranted() {}
+
+    protected open fun onPermissionsDenied() {}
 
     //Trash functions
     protected fun trashItems(itemsToTrash: Array<Item>) {

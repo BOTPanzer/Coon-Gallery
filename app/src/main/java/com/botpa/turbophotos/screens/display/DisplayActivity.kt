@@ -1,24 +1,17 @@
 package com.botpa.turbophotos.screens.display
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.app.ComponentCaller
 import android.app.PictureInPictureParams
 import android.content.Intent
-import android.content.pm.ActivityInfo
-import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.net.Uri
-import android.os.Bundle
-import android.os.Environment
 import android.util.Rational
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
-import androidx.core.content.ContextCompat
 import androidx.core.graphics.Insets
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
@@ -37,10 +30,10 @@ import com.botpa.turbophotos.gallery.actions.Action
 import com.botpa.turbophotos.gallery.options.OptionsGroup
 import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.options.OptionsManager
+import com.botpa.turbophotos.gallery.permissions.PermissionType
 import com.botpa.turbophotos.gallery.views.ZoomableLayout
 import com.botpa.turbophotos.screens.display.info.InfoDrawer
 import com.botpa.turbophotos.screens.video.VideoActivity
-import com.botpa.turbophotos.util.BackManager
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
 
@@ -60,7 +53,9 @@ class DisplayActivity : BaseActivity() {
                             |__/                     \_____*/
 
     //Activity
-    private lateinit var backManager: BackManager
+    override val permissions: List<PermissionType> = listOf(PermissionType.Storage, PermissionType.Media)
+    override val contentViewResource: Int = R.layout.display_screen
+
     private var isInit = false
     private var isViewingExternal: Boolean = false
     private var isInPiP: Boolean = false
@@ -158,173 +153,24 @@ class DisplayActivity : BaseActivity() {
                             |__/                     \_____*/
 
     //Activity
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        this.enableEdgeToEdge()
-        setContentView(R.layout.display_screen)
-
-        //Enable HDR
-        window.colorMode = ActivityInfo.COLOR_MODE_HDR
-
+    override fun onBeforeInitViews() {
         //Add events
         Library.addOnActionEvent(onAction)
 
-        //Init components
-        backManager = BackManager(this, onBackPressedDispatcher)
+        //Init options
         optionsManager = OptionsManager(this, options, backManager) { onUpdateOptions() }
-        Storage.init(this) //Init storage cause activity is exported
-        initViews()
-        initListeners()
-        initDisplayList()
-
-        //Init activity
-        initActivity()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-
-        //Remove events
-        Library.removeOnActionEvent(onAction)
-    }
-
-    override fun onResume() {
-        super.onResume()
-
-        //Update settings
-        useInternalVideoPlayer = Storage.getBool(StoragePairs.VIDEO_USE_INTERNAL_PLAYER)
-        showInfo = Storage.getBool(StoragePairs.DISPLAY_SHOW_INFO)
-        showEdit = Storage.getBool(StoragePairs.DISPLAY_SHOW_EDIT)
-        showShare = Storage.getBool(StoragePairs.DISPLAY_SHOW_SHARE)
-        showFavourite = Storage.getBool(StoragePairs.DISPLAY_SHOW_FAVOURITE)
-
-        //Not init
-        if (!isInit) return
-
-        //Check if current item was modified
-        if (currentItem.updateLastModified()) {
-            //Item was modified -> Refresh display & sort library
-            displayAdapter.notifyItemChanged(currentIndexInDisplay)
-            Library.sortLibrary()
-        }
-
-        //Update overlay buttons
-        updateOverlayButtons()
-    }
-
-    override fun onNewIntent(intent: Intent, caller: ComponentCaller) {
-        super.onNewIntent(intent, caller)
-
-        //Handle intent
-        handleIntent(intent)
-    }
-
-    private fun hasPermissions(): Boolean {
-        //External storage
-        if (!Environment.isExternalStorageManager()) {
-            return false
-        }
-
-        //Media
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED ||
-            ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_VIDEO) != PackageManager.PERMISSION_GRANTED) {
-            return false
-        }
-
-        //All good
-        return true
-    }
-
-    private fun initActivity() {
-        //Check for permissions
-        if (!hasPermissions()) {
-            Toast.makeText(this, "Missing permissions.", Toast.LENGTH_SHORT).show()
-            finish()
-            return
-        }
-
-        //Check if intent is valid
-        val intent = getIntent()
-        if (intent == null) {
-            finish()
-            return
-        }
-
-        //Handle intent
-        handleIntent(intent)
-
-        //Update overlay buttons
-        updateOverlayButtons()
-
-        //Mark as init
-        isInit = true
-    }
-
-    private fun handleIntent(intent: Intent) {
-        //Check if intent has data (an external app requested to view a file)
-        val uri: Uri? = intent.data
-        if (uri != null) {
-            //Viewing external file
-            isViewingExternal = true
-
-            //Init gallery list
-            val gallery: MutableList<Item> = ArrayList()
-            displayGallery = gallery
-
-            //Create item from uri & add it to list
-            gallery.add(Item.createFromUri(this, uri, Album("Temp")))
-
-            //Select first item
-            selectItem(0)
-        } else {
-            //Viewing gallery item
-            isViewingExternal = false
-
-            //Init gallery list
-            displayGallery = Library.gallery
-
-            //Check if intent has item index
-            val index = intent.getIntExtra("index", -1)
-            if (index < 0) {
-                finish()
-                return
-            }
-            selectItem(index)
-        }
-    }
-
-    //Events
-    private fun manageAction(action: Action) {
-        //No action
-        if (action.isOfType(Action.TYPE_NONE)) return
-
-        //Check if gallery is empty
-        if (displayGallery.isEmpty()) {
-            //Is empty -> Close display
-            finish()
-            return
-        }
-
-        //Update selected item
-        val originalCurrentIndex = currentIndexInGallery
-        for (indexInGallery in action.removedIndexesInGallery) {
-            //Check if current item index changed (an item before it was removed)
-            if (indexInGallery < originalCurrentIndex) currentIndexInGallery--
-        }
-        selectItem(currentIndexInGallery)
-    }
-
-    //Views
-    private fun initViews() {
-        //Views (list)
+    override fun onInitViews() {
+        //List
         displayList = findViewById(R.id.list)
 
-        //Views (overlay)
+        //Overlay
         overlayLayout = findViewById(R.id.overlayLayout)
         overlayTitle = findViewById(R.id.overlayTitle)
         overlayIsFavourite = findViewById(R.id.overlayIsFavourite)
 
-        //Views (overlay buttons)
+        //Overlay buttons
         overlayInfoContainer = findViewById(R.id.overlayInfoContainer)
         overlayInfo = findViewById(R.id.overlayInfo)
         overlayEditContainer = findViewById(R.id.overlayEditContainer)
@@ -358,7 +204,7 @@ class DisplayActivity : BaseActivity() {
         )
     }
 
-    private fun initListeners() {
+    override fun onInitListeners() {
         //Overlay
         overlayInfo.setOnClickListener { optionInfo.action.invoke() }
 
@@ -444,6 +290,126 @@ class DisplayActivity : BaseActivity() {
             //Delete item
             Library.deleteItems(this, arrayOf(currentItem))
         }
+    }
+
+    override fun onAfterInitViews() {
+        //Init components
+        initDisplayList()
+    }
+
+    override fun onPermissionsGranted() {
+        //Check if intent is valid
+        val intent = getIntent()
+        if (intent == null) {
+            finish()
+            return
+        }
+
+        //Handle intent
+        handleIntent(intent)
+
+        //Update overlay buttons
+        updateOverlayButtons()
+
+        //Mark as init
+        isInit = true
+    }
+
+    override fun onPermissionsDenied() {
+        Toast.makeText(this, "Missing permissions.", Toast.LENGTH_SHORT).show()
+        finish()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        //Remove events
+        Library.removeOnActionEvent(onAction)
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        //Update settings
+        useInternalVideoPlayer = Storage.getBool(StoragePairs.VIDEO_USE_INTERNAL_PLAYER)
+        showInfo = Storage.getBool(StoragePairs.DISPLAY_SHOW_INFO)
+        showEdit = Storage.getBool(StoragePairs.DISPLAY_SHOW_EDIT)
+        showShare = Storage.getBool(StoragePairs.DISPLAY_SHOW_SHARE)
+        showFavourite = Storage.getBool(StoragePairs.DISPLAY_SHOW_FAVOURITE)
+
+        //Not init
+        if (!isInit) return
+
+        //Check if current item was modified
+        if (currentItem.updateLastModified()) {
+            //Item was modified -> Refresh display & sort library
+            displayAdapter.notifyItemChanged(currentIndexInDisplay)
+            Library.sortLibrary()
+        }
+
+        //Update overlay buttons
+        updateOverlayButtons()
+    }
+
+    override fun onNewIntent(intent: Intent, caller: ComponentCaller) {
+        super.onNewIntent(intent, caller)
+
+        //Handle intent
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent) {
+        //Check if intent has data (an external app requested to view a file)
+        val uri: Uri? = intent.data
+        if (uri != null) {
+            //Viewing external file
+            isViewingExternal = true
+
+            //Init gallery list
+            val gallery: MutableList<Item> = ArrayList()
+            displayGallery = gallery
+
+            //Create item from uri & add it to list
+            gallery.add(Item.createFromUri(this, uri, Album("Temp")))
+
+            //Select first item
+            selectItem(0)
+        } else {
+            //Viewing gallery item
+            isViewingExternal = false
+
+            //Init gallery list
+            displayGallery = Library.gallery
+
+            //Check if intent has item index
+            val index = intent.getIntExtra("index", -1)
+            if (index < 0) {
+                finish()
+                return
+            }
+            selectItem(index)
+        }
+    }
+
+    //Events
+    private fun manageAction(action: Action) {
+        //No action
+        if (action.isOfType(Action.TYPE_NONE)) return
+
+        //Check if gallery is empty
+        if (displayGallery.isEmpty()) {
+            //Is empty -> Close display
+            finish()
+            return
+        }
+
+        //Update selected item
+        val originalCurrentIndex = currentIndexInGallery
+        for (indexInGallery in action.removedIndexesInGallery) {
+            //Check if current item index changed (an item before it was removed)
+            if (indexInGallery < originalCurrentIndex) currentIndexInGallery--
+        }
+        selectItem(currentIndexInGallery)
     }
 
     //Display

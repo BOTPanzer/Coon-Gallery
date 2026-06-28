@@ -4,16 +4,13 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.ActivityOptions
 import android.content.Intent
-import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
-import android.os.Bundle
 import android.provider.Settings
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
@@ -36,7 +33,6 @@ import com.botpa.turbophotos.gallery.fastscroller.FastScrollerBuilder
 import com.botpa.turbophotos.gallery.options.OptionsGroup
 import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.options.OptionsManager
-import com.botpa.turbophotos.gallery.permissions.PermissionManager
 import com.botpa.turbophotos.gallery.permissions.PermissionType
 import com.botpa.turbophotos.gallery.views.GridListSeparator
 import com.botpa.turbophotos.screens.album.AlbumActivity
@@ -44,7 +40,6 @@ import com.botpa.turbophotos.screens.home.filters.Filter
 import com.botpa.turbophotos.screens.home.filters.FiltersDialog
 import com.botpa.turbophotos.screens.settings.SettingsActivity
 import com.botpa.turbophotos.screens.sync.SyncActivity
-import com.botpa.turbophotos.util.BackManager
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
 
@@ -61,8 +56,8 @@ class HomeActivity : BaseActivity() {
     |__/  |__/ \______/ |__/ |__/ |__/ \______*/
 
     //Activity
-    private lateinit var backManager: BackManager
-    private lateinit var permissionManager: PermissionManager
+    override val permissions: List<PermissionType> = listOf(PermissionType.Storage, PermissionType.Media)
+    override val contentViewResource: Int = R.layout.home_screen
 
     private var isLibraryLoaded = false
     private var isLibraryLoading = false
@@ -154,225 +149,16 @@ class HomeActivity : BaseActivity() {
     |__/  |__/ \______/ |__/ |__/ |__/ \______*/
 
     //Activity
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        this.enableEdgeToEdge()
-        setContentView(R.layout.home_screen)
-
-        //Enable HDR
-        window.colorMode = ActivityInfo.COLOR_MODE_HDR
-
+    override fun onBeforeInitViews() {
         //Add events
         Library.addOnRefreshEvent(onRefresh)
         Library.addOnActionEvent(onAction)
 
-        //Init components
-        backManager = BackManager(this, onBackPressedDispatcher)
-        permissionManager = PermissionManager(this, listOf(PermissionType.Storage, PermissionType.Media))
+        //Init options
         optionsManager = OptionsManager(this, options, backManager) { onUpdateOptions() }
-        Storage.init(this) //Init storage cause activity is exported
-        initViews()
-        initListeners()
-        initHomeList()
-
-        //Init activity
-        initActivity()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-
-        //Remove events
-        Library.removeOnRefreshEvent(onRefresh)
-        Library.removeOnActionEvent(onAction)
-    }
-
-    override fun onResume() {
-        super.onResume()
-
-        //Not init
-        if (!isInit) return
-
-        //Check for permissions
-        if (!permissionManager.hasAllPermissions) {
-            if (!permissionManager.hasPermission(PermissionType.Storage)) {
-                permissionManager.notifyPermissionChanged(PermissionType.Storage)
-            }
-            checkPermissions()
-            return
-        }
-
-        //Library not loaded
-        if (!isLibraryLoaded) return
-
-        //Update list items per row
-        updateListItemsPerRow()
-    }
-
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-
-        //Update list items per row
-        updateListItemsPerRow()
-    }
-
-    private fun initActivity() {
-        //Mark as init
-        isInit = true
-
-        //Check permissions
-        checkPermissions()
-    }
-
-    private fun checkPermissions() {
-        //Update current permissions
-        if (permissionManager.hasPermission(PermissionType.Storage)) {
-            permissionStorage.alpha = 0.5f
-        }
-
-        if (permissionManager.hasPermission(PermissionType.Media)) {
-            permissionMedia.alpha = 0.5f
-        }
-
-        //Check if permissions are granted
-        if (permissionManager.hasAllPermissions) {
-            //Hide permission layout
-            permissionLayout.visibility = View.GONE
-
-            //Has permissions
-            onHasPermissions()
-        } else {
-            //Show permission layout
-            permissionLayout.visibility = View.VISIBLE
-
-            //Add request permission button listeners
-            permissionStorage.setOnClickListener { view: View ->
-                //Already has permission
-                if (permissionManager.hasPermission(PermissionType.Storage)) return@setOnClickListener
-
-                //Ask for permission
-                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-                intent.data = Uri.fromParts("package", packageName, null)
-                startActivity(intent)
-            }
-
-            permissionMedia.setOnClickListener { view: View ->
-                //Already has permission
-                if (permissionManager.hasPermission(PermissionType.Media)) return@setOnClickListener
-
-                //Ask for permission
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    requestPermissionMedia.launch(arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO))
-                } else {
-                    requestPermissionMedia.launch(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE))
-                }
-            }
-        }
-    }
-
-    private fun onHasPermissions() {
-        //Already loading or loaded
-        if (isLibraryLoading || isLibraryLoaded) return
-        isLibraryLoading = true
-
-        //Hide list
-        homeList.visibility = View.GONE
-
-        //Check intent
-        val filter: String
-        val intent = getIntent()
-        val action = intent.action
-        if (action == Intent.ACTION_GET_CONTENT || action == Intent.ACTION_PICK) {
-            //An app requested to select an item
-            isPicking = true
-            filter = intent.type ?: "*/*"
-        } else {
-            //Regular open
-            isPicking = false
-            filter = "*/*"
-        }
-        navbarOptions.visibility = if (isPicking) View.GONE else View.VISIBLE
-
-        //Show loading indicator
-        loadingIndicator.visibility = View.VISIBLE
-
-        //Load library
-        Thread {
-            //Load library
-            Library.loadLibrary(this, filter)
-
-            //Show list
-            runOnUiThread {
-                //Hide loading indicator
-                loadingIndicator.visibility = View.GONE
-
-                //Show list
-                Orion.animateShow(homeList)
-
-                //Reload albums list
-                homeAdapter.notifyDataSetChanged()
-            }
-
-            //Mark as loaded
-            isLibraryLoaded = true
-            isLibraryLoading = false
-        }.start()
-    }
-
-    //Events
-    private fun manageRefresh(updated: Boolean) {
-        runOnUiThread {
-            //Didn't update
-            if (!updated) return@runOnUiThread
-
-            //Refresh list
-            homeAdapter.notifyDataSetChanged()
-
-            //Update subtitle
-            updateNavbarSubtitle()
-        }
-    }
-
-    private fun manageAction(action: Action) {
-        //No action
-        if (action.isOfType(Action.TYPE_NONE)) return
-
-        //Check if albums list was changed
-        if (action.hasSortedAlbumsList) {
-            //Sorted albums list -> Notify all
-            homeAdapter.notifyDataSetChanged()
-        } else {
-            //Check if albums were deleted
-            if (!action.removedIndexesInAlbums.isEmpty()) {
-                //Albums were deleted -> Notify items removed
-                for (albumIndex in action.removedIndexesInAlbums) {
-                    //Notify position removed
-                    homeAdapter.notifyItemRemoved(homeAdapter.getPositionFromIndex(albumIndex))
-                }
-            }
-
-            //Check if albums were sorted
-            var specialAlbumWasModified = false
-            if (!action.modifiedAlbums.isEmpty()) {
-                //Albums were sorted -> Notify items changed
-                for (album in action.modifiedAlbums) {
-                    //Check if album is special
-                    if (album.isSpecial) {
-                        specialAlbumWasModified = true
-                        continue
-                    }
-
-                    //Notify album position changed
-                    val albumIndex = homeAdapter.getIndexFromAlbum(album)
-                    homeAdapter.notifyItemChanged(homeAdapter.getPositionFromIndex(albumIndex))
-                }
-            }
-            if (specialAlbumWasModified) homeAdapter.notifyItemChanged(0)
-        }
-    }
-
-    //Views
-    private fun initViews() {
+    override fun onInitViews() {
         //Permissions
         permissionLayout = findViewById(R.id.permissionLayout)
         permissionStorage = findViewById(R.id.permissionStorage)
@@ -441,7 +227,7 @@ class HomeActivity : BaseActivity() {
         )
     }
 
-    private fun initListeners() {
+    override fun onInitListeners() {
         //Navbar
         navbarOptions.setOnClickListener { view: View -> optionsManager.toggle(true) }
 
@@ -481,6 +267,191 @@ class HomeActivity : BaseActivity() {
 
             //Create dialog
             FiltersDialog(this, filters).buildAndShow()
+        }
+    }
+
+    override fun onAfterInitViews() {
+        //Init components
+        initHomeList()
+    }
+
+    override fun onPermissionsGranted() {
+        //Hide permissions layout
+        permissionLayout.visibility = View.GONE
+
+        //Already loading or loaded
+        if (isLibraryLoading || isLibraryLoaded) return
+        isLibraryLoading = true
+
+        //Hide list
+        homeList.visibility = View.GONE
+
+        //Check intent
+        val filter: String
+        val intent = getIntent()
+        val action = intent.action
+        if (action == Intent.ACTION_GET_CONTENT || action == Intent.ACTION_PICK) {
+            //An app requested to select an item
+            isPicking = true
+            filter = intent.type ?: "*/*"
+        } else {
+            //Regular open
+            isPicking = false
+            filter = "*/*"
+        }
+        navbarOptions.visibility = if (isPicking) View.GONE else View.VISIBLE
+
+        //Show loading indicator
+        loadingIndicator.visibility = View.VISIBLE
+
+        //Load library
+        Thread {
+            //Load library
+            Library.loadLibrary(this, filter)
+
+            //Show list
+            runOnUiThread {
+                //Hide loading indicator
+                loadingIndicator.visibility = View.GONE
+
+                //Show list
+                Orion.animateShow(homeList)
+
+                //Reload albums list
+                homeAdapter.notifyDataSetChanged()
+            }
+
+            //Mark as loaded
+            isLibraryLoaded = true
+            isLibraryLoading = false
+        }.start()
+
+        //Mark as init
+        isInit = true
+    }
+
+    override fun onPermissionsDenied() {
+        //Show permissions layout
+        permissionLayout.visibility = View.VISIBLE
+
+        //Update buttons
+        if (permissionManager.hasPermission(PermissionType.Storage)) {
+            permissionStorage.isEnabled = false
+        } else {
+            permissionStorage.setOnClickListener { view: View ->
+                //Already has permission
+                if (permissionManager.hasPermission(PermissionType.Storage)) return@setOnClickListener
+
+                //Ask for permission
+                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+                intent.data = Uri.fromParts("package", packageName, null)
+                startActivity(intent)
+            }
+        }
+
+        if (permissionManager.hasPermission(PermissionType.Media)) {
+            permissionMedia.isEnabled = false
+        } else {
+            permissionMedia.setOnClickListener { view: View ->
+                //Already has permission
+                if (permissionManager.hasPermission(PermissionType.Media)) return@setOnClickListener
+
+                //Ask for permission
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    requestPermissionMedia.launch(arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO))
+                } else {
+                    requestPermissionMedia.launch(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE))
+                }
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        //Remove events
+        Library.removeOnRefreshEvent(onRefresh)
+        Library.removeOnActionEvent(onAction)
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        //Not init
+        if (!isInit) return
+
+        //Check for permissions
+        if (!permissionManager.hasAllPermissions) {
+            if (!permissionManager.hasPermission(PermissionType.Storage)) {
+                permissionManager.notifyPermissionChanged(PermissionType.Storage)
+            }
+            checkPermissions()
+            return
+        }
+
+        //Library not loaded
+        if (!isLibraryLoaded) return
+
+        //Update list items per row
+        updateListItemsPerRow()
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+
+        //Update list items per row
+        updateListItemsPerRow()
+    }
+
+    //Events
+    private fun manageRefresh(updated: Boolean) {
+        runOnUiThread {
+            //Didn't update
+            if (!updated) return@runOnUiThread
+
+            //Refresh list
+            homeAdapter.notifyDataSetChanged()
+
+            //Update subtitle
+            updateNavbarSubtitle()
+        }
+    }
+
+    private fun manageAction(action: Action) {
+        //No action
+        if (action.isOfType(Action.TYPE_NONE)) return
+
+        //Check if albums list was changed
+        if (action.hasSortedAlbumsList) {
+            //Sorted albums list -> Notify all
+            homeAdapter.notifyDataSetChanged()
+        } else {
+            //Check if albums were deleted
+            if (!action.removedIndexesInAlbums.isEmpty()) {
+                //Albums were deleted -> Notify items removed
+                for (albumIndex in action.removedIndexesInAlbums) {
+                    //Notify position removed
+                    homeAdapter.notifyItemRemoved(homeAdapter.getPositionFromIndex(albumIndex))
+                }
+            }
+
+            //Check if albums were sorted
+            var specialAlbumWasModified = false
+            if (!action.modifiedAlbums.isEmpty()) {
+                //Albums were sorted -> Notify items changed
+                for (album in action.modifiedAlbums) {
+                    //Check if album is special
+                    if (album.isSpecial) {
+                        specialAlbumWasModified = true
+                        continue
+                    }
+
+                    //Notify album position changed
+                    val albumIndex = homeAdapter.getIndexFromAlbum(album)
+                    homeAdapter.notifyItemChanged(homeAdapter.getPositionFromIndex(albumIndex))
+                }
+            }
+            if (specialAlbumWasModified) homeAdapter.notifyItemChanged(0)
         }
     }
 
