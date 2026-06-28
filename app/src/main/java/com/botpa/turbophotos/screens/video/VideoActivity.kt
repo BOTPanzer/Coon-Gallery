@@ -22,7 +22,6 @@ import android.media.MediaMetadata
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import android.support.v4.media.MediaMetadataCompat
@@ -33,8 +32,9 @@ import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import android.view.WindowManager
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
@@ -111,6 +111,18 @@ class VideoActivity : BaseActivity() {
 
     private lateinit var playerZoom: ZoomableLayout
     private lateinit var playerView: PlayerView
+
+    //Permissions
+    private var hasPermissionMedia = false
+    private var hasPermissionNotifications = false
+    private val requestPermissionNotifications = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+        hasPermissionNotifications = isGranted
+        checkPermissions()
+    }
+
+    private lateinit var permissionLayout: View
+    private lateinit var permissionMedia: View
+    private lateinit var permissionNotifications: View
 
     //Notification
     private lateinit var mediaSession: MediaSessionCompat
@@ -242,6 +254,15 @@ class VideoActivity : BaseActivity() {
     override fun onResume() {
         super.onResume()
 
+        //Not init
+        if (!isInit) return
+
+        //Check for permissions
+        if (!hasPermissionMedia || !hasPermissionNotifications) {
+            checkPermissions()
+            return
+        }
+
         //Update settings
         skipBackwardsAmount = Storage.getLong(StoragePairs.VIDEO_SKIP_BACKWARDS)
         skipForwardAmount = Storage.getLong(StoragePairs.VIDEO_SKIP_FORWARD)
@@ -255,35 +276,79 @@ class VideoActivity : BaseActivity() {
         handleIntent(intent)
     }
 
-    private fun hasPermissions(): Boolean {
-        //External storage
-        if (!Environment.isExternalStorageManager()) {
-            return false
-        }
+    private fun initActivity() {
+        //Mark as init
+        isInit = true
 
-        //Media
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED ||
-            ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_VIDEO) != PackageManager.PERMISSION_GRANTED) {
-            return false
-        }
-
-        //Notifications
-        if (!NotificationManagerCompat.from(this).areNotificationsEnabled()) {
-            return false
-        }
-
-        //All good
-        return true
+        //Check permissions
+        checkPermissions()
     }
 
-    private fun initActivity() {
-        //Check for permissions
-        if (!hasPermissions()) {
-            Toast.makeText(this, "Missing permissions.", Toast.LENGTH_SHORT).show()
-            finish()
-            return
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray, deviceId: Int) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults, deviceId)
+
+        //Check permissions again
+        checkPermissions()
+    }
+
+    private fun checkPermissions() {
+        //Update current permissions
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_VIDEO) == PackageManager.PERMISSION_GRANTED) {
+            hasPermissionMedia = true
+            permissionMedia.alpha = 0.5f
         }
 
+        if (NotificationManagerCompat.from(this).areNotificationsEnabled()) {
+            hasPermissionNotifications = true
+            permissionNotifications.alpha = 0.5f
+        }
+
+        //Check if permissions are granted
+        if (hasPermissionMedia && hasPermissionNotifications) {
+            //Hide permission layout
+            permissionLayout.visibility = View.GONE
+
+            //Has permissions
+            onHasPermissions()
+        } else {
+            //Show permission layout
+            permissionLayout.visibility = View.VISIBLE
+
+            //Add request permission button listeners
+            permissionMedia.setOnClickListener { view: View ->
+                //Already has permission
+                if (hasPermissionMedia) return@setOnClickListener
+
+                //Ask for permission
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    ActivityCompat.requestPermissions(
+                        this,
+                        arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO),
+                        0
+                    )
+                } else {
+                    ActivityCompat.requestPermissions(
+                        this,
+                        arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+                        0
+                    )
+                }
+            }
+
+            permissionNotifications.setOnClickListener { view: View ->
+                //Already has permission
+                if (hasPermissionNotifications) return@setOnClickListener
+
+                //Ask for permission
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    requestPermissionNotifications.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+            }
+        }
+    }
+
+    private fun onHasPermissions() {
         //Hide player & controller
         playerView.visibility = View.INVISIBLE
         overlayLayout.visibility = View.GONE
@@ -297,9 +362,6 @@ class VideoActivity : BaseActivity() {
 
         //Handle intent
         handleIntent(intent)
-
-        //Mark as init
-        isInit = true
     }
 
     private fun handleIntent(intent: Intent) {
@@ -316,16 +378,21 @@ class VideoActivity : BaseActivity() {
 
     //Views
     private fun initViews() {
-        //Views (player)
+        //Permissions
+        permissionLayout = findViewById(R.id.permissionLayout)
+        permissionMedia = findViewById(R.id.permissionMedia)
+        permissionNotifications = findViewById(R.id.permissionNotifications)
+
+        //Player
         playerZoom = findViewById(R.id.playerZoom)
         playerView = findViewById(R.id.playerView)
 
-        //Views (indicators)
+        //Indicators
         loadingIndicator = findViewById(R.id.loadingIndicator)
         skipBackwardsIndicator = findViewById(R.id.skipBackwardsIndicator)
         skipForwardIndicator = findViewById(R.id.skipForwardIndicator)
 
-        //Views (overlay)
+        //Overlay
         overlayLayout = findViewById(R.id.overlayLayout)
         overlayTitle = findViewById(R.id.overlayTitle)
         overlayLoop = findViewById(R.id.overlayLoop)

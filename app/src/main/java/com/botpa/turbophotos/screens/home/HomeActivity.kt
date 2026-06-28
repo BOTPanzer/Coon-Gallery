@@ -87,7 +87,6 @@ class HomeActivity : BaseActivity() {
     }
 
     //Permissions
-    private var shouldCheckPermissions = false
     private var hasPermissionWrite = false
     private var hasPermissionMedia = false
 
@@ -194,8 +193,7 @@ class HomeActivity : BaseActivity() {
         if (!isInit) return
 
         //Check for permissions
-        if (shouldCheckPermissions) {
-            shouldCheckPermissions = false
+        if (!hasPermissionWrite || !hasPermissionMedia) {
             checkPermissions()
             return
         }
@@ -212,6 +210,14 @@ class HomeActivity : BaseActivity() {
 
         //Update list items per row
         updateListItemsPerRow()
+    }
+
+    private fun initActivity() {
+        //Mark as init
+        isInit = true
+
+        //Check permissions
+        checkPermissions()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray, deviceId: Int) {
@@ -251,7 +257,6 @@ class HomeActivity : BaseActivity() {
                 if (hasPermissionWrite) return@setOnClickListener
 
                 //Ask for permission
-                shouldCheckPermissions = true
                 val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
                 intent.data = Uri.fromParts("package", packageName, null)
                 startActivity(intent)
@@ -326,14 +331,6 @@ class HomeActivity : BaseActivity() {
             isLibraryLoaded = true
             isLibraryLoading = false
         }.start()
-    }
-
-    private fun initActivity() {
-        //Mark as init
-        isInit = true
-
-        //Check permissions
-        checkPermissions()
     }
 
     //Events
