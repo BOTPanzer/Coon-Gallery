@@ -5,23 +5,18 @@ import android.annotation.SuppressLint
 import android.app.ActivityOptions
 import android.content.Intent
 import android.content.pm.ActivityInfo
-import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.Environment
 import android.provider.Settings
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResult
-import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
-import androidx.core.app.ActivityCompat
-import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -36,20 +31,22 @@ import com.botpa.turbophotos.gallery.Library.ActionEvent
 import com.botpa.turbophotos.gallery.Library.RefreshEvent
 import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.gallery.actions.Action
+import com.botpa.turbophotos.gallery.fastscroller.FastScroller
+import com.botpa.turbophotos.gallery.fastscroller.FastScrollerBuilder
+import com.botpa.turbophotos.gallery.options.OptionsGroup
 import com.botpa.turbophotos.gallery.options.OptionsItem
+import com.botpa.turbophotos.gallery.options.OptionsManager
+import com.botpa.turbophotos.gallery.permissions.PermissionManager
+import com.botpa.turbophotos.gallery.permissions.PermissionType
+import com.botpa.turbophotos.gallery.views.GridListSeparator
 import com.botpa.turbophotos.screens.album.AlbumActivity
-import com.botpa.turbophotos.screens.home.filters.FiltersDialog
 import com.botpa.turbophotos.screens.home.filters.Filter
+import com.botpa.turbophotos.screens.home.filters.FiltersDialog
 import com.botpa.turbophotos.screens.settings.SettingsActivity
 import com.botpa.turbophotos.screens.sync.SyncActivity
 import com.botpa.turbophotos.util.BackManager
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
-import com.botpa.turbophotos.gallery.fastscroller.FastScroller
-import com.botpa.turbophotos.gallery.fastscroller.FastScrollerBuilder
-import com.botpa.turbophotos.gallery.options.OptionsGroup
-import com.botpa.turbophotos.gallery.options.OptionsManager
-import com.botpa.turbophotos.gallery.views.GridListSeparator
 
 @SuppressLint("SetTextI18n", "NotifyDataSetChanged")
 class HomeActivity : BaseActivity() {
@@ -65,6 +62,7 @@ class HomeActivity : BaseActivity() {
 
     //Activity
     private lateinit var backManager: BackManager
+    private lateinit var permissionManager: PermissionManager
 
     private var isLibraryLoaded = false
     private var isLibraryLoading = false
@@ -87,11 +85,13 @@ class HomeActivity : BaseActivity() {
     }
 
     //Permissions
-    private var hasPermissionWrite = false
-    private var hasPermissionMedia = false
+    private val requestPermissionMedia = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted: Map<String, Boolean> ->
+        permissionManager.notifyPermissionChanged(PermissionType.Media)
+        checkPermissions()
+    }
 
     private lateinit var permissionLayout: View
-    private lateinit var permissionWrite: View
+    private lateinit var permissionStorage: View
     private lateinit var permissionMedia: View
 
     //List
@@ -168,6 +168,7 @@ class HomeActivity : BaseActivity() {
 
         //Init components
         backManager = BackManager(this, onBackPressedDispatcher)
+        permissionManager = PermissionManager(this, listOf(PermissionType.Storage, PermissionType.Media))
         optionsManager = OptionsManager(this, options, backManager) { onUpdateOptions() }
         Storage.init(this) //Init storage cause activity is exported
         initViews()
@@ -193,7 +194,10 @@ class HomeActivity : BaseActivity() {
         if (!isInit) return
 
         //Check for permissions
-        if (!hasPermissionWrite || !hasPermissionMedia) {
+        if (!permissionManager.hasAllPermissions) {
+            if (!permissionManager.hasPermission(PermissionType.Storage)) {
+                permissionManager.notifyPermissionChanged(PermissionType.Storage)
+            }
             checkPermissions()
             return
         }
@@ -220,28 +224,18 @@ class HomeActivity : BaseActivity() {
         checkPermissions()
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray, deviceId: Int) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults, deviceId)
-
-        //Check permissions again
-        checkPermissions()
-    }
-
     private fun checkPermissions() {
         //Update current permissions
-        if (Environment.isExternalStorageManager()) {
-            hasPermissionWrite = true
-            permissionWrite.alpha = 0.5f
+        if (permissionManager.hasPermission(PermissionType.Storage)) {
+            permissionStorage.alpha = 0.5f
         }
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED &&
-            ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_VIDEO) == PackageManager.PERMISSION_GRANTED) {
-            hasPermissionMedia = true
+        if (permissionManager.hasPermission(PermissionType.Media)) {
             permissionMedia.alpha = 0.5f
         }
 
         //Check if permissions are granted
-        if (hasPermissionWrite && hasPermissionMedia) {
+        if (permissionManager.hasAllPermissions) {
             //Hide permission layout
             permissionLayout.visibility = View.GONE
 
@@ -252,9 +246,9 @@ class HomeActivity : BaseActivity() {
             permissionLayout.visibility = View.VISIBLE
 
             //Add request permission button listeners
-            permissionWrite.setOnClickListener { view: View ->
+            permissionStorage.setOnClickListener { view: View ->
                 //Already has permission
-                if (hasPermissionWrite) return@setOnClickListener
+                if (permissionManager.hasPermission(PermissionType.Storage)) return@setOnClickListener
 
                 //Ask for permission
                 val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
@@ -264,21 +258,13 @@ class HomeActivity : BaseActivity() {
 
             permissionMedia.setOnClickListener { view: View ->
                 //Already has permission
-                if (hasPermissionMedia) return@setOnClickListener
+                if (permissionManager.hasPermission(PermissionType.Media)) return@setOnClickListener
 
                 //Ask for permission
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    ActivityCompat.requestPermissions(
-                        this,
-                        arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO),
-                        0
-                    )
+                    requestPermissionMedia.launch(arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO))
                 } else {
-                    ActivityCompat.requestPermissions(
-                        this,
-                        arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
-                        0
-                    )
+                    requestPermissionMedia.launch(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE))
                 }
             }
         }
@@ -389,7 +375,7 @@ class HomeActivity : BaseActivity() {
     private fun initViews() {
         //Permissions
         permissionLayout = findViewById(R.id.permissionLayout)
-        permissionWrite = findViewById(R.id.permissionWrite)
+        permissionStorage = findViewById(R.id.permissionStorage)
         permissionMedia = findViewById(R.id.permissionMedia)
 
         //Navbar

@@ -181,12 +181,12 @@
             android:textSize="20sp" />
 
         <Button
-            android:id="@+id/permissionWrite"
+            android:id="@+id/permissionStorage"
             android:layout_width="match_parent"
             android:layout_height="60dp"
             android:layout_marginHorizontal="50dp"
             android:layout_marginBottom="5dp"
-            android:text="Write" />
+            android:text="Storage" />
 
         <Button
             android:id="@+id/permissionMedia"
