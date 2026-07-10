@@ -70,9 +70,14 @@ class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(conte
     private var lastClickTimestamp: Long = 0
     private val multiClickDelay: Long = 250
     private var multiClickCount: Int = 0
+    private val finishMultiClickRunnable = Runnable {
+        onMultiClickFinished?.invoke(multiClickCount + 1)
+        multiClickCount = 0
+    }
 
     var onClick: Runnable? = null
     var onMultiClick: ((x: Float, y: Float, count: Int) -> Boolean)? = null
+    var onMultiClickFinished: ((count: Int) -> Unit)? = null
     var onZoomChanged: Runnable? = null
 
 
@@ -214,6 +219,9 @@ class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(conte
     }
 
     override fun performClick(): Boolean {
+        //Stop multi click finished runnable
+        handler?.removeCallbacks(finishMultiClickRunnable)
+
         //Get current timestamp
         val currentTimestamp = System.currentTimeMillis()
 
@@ -223,7 +231,7 @@ class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(conte
             multiClickCount = 0
 
             //Run click runnable
-            if (onClick != null) handler.postDelayed(onClick!!, multiClickDelay)
+            if (onClick != null) handler?.postDelayed(onClick!!, multiClickDelay)
 
             //Save timestamp
             lastClickTimestamp = currentTimestamp
@@ -231,25 +239,27 @@ class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(conte
             //Increase multi click count
             multiClickCount++
 
-            //Stop click runnable
-            if (onClick != null) handler.removeCallbacks(onClick!!)
+            //Stop click runnable & wait for multi click finished
+            if (onClick != null) handler?.removeCallbacks(onClick!!)
+            handler?.postDelayed(finishMultiClickRunnable, multiClickDelay)
 
-            //Perform double click
-            val consumed = onMultiClick?.invoke(last.x, last.y, multiClickCount) ?: false
-
-            //Check if consumed
-            if (consumed) {
+            //Perform multi click
+            val performed = onMultiClick?.invoke(last.x, last.y, multiClickCount) ?: false
+            if (performed) {
                 //Save timestamp
                 lastClickTimestamp = currentTimestamp
             } else {
                 //Reset timestamp
                 lastClickTimestamp = 0
 
+                //Call multi click finished
+                onMultiClickFinished?.invoke(multiClickCount)
+                multiClickCount = 0
+
                 //Animate zoom
                 animateResize(if (zoom > minZoom) fitScale else if (doubleTapZoomsToCustom) doubleTapCustomZoom else coverScale)
             }
         }
-
 
         return super.performClick()
     }

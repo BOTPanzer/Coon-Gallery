@@ -21,7 +21,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
-import android.provider.Settings
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
@@ -136,7 +135,6 @@ class VideoActivity : BaseActivity() {
     private val hideSkipIndicators = Runnable {
         Orion.animateHide(skipBackwardsIndicator)
         Orion.animateHide(skipForwardIndicator)
-        lastSkipDuration = 0
     }
 
     private lateinit var loadingIndicator: View
@@ -264,22 +262,12 @@ class VideoActivity : BaseActivity() {
             if (x <= doubleTapArea || x >= width - doubleTapArea) {
                 //Skip time -> Check direction
                 if (x < doubleTapArea) {
-                    //Skip backwards
-                    val newPosition = (player.currentPosition - (skipBackwardsAmount * 1000L)).coerceAtLeast(0)
-                    player.seekTo(newPosition)
-                    overlayTimeSlider.value = newPosition.toFloat()
-
                     //Update indicators
                     lastSkipDuration = min(lastSkipDuration - skipBackwardsAmount, -skipBackwardsAmount)
                     skipBackwardsIndicator.text = "${lastSkipDuration}s"
                     Orion.animateShow(skipBackwardsIndicator)
                     Orion.animateHide(skipForwardIndicator)
                 } else if (x > width - doubleTapArea) {
-                    //Skip forward
-                    val newPosition = (player.currentPosition + (skipForwardAmount * 1000L)).coerceAtMost(player.duration)
-                    player.seekTo(newPosition)
-                    overlayTimeSlider.value = newPosition.toFloat()
-
                     //Update indicators
                     lastSkipDuration = max(lastSkipDuration + skipForwardAmount, skipForwardAmount)
                     skipForwardIndicator.text = "+${lastSkipDuration}s"
@@ -287,16 +275,24 @@ class VideoActivity : BaseActivity() {
                     Orion.animateShow(skipForwardIndicator)
                 }
 
-                //Seeking
-                handler.removeCallbacks(hideSkipIndicators)
-                handler.postDelayed(hideSkipIndicators, 1000)
-
                 //Consume click
                 true
             } else {
                 //Don't skip time -> Don't consume click
                 false
             }
+        }
+
+        playerZoom.onMultiClickFinished = { count ->
+            //Seek player
+            val newPosition = (player.currentPosition + (lastSkipDuration * 1000L)).coerceAtLeast(0).coerceAtMost(player.duration)
+            player.seekTo(newPosition)
+            overlayTimeSlider.value = newPosition.toFloat()
+            lastSkipDuration = 0
+
+            //Hide indicators
+            handler.removeCallbacks(hideSkipIndicators)
+            handler.postDelayed(hideSkipIndicators, 1000)
         }
 
         //Overlay
