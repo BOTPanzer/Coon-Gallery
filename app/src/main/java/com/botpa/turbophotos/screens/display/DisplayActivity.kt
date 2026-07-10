@@ -1,17 +1,21 @@
 package com.botpa.turbophotos.screens.display
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.ComponentCaller
 import android.app.PictureInPictureParams
 import android.content.Intent
 import android.content.res.Configuration
 import android.net.Uri
+import android.os.Build
+import android.provider.Settings
 import android.util.Rational
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.graphics.Insets
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
@@ -59,6 +63,12 @@ class DisplayActivity : BaseActivity() {
     private var isInit = false
     private var isViewingExternal: Boolean = false
     private var isInPiP: Boolean = false
+
+    //Permissions
+    private val requestPermissionMedia = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted: Map<String, Boolean> ->
+        permissionManager.notifyPermissionChanged(PermissionType.Media)
+        checkPermissions()
+    }
 
     //Events
     private val onAction = ActionEvent { action -> this.manageAction(action) }
@@ -293,11 +303,38 @@ class DisplayActivity : BaseActivity() {
     }
 
     override fun onAfterInitViews() {
+        //Hide overlay
+        overlayLayout.visibility = View.GONE
+
         //Init components
         initDisplayList()
     }
 
+    override fun onRequestPermission(permission: PermissionType) {
+        when (permission) {
+            //Storage
+            PermissionType.Storage -> {
+                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+                intent.data = Uri.fromParts("package", packageName, null)
+                startActivity(intent)
+            }
+            //Media
+            PermissionType.Media -> {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    requestPermissionMedia.launch(arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO))
+                } else {
+                    requestPermissionMedia.launch(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE))
+                }
+            }
+            //Other
+            else -> {}
+        }
+    }
+
     override fun onPermissionsGranted() {
+        //Show overlay
+        overlayLayout.visibility = View.VISIBLE
+
         //Check if intent is valid
         val intent = getIntent()
         if (intent == null) {
@@ -313,11 +350,6 @@ class DisplayActivity : BaseActivity() {
 
         //Mark as init
         isInit = true
-    }
-
-    override fun onPermissionsDenied() {
-        Toast.makeText(this, "Missing permissions.", Toast.LENGTH_SHORT).show()
-        finish()
     }
 
     override fun onDestroy() {
@@ -336,6 +368,15 @@ class DisplayActivity : BaseActivity() {
         showEdit = Storage.getBool(StoragePairs.DISPLAY_SHOW_EDIT)
         showShare = Storage.getBool(StoragePairs.DISPLAY_SHOW_SHARE)
         showFavourite = Storage.getBool(StoragePairs.DISPLAY_SHOW_FAVOURITE)
+
+        //Check for permissions
+        if (!permissionManager.hasAllPermissions) {
+            if (!permissionManager.hasPermission(PermissionType.Storage)) {
+                permissionManager.notifyPermissionChanged(PermissionType.Storage)
+            }
+            checkPermissions()
+            return
+        }
 
         //Not init
         if (!isInit) return

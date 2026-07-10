@@ -21,6 +21,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
@@ -79,6 +80,16 @@ class VideoActivity : BaseActivity() {
 
     private var isInit = false
 
+    //Permissions
+    private val requestPermissionMedia = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted: Map<String, Boolean> ->
+        permissionManager.notifyPermissionChanged(PermissionType.Media)
+        checkPermissions()
+    }
+    private val requestPermissionNotifications = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+        permissionManager.notifyPermissionChanged(PermissionType.Notifications)
+        checkPermissions()
+    }
+
     //Player
     private lateinit var player: ExoPlayer
 
@@ -107,20 +118,6 @@ class VideoActivity : BaseActivity() {
 
     private lateinit var playerZoom: ZoomableLayout
     private lateinit var playerView: PlayerView
-
-    //Permissions
-    private val requestPermissionMedia = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted: Map<String, Boolean> ->
-        permissionManager.notifyPermissionChanged(PermissionType.Media)
-        checkPermissions()
-    }
-    private val requestPermissionNotifications = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-        permissionManager.notifyPermissionChanged(PermissionType.Notifications)
-        checkPermissions()
-    }
-
-    private lateinit var permissionLayout: View
-    private lateinit var permissionMedia: View
-    private lateinit var permissionNotifications: View
 
     //Notification
     private lateinit var mediaSession: MediaSessionCompat
@@ -210,11 +207,6 @@ class VideoActivity : BaseActivity() {
     }
 
     override fun onInitViews() {
-        //Permissions
-        permissionLayout = findViewById(R.id.permissionLayout)
-        permissionMedia = findViewById(R.id.permissionMedia)
-        permissionNotifications = findViewById(R.id.permissionNotifications)
-
         //Player
         playerZoom = findViewById(R.id.playerZoom)
         playerView = findViewById(R.id.playerView)
@@ -371,6 +363,10 @@ class VideoActivity : BaseActivity() {
     }
 
     override fun onAfterInitViews() {
+        //Hide player & controller
+        playerView.visibility = View.INVISIBLE
+        overlayLayout.visibility = View.GONE
+
         //Init components
         initPlayer()
         initMediaSession()
@@ -378,14 +374,28 @@ class VideoActivity : BaseActivity() {
         initBroadcastReceiver()
     }
 
+    override fun onRequestPermission(permission: PermissionType) {
+        when (permission) {
+            //Media
+            PermissionType.Media -> {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    requestPermissionMedia.launch(arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO))
+                } else {
+                    requestPermissionMedia.launch(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE))
+                }
+            }
+            //Notifications
+            PermissionType.Notifications -> {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    requestPermissionNotifications.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+            }
+            //Other
+            else -> {}
+        }
+    }
+
     override fun onPermissionsGranted() {
-        //Hide permissions layout
-        permissionLayout.visibility = View.GONE
-
-        //Hide player & controller
-        playerView.visibility = View.INVISIBLE
-        overlayLayout.visibility = View.GONE
-
         //Check if intent is valid
         val intent = getIntent()
         if (intent == null) {
@@ -398,42 +408,6 @@ class VideoActivity : BaseActivity() {
 
         //Mark as init
         isInit = true
-    }
-
-    override fun onPermissionsDenied() {
-        //Show permissions layout
-        permissionLayout.visibility = View.VISIBLE
-
-        //Update buttons
-        if (permissionManager.hasPermission(PermissionType.Media)) {
-            permissionMedia.isEnabled = false
-        } else {
-            permissionMedia.setOnClickListener { view: View ->
-                //Already has permission
-                if (permissionManager.hasPermission(PermissionType.Media)) return@setOnClickListener
-
-                //Ask for permission
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    requestPermissionMedia.launch(arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO))
-                } else {
-                    requestPermissionMedia.launch(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE))
-                }
-            }
-        }
-
-        if (permissionManager.hasPermission(PermissionType.Notifications)) {
-            permissionNotifications.isEnabled = false
-        } else {
-            permissionNotifications.setOnClickListener { view: View ->
-                //Already has permission
-                if (permissionManager.hasPermission(PermissionType.Notifications)) return@setOnClickListener
-
-                //Ask for permission
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    requestPermissionNotifications.launch(Manifest.permission.POST_NOTIFICATIONS)
-                }
-            }
-        }
     }
 
     override fun onDestroy() {

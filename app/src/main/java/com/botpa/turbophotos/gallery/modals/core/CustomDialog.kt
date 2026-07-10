@@ -49,4 +49,8 @@ open class CustomDialog(protected val context: Context, private val resource: In
         onInitEnd()
     }
 
+    fun hide() {
+        dialog.cancel()
+    }
+
 }

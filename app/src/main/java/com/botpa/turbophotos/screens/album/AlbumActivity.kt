@@ -57,6 +57,7 @@ class AlbumActivity : BaseActivity() {
 
     //Activity
     override val permissions: List<PermissionType> = listOf(PermissionType.Storage, PermissionType.Media)
+    override val askForPermissions: Boolean = false
     override val contentViewResource: Int = R.layout.album_screen
 
     private var isMetadataLoaded = false
@@ -495,11 +496,6 @@ class AlbumActivity : BaseActivity() {
 
         //Mark as init
         isInit = true
-    }
-
-    override fun onPermissionsDenied() {
-        Toast.makeText(this, "Missing permissions.", Toast.LENGTH_SHORT).show()
-        finish()
     }
 
     override fun onDestroy() {

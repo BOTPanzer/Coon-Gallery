@@ -2,6 +2,7 @@ package com.botpa.turbophotos.gallery
 
 import android.content.pm.ActivityInfo
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts.StartIntentSenderForResult
@@ -21,6 +22,7 @@ open class BaseActivity : AppCompatActivity() {
     protected lateinit var permissionManager: PermissionManager
 
     protected open val permissions: List<PermissionType> = emptyList()
+    protected open val askForPermissions: Boolean = true
     protected open val contentViewResource: Int = 0
 
     //Gallery actions
@@ -65,7 +67,9 @@ open class BaseActivity : AppCompatActivity() {
 
         //Init components
         backManager = BackManager(this, onBackPressedDispatcher)
-        permissionManager = PermissionManager(this, permissions)
+        permissionManager = PermissionManager(this, permissions) { permission ->
+            onRequestPermission(permission)
+        }
         Storage.init(this)
 
         //Init views
@@ -91,11 +95,18 @@ open class BaseActivity : AppCompatActivity() {
         if (permissionManager.hasAllPermissions) {
             //Granted
             onPermissionsGranted()
-        } else {
-            //Denied
+        } else if (askForPermissions) {
+            //Denied -> Ask
             onPermissionsDenied()
+            permissionManager.showDialog(this)
+        } else {
+            //Denied -> End
+            Toast.makeText(this, "Missing permissions.", Toast.LENGTH_SHORT).show()
+            finish()
         }
     }
+
+    protected open fun onRequestPermission(permission: PermissionType) {}
 
     protected open fun onPermissionsGranted() {}
 

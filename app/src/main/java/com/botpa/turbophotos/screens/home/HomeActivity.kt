@@ -63,6 +63,12 @@ class HomeActivity : BaseActivity() {
     private var isLibraryLoading = false
     private var isInit = false
 
+    //Permissions
+    private val requestPermissionMedia = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted: Map<String, Boolean> ->
+        permissionManager.notifyPermissionChanged(PermissionType.Media)
+        checkPermissions()
+    }
+
     //Events
     private val onRefresh = RefreshEvent { updated -> this.manageRefresh(updated) }
     private val onAction = ActionEvent { action -> this.manageAction(action) }
@@ -78,16 +84,6 @@ class HomeActivity : BaseActivity() {
         setResult(RESULT_OK, data)
         finish()
     }
-
-    //Permissions
-    private val requestPermissionMedia = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted: Map<String, Boolean> ->
-        permissionManager.notifyPermissionChanged(PermissionType.Media)
-        checkPermissions()
-    }
-
-    private lateinit var permissionLayout: View
-    private lateinit var permissionStorage: View
-    private lateinit var permissionMedia: View
 
     //List
     private lateinit var homeLayoutManager: GridLayoutManager
@@ -159,11 +155,6 @@ class HomeActivity : BaseActivity() {
     }
 
     override fun onInitViews() {
-        //Permissions
-        permissionLayout = findViewById(R.id.permissionLayout)
-        permissionStorage = findViewById(R.id.permissionStorage)
-        permissionMedia = findViewById(R.id.permissionMedia)
-
         //Navbar
         navbarSubtitle = findViewById(R.id.navbarSubtitle)
         navbarOptions = findViewById(R.id.navbarOptions)
@@ -271,20 +262,38 @@ class HomeActivity : BaseActivity() {
     }
 
     override fun onAfterInitViews() {
+        //Hide list
+        homeList.visibility = View.GONE
+
         //Init components
         initHomeList()
     }
 
-    override fun onPermissionsGranted() {
-        //Hide permissions layout
-        permissionLayout.visibility = View.GONE
+    override fun onRequestPermission(permission: PermissionType) {
+        when (permission) {
+            //Storage
+            PermissionType.Storage -> {
+                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+                intent.data = Uri.fromParts("package", packageName, null)
+                startActivity(intent)
+            }
+            //Media
+            PermissionType.Media -> {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    requestPermissionMedia.launch(arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO))
+                } else {
+                    requestPermissionMedia.launch(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE))
+                }
+            }
+            //Other
+            else -> {}
+        }
+    }
 
+    override fun onPermissionsGranted() {
         //Already loading or loaded
         if (isLibraryLoading || isLibraryLoaded) return
         isLibraryLoading = true
-
-        //Hide list
-        homeList.visibility = View.GONE
 
         //Check intent
         val filter: String
@@ -330,42 +339,6 @@ class HomeActivity : BaseActivity() {
         isInit = true
     }
 
-    override fun onPermissionsDenied() {
-        //Show permissions layout
-        permissionLayout.visibility = View.VISIBLE
-
-        //Update buttons
-        if (permissionManager.hasPermission(PermissionType.Storage)) {
-            permissionStorage.isEnabled = false
-        } else {
-            permissionStorage.setOnClickListener { view: View ->
-                //Already has permission
-                if (permissionManager.hasPermission(PermissionType.Storage)) return@setOnClickListener
-
-                //Ask for permission
-                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-                intent.data = Uri.fromParts("package", packageName, null)
-                startActivity(intent)
-            }
-        }
-
-        if (permissionManager.hasPermission(PermissionType.Media)) {
-            permissionMedia.isEnabled = false
-        } else {
-            permissionMedia.setOnClickListener { view: View ->
-                //Already has permission
-                if (permissionManager.hasPermission(PermissionType.Media)) return@setOnClickListener
-
-                //Ask for permission
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    requestPermissionMedia.launch(arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO))
-                } else {
-                    requestPermissionMedia.launch(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE))
-                }
-            }
-        }
-    }
-
     override fun onDestroy() {
         super.onDestroy()
 
@@ -377,9 +350,6 @@ class HomeActivity : BaseActivity() {
     override fun onResume() {
         super.onResume()
 
-        //Not init
-        if (!isInit) return
-
         //Check for permissions
         if (!permissionManager.hasAllPermissions) {
             if (!permissionManager.hasPermission(PermissionType.Storage)) {
@@ -389,8 +359,8 @@ class HomeActivity : BaseActivity() {
             return
         }
 
-        //Library not loaded
-        if (!isLibraryLoaded) return
+        //Not init or library not loaded
+        if (!isInit || !isLibraryLoaded) return
 
         //Update list items per row
         updateListItemsPerRow()

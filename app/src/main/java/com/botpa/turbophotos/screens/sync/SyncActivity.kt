@@ -11,7 +11,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
@@ -36,6 +35,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -44,14 +44,14 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Observer
 import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.StoragePairs
+import com.botpa.turbophotos.gallery.permissions.PermissionManager
+import com.botpa.turbophotos.gallery.permissions.PermissionType
 import com.botpa.turbophotos.gallery.views.Group
-import com.botpa.turbophotos.gallery.views.GroupDescription
 import com.botpa.turbophotos.gallery.views.GroupDivider
 import com.botpa.turbophotos.gallery.views.GroupItem
 import com.botpa.turbophotos.gallery.views.GroupItems
 import com.botpa.turbophotos.gallery.views.GroupTitle
 import com.botpa.turbophotos.gallery.views.Layout
-import com.botpa.turbophotos.gallery.views.PermissionItem
 import com.botpa.turbophotos.gallery.views.SimpleButton
 import com.botpa.turbophotos.gallery.views.groupItemPaddingHorizontal
 import com.botpa.turbophotos.gallery.views.groupItemPaddingVertical
@@ -75,9 +75,6 @@ class SyncActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
-        //Ask for permissions
-        view.checkPermissions(this)
 
         //Load users
         loadUsers()
@@ -109,7 +106,7 @@ class SyncActivity : AppCompatActivity() {
         Layout("Sync") {
             if (!view.hasPermissions) {
                 //Ask for permissions
-                PermissionsLayout(it)
+                RequestPermissions()
             } else {
                 //Show sync screen
                 when (view.connectionStatus) {
@@ -122,70 +119,50 @@ class SyncActivity : AppCompatActivity() {
     }
 
     @Composable
-    private fun PermissionsLayout(it: PaddingValues) {
-        //Permission requests
+    private fun RequestPermissions() {
+        //Create permission granted events
+        var permissionManager: PermissionManager? = null
         val requestPermissionNotifications = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.RequestPermission()
         ) { isGranted ->
-            view.onNotificationPermissionResult(this, isGranted)
+            permissionManager!!.notifyPermissionChanged(PermissionType.Notifications)
+            view.updatePermissions(permissionManager!!)
         }
         val requestLocalNetworkPermission = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.RequestPermission()
         ) { isGranted ->
-            view.onLocalNetworkPermissionResult(this, isGranted)
+            permissionManager!!.notifyPermissionChanged(PermissionType.LocalAreaNetwork)
+            view.updatePermissions(permissionManager!!)
         }
 
-        //Layout
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight()
-                .padding(it)
-                .padding(horizontal = 20.dp)
-                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
-        ) {
-            Group {
-                //Title & description
-                GroupTitle("Permissions")
-                GroupDescription("The following permissions are required for the sync service to work:")
-
-                //Items
-                GroupItems {
-                    //Item
-                    GroupItem {
-                        PermissionItem(
-                            name = "Notifications",
-                            description = "Required for the sync service to work in the background.",
-                            hasPermission = view.hasPermissionNotifications,
-                            onClick = {
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                    requestPermissionNotifications.launch(Manifest.permission.POST_NOTIFICATIONS)
-                                }
-                            }
-                        )
+        //Create request permission event
+        val onRequestPermission = remember {
+            { permission: PermissionType ->
+                when (permission) {
+                    //Notifications
+                    PermissionType.Notifications -> {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            requestPermissionNotifications.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        }
                     }
-
-                    //Divider
-                    GroupDivider()
-
-                    //Item
-                    GroupItem {
-                        PermissionItem(
-                            name = "Local Area Network",
-                            description = "Required for the sync service to connect.",
-                            hasPermission = view.hasPermissionLocalNetwork,
-                            onClick = {
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.CINNAMON_BUN) {
-                                    requestLocalNetworkPermission.launch(Manifest.permission.ACCESS_LOCAL_NETWORK)
-                                }
-                            }
-                        )
+                    //Local area network
+                    PermissionType.LocalAreaNetwork -> {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.CINNAMON_BUN) {
+                            requestLocalNetworkPermission.launch(Manifest.permission.ACCESS_LOCAL_NETWORK)
+                        }
                     }
+                    //Other
+                    else -> {}
                 }
-
-                //Invisible space
-                GroupTitle("")
             }
+        }
+
+        //Create permission manager & check for permissions
+        permissionManager = PermissionManager(this, listOf(PermissionType.Notifications, PermissionType.LocalAreaNetwork), onRequestPermission)
+        if (permissionManager.hasAllPermissions) {
+            view.updatePermissions(permissionManager)
+        } else {
+            permissionManager.showDialog(this)
         }
     }
 

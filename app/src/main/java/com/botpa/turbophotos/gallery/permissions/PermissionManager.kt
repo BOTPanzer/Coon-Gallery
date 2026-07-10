@@ -1,17 +1,21 @@
 package com.botpa.turbophotos.gallery.permissions
 
 import android.Manifest
+import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Environment
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import com.botpa.turbophotos.gallery.modals.PermissionsDialog
 import java.util.EnumMap
 
-class PermissionManager(val context: Context, managedPermissions: List<PermissionType>) {
+class PermissionManager(val context: Context, managedPermissions: List<PermissionType>, private val onRequestPermission: (PermissionType) -> Unit) {
 
     private val _permissions: MutableMap<PermissionType, Boolean> = EnumMap(PermissionType::class.java)
+
+    private var permissionsDialog: PermissionsDialog? = null
 
     val permissions: Map<PermissionType, Boolean>
         get() = _permissions
@@ -57,7 +61,16 @@ class PermissionManager(val context: Context, managedPermissions: List<Permissio
     }
 
     private fun updateHasAllPermissions() {
+        //Update value
         hasAllPermissions = permissions.isEmpty() || permissions.values.all { it }
+
+        //Update dialog
+        if (hasAllPermissions) {
+            permissionsDialog?.hide()
+            permissionsDialog = null
+        } else {
+            permissionsDialog?.refreshPermissions()
+        }
     }
 
     fun hasPermission(permission: PermissionType): Boolean {
@@ -71,6 +84,12 @@ class PermissionManager(val context: Context, managedPermissions: List<Permissio
         //Recheck
         _permissions[permission] = checkPermission(permission)
         updateHasAllPermissions()
+    }
+
+    fun showDialog(activity: Activity) {
+        permissionsDialog?.hide()
+        permissionsDialog = PermissionsDialog(activity, this, onRequestPermission)
+        permissionsDialog?.buildAndShow()
     }
 
 }
