@@ -8,7 +8,7 @@
     android:background="#000"
     android:clipChildren="false">
 
-    <com.botpa.turbophotos.gallery.views.ZoomableLayout
+    <com.botpa.turbophotos.screens.video.VideoZoomableLayout
         android:id="@+id/playerZoom"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -73,7 +73,7 @@
 
         </LinearLayout>
 
-    </com.botpa.turbophotos.gallery.views.ZoomableLayout>
+    </com.botpa.turbophotos.screens.video.VideoZoomableLayout>
 
     <RelativeLayout
         android:id="@+id/overlayLayout"

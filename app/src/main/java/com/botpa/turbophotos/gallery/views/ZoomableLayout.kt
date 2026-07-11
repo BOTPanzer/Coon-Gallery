@@ -16,7 +16,7 @@ import kotlin.math.min
 import androidx.core.view.isNotEmpty
 import kotlin.math.roundToInt
 
-class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(context, attrs) {
+open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(context, attrs) {
 
     private var scaleDetector: ScaleGestureDetector
     private var matrix: Matrix = Matrix()
@@ -75,10 +75,10 @@ class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(conte
         multiClickCount = 0
     }
 
-    var onClick: Runnable? = null
+    var onSingleClick: Runnable? = null
     var onMultiClick: ((x: Float, y: Float, count: Int) -> Boolean)? = null
     var onMultiClickFinished: ((count: Int) -> Unit)? = null
-    var onZoomChanged: Runnable? = null
+    var onZoomChanged: (() -> Unit)? = null
 
 
     //Constructor
@@ -231,7 +231,7 @@ class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(conte
             multiClickCount = 0
 
             //Run click runnable
-            if (onClick != null) handler?.postDelayed(onClick!!, multiClickDelay)
+            if (onSingleClick != null) handler?.postDelayed(onSingleClick!!, multiClickDelay)
 
             //Save timestamp
             lastClickTimestamp = currentTimestamp
@@ -240,7 +240,7 @@ class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(conte
             multiClickCount++
 
             //Stop click runnable & wait for multi click finished
-            if (onClick != null) handler?.removeCallbacks(onClick!!)
+            if (onSingleClick != null) handler?.removeCallbacks(onSingleClick!!)
             handler?.postDelayed(finishMultiClickRunnable, multiClickDelay)
 
             //Perform multi click
@@ -319,7 +319,7 @@ class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(conte
         applyMatrixToChild()
 
         //Zoom changed
-        onZoomChanged?.run()
+        onZoomChanged?.invoke()
     }
 
     private fun animateResize(scaleEnd: Float) {
@@ -437,7 +437,7 @@ class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(conte
             applyMatrixToChild()
 
             //Zoom changed
-            onZoomChanged?.run()
+            onZoomChanged?.invoke()
             return true
         }
 

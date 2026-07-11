@@ -25,7 +25,7 @@ class DisplayAdapter(context: Context, items: List<Item>) : CustomAdapter<Item, 
         holder.play.visibility = if (item.isVideo) View.VISIBLE else View.GONE
 
         //Add listeners
-        holder.zoom.onClick = {
+        holder.zoom.onSingleClick = {
             onClick?.run(holder.zoom, holder.image, holder.bindingAdapterPosition)
         }
 

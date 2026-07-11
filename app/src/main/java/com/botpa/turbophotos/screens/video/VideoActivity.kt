@@ -50,7 +50,6 @@ import com.botpa.turbophotos.gallery.options.OptionsGroup
 import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.options.OptionsManager
 import com.botpa.turbophotos.gallery.permissions.PermissionType
-import com.botpa.turbophotos.gallery.views.ZoomableLayout
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
 import com.google.android.material.button.MaterialButton
@@ -96,9 +95,6 @@ class VideoActivity : BaseActivity() {
     private var isSeeking: Boolean = false
     private var isInPiP: Boolean = false
 
-    private var skipBackwardsAmount: Long = 5
-    private var skipForwardAmount: Long = 5
-
     private var ignoreAudioFocus = true
     private var hasAudioFocus = false
     private var resumeOnAudioFocusGain = false
@@ -115,7 +111,7 @@ class VideoActivity : BaseActivity() {
         }
     }
 
-    private lateinit var playerZoom: ZoomableLayout
+    private lateinit var playerZoom: VideoZoomableLayout
     private lateinit var playerView: PlayerView
 
     //Notification
@@ -127,8 +123,6 @@ class VideoActivity : BaseActivity() {
     private var isNotificationInit: Boolean = false
 
     //Indicators (loading & time skip)
-    private var lastSkipDuration: Long = 0
-
     private val showLoadingIndicator = Runnable {
         loadingIndicator.visibility = View.VISIBLE
     }
@@ -248,47 +242,31 @@ class VideoActivity : BaseActivity() {
 
     override fun onInitListeners() {
         //Player
-        playerZoom.onClick = {
+        playerZoom.onSingleClick = {
+            //Toggle controller on single click
             toggleController()
         }
 
-        playerZoom.onMultiClick = { x, y, count ->
-            //Get layout width
-            val width = playerZoom.width
-            val maxArea = (150 * resources.displayMetrics.density).toInt()
-            val doubleTapArea = min(width / 5, maxArea)
-
-            //Check position to see if should skip time
-            if (x <= doubleTapArea || x >= width - doubleTapArea) {
-                //Skip time -> Check direction
-                if (x < doubleTapArea) {
-                    //Update indicators
-                    lastSkipDuration = min(lastSkipDuration - skipBackwardsAmount, -skipBackwardsAmount)
-                    skipBackwardsIndicator.text = "${lastSkipDuration}s"
-                    Orion.animateShow(skipBackwardsIndicator)
-                    Orion.animateHide(skipForwardIndicator)
-                } else if (x > width - doubleTapArea) {
-                    //Update indicators
-                    lastSkipDuration = max(lastSkipDuration + skipForwardAmount, skipForwardAmount)
-                    skipForwardIndicator.text = "+${lastSkipDuration}s"
-                    Orion.animateHide(skipBackwardsIndicator)
-                    Orion.animateShow(skipForwardIndicator)
-                }
-
-                //Consume click
-                true
+        playerZoom.onBeforeSeek = { amount ->
+            //Skip time -> Check direction
+            if (amount < 0) {
+                //Update indicators
+                skipBackwardsIndicator.text = "${amount}s"
+                Orion.animateShow(skipBackwardsIndicator)
+                Orion.animateHide(skipForwardIndicator)
             } else {
-                //Don't skip time -> Don't consume click
-                false
+                //Update indicators
+                skipForwardIndicator.text = "+${amount}s"
+                Orion.animateHide(skipBackwardsIndicator)
+                Orion.animateShow(skipForwardIndicator)
             }
         }
 
-        playerZoom.onMultiClickFinished = { count ->
+        playerZoom.onSeek = { amount ->
             //Seek player
-            val newPosition = (player.currentPosition + (lastSkipDuration * 1000L)).coerceAtLeast(0).coerceAtMost(player.duration)
+            val newPosition = (player.currentPosition + (amount * 1000L)).coerceAtLeast(0).coerceAtMost(player.duration)
             player.seekTo(newPosition)
             overlayTimeSlider.value = newPosition.toFloat()
-            lastSkipDuration = 0
 
             //Hide indicators
             handler.removeCallbacks(hideSkipIndicators)
@@ -441,8 +419,8 @@ class VideoActivity : BaseActivity() {
         }
 
         //Update settings
-        skipBackwardsAmount = Storage.getLong(StoragePairs.VIDEO_SKIP_BACKWARDS)
-        skipForwardAmount = Storage.getLong(StoragePairs.VIDEO_SKIP_FORWARD)
+        playerZoom.skipBackwardsAmount = Storage.getLong(StoragePairs.VIDEO_SKIP_BACKWARDS)
+        playerZoom.skipForwardAmount = Storage.getLong(StoragePairs.VIDEO_SKIP_FORWARD)
         ignoreAudioFocus = Storage.getBool(StoragePairs.VIDEO_IGNORE_AUDIO_FOCUS)
     }
 
