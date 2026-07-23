@@ -567,12 +567,16 @@ class AlbumActivity : BaseActivity() {
         }
 
         //Remove items
-        for (indexInGallery in action.removedIndexesInGallery) {
-            selectedIndexes.remove(indexInGallery)
-            albumAdapter.notifyItemRemoved(albumAdapter.getPositionFromIndex(indexInGallery))
+        if (action.removedIndexesInGallery.isNotEmpty()) {
+            //Remove items
+            for (indexInGallery in action.removedIndexesInGallery) {
+                selectedIndexes.remove(indexInGallery)
+                albumAdapter.notifyItemRemoved(albumAdapter.getPositionFromIndex(indexInGallery))
+            }
 
             //Refresh banner
-            if (indexInGallery == 0) albumAdapter.notifyItemChanged(0)
+            updateHeaderSubtitle()
+            albumAdapter.notifyItemChanged(0)
         }
 
         //Remove select back callback if no more items are selected
@@ -893,10 +897,8 @@ class AlbumActivity : BaseActivity() {
                     .withEndAction {
                         //Update items
                         Library.setGalleryInfo(currentAlbum, filteredAlbumItems) //List changes must be done in UI thread
+                        updateHeaderSubtitle()
                         albumAdapter.notifyDataSetChanged()
-
-                        //Update subtitle
-                        albumAdapter.subtitle = "${gallery.size} items${if (isFiltering) " - Search: $filter" else ""}"
 
                         //Scroll to top
                         albumList.stopScroll()
@@ -915,6 +917,10 @@ class AlbumActivity : BaseActivity() {
                     .start()
             }
         }.start()
+    }
+
+    private fun updateHeaderSubtitle() {
+        albumAdapter.subtitle = "${gallery.size} items${if (currentSearch.isNotEmpty()) " - Search: $currentSearch" else ""}"
     }
 
     private fun updateSearchMethod() {
