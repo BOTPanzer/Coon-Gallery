@@ -48,7 +48,7 @@ class AlbumAdapter(
 
         //Update top margin
         val params = holder.topMargin.layoutParams as LinearLayout.LayoutParams
-        params.height = this@AlbumAdapter.topMargin
+        params.height = topMargin
         holder.topMargin.layoutParams = params
     }
 

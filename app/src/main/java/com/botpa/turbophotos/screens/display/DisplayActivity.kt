@@ -205,6 +205,12 @@ class DisplayActivity : BaseActivity() {
             val params = view.layoutParams as MarginLayoutParams
             params.setMargins(insets.left, insets.top, insets.right, insets.bottom)
             view.layoutParams = params
+
+            //Album list notifications bar margin
+            if (displayAdapter.bottomMargin == 0) {
+                displayAdapter.bottomMargin = insets.bottom
+                displayAdapter.notifyDataSetChanged()
+            }
         }
 
         //Insets (options layout)
@@ -461,7 +467,7 @@ class DisplayActivity : BaseActivity() {
         displayList.setLayoutManager(displayLayoutManager)
 
         //Init display adapter
-        displayAdapter = DisplayAdapter(this, displayItems)
+        displayAdapter = DisplayAdapter(this, displayItems, true, 0)
         displayList.setAdapter(displayAdapter)
 
         //Add adapter listeners
@@ -520,10 +526,12 @@ class DisplayActivity : BaseActivity() {
     private fun toggleOverlay(show: Boolean) {
         if (show) {
             //Show
+            displayAdapter.toggleOverlay(true, displayList)
             Orion.animateShow(overlayLayout, 500)
             Orion.toggleSystemUI(this, true)
         } else {
             //Hide
+            displayAdapter.toggleOverlay(false, displayList)
             Orion.animateHide(overlayLayout, 500)
             Orion.toggleSystemUI(this, false)
         }

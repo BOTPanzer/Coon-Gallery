@@ -28,7 +28,7 @@ class Item(
 
     //Item info
     @JvmField var name: String = file.name
-    @JvmField var isVideo: Boolean = mimeType.startsWith("video/")
+    @JvmField var isVideo: Boolean = mimeType.startsWith("video/") || name.contains(".MP.")
 
 
     //Metadata

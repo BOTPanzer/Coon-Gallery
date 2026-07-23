@@ -23,28 +23,27 @@
     </com.botpa.turbophotos.gallery.views.ZoomableLayout>
 
     <LinearLayout
+        android:id="@+id/overlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
-        android:orientation="horizontal">
+        android:gravity="bottom|center_horizontal"
+        android:orientation="vertical"
+        android:paddingBottom="100dp">
 
-        <androidx.cardview.widget.CardView
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/play"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            app:cardBackgroundColor="#00000000"
-            app:cardCornerRadius="50dp"
-            app:cardElevation="0dp">
+            style="@style/Widget.Material3Expressive.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Play"
+            app:icon="@drawable/play"
+            app:iconGravity="textStart"
+            app:iconTint="?attr/colorOnPrimary" />
 
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="?attr/selectableItemBackground"
-                android:padding="8dp"
-                app:srcCompat="@drawable/play"
-                app:tint="?attr/colorOnSurface" />
-
-        </androidx.cardview.widget.CardView>
+        <View
+            android:id="@+id/bottomMargin"
+            android:layout_width="match_parent"
+            android:layout_height="0dp" />
 
     </LinearLayout>
 
