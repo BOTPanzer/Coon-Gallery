@@ -189,21 +189,33 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
                     if (scaledSize.x < viewSize.x) {
                         //Fit vertically
                         delta.x = 0f
-                        if (y + delta.y > 0) delta.y = -y
-                        else if (y + delta.y < -margin.y) delta.y = -(y + margin.y)
+                        if (y + delta.y > 0) {
+                            delta.y = -y
+                        } else if (y + delta.y < -margin.y) {
+                            delta.y = -(y + margin.y)
+                        }
                     } else if (scaledSize.y < viewSize.y) {
                         //Fit horizontally
                         delta.y = 0f
-                        if (x + delta.x > 0) delta.x = -x
-                        else if (x + delta.x < -margin.x) delta.x = -(x + margin.x)
+                        if (x + delta.x > 0) {
+                            delta.x = -x
+                        } else if (x + delta.x < -margin.x) {
+                            delta.x = -(x + margin.x)
+                        }
                     } else {
                         //Fit vertically
-                        if (y + delta.y > 0) delta.y = -y
-                        else if (y + delta.y < -margin.y) delta.y = -(y + margin.y)
+                        if (y + delta.y > 0) {
+                            delta.y = -y
+                        } else if (y + delta.y < -margin.y) {
+                            delta.y = -(y + margin.y)
+                        }
 
                         //Fit horizontally
-                        if (x + delta.x > 0) delta.x = -x
-                        else if (x + delta.x < -margin.x) delta.x = -(x + margin.x)
+                        if (x + delta.x > 0) {
+                            delta.x = -x
+                        } else if (x + delta.x < -margin.x) {
+                            delta.x = -(x + margin.x)
+                        }
                     }
 
                     //Update & apply matrix
@@ -225,8 +237,10 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
         //Get current timestamp
         val currentTimestamp = System.currentTimeMillis()
 
-        //Check if its double click
+        //Check if its multi click
         if (currentTimestamp - lastClickTimestamp > multiClickDelay) {
+            //First click
+
             //Reset multi click count
             multiClickCount = 0
 
@@ -236,6 +250,8 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
             //Save timestamp
             lastClickTimestamp = currentTimestamp
         } else {
+            //Multi click
+
             //Increase multi click count
             multiClickCount++
 
@@ -244,8 +260,8 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
             handler?.postDelayed(finishMultiClickRunnable, multiClickDelay)
 
             //Perform multi click
-            val performed = onMultiClick?.invoke(last.x, last.y, multiClickCount) ?: false
-            if (performed) {
+            val continueMultiClick = onMultiClick?.invoke(last.x, last.y, multiClickCount) ?: false
+            if (continueMultiClick) {
                 //Save timestamp
                 lastClickTimestamp = currentTimestamp
             } else {
