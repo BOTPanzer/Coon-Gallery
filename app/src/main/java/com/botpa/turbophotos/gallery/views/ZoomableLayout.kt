@@ -22,6 +22,7 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
     private var clickHandler: MultiClickHandler = MultiClickHandler()
     private var transformHandler: ZoomTransformHandler = ZoomTransformHandler()
     private var scaleDetector: ScaleGestureDetector = ScaleGestureDetector(context, ScaleListener())
+    private var flingHandler: FlingHandler = FlingHandler()
 
     //Action modes
     private companion object {
@@ -105,6 +106,9 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
+        //Pass event to velocity tracker
+        flingHandler.addMovement(event)
+
         //Update pointers
         if (pointers != event.pointerCount) pointers = event.pointerCount
         onPointersChanged?.run()
@@ -121,6 +125,9 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
                 //Save position
                 lastTouch.set(currentPosition)
                 startTouch.set(lastTouch)
+
+                //Stop active fling
+                flingHandler.stop()
             }
             MotionEvent.ACTION_POINTER_UP -> {
                 //Change mode
@@ -135,7 +142,18 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
             }
             MotionEvent.ACTION_UP -> {
                 //Check if clicked
-                if (mode == TAP) performClick()
+                if (mode == TAP) {
+                    //Clicked
+                    performClick()
+                } else if (mode == DRAG && transformHandler.isZoomedIn) {
+                    //Start fling
+                    flingHandler.startFling { deltaX, deltaY ->
+                        val tempDelta = PointF(deltaX, deltaY)
+                        val clampedDelta = transformHandler.constrainDragDelta(tempDelta)
+                        transformHandler.matrix.postTranslate(clampedDelta.x, clampedDelta.y)
+                        transformHandler.applyToChild()
+                    }
+                }
 
                 //Reset mode
                 mode = NONE
@@ -207,6 +225,7 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         clickHandler.cancelPendingCallbacks()
+        flingHandler.recycle()
     }
 
     //Helpers
@@ -224,7 +243,7 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
 
     }
 
-    private inner class MultiClickHandler() {
+    private inner class MultiClickHandler {
 
         //Config
         private val multiClickDelay: Long = 250
@@ -308,7 +327,7 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
 
     }
 
-    private inner class ZoomTransformHandler() {
+    private inner class ZoomTransformHandler {
 
         private val matrixValues = FloatArray(9)
         val matrix: Matrix = Matrix()
@@ -562,6 +581,82 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
             child.translationY = matrixValues[Matrix.MTRANS_Y]
             child.scaleX = matrixValues[Matrix.MSCALE_X]
             child.scaleY = matrixValues[Matrix.MSCALE_Y]
+        }
+
+    }
+
+    private inner class FlingHandler {
+
+        private val scroller = android.widget.OverScroller(context)
+        private var velocityTracker: android.view.VelocityTracker? = null
+        private var flingRunnable: Runnable? = null
+
+        private var lastFlingDistance = 0
+        private var dirX = 0f
+        private var dirY = 0f
+
+        fun addMovement(event: MotionEvent) {
+            if (velocityTracker == null) {
+                velocityTracker = android.view.VelocityTracker.obtain()
+            }
+            velocityTracker?.addMovement(event)
+        }
+
+        fun stop() {
+            scroller.forceFinished(true)
+            flingRunnable?.let { removeCallbacks(it) }
+            flingRunnable = null
+        }
+
+        fun startFling(onStep: (deltaX: Float, deltaY: Float) -> Unit) {
+            val tracker = velocityTracker ?: return
+            tracker.computeCurrentVelocity(800) //Pixels per second
+
+            val vx = tracker.xVelocity
+            val vy = tracker.yVelocity
+            val magnitude = kotlin.math.hypot(vx, vy)
+
+            //Ignore tiny flings
+            if (magnitude < 100f) return
+
+            stop()
+
+            //Calculate normalized direction vector
+            dirX = vx / magnitude
+            dirY = vy / magnitude
+            lastFlingDistance = 0
+
+            //Fling a single scalar magnitude on X axis
+            scroller.fling(
+                0, 0,
+                magnitude.toInt(), 0,
+                0, Int.MAX_VALUE,
+                0, 0
+            )
+
+            flingRunnable = object : Runnable {
+                override fun run() {
+                    if (scroller.computeScrollOffset()) {
+                        val currDistance = scroller.currX
+                        val deltaDistance = (currDistance - lastFlingDistance).toFloat()
+                        lastFlingDistance = currDistance
+
+                        // Scale distance delta along the direction vector
+                        val deltaX = deltaDistance * dirX
+                        val deltaY = deltaDistance * dirY
+
+                        onStep(deltaX, deltaY)
+                        postOnAnimation(this)
+                    }
+                }
+            }
+            postOnAnimation(flingRunnable!!)
+        }
+
+        fun recycle() {
+            stop()
+            velocityTracker?.recycle()
+            velocityTracker = null
         }
 
     }
