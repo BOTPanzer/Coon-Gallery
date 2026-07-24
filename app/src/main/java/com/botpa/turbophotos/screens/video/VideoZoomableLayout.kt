@@ -21,7 +21,7 @@ class VideoZoomableLayout(context: Context, attrs: AttributeSet?) : ZoomableLayo
 
     //Register events
     init {
-        onMultiClick = { x, y, count ->
+        setOnMultiClickListener { x, y, count ->
             //Get seek areas size
             val maxArea = (150 * resources.displayMetrics.density).toInt()
             val doubleTapArea = min(width / 5, maxArea)
@@ -46,7 +46,7 @@ class VideoZoomableLayout(context: Context, attrs: AttributeSet?) : ZoomableLayo
             }
         }
 
-        onMultiClickFinished = { count ->
+        setOnMultiClickFinishedListener { count ->
             //Check if seeking
             if (skipDuration != 0L) {
                 //Seek & reset skip duration

@@ -40,11 +40,11 @@ class DisplayAdapter(
         holder.bottomMargin.layoutParams = params
 
         //Add listeners
-        holder.zoom.onSingleClick = {
+        holder.zoom.setOnSingleClickListener {
             onClick?.run(holder.zoom, holder.image, holder.bindingAdapterPosition)
         }
 
-        holder.zoom.onZoomChanged = {
+        holder.zoom.setOnZoomChangedListener {
             onZoomChanged?.run(holder.zoom, holder.image, holder.bindingAdapterPosition)
         }
 

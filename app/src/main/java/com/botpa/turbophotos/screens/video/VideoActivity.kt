@@ -242,7 +242,7 @@ class VideoActivity : BaseActivity() {
 
     override fun onInitListeners() {
         //Player
-        playerZoom.onSingleClick = {
+        playerZoom.setOnSingleClickListener {
             //Toggle controller on single click
             toggleController()
         }

@@ -18,12 +18,10 @@ import kotlin.math.roundToInt
 
 open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(context, attrs) {
 
-    private var scaleDetector: ScaleGestureDetector
-    private var matrix: Matrix = Matrix()
-    private var m: FloatArray = FloatArray(9)
-
-    //Content
-    private val child: View? get() = if (isNotEmpty()) getChildAt(0) else null
+    //Components
+    private var clickHandler: MultiClickHandler = MultiClickHandler()
+    private var transformHandler: ZoomTransformHandler = ZoomTransformHandler()
+    private var scaleDetector: ScaleGestureDetector = ScaleGestureDetector(context, ScaleListener())
 
     //Action modes
     private companion object {
@@ -35,8 +33,8 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
     private var mode: Int = NONE
 
     //Touch info
-    private var last: PointF = PointF()
-    private var start: PointF = PointF()
+    private var lastTouch: PointF = PointF()
+    private var startTouch: PointF = PointF()
     private var swipeDistance: Int = ViewConfiguration.get(context).scaledTouchSlop
 
     var pointers: Int = 0
@@ -44,48 +42,32 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
 
     var onPointersChanged: Runnable? = null
 
-    //Sizes
-    private var viewSize: PointF = PointF()
-    private var contentSize: PointF = PointF()
-    private var originalSize: PointF = PointF()
-    private var originalSpace: PointF = PointF()
-
     //Drag
     private val minDragAmount: Float = 5f
 
-    //Zoom & Scale
-    private var margin: PointF = PointF()
-    private var minZoom: Float = 1f
-    private var maxZoom: Float = 20f
-    private var fitScale: Float = 1f
-    private var coverScale: Float = 1f
-
-    var zoom: Float = 1f
-        private set
+    //Zoom
+    val zoom get() = transformHandler.zoom
 
     var doubleTapZoomsToCustom: Boolean = false
     var doubleTapCustomZoom: Float = 2f
 
-    //Click
-    private var lastClickTimestamp: Long = 0
-    private val multiClickDelay: Long = 250
-    private var multiClickCount: Int = 0
-    private val finishMultiClickRunnable = Runnable {
-        onMultiClickFinished?.invoke(multiClickCount + 1)
-        multiClickCount = 0
-    }
-
-    var onSingleClick: Runnable? = null
-    var onMultiClick: ((x: Float, y: Float, count: Int) -> Boolean)? = null
-    var onMultiClickFinished: ((count: Int) -> Unit)? = null
-    var onZoomChanged: (() -> Unit)? = null
-
 
     //Constructor
     init {
-        //Init scale detector
-        scaleDetector = ScaleGestureDetector(context, ScaleListener())
-        scaleDetector.isQuickScaleEnabled = true //Reduces delay for scaling detection
+        //Reduce delay for scaling detection
+        scaleDetector.isQuickScaleEnabled = true
+
+        //Set double-tap action
+        clickHandler.onDefaultDoubleTapAction = {
+            transformHandler.animateResize(
+                if (transformHandler.isZoomedIn)
+                    transformHandler.fitScale
+                else if (doubleTapZoomsToCustom)
+                    doubleTapCustomZoom
+                else
+                    transformHandler.coverScale
+            )
+        }
     }
 
     //Touch
@@ -104,13 +86,13 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
             MotionEvent.ACTION_DOWN -> {
                 //First pointer down -> Reset state
                 mode = NONE
-                last.set(event.x, event.y)
-                start.set(event.x, event.y)
+                lastTouch.set(event.x, event.y)
+                startTouch.set(event.x, event.y)
             }
             MotionEvent.ACTION_MOVE -> {
                 //Intercept if zoomed & dragged beyond swipe distance
-                if (zoom > minZoom) {
-                    val diff = PointF(event.x - start.x, event.y - start.y)
+                if (transformHandler.isZoomedIn) {
+                    val diff = PointF(event.x - startTouch.x, event.y - startTouch.y)
                     if (diff.x > swipeDistance || diff.y > swipeDistance) {
                         //Start dragging
                         mode = DRAG
@@ -123,17 +105,12 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        //Copy matrix values & get position
-        matrix.getValues(m)
-        val x = m[Matrix.MTRANS_X]
-        val y = m[Matrix.MTRANS_Y]
-
         //Update pointers
         if (pointers != event.pointerCount) pointers = event.pointerCount
         onPointersChanged?.run()
 
         //Get current position
-        val curr = PointF(scaleDetector.focusX, scaleDetector.focusY)
+        val currentPosition = PointF(scaleDetector.focusX, scaleDetector.focusY)
 
         //Check action
         when (event.actionMasked) {
@@ -142,15 +119,15 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
                 mode = if (pointers == 0) NONE else if (pointers == 1) TAP else ZOOM
 
                 //Save position
-                last.set(curr)
-                start.set(last)
+                lastTouch.set(currentPosition)
+                startTouch.set(lastTouch)
             }
             MotionEvent.ACTION_POINTER_UP -> {
                 //Change mode
                 mode = if (pointers - 1 == 0) NONE else if (pointers - 1 == 1) DRAG else ZOOM
 
                 //Save position
-                last.set(curr)
+                lastTouch.set(currentPosition)
 
                 //Pointer up
                 pointers--
@@ -169,7 +146,7 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
             }
             MotionEvent.ACTION_MOVE -> {
                 //Calculate movement delta
-                val delta = PointF(curr.x - last.x, curr.y - last.y)
+                val delta = PointF(currentPosition.x - lastTouch.x, currentPosition.y - lastTouch.y)
 
                 //Check if changing from tap to drag or already zooming/dragging
                 if (mode == TAP && delta.length() >= minDragAmount) {
@@ -177,53 +154,17 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
                     mode = DRAG
 
                     //Update last touch
-                    last.set(curr)
-                } else if (mode == ZOOM || (mode == DRAG && zoom > minZoom)) {
-                    //Calculate size after applying current scale
-                    val scaledSize = PointF(
-                        (originalSize.x * zoom).roundToInt().toFloat(),
-                        (originalSize.y * zoom).roundToInt().toFloat()
-                    )
-
-                    //Fit
-                    if (scaledSize.x < viewSize.x) {
-                        //Fit vertically
-                        delta.x = 0f
-                        if (y + delta.y > 0) {
-                            delta.y = -y
-                        } else if (y + delta.y < -margin.y) {
-                            delta.y = -(y + margin.y)
-                        }
-                    } else if (scaledSize.y < viewSize.y) {
-                        //Fit horizontally
-                        delta.y = 0f
-                        if (x + delta.x > 0) {
-                            delta.x = -x
-                        } else if (x + delta.x < -margin.x) {
-                            delta.x = -(x + margin.x)
-                        }
-                    } else {
-                        //Fit vertically
-                        if (y + delta.y > 0) {
-                            delta.y = -y
-                        } else if (y + delta.y < -margin.y) {
-                            delta.y = -(y + margin.y)
-                        }
-
-                        //Fit horizontally
-                        if (x + delta.x > 0) {
-                            delta.x = -x
-                        } else if (x + delta.x < -margin.x) {
-                            delta.x = -(x + margin.x)
-                        }
-                    }
+                    lastTouch.set(currentPosition)
+                } else if (mode == ZOOM || (mode == DRAG && transformHandler.isZoomedIn)) {
+                    //Process move delta
+                    val clampedDelta = transformHandler.constrainDragDelta(delta)
 
                     //Update & apply matrix
-                    matrix.postTranslate(delta.x, delta.y)
-                    applyMatrixToChild()
+                    transformHandler.matrix.postTranslate(clampedDelta.x, clampedDelta.y)
+                    transformHandler.applyToChild()
 
                     //Update last touch
-                    last.set(curr)
+                    lastTouch.set(currentPosition)
                 }
             }
         }
@@ -231,180 +172,44 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
     }
 
     override fun performClick(): Boolean {
-        //Stop multi click finished runnable
-        handler?.removeCallbacks(finishMultiClickRunnable)
-
-        //Get current timestamp
-        val currentTimestamp = System.currentTimeMillis()
-
-        //Check if its multi click
-        if (currentTimestamp - lastClickTimestamp > multiClickDelay) {
-            //First click
-
-            //Reset multi click count
-            multiClickCount = 0
-
-            //Run click runnable
-            if (onSingleClick != null) handler?.postDelayed(onSingleClick!!, multiClickDelay)
-
-            //Save timestamp
-            lastClickTimestamp = currentTimestamp
-        } else {
-            //Multi click
-
-            //Increase multi click count
-            multiClickCount++
-
-            //Stop click runnable & wait for multi click finished
-            if (onSingleClick != null) handler?.removeCallbacks(onSingleClick!!)
-            handler?.postDelayed(finishMultiClickRunnable, multiClickDelay)
-
-            //Perform multi click
-            val continueMultiClick = onMultiClick?.invoke(last.x, last.y, multiClickCount) ?: false
-            if (continueMultiClick) {
-                //Save timestamp
-                lastClickTimestamp = currentTimestamp
-            } else {
-                //Reset timestamp
-                lastClickTimestamp = 0
-
-                //Call multi click finished
-                onMultiClickFinished?.invoke(multiClickCount)
-                multiClickCount = 0
-
-                //Animate zoom
-                animateResize(if (zoom > minZoom) fitScale else if (doubleTapZoomsToCustom) doubleTapCustomZoom else coverScale)
-            }
-        }
-
+        clickHandler.performClick(lastTouch.x, lastTouch.y)
         return super.performClick()
     }
 
-    //Zoom
-    private fun applyMatrixToChild() {
-        //Get view
-        val view = child ?: return
-
-        //Apply matrix
-        matrix.getValues(m)
-        view.pivotX = 0f
-        view.pivotY = 0f
-        view.translationX = m[Matrix.MTRANS_X]
-        view.translationY = m[Matrix.MTRANS_Y]
-        view.scaleX = m[Matrix.MSCALE_X]
-        view.scaleY = m[Matrix.MSCALE_Y]
+    //Listeners
+    fun setOnSingleClickListener(listener: Runnable?) {
+        clickHandler.onSingleClick = listener
     }
 
-    private fun onSizeChanged() {
-        //No size
-        if (contentSize.x == 0f || contentSize.y == 0f || viewSize.x == 0f || viewSize.y == 0f) return
-
-        //Get scale
-        val scale = PointF(viewSize.x / contentSize.x, viewSize.y / contentSize.y)
-
-        //Update fit & cover scales
-        fitScale = min(scale.x.toDouble(), scale.y.toDouble()).toFloat()
-        coverScale = max(scale.x.toDouble(), scale.y.toDouble()).toFloat()
-
-        //Update original space & size
-        val x = (fitScale * contentSize.x)
-        val y = (fitScale * contentSize.y)
-        originalSpace.x = (viewSize.x - x) / 2
-        originalSpace.y = (viewSize.y - y) / 2
-        originalSize.x = x
-        originalSize.y = y
-
-        //Fit image
-        resize(fitScale)
+    fun setOnMultiClickListener(listener: ((x: Float, y: Float, count: Int) -> Boolean)?) {
+        clickHandler.onMultiClick = listener
     }
 
-    private fun resize(scale: Float, center: Boolean = true) {
-        //Either view size or bitmap size is not init yet
-        if (scale.isInfinite() || scale.isNaN()) return
-
-        //Save & update scale
-        zoom = scale / fitScale
-        matrix.setScale(scale, scale)
-
-        //Center the image
-        if (center) matrix.postTranslate((viewSize.x - (scale * contentSize.x)) / 2, (viewSize.y - (scale * contentSize.y)) / 2)
-
-        //Update margins
-        margin.x = viewSize.x * zoom - viewSize.x - (2 * originalSpace.x * zoom)
-        margin.y = viewSize.y * zoom - viewSize.y - (2 * originalSpace.y * zoom)
-        applyMatrixToChild()
-
-        //Zoom changed
-        onZoomChanged?.invoke()
+    fun setOnMultiClickFinishedListener(listener: ((count: Int) -> Unit)?) {
+        clickHandler.onMultiClickFinished = listener
     }
 
-    private fun animateResize(scaleEnd: Float) {
-        //Get start scale
-        val scaleStart = zoom * fitScale
-
-        //Get start & end position
-        matrix.getValues(m)
-        val posStart = PointF(m[Matrix.MTRANS_X], m[Matrix.MTRANS_Y])
-        val posEnd = PointF(
-            (viewSize.x - (scaleEnd * contentSize.x)) / 2,
-            (viewSize.y - (scaleEnd * contentSize.y)) / 2
-        )
-
-        //Create zoom animator (current scale = zoom * fitScale)
-        val animator = ValueAnimator.ofFloat(0f, 1f)
-        animator.duration = 350L
-        animator.addUpdateListener { animation ->
-            val t = animation.animatedValue as Float
-
-            //Zoom
-            resize(Orion.lerp(scaleStart, scaleEnd, t), false)
-
-            //Position
-            matrix.postTranslate(
-                Orion.lerp(posStart.x, posEnd.x, t),
-                Orion.lerp(posStart.y, posEnd.y, t)
-            )
-            applyMatrixToChild()
-        }
-
-        //Start animation
-        animator.start()
+    fun setOnZoomChangedListener(listener: () -> Unit) {
+        transformHandler.onZoomChanged = listener
     }
 
     //Other
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-
-        //Get new size
-        val newSize = PointF(MeasureSpec.getSize(widthMeasureSpec).toFloat(), MeasureSpec.getSize(heightMeasureSpec).toFloat())
-
-        //Size didn't change -> Return
-        if (viewSize.x == newSize.x && viewSize.y == newSize.y) return
-
-        //Update size
-        viewSize.set(newSize)
-
-        //Notify size changed
-        onSizeChanged()
+        transformHandler.onMeasure(widthMeasureSpec, heightMeasureSpec)
     }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
-        child?.let {
-            //Get measured size
-            val measuredW = it.measuredWidth.toFloat()
-            val measuredH = it.measuredHeight.toFloat()
-
-            //Check if size changed
-            if (measuredW > 0 && measuredH > 0) {
-                if (contentSize.x != measuredW || contentSize.y != measuredH) {
-                    contentSize.set(measuredW, measuredH)
-                    onSizeChanged()
-                }
-            }
-        }
+        transformHandler.onLayout()
     }
 
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        clickHandler.cancelPendingCallbacks()
+    }
+
+    //Helpers
     private inner class ScaleListener : ScaleGestureDetector.SimpleOnScaleGestureListener() {
 
         override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
@@ -413,6 +218,181 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
         }
 
         override fun onScale(detector: ScaleGestureDetector): Boolean {
+            transformHandler.onScale(detector)
+            return true
+        }
+
+    }
+
+    private inner class MultiClickHandler() {
+
+        //Config
+        private val multiClickDelay: Long = 250
+        private var lastClickTimestamp: Long = 0
+        private var multiClickCount: Int = 0
+
+        //Multi clicks
+        private val finishMultiClickRunnable = Runnable {
+            onMultiClickFinished?.invoke(multiClickCount + 1)
+            multiClickCount = 0
+        }
+
+        //Listeners
+        var onSingleClick: Runnable? = null
+        var onMultiClick: ((x: Float, y: Float, count: Int) -> Boolean)? = null
+        var onMultiClickFinished: ((count: Int) -> Unit)? = null
+        var onDefaultDoubleTapAction: (() -> Unit)? = null
+
+
+        //Actions
+        fun performClick(x: Float, y: Float): Boolean {
+            //Get handler
+            val handler = handler ?: return false
+
+            //Stop multi click finished runnable
+            handler.removeCallbacks(finishMultiClickRunnable)
+
+            //Get current timestamp
+            val currentTimestamp = System.currentTimeMillis()
+
+            //Check if its multi click
+            if (currentTimestamp - lastClickTimestamp > multiClickDelay) {
+                //First click
+
+                //Reset multi click count
+                multiClickCount = 0
+
+                //Run click runnable
+                onSingleClick?.let { handler.postDelayed(it, multiClickDelay) }
+
+                //Save timestamp
+                lastClickTimestamp = currentTimestamp
+            } else {
+                //Multi click
+
+                //Increase multi click count
+                multiClickCount++
+
+                //Stop click runnable & wait for multi click finished
+                onSingleClick?.let { handler.removeCallbacks(it) }
+                handler.postDelayed(finishMultiClickRunnable, multiClickDelay)
+
+                //Perform multi click
+                val continueMultiClick = onMultiClick?.invoke(x, y, multiClickCount) ?: false
+                if (continueMultiClick) {
+                    //Save timestamp
+                    lastClickTimestamp = currentTimestamp
+                } else {
+                    //Reset timestamp
+                    lastClickTimestamp = 0
+
+                    //Call multi click finished
+                    onMultiClickFinished?.invoke(multiClickCount)
+                    multiClickCount = 0
+
+                    //Trigger double-tap action
+                    onDefaultDoubleTapAction?.invoke()
+                }
+            }
+            return true
+        }
+
+        fun cancelPendingCallbacks() {
+            //Get handler
+            val handler = handler ?: return
+
+            //Cancel callbacks
+            handler.removeCallbacks(finishMultiClickRunnable)
+            onSingleClick?.let { handler.removeCallbacks(it) }
+        }
+
+    }
+
+    private inner class ZoomTransformHandler() {
+
+        private val matrixValues = FloatArray(9)
+        val matrix: Matrix = Matrix()
+
+        //Content
+        private val child: View? get() = if (isNotEmpty()) getChildAt(0) else null
+
+        //Sizes
+        val viewSize = PointF()
+        val contentSize = PointF()
+        val originalSize = PointF()
+        val originalSpace = PointF()
+        val margin = PointF()
+
+        var fitScale = 1f
+            private set
+        var coverScale = 1f
+            private set
+
+        //Zoom
+        var minZoom = 1f
+        var maxZoom = 20f
+
+        var zoom = 1f
+            private set
+
+        val isZoomedIn get() = zoom > minZoom
+
+        var onZoomChanged: (() -> Unit)? = null
+
+
+        //Events
+        fun onSizeChanged() {
+            //No size
+            if (viewSize.x == 0f || viewSize.y == 0f || contentSize.x == 0f || contentSize.y == 0f) return
+
+            //Update fit & cover scales
+            val scaleX = viewSize.x / contentSize.x
+            val scaleY = viewSize.y / contentSize.y
+            fitScale = min(scaleX.toDouble(), scaleY.toDouble()).toFloat()
+            coverScale = max(scaleX.toDouble(), scaleY.toDouble()).toFloat()
+
+            //Update original space & size
+            val fittedW = fitScale * contentSize.x
+            val fittedH = fitScale * contentSize.y
+            originalSpace.set((viewSize.x - fittedW) / 2f, (viewSize.y - fittedH) / 2f)
+            originalSize.set(fittedW, fittedH)
+
+            //Fit image
+            resize(fitScale)
+        }
+
+        fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+            //Get new size
+            val newW = MeasureSpec.getSize(widthMeasureSpec).toFloat()
+            val newH = MeasureSpec.getSize(heightMeasureSpec).toFloat()
+
+            //Size didn't change -> Return
+            if (viewSize.x == newW && viewSize.y == newH) return
+
+            //Update size using the existing object
+            viewSize.set(newW, newH)
+
+            //Notify size changed
+            onSizeChanged()
+        }
+
+        fun onLayout() {
+            child?.let {
+                //Get measured size
+                val measuredW = it.measuredWidth.toFloat()
+                val measuredH = it.measuredHeight.toFloat()
+
+                //Check if size changed
+                if (measuredW > 0 && measuredH > 0) {
+                    if (contentSize.x != measuredW || contentSize.y != measuredH) {
+                        contentSize.set(measuredW, measuredH)
+                        onSizeChanged()
+                    }
+                }
+            }
+        }
+
+        fun onScale(detector: ScaleGestureDetector) {
             var scaleFactor = detector.scaleFactor
             val origScale = zoom
             zoom *= scaleFactor
@@ -432,29 +412,156 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
             val focusY = detector.focusY
 
             if (originalSize.x * zoom <= viewSize.x || originalSize.y * zoom <= viewSize.y) {
-                matrix.postScale(scaleFactor, scaleFactor, viewSize.x / 2, viewSize.y / 2)
+                matrix.postScale(scaleFactor, scaleFactor, viewSize.x / 2f, viewSize.y / 2f)
             } else {
                 matrix.postScale(scaleFactor, scaleFactor, focusX, focusY)
             }
 
-            matrix.getValues(m)
-            val x = m[Matrix.MTRANS_X]
-            val y = m[Matrix.MTRANS_Y]
-
             if (scaleFactor < 1) {
+                matrix.getValues(matrixValues)
+                val x = matrixValues[Matrix.MTRANS_X]
+                val y = matrixValues[Matrix.MTRANS_Y]
+
                 if ((originalSize.x * zoom).roundToInt() < viewSize.x) {
-                    if (y < -margin.y) matrix.postTranslate(0f, -(y + margin.y))
-                    else if (y > 0) matrix.postTranslate(0f, -y)
+                    if (y < -margin.y) {
+                        matrix.postTranslate(0f, -(y + margin.y))
+                    } else if (y > 0) {
+                        matrix.postTranslate(0f, -y)
+                    }
                 } else {
-                    if (x < -margin.x) matrix.postTranslate(-(x + margin.x), 0f)
-                    else if (x > 0) matrix.postTranslate(-x, 0f)
+                    if (x < -margin.x) {
+                        matrix.postTranslate(-(x + margin.x), 0f)
+                    } else if (x > 0) {
+                        matrix.postTranslate(-x, 0f)
+                    }
                 }
             }
-            applyMatrixToChild()
+
+            applyToChild()
 
             //Zoom changed
             onZoomChanged?.invoke()
-            return true
+        }
+
+        //Resize
+        fun resize(scale: Float, center: Boolean = true) {
+            //Either view size or bitmap size is not init yet
+            if (scale.isInfinite() || scale.isNaN()) return
+
+            //Save & update scale
+            zoom = scale / fitScale
+            matrix.setScale(scale, scale)
+
+            //Center the image
+            if (center) {
+                matrix.postTranslate(
+                    (viewSize.x - (scale * contentSize.x)) / 2f,
+                    (viewSize.y - (scale * contentSize.y)) / 2f
+                )
+            }
+
+            //Update margins
+            margin.x = viewSize.x * zoom - viewSize.x - (2 * originalSpace.x * zoom)
+            margin.y = viewSize.y * zoom - viewSize.y - (2 * originalSpace.y * zoom)
+            applyToChild()
+
+            //Zoom changed
+            onZoomChanged?.invoke()
+        }
+
+        fun animateResize(scaleEnd: Float) {
+            //Get start scale
+            val scaleStart = zoom * fitScale
+
+            //Get start & end position
+            matrix.getValues(matrixValues)
+            val posStart = PointF(matrixValues[Matrix.MTRANS_X], matrixValues[Matrix.MTRANS_Y])
+            val posEnd = PointF(
+                (viewSize.x - (scaleEnd * contentSize.x)) / 2,
+                (viewSize.y - (scaleEnd * contentSize.y)) / 2
+            )
+
+            //Create zoom animator (current scale = zoom * fitScale)
+            val animator = ValueAnimator.ofFloat(0f, 1f)
+            animator.duration = 350L
+            animator.addUpdateListener { animation ->
+                val t = animation.animatedValue as Float
+
+                //Zoom
+                resize(Orion.lerp(scaleStart, scaleEnd, t), false)
+
+                //Position
+                matrix.postTranslate(
+                    Orion.lerp(posStart.x, posEnd.x, t),
+                    Orion.lerp(posStart.y, posEnd.y, t)
+                )
+                applyToChild()
+            }
+
+            //Start animation
+            animator.start()
+        }
+
+        //Helpers
+        fun constrainDragDelta(delta: PointF): PointF {
+            matrix.getValues(matrixValues)
+            val x = matrixValues[Matrix.MTRANS_X]
+            val y = matrixValues[Matrix.MTRANS_Y]
+
+            //Calculate size after applying current scale
+            val scaledW = (originalSize.x * zoom).roundToInt().toFloat()
+            val scaledH = (originalSize.y * zoom).roundToInt().toFloat()
+
+            //Fit
+            val clampedDelta = PointF(delta.x, delta.y)
+
+            if (scaledW < viewSize.x) {
+                //Fit vertically
+                clampedDelta.x = 0f
+                if (y + clampedDelta.y > 0) {
+                    clampedDelta.y = -y
+                } else if (y + clampedDelta.y < -margin.y) {
+                    clampedDelta.y = -(y + margin.y)
+                }
+            } else if (scaledH < viewSize.y) {
+                //Fit horizontally
+                clampedDelta.y = 0f
+                if (x + clampedDelta.x > 0) {
+                    clampedDelta.x = -x
+                } else if (x + clampedDelta.x < -margin.x) {
+                    clampedDelta.x = -(x + margin.x)
+                }
+            } else {
+                //Fit vertically
+                if (y + clampedDelta.y > 0) {
+                    clampedDelta.y = -y
+                } else if (y + clampedDelta.y < -margin.y) {
+                    clampedDelta.y = -(y + margin.y)
+                }
+
+                //Fit horizontally
+                if (x + clampedDelta.x > 0) {
+                    clampedDelta.x = -x
+                } else if (x + clampedDelta.x < -margin.x) {
+                    clampedDelta.x = -(x + margin.x)
+                }
+            }
+
+            return clampedDelta
+        }
+
+        fun applyToChild() {
+            //Get view
+            val child = child ?: return
+
+            //Apply matrix
+            matrix.getValues(matrixValues)
+            child.pivotX = 0f
+            child.pivotY = 0f
+            child.translationX = matrixValues[Matrix.MTRANS_X]
+            child.translationY = matrixValues[Matrix.MTRANS_Y]
+            child.scaleX = matrixValues[Matrix.MSCALE_X]
+            child.scaleY = matrixValues[Matrix.MSCALE_Y]
         }
 
     }
