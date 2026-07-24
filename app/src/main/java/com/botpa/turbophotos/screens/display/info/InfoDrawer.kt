@@ -1,6 +1,6 @@
 package com.botpa.turbophotos.screens.display.info
 
-import android.content.Context
+import android.app.Activity
 import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import android.text.format.DateFormat
@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Item
+import com.botpa.turbophotos.gallery.LocalGeocoder
 import com.botpa.turbophotos.gallery.modals.core.CustomDrawer
 import com.botpa.turbophotos.gallery.views.ListSeparator
 import com.botpa.turbophotos.util.Orion
@@ -24,9 +25,9 @@ import java.util.Locale
 import kotlin.math.round
 
 class InfoDrawer(
-    context: Context,
+    private val activity: Activity,
     private val item: Item
-) : CustomDrawer(context, R.layout.drawer_display_info) {
+) : CustomDrawer(activity, R.layout.drawer_display_info) {
 
     //Views (info)
     private lateinit var infoLayout: View
@@ -175,6 +176,7 @@ class InfoDrawer(
         val dateFormatter = SimpleDateFormat(if (DateFormat.is24HourFormat(context)) "dd/MM/yyyy, HH:mm.ss" else "dd/MM/yyyy, hh:mm.ss a", Locale.ENGLISH)
         val size = round(item.size.toFloat() / 10) / 100
         val resolution = getItemResolution(item, exif)
+        val location = exif.latLong
 
         //Create items list (file)
         infoFileItems.add(Info("Name", item.name))
@@ -183,6 +185,27 @@ class InfoDrawer(
         infoFileItems.add(Info("Size", if (size > 1000) "${round(size / 10) / 100} MB" else "$size KB"))
         if (resolution.first > 0 && resolution.second > 0) {
             infoFileItems.add(Info("Resolution", "${resolution.first}x${resolution.second}"))
+        }
+        if (location != null) {
+            //Get location info
+            val latitude = location[0]
+            val latitudeText = String.format(Locale.getDefault(), "%.4f", latitude)
+            val longitude = location[1]
+            val longitudeText = String.format(Locale.getDefault(), "%.4f", longitude)
+            val locationCoordinates = "${latitudeText}º N, ${longitudeText}º W"
+            val item = Info("Location", "Finding location name...\n$locationCoordinates")
+            infoFileItems.add(item)
+
+            //Async load location name
+            Thread {
+                val cityLabel = LocalGeocoder.getInstance(context).getLocationLabel(latitude, longitude, maxCityDistanceKm = 30.0)
+                activity.runOnUiThread {
+                    synchronized(this) {
+                        item.info = "$cityLabel\n$locationCoordinates"
+                        infoFileList.adapter?.notifyItemChanged(infoFileItems.indexOf(item))
+                    }
+                }
+            }.start()
         }
 
         //Init list (file)
@@ -277,14 +300,16 @@ class InfoDrawer(
     }
 
     fun initList(layout: View, list: RecyclerView, items: List<Info>) {
-        if (items.isEmpty()) {
-            //Empty -> Hide list
-            layout.visibility = View.GONE
-        } else {
-            //Has items -> Init list
-            list.adapter = InfoAdapter(context, items)
-            list.layoutManager = LinearLayoutManager(context)
-            list.addItemDecoration(ListSeparator(3))
+        synchronized(this) {
+            if (items.isEmpty()) {
+                //Empty -> Hide list
+                layout.visibility = View.GONE
+            } else {
+                //Has items -> Init list
+                list.adapter = InfoAdapter(context, items)
+                list.layoutManager = LinearLayoutManager(context)
+                list.addItemDecoration(ListSeparator(3))
+            }
         }
     }
 
