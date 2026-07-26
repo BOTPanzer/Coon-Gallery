@@ -31,6 +31,10 @@ Privacy-focused Android gallery with smart search support powered by metadata fi
   
   - Trashed or favourited a file from another app? It will appear here too!
 
+- Internal **video player** with **PiP, playback speed, subtitles & audio track** support.
+  
+  - Want a simple and useful video player? No need to download other apps!
+
 ## How to Run
 
 Choose whichever version you want from the [releases page](https://github.com/BOTPanzer/Coon-Gallery/releases) and download the apk or clone the repository and build it yourself using Android Studio.
