@@ -605,6 +605,10 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
         private var dirX = 0f
         private var dirY = 0f
 
+        init {
+            scroller.setFriction(0.04f)
+        }
+
         fun addMovement(event: MotionEvent) {
             if (velocityTracker == null) {
                 velocityTracker = android.view.VelocityTracker.obtain()
