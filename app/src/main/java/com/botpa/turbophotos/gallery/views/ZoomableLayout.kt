@@ -133,8 +133,18 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
                 //Change mode
                 mode = if (pointers - 1 == 0) NONE else if (pointers - 1 == 1) DRAG else ZOOM
 
+                //Find index of the pointer that will stay down (if 1 pointer remains)
+                val actionIndex = event.actionIndex
+                val remainingIndex = if (actionIndex == 0) 1 else 0
+
                 //Save position
-                lastTouch.set(currentPosition)
+                if (event.pointerCount == 2) {
+                    //Remaining finger's position
+                    lastTouch.set(event.getX(remainingIndex), event.getY(remainingIndex))
+                } else {
+                    //Current position
+                    lastTouch.set(currentPosition)
+                }
 
                 //Pointer up
                 pointers--
