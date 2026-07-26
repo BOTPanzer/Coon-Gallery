@@ -1,3 +1,5 @@
+@file:OptIn(UnstableApi::class)
+
 package com.botpa.turbophotos.screens.video
 
 import android.Manifest
@@ -25,11 +27,13 @@ import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Rational
+import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import android.view.WindowManager
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.OptIn
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.Insets
@@ -37,11 +41,17 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.common.TrackSelectionOverride
+import androidx.media3.common.Tracks
+import androidx.media3.common.text.CueGroup
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
+import androidx.media3.ui.SubtitleView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.BaseActivity
 import com.botpa.turbophotos.gallery.StoragePairs
@@ -50,11 +60,13 @@ import com.botpa.turbophotos.gallery.options.OptionsGroup
 import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.options.OptionsManager
 import com.botpa.turbophotos.gallery.permissions.PermissionType
+import com.botpa.turbophotos.screens.video.tracks.TracksDialog
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.slider.Slider
 import java.io.File
+import java.util.Locale
 import kotlin.math.max
 import kotlin.math.min
 
@@ -113,6 +125,10 @@ class VideoActivity : BaseActivity() {
 
     private lateinit var playerZoom: VideoZoomableLayout
     private lateinit var playerView: PlayerView
+    private lateinit var playerSubtitles: SubtitleView
+
+    private val playerAudioTracks = mutableListOf<MediaTrackInfo>()
+    private val playerSubtitleTracks = mutableListOf<MediaTrackInfo>()
 
     //Notification
     private lateinit var mediaSession: MediaSessionCompat
@@ -152,6 +168,8 @@ class VideoActivity : BaseActivity() {
 
     private lateinit var optionPiP: OptionsItem
     private lateinit var optionSpeed: OptionsItem
+    private lateinit var optionSubtitles: OptionsItem
+    private lateinit var optionAudio: OptionsItem
 
       /*$$$$$    /$$     /$$
      /$$__  $$  | $$    | $$
@@ -202,6 +220,7 @@ class VideoActivity : BaseActivity() {
         //Player
         playerZoom = findViewById(R.id.playerZoom)
         playerView = findViewById(R.id.playerView)
+        playerSubtitles = findViewById(R.id.playerSubtitles)
 
         //Indicators
         loadingIndicator = findViewById(R.id.loadingIndicator)
@@ -334,6 +353,28 @@ class VideoActivity : BaseActivity() {
                 player.setPlaybackSpeed(speed)
             }.buildAndShow()
         }
+
+        optionSubtitles = OptionsItem(R.drawable.track_subtitles, "Subtitles Track") {
+            //Create subtitles track dialog
+            TracksDialog(this@VideoActivity, playerSubtitleTracks, "Subtitles Track") { track ->
+                //Check track
+                if (track.trackIndex < 0) {
+                    //Disable
+                    disableSubtitles()
+                } else {
+                    //Select track
+                    selectTrack(track)
+                }
+            }.buildAndShow()
+        }
+
+        optionAudio = OptionsItem(R.drawable.track_audio, "Audio Track") {
+            //Create audio track dialog
+            TracksDialog(this@VideoActivity, playerAudioTracks, "Subtitles Track") { track ->
+                //Select track
+                selectTrack(track)
+            }.buildAndShow()
+        }
     }
 
     override fun onAfterInitViews() {
@@ -448,8 +489,11 @@ class VideoActivity : BaseActivity() {
         //Create player
         player = ExoPlayer.Builder(this).build()
 
-        //Init player
+        //Init player config
         player.playWhenReady = true
+        setLooping(Storage.getBool(StoragePairs.VIDEO_LOOP))
+
+        //Init player listeners
         player.addListener(object : Player.Listener {
             override fun onRenderedFirstFrame() {
                 //Prevents the first frame of the video from taking up the whole screen instead of its size
@@ -520,11 +564,65 @@ class VideoActivity : BaseActivity() {
                 //Show error
                 Orion.snack(this@VideoActivity, error.toString())
             }
+
+            override fun onTracksChanged(tracks: Tracks) {
+                //Clear tracks
+                playerSubtitleTracks.clear()
+                playerAudioTracks.clear()
+
+                //Check track groups
+                for (group in tracks.groups) {
+                    //Get track type
+                    val trackType = group.type
+
+                    //Check if it's audio or subtitles
+                    if (trackType == C.TRACK_TYPE_AUDIO || trackType == C.TRACK_TYPE_TEXT) {
+                        for (i in 0 until group.length) {
+                            //Ignore if not supported
+                            if (!group.isTrackSupported(i)) continue
+
+                            //Get format
+                            val format = group.getTrackFormat(i)
+
+                            //Create a user-friendly display name
+                            val langCode = format.language
+                            val readableLanguage = langCode?.let { Locale(it).displayLanguage }
+                            val label = format.label ?: readableLanguage ?: "Track ${i + 1}"
+
+                            //Create track
+                            val trackInfo = MediaTrackInfo(
+                                name = label,
+                                language = langCode,
+                                trackGroup = group,
+                                trackIndex = i,
+                                isSelected = group.isTrackSelected(i)
+                            )
+
+                            //Add track to its list
+                            if (trackType == C.TRACK_TYPE_AUDIO) {
+                                playerAudioTracks.add(trackInfo)
+                            } else {
+                                playerSubtitleTracks.add(trackInfo)
+                            }
+                        }
+                    }
+                }
+
+                //Add "disabled" subtitles track
+                playerSubtitleTracks.add(0, MediaTrackInfo("Disabled", isSelected = !playerSubtitleTracks.any { it.isSelected }))
+            }
+
+            override fun onCues(cueGroup: CueGroup) {
+                //Pass the cues to the subtitles view
+                playerSubtitles.setCues(cueGroup.cues)
+            }
         })
-        setLooping(Storage.getBool(StoragePairs.VIDEO_LOOP))
 
         //Init player view
         playerView.player = player
+        playerView.subtitleView?.visibility = View.GONE
+        playerSubtitles.setApplyEmbeddedFontSizes(false)
+        playerSubtitles.setFixedTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
         toggleController(false)
     }
 
@@ -774,6 +872,26 @@ class VideoActivity : BaseActivity() {
         mediaSession.setMetadata(mediaMetadata.build())
     }
 
+    private fun selectTrack(trackInfo: MediaTrackInfo) {
+        //Ignore if missing group
+        if (trackInfo.trackGroup == null) return
+
+        //Select track
+        player.trackSelectionParameters = player.trackSelectionParameters
+            .buildUpon()
+            .setOverrideForType(TrackSelectionOverride(trackInfo.trackGroup.mediaTrackGroup, trackInfo.trackIndex))
+            .setTrackTypeDisabled(trackInfo.trackGroup.type, false)
+            .build()
+    }
+
+    private fun disableSubtitles() {
+        //Disable text track
+        player.trackSelectionParameters = player.trackSelectionParameters
+            .buildUpon()
+            .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, true)
+            .build()
+    }
+
     //Playback
     override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: Configuration) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
@@ -818,6 +936,12 @@ class VideoActivity : BaseActivity() {
         options.add(OptionsGroup(mutableListOf<OptionsItem>().apply {
             add(optionPiP)
             add(optionSpeed)
+            if (playerSubtitleTracks.size > 1) {
+                add(optionSubtitles)
+            }
+            if (playerAudioTracks.size > 1) {
+                add(optionAudio)
+            }
         }))
     }
 

@@ -23,6 +23,13 @@
 
         </androidx.media3.ui.PlayerView>
 
+        <androidx.media3.ui.SubtitleView
+            android:id="@+id/playerSubtitles"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        </androidx.media3.ui.SubtitleView>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
