@@ -29,11 +29,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.botpa.turbophotos.theme.FONT_FRAUNCES
+import com.botpa.turbophotos.theme.FONT_OPIFICIO
 import com.botpa.turbophotos.theme.FONT_OUTFIT
 
 //General
@@ -48,9 +49,13 @@ fun Layout(title: String, content: @Composable (PaddingValues) -> Unit) {
                         text = title,
                         fontFamily = FONT_FRAUNCES,
                         fontSize = 24.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
                     )
                 },
                 modifier = Modifier
+                    .padding(end = 15.dp)
                     .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top))
             )
         },
@@ -78,7 +83,7 @@ fun Group(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> 
 fun GroupTitle(title: String, modifier: Modifier = Modifier) {
     Text(
         text = title,
-        fontFamily = FONT_FRAUNCES,
+        fontFamily = FONT_OPIFICIO,
         fontSize = 18.sp,
         modifier = modifier
     )
@@ -152,7 +157,6 @@ fun SimpleButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifie
         Text(
             text = text,
             fontFamily = FONT_OUTFIT,
-            fontWeight = FontWeight.Bold,
             fontSize = 14.sp
         )
     }

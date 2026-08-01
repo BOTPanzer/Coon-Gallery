@@ -20,6 +20,10 @@ val FONT_FRAUNCES = FontFamily(
     Font(R.font.fraunces, FontWeight.Normal),
 )
 
+val FONT_OPIFICIO = FontFamily(
+    Font(R.font.opificio_bold_rounded, FontWeight.Normal),
+)
+
 //Theme
 @Composable
 fun CoonTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {

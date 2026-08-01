@@ -5,19 +5,25 @@
     android:layout_height="wrap_content"
     android:clipToPadding="false"
     android:orientation="vertical"
-    android:paddingVertical="15dp">
+    android:paddingVertical="14dp">
 
     <!-- Trash Pill -->
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_marginBottom="25dp"
-        android:fontFamily="@font/fraunces"
-        android:text="Coon Gallery"
-        android:textColor="?attr/colorOnSurface"
-        android:textFontWeight="700"
-        android:textSize="24sp" />
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/fraunces"
+            android:text="Coon Gallery"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="24sp" />
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"

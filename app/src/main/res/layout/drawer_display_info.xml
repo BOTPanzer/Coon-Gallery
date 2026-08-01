@@ -21,7 +21,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/fraunces"
+                android:fontFamily="@font/opificio_bold_rounded"
                 android:paddingBottom="10dp"
                 android:text="File"
                 android:textColor="?attr/colorOnSurface"
@@ -54,7 +54,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/fraunces"
+                android:fontFamily="@font/opificio_bold_rounded"
                 android:paddingBottom="10dp"
                 android:text="Camera"
                 android:textColor="?attr/colorOnSurface"
@@ -86,7 +86,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/fraunces"
+                android:fontFamily="@font/opificio_bold_rounded"
                 android:paddingBottom="10dp"
                 android:text="Search Metadata"
                 android:textColor="?attr/colorOnSurface"
@@ -149,7 +149,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/fraunces"
+                android:fontFamily="@font/opificio_bold_rounded"
                 android:paddingBottom="10dp"
                 android:text="Search Metadata"
                 android:textColor="?attr/colorOnSurface"

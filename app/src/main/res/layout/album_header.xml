@@ -67,7 +67,7 @@
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="0.8"
+                        android:layout_weight="0.85"
                         android:orientation="vertical">
 
                         <com.botpa.turbophotos.gallery.views.WidthFitTextView
@@ -103,7 +103,7 @@
                     <Space
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="0.2" />
+                        android:layout_weight="0.15" />
 
                 </LinearLayout>
 
