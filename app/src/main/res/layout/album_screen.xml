@@ -47,7 +47,7 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="16dp"
+                android:layout_marginHorizontal="10dp"
                 android:layout_marginVertical="10dp"
                 android:clickable="true"
                 app:cardBackgroundColor="?attr/colorSurfaceContainer"
@@ -235,7 +235,7 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/loadIndicator"
+            android:id="@+id/loadingIndicator"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="bottom|center"
@@ -251,7 +251,7 @@
                 app:cardCornerRadius="30dp">
 
                 <TextView
-                    android:id="@+id/loadIndicatorText"
+                    android:id="@+id/loadingIndicatorText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="20dp"

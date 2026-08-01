@@ -8,7 +8,6 @@ import android.view.View
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.BackEventCompat
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.graphics.Insets
@@ -164,32 +163,32 @@ class AlbumActivity : BaseActivity() {
     private lateinit var searchClose: View
 
     //Views (loading indicator)
-    private lateinit var loadIndicator: View
-    private lateinit var loadIndicatorText: TextView
+    private lateinit var loadingIndicator: View
+    private lateinit var loadingIndicatorText: TextView
 
-    var loadingIndicator: LoadingIndicator = object : LoadingIndicator {
+    var loadingIndicatorManager: LoadingIndicator = object : LoadingIndicator {
         override fun search() {
-            loadIndicatorText.text = "Searching..."
-            loadIndicator.visibility = View.VISIBLE
+            loadingIndicatorText.text = "Searching..."
+            loadingIndicator.visibility = View.VISIBLE
         }
 
         override fun load(content: String) {
             runOnUiThread {
-                loadIndicatorText.text = "Loading ${content}..."
-                loadIndicator.visibility = View.VISIBLE
+                loadingIndicatorText.text = "Loading ${content}..."
+                loadingIndicator.visibility = View.VISIBLE
             }
         }
 
         override fun load(folder: String, type: String) {
             runOnUiThread {
-                loadIndicatorText.text = "Loading \"${folder}\" ${type}..."
-                loadIndicator.visibility = View.VISIBLE
+                loadingIndicatorText.text = "Loading \"${folder}\" ${type}..."
+                loadingIndicator.visibility = View.VISIBLE
             }
         }
 
         override fun hide() {
             runOnUiThread {
-                loadIndicator.visibility = View.GONE
+                loadingIndicator.visibility = View.GONE
             }
         }
     }
@@ -235,8 +234,8 @@ class AlbumActivity : BaseActivity() {
         albumRefreshLayout = findViewById(R.id.refreshLayout)
 
         //Loading indicator
-        loadIndicatorText = findViewById(R.id.loadIndicatorText)
-        loadIndicator = findViewById(R.id.loadIndicator)
+        loadingIndicatorText = findViewById(R.id.loadingIndicatorText)
+        loadingIndicator = findViewById(R.id.loadingIndicator)
 
         //System
         systemNavigationBar = findViewById(R.id.navigationBar)
@@ -752,7 +751,7 @@ class AlbumActivity : BaseActivity() {
         //Load metadata
         Thread {
             //Load metadata
-            Library.loadMetadata(loadingIndicator, album)
+            Library.loadMetadata(loadingIndicatorManager, album)
 
             //Update items
             runOnUiThread {
@@ -760,7 +759,7 @@ class AlbumActivity : BaseActivity() {
                 if (albumAdapter.showMissingMetadataIcon) albumAdapter.notifyDataSetChanged()
 
                 //Finish loading
-                loadingIndicator.hide()
+                loadingIndicatorManager.hide()
                 isMetadataLoaded = true
             }
         }.start()
@@ -853,7 +852,7 @@ class AlbumActivity : BaseActivity() {
         currentSearch = filter
         searchInput.setText(filter)
         searchMethodName.text = getSearchMethodName(currentSearchMethod)
-        if (isFiltering) loadingIndicator.search()
+        if (isFiltering) loadingIndicatorManager.search()
         showSearchLayout(false)
 
         //Update back manager
@@ -905,7 +904,7 @@ class AlbumActivity : BaseActivity() {
                         albumList.scrollToPosition(0)
 
                         //Finish searching
-                        if (isFiltering) loadingIndicator.hide()
+                        if (isFiltering) loadingIndicatorManager.hide()
                         isSearching = false
 
                         //Show list

@@ -127,6 +127,7 @@ class HomeActivity : BaseActivity() {
     private lateinit var systemNavigationBar: View
 
     //Views (navbar)
+    private lateinit var navbar: View
     private lateinit var navbarTitle: TextView
     private lateinit var navbarOptions: View
 
@@ -156,6 +157,7 @@ class HomeActivity : BaseActivity() {
 
     override fun onInitViews() {
         //Navbar
+        navbar = findViewById(R.id.navbar)
         navbarTitle = findViewById(R.id.navbarTitle)
         navbarOptions = findViewById(R.id.navbarOptions)
 
@@ -262,8 +264,9 @@ class HomeActivity : BaseActivity() {
     }
 
     override fun onAfterInitViews() {
-        //Hide list
+        //Hide UI
         homeList.visibility = View.GONE
+        navbar.visibility = View.GONE
 
         //Init components
         initHomeList()
@@ -323,8 +326,9 @@ class HomeActivity : BaseActivity() {
                 //Hide loading indicator
                 loadingIndicator.visibility = View.GONE
 
-                //Show list
+                //Show UI
                 Orion.animateShow(homeList)
+                Orion.animateShow(navbar)
 
                 //Reload albums list
                 homeAdapter.notifyDataSetChanged()

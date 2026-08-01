@@ -27,7 +27,7 @@
                 android:layout_marginBottom="2dp"
                 android:text="Item name"
                 android:textColor="?attr/colorOnSurface"
-                android:textSize="14sp"
+                android:textSize="16sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -36,7 +36,7 @@
                 android:layout_height="wrap_content"
                 android:text="Error reason"
                 android:textColor="?attr/colorOnSurface"
-                android:textSize="12sp" />
+                android:textSize="14sp" />
         </LinearLayout>
 
     </androidx.cardview.widget.CardView>

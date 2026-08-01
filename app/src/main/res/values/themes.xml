@@ -25,9 +25,10 @@
     </style>
 
     <!-- Modals -->
-    <style name="TextAppearance.TurboPhotos.Dialog.Title" parent="TextAppearance.Material3.HeadlineSmall">
+    <style name="Widget.TurboPhotos.AlertDialog.Title" parent="MaterialAlertDialog.Material3.Title.Text">
         <item name="android:textStyle">bold</item>
         <item name="android:textSize">22sp</item>
+        <item name="android:fontFamily">@font/fraunces</item>
     </style>
 
     <style name="TextAppearance.TurboPhotos.Dialog.Content" parent="TextAppearance.Material3.BodyMedium">
@@ -35,8 +36,8 @@
     </style>
 
     <style name="ThemeOverlay.TurboPhotos.AlertDialog" parent="ThemeOverlay.Material3Expressive.MaterialAlertDialog">
-        <item name="textAppearanceHeadlineSmall">@style/TextAppearance.TurboPhotos.Dialog.Title</item>
-        <item name="textAppearanceBodyMedium">@style/TextAppearance.TurboPhotos.Dialog.Content</item>
+        <item name="materialAlertDialogTitleTextStyle">@style/Widget.TurboPhotos.AlertDialog.Title</item>
+        <item name="materialAlertDialogBodyTextStyle">@style/TextAppearance.TurboPhotos.Dialog.Content</item>
         <item name="android:background">?attr/colorSurfaceContainerLow</item>
     </style>
 </resources>
