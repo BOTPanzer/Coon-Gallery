@@ -157,7 +157,7 @@ fun SimpleButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifie
         Text(
             text = text,
             fontFamily = FONT_OUTFIT,
-            fontSize = 14.sp
+            fontSize = 16.sp
         )
     }
 }
