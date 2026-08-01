@@ -31,7 +31,7 @@
                 android:paddingTop="15dp"
                 android:paddingEnd="5dp"
                 android:paddingBottom="15dp"
-                android:text="Maricón que coño haces aqui"
+                android:text="Que coño haces aqui"
                 android:textColor="?attr/colorOnPrimary" />
 
             <androidx.cardview.widget.CardView
@@ -50,7 +50,6 @@
                     android:background="?attr/selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true"
-                    android:fontFamily="@font/opificio_bold_rounded"
                     android:gravity="center"
                     android:paddingStart="10dp"
                     android:paddingEnd="10dp"

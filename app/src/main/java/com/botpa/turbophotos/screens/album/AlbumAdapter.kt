@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Item
@@ -59,7 +60,8 @@ class AlbumAdapter(
         //Toggle is video & missing info icons
         holder.isVideo.visibility = if (item.isVideo) View.VISIBLE else View.GONE
         holder.isFavourite.visibility = if (item.isFavourite) View.VISIBLE else View.GONE
-        holder.missingInfo.visibility = if (!showMissingMetadataIcon || item.album.hasMetadataKey(item.name)) View.GONE else View.VISIBLE
+        holder.isMissingInfo.visibility = if (showMissingMetadataIcon && item.album.hasMetadata() && !item.album.hasMetadataKey(item.name)) View.VISIBLE else View.GONE
+        holder.badges.visibility = if (holder.isVideo.isVisible || holder.isFavourite.isVisible || holder.isMissingInfo.isVisible) View.VISIBLE else View.GONE
 
         //Toggle is selected
         if (selectedIndexes.contains(holder.bindingAdapterPosition - positionOffset)) {
@@ -98,9 +100,10 @@ class AlbumAdapter(
 
         val imageCard: MaterialCardView = root.findViewById(R.id.imageCard)
         val image: ImageView = root.findViewById(R.id.image)
+        val badges: View = root.findViewById(R.id.badges)
         val isVideo: View = root.findViewById(R.id.isVideo)
         val isFavourite: View = root.findViewById(R.id.isFavourite)
-        val missingInfo: View = root.findViewById(R.id.missingInfo)
+        val isMissingInfo: View = root.findViewById(R.id.isMissingInfo)
         val isSelected: View = root.findViewById(R.id.isSelected)
 
     }

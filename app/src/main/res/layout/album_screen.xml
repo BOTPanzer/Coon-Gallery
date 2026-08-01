@@ -47,7 +47,7 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="15dp"
+                android:layout_marginHorizontal="16dp"
                 android:layout_marginVertical="10dp"
                 android:clickable="true"
                 app:cardBackgroundColor="?attr/colorSurfaceContainer"
@@ -71,10 +71,10 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginHorizontal="10dp"
-                            android:fontFamily="@font/opificio_bold_rounded"
                             android:text="69 items selected"
                             android:textColor="?attr/colorOnSurface"
-                            android:textSize="16sp" />
+                            android:textSize="16sp"
+                            android:visibility="gone" />
 
                         <androidx.cardview.widget.CardView
                             android:id="@+id/navbarOptions"
@@ -174,9 +174,9 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="10dp"
-                                android:fontFamily="@font/opificio_bold_rounded"
                                 android:text="Method:"
-                                android:textColor="?attr/colorOnSurface" />
+                                android:textColor="?attr/colorOnSurface"
+                                android:textStyle="bold" />
 
                             <TextView
                                 android:id="@+id/searchMethodName"
@@ -184,7 +184,6 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="5dp"
                                 android:layout_weight="1"
-                                android:paddingTop="4dp"
                                 android:text="IDK"
                                 android:textColor="?attr/colorOnSurface" />
 

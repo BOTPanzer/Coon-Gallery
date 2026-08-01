@@ -11,7 +11,7 @@
         <item name="materialAlertDialogTheme">@style/ThemeOverlay.TurboPhotos.AlertDialog</item>
 
         <!-- Default font -->
-        <item name="android:fontFamily">@font/poppins</item>
+        <item name="android:fontFamily">@font/outfit</item>
     </style>
 
     <!-- EditText -->

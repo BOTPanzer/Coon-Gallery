@@ -43,7 +43,6 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
                     android:ellipsize="end"
-                    android:paddingTop="2dp"
                     android:singleLine="true"
                     android:text="Item name"
                     android:textColor="?attr/colorOnSurface" />

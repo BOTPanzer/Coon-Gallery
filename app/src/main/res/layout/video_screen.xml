@@ -56,10 +56,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
-                android:fontFamily="@font/opificio_bold_rounded"
                 android:text="-5s"
                 android:textColor="?attr/colorPrimary"
                 android:textSize="30sp"
+                android:textStyle="bold"
                 android:visibility="gone" />
 
             <Space
@@ -72,10 +72,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="20dp"
-                android:fontFamily="@font/opificio_bold_rounded"
                 android:text="+5s"
                 android:textColor="?attr/colorPrimary"
                 android:textSize="30sp"
+                android:textStyle="bold"
                 android:visibility="gone" />
 
         </LinearLayout>
@@ -119,8 +119,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:alpha="0.8"
-                            android:background="@drawable/bg_gradient"
-                            android:backgroundTint="?attr/colorSurface" />
+                            android:background="@drawable/bg_gradient_top_to_bottom" />
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -135,7 +134,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:ellipsize="end"
-                                android:fontFamily="@font/opificio_bold_rounded"
+                                android:fontFamily="@font/fraunces"
                                 android:singleLine="true"
                                 android:text="Name"
                                 android:textColor="?attr/colorOnSurface"
@@ -158,8 +157,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:alpha="0.8"
-                            android:background="@drawable/bg_gradient_reversed"
-                            android:backgroundTint="?attr/colorSurface" />
+                            android:background="@drawable/bg_gradient_bottom_to_top" />
 
                         <LinearLayout
                             android:layout_width="match_parent"

@@ -920,7 +920,7 @@ class AlbumActivity : BaseActivity() {
     }
 
     private fun updateHeaderSubtitle() {
-        albumAdapter.subtitle = "${gallery.size} items${if (currentSearch.isNotEmpty()) " - Search: $currentSearch" else ""}"
+        albumAdapter.subtitle = "${gallery.size} items${if (currentSearch.isNotEmpty()) " - Searching for \"${currentSearch}\"" else ""}"
     }
 
     private fun updateSearchMethod() {

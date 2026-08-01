@@ -42,55 +42,71 @@
 
             <Space
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
                 android:layout_weight="1" />
 
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <ImageView
+                <View
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_alignTop="@id/content"
                     android:layout_alignBottom="@id/content"
-                    app:srcCompat="@drawable/bg_gradient_reversed"
-                    app:tint="?attr/colorSurface" />
+                    android:alpha="0.8"
+                    android:background="@drawable/bg_gradient_bottom_to_top" />
 
                 <LinearLayout
                     android:id="@+id/content"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="bottom|start"
-                    android:orientation="vertical">
+                    android:orientation="horizontal">
 
-                    <TextView
-                        android:id="@+id/title"
-                        android:layout_width="match_parent"
+                    <LinearLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginHorizontal="20dp"
-                        android:layout_marginTop="20dp"
-                        android:fontFamily="@font/opificio_bold_rounded"
-                        android:shadowColor="#757575"
-                        android:shadowRadius="10"
-                        android:text="Frogs"
-                        android:textColor="?attr/colorOnSurface"
-                        android:textSize="20sp" />
+                        android:layout_weight="0.8"
+                        android:orientation="vertical">
 
-                    <TextView
-                        android:id="@+id/info"
-                        android:layout_width="match_parent"
+                        <com.botpa.turbophotos.gallery.views.WidthFitTextView
+                            android:id="@+id/title"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="18dp"
+                            android:layout_marginTop="20dp"
+                            android:fontFamily="@font/fraunces"
+                            android:shadowColor="#64676c"
+                            android:shadowRadius="10"
+                            android:singleLine="true"
+                            android:text="Frogs"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textFontWeight="700" />
+
+                        <TextView
+                            android:id="@+id/info"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="20dp"
+                            android:layout_marginBottom="20dp"
+                            android:ellipsize="end"
+                            android:fontFamily="@font/neue_montreal_book"
+                            android:shadowColor="#64676c"
+                            android:shadowRadius="10"
+                            android:singleLine="true"
+                            android:text="They are cool"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textSize="16sp" />
+                    </LinearLayout>
+
+                    <Space
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginHorizontal="20dp"
-                        android:layout_marginBottom="20dp"
-                        android:ellipsize="end"
-                        android:shadowColor="#757575"
-                        android:shadowRadius="10"
-                        android:singleLine="true"
-                        android:text="They are cool"
-                        android:textColor="?attr/colorOnSurface"
-                        android:textSize="16sp" />
+                        android:layout_weight="0.2" />
+
                 </LinearLayout>
+
             </RelativeLayout>
 
         </LinearLayout>

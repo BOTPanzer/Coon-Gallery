@@ -23,10 +23,11 @@
                 android:id="@+id/itemName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/opificio_bold_rounded"
+                android:layout_marginBottom="2dp"
                 android:text="Name"
                 android:textColor="?attr/colorOnSurface"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/itemInfo"
@@ -34,7 +35,8 @@
                 android:layout_height="wrap_content"
                 android:hint="~ no info"
                 android:textColor="?attr/colorOnSurface"
-                android:textColorHint="?attr/colorOnSurface" />
+                android:textColorHint="?attr/colorOnSurface"
+                android:textSize="14sp" />
 
         </LinearLayout>
 

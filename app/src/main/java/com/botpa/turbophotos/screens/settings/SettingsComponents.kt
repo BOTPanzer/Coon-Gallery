@@ -25,8 +25,7 @@ import com.botpa.turbophotos.gallery.Link
 import com.botpa.turbophotos.gallery.views.IconButton
 import com.botpa.turbophotos.gallery.views.groupItemPaddingHorizontal
 import com.botpa.turbophotos.gallery.views.groupItemPaddingVertical
-import com.botpa.turbophotos.theme.FONT_OPIFICIO
-import com.botpa.turbophotos.theme.FONT_POPPINS
+import com.botpa.turbophotos.theme.FONT_OUTFIT
 
 //Settings
 @Composable
@@ -51,7 +50,7 @@ fun SettingsItem(
             //Title
             Text(
                 text = title,
-                fontSize = 14.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
 
@@ -59,8 +58,11 @@ fun SettingsItem(
             if (description != null) {
                 Text(
                     text = description,
-                    fontSize = 12.sp,
-                    softWrap = true
+                    fontSize = 14.sp,
+                    lineHeight = 18.sp,
+                    softWrap = true,
+                    modifier = Modifier
+                        .padding(top = 2.dp)
                 )
             }
         }
@@ -96,8 +98,8 @@ fun LinkItem(
             //Name
             Text(
                 text = "Link $index",
-                fontFamily = FONT_OPIFICIO,
                 fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
@@ -123,7 +125,7 @@ fun LinkItem(
                 val hasAlbum = link.albumFolder.name != ""
                 Text(
                     text = if (hasAlbum) link.albumFolder.name else "Album folder",
-                    fontFamily = FONT_POPPINS,
+                    fontFamily = FONT_OUTFIT,
                     fontSize = 14.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -152,7 +154,7 @@ fun LinkItem(
                 val hasMetadata = link.metadataFile.name != ""
                 Text(
                     text = if (hasMetadata) link.metadataFile.name else "Metadata file",
-                    fontFamily = FONT_POPPINS,
+                    fontFamily = FONT_OUTFIT,
                     fontSize = 14.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,

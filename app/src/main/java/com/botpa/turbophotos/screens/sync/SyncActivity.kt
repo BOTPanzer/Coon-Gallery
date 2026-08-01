@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
@@ -57,7 +56,7 @@ import com.botpa.turbophotos.gallery.views.groupItemPaddingHorizontal
 import com.botpa.turbophotos.gallery.views.groupItemPaddingVertical
 import com.botpa.turbophotos.screens.sync.SyncEventBus.Companion.instance
 import com.botpa.turbophotos.theme.CoonTheme
-import com.botpa.turbophotos.theme.FONT_POPPINS
+import com.botpa.turbophotos.theme.FONT_OUTFIT
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
 import java.util.Locale
@@ -384,7 +383,7 @@ class SyncActivity : AppCompatActivity() {
                     //Add log
                     Text(
                         text = log,
-                        fontFamily = FONT_POPPINS,
+                        fontFamily = FONT_OUTFIT,
                         fontSize = 14.sp,
                         modifier = Modifier
                             .padding(vertical = 5.dp)

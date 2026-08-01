@@ -12,12 +12,12 @@ import androidx.compose.ui.text.font.FontWeight
 import com.botpa.turbophotos.R
 
 //Fonts
-val FONT_POPPINS = FontFamily(
-    Font(R.font.poppins, FontWeight.Normal),
+val FONT_OUTFIT = FontFamily(
+    Font(R.font.outfit, FontWeight.Normal),
 )
 
-val FONT_OPIFICIO = FontFamily(
-    Font(R.font.opificio_bold_rounded, FontWeight.Bold),
+val FONT_FRAUNCES = FontFamily(
+    Font(R.font.fraunces, FontWeight.Normal),
 )
 
 //Theme
@@ -29,12 +29,12 @@ fun CoonTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable (
 
     //Create typography
     val appTypography = androidx.compose.material3.Typography(
-        headlineLarge = androidx.compose.material3.Typography().headlineLarge.copy(fontFamily = FONT_OPIFICIO),
-        headlineMedium = androidx.compose.material3.Typography().headlineMedium.copy(fontFamily = FONT_OPIFICIO),
-        headlineSmall = androidx.compose.material3.Typography().headlineSmall.copy(fontFamily = FONT_OPIFICIO),
-        bodyLarge = androidx.compose.material3.Typography().bodyLarge.copy(fontFamily = FONT_POPPINS),
-        bodyMedium = androidx.compose.material3.Typography().bodyMedium.copy(fontFamily = FONT_POPPINS),
-        bodySmall = androidx.compose.material3.Typography().bodySmall.copy(fontFamily = FONT_POPPINS)
+        headlineLarge = androidx.compose.material3.Typography().headlineLarge.copy(fontFamily = FONT_FRAUNCES),
+        headlineMedium = androidx.compose.material3.Typography().headlineMedium.copy(fontFamily = FONT_FRAUNCES),
+        headlineSmall = androidx.compose.material3.Typography().headlineSmall.copy(fontFamily = FONT_FRAUNCES),
+        bodyLarge = androidx.compose.material3.Typography().bodyLarge.copy(fontFamily = FONT_OUTFIT),
+        bodyMedium = androidx.compose.material3.Typography().bodyMedium.copy(fontFamily = FONT_OUTFIT),
+        bodySmall = androidx.compose.material3.Typography().bodySmall.copy(fontFamily = FONT_OUTFIT)
     )
 
     //Material theme

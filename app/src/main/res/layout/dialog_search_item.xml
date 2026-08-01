@@ -25,8 +25,10 @@
                 android:id="@+id/methodName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="2dp"
                 android:text="Method name"
                 android:textColor="?attr/colorOnSurface"
+                android:textSize="16sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -35,14 +37,14 @@
                 android:layout_height="wrap_content"
                 android:text="Method description"
                 android:textColor="?attr/colorOnSurface"
-                android:textSize="12sp" />
+                android:textSize="14sp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Good for:"
                 android:textColor="?attr/colorOnSurface"
-                android:textSize="12sp"
+                android:textSize="14sp"
                 android:textStyle="italic" />
 
             <TextView
@@ -52,7 +54,7 @@
                 android:layout_marginStart="10dp"
                 android:text="Method use"
                 android:textColor="?attr/colorOnSurface"
-                android:textSize="12sp"
+                android:textSize="14sp"
                 android:textStyle="italic" />
         </LinearLayout>
 

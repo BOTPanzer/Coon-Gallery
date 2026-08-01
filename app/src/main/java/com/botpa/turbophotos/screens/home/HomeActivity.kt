@@ -127,7 +127,7 @@ class HomeActivity : BaseActivity() {
     private lateinit var systemNavigationBar: View
 
     //Views (navbar)
-    private lateinit var navbarSubtitle: TextView
+    private lateinit var navbarTitle: TextView
     private lateinit var navbarOptions: View
 
     //Views (loading indicator)
@@ -156,7 +156,7 @@ class HomeActivity : BaseActivity() {
 
     override fun onInitViews() {
         //Navbar
-        navbarSubtitle = findViewById(R.id.navbarSubtitle)
+        navbarTitle = findViewById(R.id.navbarTitle)
         navbarOptions = findViewById(R.id.navbarOptions)
 
         //List
@@ -220,7 +220,13 @@ class HomeActivity : BaseActivity() {
 
     override fun onInitListeners() {
         //Navbar
-        navbarOptions.setOnClickListener { view: View -> optionsManager.toggle(true) }
+        navbarOptions.setOnClickListener { view: View ->
+            //Not loaded
+            if (!isLibraryLoaded) return@setOnClickListener
+
+            //Open options
+            optionsManager.toggle(true)
+        }
 
         //List
         homeRefreshLayout.setOnRefreshListener {
@@ -233,17 +239,11 @@ class HomeActivity : BaseActivity() {
 
         //Options
         optionSync = OptionsItem(R.drawable.sync, "Sync") {
-            //Not loaded
-            if (!isLibraryLoaded) return@OptionsItem
-
             //Open sync
             startActivity(Intent(this, SyncActivity::class.java))
         }
 
         optionSettings = OptionsItem(R.drawable.settings, "Settings") {
-            //Not loaded
-            if (!isLibraryLoaded) return@OptionsItem
-
             //Open sync
             startActivity(Intent(this, SettingsActivity::class.java))
         }
@@ -545,7 +545,7 @@ class HomeActivity : BaseActivity() {
         //Check if a filter is applied & toggle subtitle
         val filter = Library.libraryFilter
         val isFiltered = filter != "*/*"
-        navbarSubtitle.visibility = if (isFiltered) View.VISIBLE else View.GONE
+        navbarTitle.visibility = if (isFiltered) View.VISIBLE else View.GONE
         if (!isFiltered) return
 
         //Parse filter & update subtitle
@@ -559,7 +559,7 @@ class HomeActivity : BaseActivity() {
             else -> subtitle.append("custom ")
         }
         if (format != "*") subtitle.append("($format)")
-        navbarSubtitle.text = subtitle.toString()
+        navbarTitle.text = subtitle.toString()
     }
 
 }

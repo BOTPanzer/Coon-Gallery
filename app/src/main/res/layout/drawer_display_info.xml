@@ -21,7 +21,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/opificio_bold_rounded"
+                android:fontFamily="@font/fraunces"
                 android:paddingBottom="10dp"
                 android:text="File"
                 android:textColor="?attr/colorOnSurface"
@@ -54,7 +54,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/opificio_bold_rounded"
+                android:fontFamily="@font/fraunces"
                 android:paddingBottom="10dp"
                 android:text="Camera"
                 android:textColor="?attr/colorOnSurface"
@@ -86,7 +86,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/opificio_bold_rounded"
+                android:fontFamily="@font/fraunces"
                 android:paddingBottom="10dp"
                 android:text="Search Metadata"
                 android:textColor="?attr/colorOnSurface"
@@ -149,7 +149,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/opificio_bold_rounded"
+                android:fontFamily="@font/fraunces"
                 android:paddingBottom="10dp"
                 android:text="Search Metadata"
                 android:textColor="?attr/colorOnSurface"
@@ -185,10 +185,10 @@
                             <TextView
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:fontFamily="@font/opificio_bold_rounded"
                                 android:text="Caption"
                                 android:textColor="?attr/colorOnSurface"
-                                android:textSize="16sp" />
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
 
                             <EditText
                                 android:id="@+id/editCaption"
@@ -223,10 +223,10 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="10dp"
-                                android:fontFamily="@font/opificio_bold_rounded"
                                 android:text="Labels"
                                 android:textColor="?attr/colorOnSurface"
-                                android:textSize="16sp" />
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
 
                             <EditText
                                 android:id="@+id/editLabels"

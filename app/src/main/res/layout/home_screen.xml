@@ -44,13 +44,13 @@
             android:id="@+id/navbar"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:gravity="bottom"
+            android:gravity="bottom|end"
             android:orientation="vertical">
 
             <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="70dp"
-                android:layout_marginHorizontal="15dp"
+                android:layout_marginHorizontal="16dp"
                 android:layout_marginVertical="10dp"
                 android:clickable="true"
                 app:cardBackgroundColor="?attr/colorSurfaceContainer"
@@ -60,44 +60,26 @@
                     android:id="@+id/navbarLayout"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:layout_weight="1"
                     android:gravity="center_vertical"
+                    android:minHeight="70dp"
                     android:orientation="horizontal"
-                    android:paddingHorizontal="15dp">
+                    android:padding="15dp">
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:layout_marginStart="5dp"
-                        android:layout_weight="1"
-                        android:gravity="center_vertical"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/navbarTitle"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/opificio_bold_rounded"
-                            android:text="Coon Gallery"
-                            android:textColor="?attr/colorOnSurface"
-                            android:textSize="16sp" />
-
-                        <TextView
-                            android:id="@+id/navbarSubtitle"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:ellipsize="end"
-                            android:singleLine="true"
-                            android:text="frog"
-                            android:textColor="?attr/colorOnSurface"
-                            android:textSize="12sp"
-                            android:visibility="gone" />
-                    </LinearLayout>
+                    <TextView
+                        android:id="@+id/navbarTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="10dp"
+                        android:text="Contextual info"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="16sp"
+                        android:visibility="gone" />
 
                     <androidx.cardview.widget.CardView
                         android:id="@+id/navbarOptions"
                         android:layout_width="40dp"
                         android:layout_height="40dp"
-                        android:layout_marginStart="10dp"
                         app:cardBackgroundColor="#00000000"
                         app:cardCornerRadius="20dp"
                         app:cardElevation="0dp">
