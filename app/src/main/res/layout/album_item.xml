@@ -99,20 +99,33 @@
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/isSelected"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="24dp"
                 app:cardBackgroundColor="?attr/colorPrimary"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="0dp"
                 app:strokeColor="?attr/colorSurface"
                 app:strokeWidth="2dp">
 
-                <ImageView
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_margin="2dp"
-                    app:srcCompat="@drawable/check"
-                    app:tint="?attr/colorOnPrimary" />
+                    android:layout_height="24dp"
+                    android:gravity="center"
+                    android:minWidth="24dp"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="5dp">
+
+                    <TextView
+                        android:id="@+id/isSelectedNumber"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:singleLine="true"
+                        android:text="99"
+                        android:textColor="?attr/colorOnPrimary"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
 

@@ -64,11 +64,13 @@ class AlbumAdapter(
         holder.badges.visibility = if (holder.isVideo.isVisible || holder.isFavourite.isVisible || holder.isMissingInfo.isVisible) View.VISIBLE else View.GONE
 
         //Toggle is selected
-        if (selectedIndexes.contains(holder.bindingAdapterPosition - positionOffset)) {
+        val index = holder.bindingAdapterPosition - positionOffset
+        if (selectedIndexes.contains(index)) {
             holder.isSelected.visibility = View.VISIBLE
             holder.imageCard.scaleX = 0.8f
             holder.imageCard.scaleY = 0.8f
             holder.imageCard.radius = 10.0f * context.resources.displayMetrics.density
+            holder.isSelectedNumber.text = "${(selectedIndexes.indexOf(index) + 1)}"
         } else {
             holder.isSelected.visibility = View.GONE
             holder.imageCard.scaleX = 1.0f
@@ -105,6 +107,7 @@ class AlbumAdapter(
         val isFavourite: View = root.findViewById(R.id.isFavourite)
         val isMissingInfo: View = root.findViewById(R.id.isMissingInfo)
         val isSelected: View = root.findViewById(R.id.isSelected)
+        val isSelectedNumber: TextView = root.findViewById(R.id.isSelectedNumber)
 
     }
 

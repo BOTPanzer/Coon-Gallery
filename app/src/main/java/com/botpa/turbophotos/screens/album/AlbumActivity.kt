@@ -78,7 +78,7 @@ class AlbumActivity : BaseActivity() {
     private val gallery: List<Item>
         get() = Library.gallery
 
-    private val selectedIndexes: MutableSet<Int> = HashSet()
+    private val selectedIndexes: MutableSet<Int> = LinkedHashSet()
     private lateinit var currentAlbum: Album
     private var inTrash = false
 
@@ -792,10 +792,27 @@ class AlbumActivity : BaseActivity() {
         //Ignore if range is empty
         if (range.isEmpty()) return
 
-        //Deselect items & update adapter
-        val deselectedViews = ArrayList<Int>()
-        for (index in range) if (selectedIndexes.remove(index)) deselectedViews.add(index)
-        for (index in deselectedViews) albumAdapter.notifyItemChanged(albumAdapter.getPositionFromIndex(index))
+        //Find the index of the first item being deselected
+        val firstDeselectedIndex = selectedIndexes.indexOfFirst { it in range }
+        if (firstDeselectedIndex == -1) return
+
+        //Deselect items
+        val deselectedItems = ArrayList<Int>()
+        for (index in range) {
+            if (selectedIndexes.remove(index)) {
+                deselectedItems.add(index)
+            }
+        }
+
+        //Update deselected items
+        for (index in deselectedItems) {
+            albumAdapter.notifyItemChanged(albumAdapter.getPositionFromIndex(index))
+        }
+
+        //Update remaining selected items after deselected items
+        selectedIndexes.drop(firstDeselectedIndex).forEach { remainingIndex ->
+            albumAdapter.notifyItemChanged(albumAdapter.getPositionFromIndex(remainingIndex))
+        }
 
         //Check if no more items are selected
         if (selectedIndexes.isEmpty()) {
