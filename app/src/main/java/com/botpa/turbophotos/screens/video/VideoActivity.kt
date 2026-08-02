@@ -384,8 +384,10 @@ class VideoActivity : BaseActivity() {
     }
 
     override fun onAfterInitViews() {
-        //Hide player & controller
-        playerView.visibility = View.INVISIBLE
+        //Hide player & controller (ignore versions that have a bug where the video doesn't load the first frame if invisible)
+        if (Build.VERSION.SDK_INT !in Build.VERSION_CODES.S..Build.VERSION_CODES.TIRAMISU) {
+            playerView.visibility = View.INVISIBLE
+        }
         overlayLayout.visibility = View.GONE
 
         //Init components
