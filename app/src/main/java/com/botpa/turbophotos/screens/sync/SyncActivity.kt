@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -159,8 +160,13 @@ class SyncActivity : AppCompatActivity() {
         //Create permission manager & check for permissions
         permissionManager = PermissionManager(this, listOf(PermissionType.Notifications, PermissionType.LocalAreaNetwork), onRequestPermission)
         if (permissionManager.hasAllPermissions) {
-            view.updatePermissions(permissionManager)
+            //Mark permissions as granted
+            LaunchedEffect(Unit) {
+                //Use launched effect cause updating the var while composing doesn't recompose in older androids
+                view.updatePermissions(permissionManager)
+            }
         } else {
+            //Ask for permissions
             permissionManager.showDialog(this)
         }
     }
