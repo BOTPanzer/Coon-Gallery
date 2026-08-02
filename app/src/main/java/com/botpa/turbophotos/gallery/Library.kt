@@ -22,6 +22,8 @@ import com.botpa.turbophotos.gallery.modals.InputDialog
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage.getBool
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.io.File
 import java.util.Locale
 import kotlin.Array
@@ -159,108 +161,110 @@ object Library {
     }
 
     private fun loadLibrary(context: Context, reset: Boolean, filterMimeType: String) {
-        //Save filter
-        libraryFilter = filterMimeType
+        synchronized(this) {
+            //Save filter
+            libraryFilter = filterMimeType
 
-        //Load links & trash
-        loadLinks(reset)
+            //Load links & trash
+            loadLinks(reset)
 
-        //Reset
-        if (reset) {
-            //Reset last update timestamp
-            lastUpdate = 0
+            //Reset
+            if (reset) {
+                //Reset last update timestamp
+                lastUpdate = 0
 
-            //Clear items from albums
-            all.reset()
-            favourites.reset()
-            trash.reset()
-            for (album in albums) album.reset()
+                //Clear items from albums
+                all.reset()
+                favourites.reset()
+                trash.reset()
+                for (album in albums) album.reset()
 
-            //Albums map doesn't get cleared so that the gallery can stay on the selected album on reload :D
-        }
+                //Albums map doesn't get cleared so that the gallery can stay on the selected album on reload :D
+            }
 
-        //Get album items
-        var itemsAdded = 0
-        try {
-            getMediaCursor(context).use { cursor ->
-                //Save last update timestamp
-                lastUpdate = System.currentTimeMillis() / 1000L
+            //Get album items
+            var itemsAdded = 0
+            try {
+                getMediaCursor(context).use { cursor ->
+                    //Save last update timestamp
+                    lastUpdate = System.currentTimeMillis() / 1000L
 
-                //Get columns for query
-                val columnLastModified = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATE_MODIFIED)
-                val columnMimeType = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.MIME_TYPE)
-                val columnSize = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.SIZE)
-                val columnData = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATA)
-                val columnIsTrashed = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.IS_TRASHED)
-                val columnIsFavourite = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.IS_FAVORITE)
+                    //Get columns for query
+                    val columnLastModified = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATE_MODIFIED)
+                    val columnMimeType = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.MIME_TYPE)
+                    val columnSize = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.SIZE)
+                    val columnData = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATA)
+                    val columnIsTrashed = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.IS_TRASHED)
+                    val columnIsFavourite = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.IS_FAVORITE)
 
-                //Check items
-                while (cursor.moveToNext()) {
-                    //Get file
-                    val file = File(cursor.getString(columnData))
+                    //Check items
+                    while (cursor.moveToNext()) {
+                        //Get file
+                        val file = File(cursor.getString(columnData))
 
-                    //Check if file is marked as recently added
-                    if (recentlyAddedFiles.contains(file)) {
-                        //Is recently added -> Unmark it & continue
-                        recentlyAddedFiles.remove(file)
-                        continue
+                        //Check if file is marked as recently added
+                        if (recentlyAddedFiles.contains(file)) {
+                            //Is recently added -> Unmark it & continue
+                            recentlyAddedFiles.remove(file)
+                            continue
+                        }
+
+                        //Get type & apply filter
+                        val mimeType = cursor.getString(columnMimeType)
+                        if (!MimeTypeFilter.matches(mimeType, filterMimeType)) continue
+
+                        //Get other info
+                        val lastModified = cursor.getLong(columnLastModified)
+                        val size = cursor.getLong(columnSize)
+                        val isTrashed = cursor.getInt(columnIsTrashed) == 1
+                        val isFavourite = cursor.getInt(columnIsFavourite) == 1
+
+                        //Check if is trashed
+                        val album = getOrCreateAlbumFromItemFile(file)
+                        if (isTrashed) {
+                            //Trashed -> Create item with trash as album
+                            val item = Item(file, trash, lastModified, mimeType!!, size, true, isFavourite)
+
+                            //Add to trash
+                            addItemToTrash(item, album)
+                        } else {
+                            //Not trashed -> Create item with normal album
+                            val item = Item(file, album, lastModified, mimeType!!, size, false, isFavourite)
+
+                            //Add to all items list & its album
+                            all.add(item)
+                            if (isFavourite) favourites.add(item)
+                            item.album.add(item)
+                        }
+
+                        //Added an item
+                        itemsAdded++
                     }
+                }
+            } catch (e: Exception) {
+                Log.e(LOGGING_TAG, "Error loading albums: ${e.message}")
+            }
 
-                    //Get type & apply filter
-                    val mimeType = cursor.getString(columnMimeType)
-                    if (!MimeTypeFilter.matches(mimeType, filterMimeType)) continue
+            //Remove unused albums & populate albums list
+            _albums.clear()
+            val iterator = _albumsMap.entries.iterator()
+            while (iterator.hasNext()) {
+                //Get album
+                val album = iterator.next().value
 
-                    //Get other info
-                    val lastModified = cursor.getLong(columnLastModified)
-                    val size = cursor.getLong(columnSize)
-                    val isTrashed = cursor.getInt(columnIsTrashed) == 1
-                    val isFavourite = cursor.getInt(columnIsFavourite) == 1
-
-                    //Check if is trashed
-                    val album = getOrCreateAlbumFromItemFile(file)
-                    if (isTrashed) {
-                        //Trashed -> Create item with trash as album
-                        val item = Item(file, trash, lastModified, mimeType!!, size, true, isFavourite)
-
-                        //Add to trash
-                        addItemToTrash(item, album)
-                    } else {
-                        //Not trashed -> Create item with normal album
-                        val item = Item(file, album, lastModified, mimeType!!, size, false, isFavourite)
-
-                        //Add to all items list & its album
-                        all.add(item)
-                        if (isFavourite) favourites.add(item)
-                        item.album.add(item)
-                    }
-
-                    //Added an item
-                    itemsAdded++
+                //Check what to do with album
+                if (!album.isEmpty()) {
+                    //Not empty -> Add it to albums list
+                    _albums.add(album)
+                } else if (!isAlbumInUse(album)) {
+                    //Not in use -> Remove it
+                    iterator.remove()
                 }
             }
-        } catch (e: Exception) {
-            Log.e(LOGGING_TAG, "Error loading albums: ${e.message}")
+
+            //Sort albums
+            sortLibrary(reset || itemsAdded > 0)
         }
-
-        //Remove unused albums & populate albums list
-        _albums.clear()
-        val iterator = _albumsMap.entries.iterator()
-        while (iterator.hasNext()) {
-            //Get album
-            val album = iterator.next().value
-
-            //Check what to do with album
-            if (!album.isEmpty()) {
-                //Not empty -> Add it to albums list
-                _albums.add(album)
-            } else if (!isAlbumInUse(album)) {
-                //Not in use -> Remove it
-                iterator.remove()
-            }
-        }
-
-        //Sort albums
-        sortLibrary(reset || itemsAdded > 0)
     }
 
     fun loadLibrary(context: Context, reset: Boolean) {

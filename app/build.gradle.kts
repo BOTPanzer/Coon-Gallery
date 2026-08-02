@@ -65,8 +65,9 @@ dependencies {
 
     //Layout
     implementation(libs.constraintlayout)
-    implementation(libs.swiperefreshlayout)
     implementation(libs.recyclerview)
+    implementation(libs.swiperefreshlayout)
+    implementation(libs.refresh.layout.kernel)
 
     //Material
     implementation(libs.material)

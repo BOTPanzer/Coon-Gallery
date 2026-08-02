@@ -8,6 +8,7 @@ import android.content.ClipboardManager
 import android.content.ContentResolver
 import android.content.ContentUris
 import android.content.Context
+import android.content.res.Resources
 import android.database.Cursor
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -882,6 +883,9 @@ object Orion {
     fun lerp(a: Float, b: Float, t: Float): Float {
         return a * (1 - t) + b * t
     }
+
+    val Int.dpToPx: Int get() = (this * Resources.getSystem().displayMetrics.density).toInt()
+    val Int.pxToDp: Int get() = (this / Resources.getSystem().displayMetrics.density).toInt()
 
     //Keyboard
     fun hideKeyboard(activity: Activity) {

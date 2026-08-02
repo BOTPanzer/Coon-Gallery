@@ -19,7 +19,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Album
 import com.botpa.turbophotos.gallery.BaseActivity
@@ -41,7 +40,9 @@ import com.botpa.turbophotos.screens.home.filters.FiltersDialog
 import com.botpa.turbophotos.screens.settings.SettingsActivity
 import com.botpa.turbophotos.screens.sync.SyncActivity
 import com.botpa.turbophotos.util.Orion
+import com.botpa.turbophotos.util.Orion.pxToDp
 import com.botpa.turbophotos.util.Storage
+import com.scwang.smart.refresh.layout.SmartRefreshLayout
 
 @SuppressLint("SetTextI18n", "NotifyDataSetChanged")
 class HomeActivity : BaseActivity() {
@@ -59,9 +60,11 @@ class HomeActivity : BaseActivity() {
     override val permissions: List<PermissionType> = listOf(PermissionType.Storage, PermissionType.Media)
     override val contentViewResource: Int = R.layout.home_screen
 
-    private var isLibraryLoaded = false
     private var isLibraryLoading = false
+    private var isLibraryLoaded = false
     private var isInit = false
+
+    private val isLibraryAvailable get(): Boolean = !isLibraryLoading && isLibraryLoaded
 
     //Permissions
     private val requestPermissionMedia = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted: Map<String, Boolean> ->
@@ -90,7 +93,7 @@ class HomeActivity : BaseActivity() {
     private lateinit var homeDecorator: GridListSeparator
     private lateinit var homeAdapter: HomeAdapter
 
-    private lateinit var homeRefreshLayout: SwipeRefreshLayout
+    private lateinit var homeRefreshLayout: SmartRefreshLayout
     private lateinit var homeList: RecyclerView
     private lateinit var homeFastScroller: FastScroller
 
@@ -179,7 +182,10 @@ class HomeActivity : BaseActivity() {
             findViewById(R.id.content),
             intArrayOf(WindowInsetsCompat.Type.systemBars())
         ) { view: View, insets: Insets, duration: Float ->
-            homeRefreshLayout.setProgressViewOffset(false, 0, insets.top + 50)
+            //Swipe refresh top margin
+            homeRefreshLayout.setHeaderInsetStart(insets.top.pxToDp.toFloat())
+
+            //List search layout + keyboard margin
             homeList.setPadding(homeList.paddingLeft, insets.top, homeList.paddingRight, listMinBottomPadding + insets.bottom)
             homeFastScroller.setPadding(0, homeList.paddingTop, 0, homeList.paddingBottom)
         }
@@ -223,20 +229,33 @@ class HomeActivity : BaseActivity() {
     override fun onInitListeners() {
         //Navbar
         navbarOptions.setOnClickListener { view: View ->
-            //Not loaded
-            if (!isLibraryLoaded) return@setOnClickListener
+            //Not available
+            if (!isLibraryAvailable) return@setOnClickListener
 
             //Open options
             optionsManager.toggle(true)
         }
 
         //List
-        homeRefreshLayout.setOnRefreshListener {
-            //Reload library
-            Library.loadLibrary(this, true)
+        homeRefreshLayout.setOnRefreshListener { layout ->
+            //Mark as loading
+            isLibraryLoading = true
+            isLibraryLoaded = false
 
-            //Stop refreshing
-            homeRefreshLayout.isRefreshing = false
+            //Refresh
+            Thread {
+                //Load library
+                Library.loadLibrary(this, true)
+
+                //Stop refreshing
+                runOnUiThread {
+                    homeRefreshLayout.finishRefresh()
+
+                    //Mark as loaded
+                    isLibraryLoading = false
+                    isLibraryLoaded = true
+                }
+            }.start()
         }
 
         //Options
@@ -444,7 +463,10 @@ class HomeActivity : BaseActivity() {
 
         //Init home adapter
         homeAdapter = HomeAdapter(this, Library.albums)
-        homeAdapter.onClick = { view: View, album: Album ->
+        homeAdapter.onClick = HomeAdapter.ClickListener { view: View, album: Album ->
+            //Not available
+            if (!isLibraryAvailable) return@ClickListener
+
             //Create open animation
             val startX = view.left + (view.width / 2)
             val startY = view.top + (view.height / 2)
