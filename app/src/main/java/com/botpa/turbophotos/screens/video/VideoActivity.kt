@@ -370,9 +370,15 @@ class VideoActivity : BaseActivity() {
 
         optionAudio = OptionsItem(R.drawable.track_audio, "Audio Track") {
             //Create audio track dialog
-            TracksDialog(this@VideoActivity, playerAudioTracks, "Subtitles Track") { track ->
-                //Select track
-                selectTrack(track)
+            TracksDialog(this@VideoActivity, playerAudioTracks, "Audio Track") { track ->
+                //Check track
+                if (track.trackIndex < 0) {
+                    //Disable
+                    disableAudio()
+                } else {
+                    //Select track
+                    selectTrack(track)
+                }
             }.buildAndShow()
         }
     }
@@ -586,7 +592,7 @@ class VideoActivity : BaseActivity() {
 
                             //Create a user-friendly display name
                             val langCode = format.language
-                            val readableLanguage = langCode?.let { Locale(it).displayLanguage }
+                            val readableLanguage = if (langCode == "und") "Default" else langCode?.let { Locale.forLanguageTag(it).displayLanguage }
                             val label = format.label ?: readableLanguage ?: "Track ${i + 1}"
 
                             //Create track
@@ -608,8 +614,9 @@ class VideoActivity : BaseActivity() {
                     }
                 }
 
-                //Add "disabled" subtitles track
+                //Add "disabled" tracks
                 playerSubtitleTracks.add(0, MediaTrackInfo("Disabled", isSelected = !playerSubtitleTracks.any { it.isSelected }))
+                playerAudioTracks.add(0, MediaTrackInfo("Disabled", isSelected = !playerAudioTracks.any { it.isSelected }))
             }
 
             override fun onCues(cueGroup: CueGroup) {
@@ -889,6 +896,14 @@ class VideoActivity : BaseActivity() {
         player.trackSelectionParameters = player.trackSelectionParameters
             .buildUpon()
             .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, true)
+            .build()
+    }
+
+    private fun disableAudio() {
+        //Disable audio track
+        player.trackSelectionParameters = player.trackSelectionParameters
+            .buildUpon()
+            .setTrackTypeDisabled(C.TRACK_TYPE_AUDIO, true)
             .build()
     }
 
