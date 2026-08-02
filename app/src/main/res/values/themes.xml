@@ -29,6 +29,7 @@
         <item name="android:textStyle">bold</item>
         <item name="android:textSize">22sp</item>
         <item name="android:fontFamily">@font/fraunces</item>
+        <item name="android:layout_marginBottom">12dp</item>
     </style>
 
     <style name="TextAppearance.TurboPhotos.Dialog.Content" parent="TextAppearance.Material3.BodyMedium">

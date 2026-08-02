@@ -6,7 +6,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:paddingHorizontal="20dp"
-    android:paddingTop="14dp">
+    android:paddingTop="5dp">
 
     <com.google.android.material.slider.Slider
         android:id="@+id/slider"
