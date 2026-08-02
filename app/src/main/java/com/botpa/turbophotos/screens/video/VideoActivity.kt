@@ -348,7 +348,7 @@ class VideoActivity : BaseActivity() {
 
         optionSpeed = OptionsItem(R.drawable.speed, "Playback speed") {
             //Create speed slider dialog
-            SliderDialog(this@VideoActivity, "Playback speed", player.playbackParameters.speed, 0.25f, 1.75f, 0.25f) { speed ->
+            SliderDialog(this@VideoActivity, "Playback speed", player.playbackParameters.speed, 0.25f, 2f, 0.25f) { speed ->
                 //Update speed
                 player.setPlaybackSpeed(speed)
             }.buildAndShow()
