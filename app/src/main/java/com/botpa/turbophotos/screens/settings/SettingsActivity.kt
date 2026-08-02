@@ -211,9 +211,7 @@ class SettingsActivity : AppCompatActivity() {
                                     Switch(
                                         checked = view.appModifyMetadata,
                                         onCheckedChange = { isChecked ->
-                                            view.updateAppModifyMetadata(
-                                                isChecked
-                                            )
+                                            view.updateAppModifyMetadata(isChecked)
                                         }
                                     )
                                 }
@@ -455,9 +453,7 @@ class SettingsActivity : AppCompatActivity() {
                                     Switch(
                                         checked = view.videoUseInternalPlayer,
                                         onCheckedChange = { isChecked ->
-                                            view.updateVideoUseInternalPlayer(
-                                                isChecked
-                                            )
+                                            view.updateVideoUseInternalPlayer(isChecked)
                                         }
                                     )
                                 }
@@ -476,9 +472,26 @@ class SettingsActivity : AppCompatActivity() {
                                     Switch(
                                         checked = view.videoIgnoreAudioFocus,
                                         onCheckedChange = { isChecked ->
-                                            view.updateVideoIgnoreAudioFocus(
-                                                isChecked
-                                            )
+                                            view.updateVideoIgnoreAudioFocus(isChecked)
+                                        }
+                                    )
+                                }
+                            }
+
+                            //Divider
+                            GroupDivider()
+
+                            //Show controller on start
+                            GroupItem {
+                                SettingsItem(
+                                    title = "Show controls on start",
+                                    description = "Show video player controls after opening a video."
+                                ) {
+                                    //Value
+                                    Switch(
+                                        checked = view.videoShowControlsOnStart,
+                                        onCheckedChange = { isChecked ->
+                                            view.updateVideoShowControlsOnStart(isChecked)
                                         }
                                     )
                                 }

@@ -623,7 +623,7 @@ class VideoActivity : BaseActivity() {
         playerView.subtitleView?.visibility = View.GONE
         playerSubtitles.setApplyEmbeddedFontSizes(false)
         playerSubtitles.setFixedTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
-        toggleController(false)
+        toggleController(Storage.getBool(StoragePairs.VIDEO_SHOW_CONTROLS_ON_START))
     }
 
     private fun initMediaSession() {

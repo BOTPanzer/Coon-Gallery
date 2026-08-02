@@ -43,6 +43,7 @@ class SettingsViewModel : ViewModel() {
     var videoSkipForwardAmount by mutableFloatStateOf(Storage.getLong(StoragePairs.VIDEO_SKIP_FORWARD).toFloat())
     var videoUseInternalPlayer by  mutableStateOf(Storage.getBool(StoragePairs.VIDEO_USE_INTERNAL_PLAYER))
     var videoIgnoreAudioFocus by  mutableStateOf(Storage.getBool(StoragePairs.VIDEO_IGNORE_AUDIO_FOCUS))
+    var videoShowControlsOnStart by  mutableStateOf(Storage.getBool(StoragePairs.VIDEO_SHOW_CONTROLS_ON_START))
 
 
     //App
@@ -65,6 +66,7 @@ class SettingsViewModel : ViewModel() {
         json.put(StoragePairs.VIDEO_SKIP_FORWARD.key, Storage.getLong(StoragePairs.VIDEO_SKIP_FORWARD))
         json.put(StoragePairs.VIDEO_USE_INTERNAL_PLAYER.key, Storage.getBool(StoragePairs.VIDEO_USE_INTERNAL_PLAYER))
         json.put(StoragePairs.VIDEO_IGNORE_AUDIO_FOCUS.key, Storage.getBool(StoragePairs.VIDEO_IGNORE_AUDIO_FOCUS))
+        json.put(StoragePairs.VIDEO_SHOW_CONTROLS_ON_START.key, Storage.getBool(StoragePairs.VIDEO_SHOW_CONTROLS_ON_START))
 
         //Sync screen
         json.put(StoragePairs.SYNC_USERS_KEY, Storage.getString(StoragePairs.SYNC_USERS_KEY, ""))
@@ -155,6 +157,9 @@ class SettingsViewModel : ViewModel() {
         loadBoolSettingFromJson(json, StoragePairs.VIDEO_IGNORE_AUDIO_FOCUS.key) { value ->
             Storage.putBool(StoragePairs.VIDEO_IGNORE_AUDIO_FOCUS, value)
         }
+        loadBoolSettingFromJson(json, StoragePairs.VIDEO_SHOW_CONTROLS_ON_START.key) { value ->
+            Storage.putBool(StoragePairs.VIDEO_SHOW_CONTROLS_ON_START, value)
+        }
 
         //Sync screen (these settings get loaded in sync activity)
         loadStringSettingFromJson(json, StoragePairs.SYNC_USERS_KEY) { value ->
@@ -235,6 +240,11 @@ class SettingsViewModel : ViewModel() {
     fun updateVideoIgnoreAudioFocus(isChecked: Boolean) {
         videoIgnoreAudioFocus = isChecked
         Storage.putBool(StoragePairs.VIDEO_IGNORE_AUDIO_FOCUS, isChecked)
+    }
+
+    fun updateVideoShowControlsOnStart(isChecked: Boolean) {
+        videoShowControlsOnStart = isChecked
+        Storage.putBool(StoragePairs.VIDEO_SHOW_CONTROLS_ON_START, isChecked)
     }
 
     //Links
