@@ -268,6 +268,7 @@ class VideoActivity : BaseActivity() {
 
         playerZoom.onBeforeSeek = { amount ->
             //Skip time -> Check direction
+            handler.removeCallbacks(hideSkipIndicators)
             if (amount < 0) {
                 //Update indicators
                 skipBackwardsIndicator.text = "${amount}s"
@@ -288,7 +289,6 @@ class VideoActivity : BaseActivity() {
             overlayTimeSlider.value = newPosition.toFloat()
 
             //Hide indicators
-            handler.removeCallbacks(hideSkipIndicators)
             handler.postDelayed(hideSkipIndicators, 1000)
         }
 

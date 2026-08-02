@@ -211,7 +211,7 @@ object Orion {
     @JvmOverloads
     fun animateShow(view: View, duration: Int = DEFAULT_ANIMATION_DURATION, onFinish: (() -> Unit)? = null) {
         //Already visible
-        if (view.isVisible) return
+        if (view.isVisible && view.alpha == 1.0f) return
 
         //Animate
         view.alpha = 0.0f

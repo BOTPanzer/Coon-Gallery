@@ -56,10 +56,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
+                android:fontFamily="@font/opificio_bold_rounded"
                 android:text="-5s"
                 android:textColor="?attr/colorPrimary"
                 android:textSize="30sp"
-                android:textStyle="bold"
                 android:visibility="gone" />
 
             <Space
@@ -72,10 +72,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="20dp"
+                android:fontFamily="@font/opificio_bold_rounded"
                 android:text="+5s"
                 android:textColor="?attr/colorPrimary"
                 android:textSize="30sp"
-                android:textStyle="bold"
                 android:visibility="gone" />
 
         </LinearLayout>

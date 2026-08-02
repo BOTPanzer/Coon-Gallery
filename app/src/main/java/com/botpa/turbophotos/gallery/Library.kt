@@ -22,8 +22,6 @@ import com.botpa.turbophotos.gallery.modals.InputDialog
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage.getBool
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import java.io.File
 import java.util.Locale
 import kotlin.Array
