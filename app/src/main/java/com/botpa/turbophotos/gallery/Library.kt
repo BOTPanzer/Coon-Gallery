@@ -49,6 +49,8 @@ object Library {
 
     var libraryFilter: String = "*/*" //Mime type used to filter the library
         private set
+    val isLibraryFiltered: Boolean
+        get() = libraryFilter != "*/*"
 
     //Albums
     private val _albumsMap: MutableMap<String, Album> = HashMap() //Uses album path as key for easy finding

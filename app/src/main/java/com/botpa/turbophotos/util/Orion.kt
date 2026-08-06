@@ -16,6 +16,7 @@ import android.graphics.Color
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.os.Environment
 import android.provider.DocumentsContract
 import android.provider.MediaStore
@@ -25,12 +26,10 @@ import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.AlphaAnimation
-import android.view.animation.Animation
-import android.view.animation.TranslateAnimation
 import android.view.inputmethod.InputMethodManager
 import android.webkit.MimeTypeMap
 import android.widget.LinearLayout
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.core.graphics.Insets
 import androidx.core.graphics.scale
@@ -46,6 +45,7 @@ import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.snackbar.Snackbar.SnackbarLayout
 import java.io.BufferedReader
@@ -84,95 +84,150 @@ object Orion {
     |  $$$$$$/| $$  | $$|  $$$$$$$|  $$$$$$$| $$ \  $$| $$$$$$$/|  $$$$$$$| $$
      \______/ |__/  |__/ \_______/ \_______/|__/  \__/|_______/  \_______/|_*/
 
+    val snackDuration: Int get() = 3000
+
     @JvmOverloads
-    fun snack(activity: Activity, message: String, button: String = "ok", runnable: Runnable? = null) {
-        val objLayoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-        val rootView = activity.window.decorView.findViewById<View>(android.R.id.content)
-        val snackbar = Snackbar.make(rootView, "nepe", Snackbar.LENGTH_LONG)
+    fun snack(activity: Activity, message: String, button: String = "ok", runnable: Runnable? = null, duration: Int = snackDuration) {
+        //Create base
+        val snack: Snackbar = snackCreateBase(activity)
 
-        @SuppressLint("RestrictedApi") val layout = snackbar.getView() as SnackbarLayout
-        layout.setPadding(0, 0, 0, 0)
-        layout.setBackgroundColor(0x00000000)
+        //Inflate layout
+        val snackLayout = (LayoutInflater.from(activity)).inflate(R.layout.snackbar_one, null)
 
-        val inflater = (LayoutInflater.from(activity))
-        val snackView = inflater.inflate(R.layout.snackbar_one, null)
-
-        val snackText = snackView.findViewById<TextView>(R.id.textView)
+        //Update text
+        val snackText = snackLayout.findViewById<TextView>(R.id.snackText)
         snackText.text = message
 
-        val textViewOne = snackView.findViewById<TextView>(R.id.txtOne)
-        textViewOne.text = button.uppercase(Locale.getDefault())
-        textViewOne.setOnClickListener { view: View ->
+        //Update button
+        val snackButton = snackLayout.findViewById<TextView>(R.id.snackOne)
+        snackButton.text = button.uppercase(Locale.getDefault())
+        snackButton.setOnClickListener { view: View ->
             runnable?.run()
-            snackbar.dismiss()
+            snack.dismiss()
         }
 
-        layout.addView(snackView, objLayoutParams)
-        snackbar.show()
-    }
+        //Animate progress
+        val snackProgress = snackLayout.findViewById<ProgressBar>(R.id.snackProgress)
+        object : CountDownTimer(duration.toLong(), 16L) {
+            override fun onTick(millisUntilFinished: Long) {
+                val progress = ((millisUntilFinished.toFloat() / duration.toFloat()) * 1000).toInt()
+                snackProgress.progress = progress
+            }
+            override fun onFinish() {
+                snackProgress.progress = 0
+                snack.dismiss()
+            }
+        }.start()
 
-    fun snackTwo(activity: Activity, message: String, cancel: String, confirm: String, runnable: Runnable) {
-        val objLayoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-        val rootView = activity.window.decorView.findViewById<View>(android.R.id.content)
-        val snackbar = Snackbar.make(rootView, "nepe", Snackbar.LENGTH_LONG)
-
-        @SuppressLint("RestrictedApi") val layout = snackbar.getView() as SnackbarLayout
-        layout.setPadding(0, 0, 0, 0)
-        layout.setBackgroundColor(0x00000000)
-
-        val inflater = (LayoutInflater.from(activity))
-        val snackView = inflater.inflate(R.layout.snackbar_two, null)
-
-        val snackText = snackView.findViewById<TextView>(R.id.textView)
-        snackText.text = message
-
-        val textViewOne = snackView.findViewById<TextView>(R.id.txtOne)
-        textViewOne.text = cancel.uppercase(Locale.getDefault())
-        textViewOne.setOnClickListener { view: View -> snackbar.dismiss() }
-
-        val textViewTwo = snackView.findViewById<TextView>(R.id.txtTwo)
-        textViewTwo.text = confirm.uppercase(Locale.getDefault())
-        textViewTwo.setOnClickListener { view: View ->
-            runnable.run()
-            snackbar.dismiss()
-        }
-
-        layout.addView(snackView, objLayoutParams)
-        snackbar.show()
+        //Show snack
+        snackShow(snack, snackLayout)
     }
 
     @JvmOverloads
-    fun snackTwo(activity: Activity, message: String, button1: String, runnable1: Runnable, button2: String, runnable2: Runnable, length: Int = Snackbar.LENGTH_LONG) {
-        val objLayoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-        val rootView = activity.window.decorView.findViewById<View>(android.R.id.content)
-        val snackbar = Snackbar.make(rootView, "nepe", length)
+    fun snackTwo(activity: Activity, message: String, cancel: String, confirm: String, runnable: Runnable, duration: Int = snackDuration) {
+        //Create base
+        val snack: Snackbar = snackCreateBase(activity)
 
-        @SuppressLint("RestrictedApi") val layout = snackbar.getView() as SnackbarLayout
-        layout.setPadding(0, 0, 0, 0)
-        layout.setBackgroundColor(0x00000000)
+        //Inflate layout
+        val snackLayout = (LayoutInflater.from(activity)).inflate(R.layout.snackbar_two, null)
 
-        val inflater = (LayoutInflater.from(activity))
-        val snackView = inflater.inflate(R.layout.snackbar_two, null)
-
-        val snackText = snackView.findViewById<TextView>(R.id.textView)
+        //Update text
+        val snackText = snackLayout.findViewById<TextView>(R.id.snackText)
         snackText.text = message
 
-        val textViewOne = snackView.findViewById<TextView>(R.id.txtOne)
-        textViewOne.text = button1.uppercase(Locale.getDefault())
-        textViewOne.setOnClickListener { view: View ->
+        //Update button 1
+        val snackButton1 = snackLayout.findViewById<TextView>(R.id.snackOne)
+        snackButton1.text = cancel.uppercase(Locale.getDefault())
+        snackButton1.setOnClickListener { view: View -> snack.dismiss() }
+
+        //Update button 2
+        val snackButton2 = snackLayout.findViewById<TextView>(R.id.snackTwo)
+        snackButton2.text = confirm.uppercase(Locale.getDefault())
+        snackButton2.setOnClickListener { view: View ->
+            runnable.run()
+            snack.dismiss()
+        }
+
+        //Animate progress
+        val snackProgress = snackLayout.findViewById<ProgressBar>(R.id.snackProgress)
+        object : CountDownTimer(duration.toLong(), 16L) {
+            override fun onTick(millisUntilFinished: Long) {
+                val progress = ((millisUntilFinished.toFloat() / duration.toFloat()) * 1000).toInt()
+                snackProgress.progress = progress
+            }
+            override fun onFinish() {
+                snackProgress.progress = 0
+                snack.dismiss()
+            }
+        }.start()
+
+        //Show snack
+        snackShow(snack, snackLayout)
+    }
+
+    @JvmOverloads
+    fun snackTwo(activity: Activity, message: String, button1: String, runnable1: Runnable, button2: String, runnable2: Runnable, duration: Int = snackDuration) {
+        //Create base
+        val snack: Snackbar = snackCreateBase(activity)
+
+        //Inflate layout
+        val snackLayout = (LayoutInflater.from(activity)).inflate(R.layout.snackbar_two, null)
+
+        //Update Text
+        val snackText = snackLayout.findViewById<TextView>(R.id.snackText)
+        snackText.text = message
+
+        //Update button 1
+        val snackButton1 = snackLayout.findViewById<TextView>(R.id.snackOne)
+        snackButton1.text = button1.uppercase(Locale.getDefault())
+        snackButton1.setOnClickListener { view: View ->
             runnable1.run()
-            snackbar.dismiss()
+            snack.dismiss()
         }
 
-        val textViewTwo = snackView.findViewById<TextView>(R.id.txtTwo)
-        textViewTwo.text = button2.uppercase(Locale.getDefault())
-        textViewTwo.setOnClickListener { view: View ->
+        //Update button 2
+        val snackButton2 = snackLayout.findViewById<TextView>(R.id.snackTwo)
+        snackButton2.text = button2.uppercase(Locale.getDefault())
+        snackButton2.setOnClickListener { view: View ->
             runnable2.run()
-            snackbar.dismiss()
+            snack.dismiss()
         }
 
-        layout.addView(snackView, objLayoutParams)
-        snackbar.show()
+        //Animate progress
+        val snackProgress = snackLayout.findViewById<ProgressBar>(R.id.snackProgress)
+        object : CountDownTimer(duration.toLong(), 16L) {
+            override fun onTick(millisUntilFinished: Long) {
+                val progress = ((millisUntilFinished.toFloat() / duration.toFloat()) * 1000).toInt()
+                snackProgress.progress = progress
+            }
+            override fun onFinish() {
+                snackProgress.progress = 0
+                snack.dismiss()
+            }
+        }.start()
+
+        //Show snack
+        snackShow(snack, snackLayout)
+    }
+
+    private fun snackCreateBase(activity: Activity): Snackbar {
+        //Create snack
+        val root: View = activity.window.decorView.findViewById(android.R.id.content)
+        val snack: Snackbar = Snackbar.make(root, "", Snackbar.LENGTH_INDEFINITE)
+        snack.animationMode = BaseTransientBottomBar.ANIMATION_MODE_SLIDE
+        return snack
+    }
+
+    private fun snackShow(snack: Snackbar, layout: View) {
+        //Update style
+        @SuppressLint("RestrictedApi") val root = snack.getView() as SnackbarLayout
+        root.setPadding(0, 0, 0, 0)
+        root.setBackgroundColor(0x00000000)
+
+        //Show snack
+        val layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        root.addView(layout, layoutParams)
+        snack.show()
     }
 
       /*$$$$$            /$$                           /$$     /$$

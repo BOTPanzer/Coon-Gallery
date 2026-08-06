@@ -260,6 +260,12 @@ class HomeActivity : BaseActivity() {
 
         //Options
         optionSync = OptionsItem(R.drawable.sync, "Sync") {
+            //Block action if library is filtered
+            if (Library.isLibraryFiltered) {
+                Orion.snack(this@HomeActivity, "Please remove the current filter first.")
+                return@OptionsItem
+            }
+
             //Open sync
             startActivity(Intent(this, SyncActivity::class.java))
         }
