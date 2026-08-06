@@ -38,7 +38,7 @@ class ErrorsDialog(
         //Init dialog
         return builder
             .setTitle("Errors")
-            .setPositiveButton("Close", null)
+            .setPositiveButton(context.getString(R.string.dialog_close), null)
     }
 
     override fun initListeners() {

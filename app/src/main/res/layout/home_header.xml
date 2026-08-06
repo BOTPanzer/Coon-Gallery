@@ -7,8 +7,6 @@
     android:orientation="vertical"
     android:paddingVertical="14dp">
 
-    <!-- Trash Pill -->
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -20,7 +18,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/fraunces"
-            android:text="Coon Gallery"
+            android:text="@string/app_title"
             android:textColor="?attr/colorOnSurface"
             android:textSize="24sp" />
     </LinearLayout>
@@ -89,7 +87,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="2dp"
-                            android:text="All"
+                            android:text="@string/home_album_all"
                             android:textColor="?attr/colorOnSurface"
                             android:textSize="16sp" />
 
@@ -159,7 +157,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="2dp"
-                            android:text="Trash"
+                            android:text="@string/home_album_trash"
                             android:textColor="?attr/colorOnSurface"
                             android:textSize="16sp" />
 
@@ -239,7 +237,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="2dp"
-                            android:text="Favourites"
+                            android:text="@string/home_album_favourites"
                             android:textColor="?attr/colorOnSurface"
                             android:textSize="16sp" />
 
@@ -264,5 +262,4 @@
 
         </LinearLayout>
     </LinearLayout>
-
 </LinearLayout>

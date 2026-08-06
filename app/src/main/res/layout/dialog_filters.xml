@@ -41,7 +41,7 @@
             android:id="@+id/customInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Mime type"
+            android:hint="@string/filters_custom_hint"
             android:inputType="text"
             android:textSize="16sp" />
 
@@ -50,7 +50,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:text="Apply filter" />
+            android:text="@string/filters_custom_apply" />
 
     </LinearLayout>
 </LinearLayout>

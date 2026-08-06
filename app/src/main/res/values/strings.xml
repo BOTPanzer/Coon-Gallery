@@ -1,5 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- App Name -->
+    <!-- App -->
     <string name="app_name">Gallery</string>
+    <string name="app_title">Coon Gallery</string>
+    <!-- General -->
+    <string name="items">%d items</string>
+    <!-- Permissions -->
+    <string name="permissions_title">Permissions</string>
+    <string name="permissions_request">Request</string>
+    <string name="permissions_permission_storage">Storage</string>
+    <string name="permissions_permission_media">Media</string>
+    <string name="permissions_permission_notifications">Notifications</string>
+    <string name="permissions_permission_lan">Local area network</string>
+    <!-- Dialogs -->
+    <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_confirm">Confirm</string>
+    <string name="dialog_close">Close</string>
+    <!-- Home screen -->
+    <string name="home_album_all">All</string>
+    <string name="home_album_trash">Trash</string>
+    <string name="home_album_favourites">Favourites</string>
+    <string name="home_filtered_base">Showing only %s</string>
+    <string name="home_filtered_images">images</string>
+    <string name="home_filtered_videos">videos</string>
+    <string name="home_filtered_custom">custom</string>
+    <string name="home_refresh_pull">Pull to refresh</string>
+    <string name="home_refresh_release">Release to refresh</string>
+    <string name="home_refresh_refreshing">Refreshing…</string>
+    <string name="home_error_remove_filters">Please, remove the current filter first.</string>
+    <!-- Home filters dialog -->
+    <string name="filters_title">Filters</string>
+    <string name="filters_option_all">All</string>
+    <string name="filters_option_images">Images only</string>
+    <string name="filters_option_videos">Videos only</string>
+    <string name="filters_custom_button">Custom filter</string>
+    <string name="filters_custom_apply">Apply filter</string>
+    <string name="filters_custom_hint">MIME type</string>
+    <string name="filters_select_button">Select filter</string>
+    <string name="filters_error_invalid_mime">The specified MIME type is invalid.</string>
+    <!-- Settings screen -->
+    <string name="settings_title">Settings</string>
+    <!-- Sync screen -->
+    <string name="sync_title">Sync</string>
 </resources>

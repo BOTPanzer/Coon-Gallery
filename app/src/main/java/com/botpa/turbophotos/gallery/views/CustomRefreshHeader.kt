@@ -12,6 +12,7 @@ import com.scwang.smart.refresh.layout.api.RefreshKernel
 import com.scwang.smart.refresh.layout.api.RefreshLayout
 import com.scwang.smart.refresh.layout.constant.RefreshState
 import com.scwang.smart.refresh.layout.constant.SpinnerStyle
+import androidx.core.content.withStyledAttributes
 
 @Suppress("RestrictedApi")
 class CustomRefreshHeader @JvmOverloads constructor(
@@ -23,10 +24,21 @@ class CustomRefreshHeader @JvmOverloads constructor(
     private val refreshText: TextView
     private val refreshIndicator: View
 
+    private lateinit var textPullToRefresh: String
+    private lateinit var textReleaseToRefresh: String
+    private lateinit var textRefreshing: String
+
     init {
         val view = LayoutInflater.from(context).inflate(R.layout.refresh_header, this, true)
         refreshText = view.findViewById(R.id.refreshStatus)
         refreshIndicator = view.findViewById(R.id.refreshIndicator)
+
+        //Get attributes
+        context.withStyledAttributes(attrs, R.styleable.CustomRefreshHeader, defStyleAttr, 0) {
+            textPullToRefresh = getString(R.styleable.CustomRefreshHeader_textPullToRefresh) ?: "Pull to refresh"
+            textReleaseToRefresh = getString(R.styleable.CustomRefreshHeader_textReleaseToRefresh) ?: "Release to refresh"
+            textRefreshing = getString(R.styleable.CustomRefreshHeader_textRefreshing) ?: "Refreshing..."
+        }
     }
 
     override fun getView(): View = this
@@ -41,15 +53,15 @@ class CustomRefreshHeader @JvmOverloads constructor(
     override fun onStateChanged(refreshLayout: RefreshLayout, oldState: RefreshState, newState: RefreshState) {
         when (newState) {
             RefreshState.None, RefreshState.PullDownToRefresh -> {
-                refreshText.text = "Pull to refresh"
+                refreshText.text = textPullToRefresh
                 refreshIndicator.visibility = GONE
             }
             RefreshState.ReleaseToRefresh -> {
-                refreshText.text = "Release to refresh"
+                refreshText.text = textReleaseToRefresh
                 refreshIndicator.visibility = GONE
             }
             RefreshState.Refreshing -> {
-                refreshText.text = "Refreshing..."
+                refreshText.text = textRefreshing
                 refreshIndicator.visibility = VISIBLE
             }
             RefreshState.RefreshFinish -> {

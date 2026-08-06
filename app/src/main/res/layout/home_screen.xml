@@ -21,7 +21,10 @@
 
             <com.botpa.turbophotos.gallery.views.CustomRefreshHeader
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                app:textPullToRefresh="@string/home_refresh_pull"
+                app:textReleaseToRefresh="@string/home_refresh_release"
+                app:textRefreshing="@string/home_refresh_refreshing">
 
             </com.botpa.turbophotos.gallery.views.CustomRefreshHeader>
 

@@ -259,10 +259,10 @@ class HomeActivity : BaseActivity() {
         }
 
         //Options
-        optionSync = OptionsItem(R.drawable.sync, "Sync") {
+        optionSync = OptionsItem(R.drawable.sync, getString(R.string.sync_title)) {
             //Block action if library is filtered
             if (Library.isLibraryFiltered) {
-                Orion.snack(this@HomeActivity, "Please remove the current filter first.")
+                Orion.snack(this@HomeActivity, getString(R.string.home_error_remove_filters))
                 return@OptionsItem
             }
 
@@ -270,17 +270,17 @@ class HomeActivity : BaseActivity() {
             startActivity(Intent(this, SyncActivity::class.java))
         }
 
-        optionSettings = OptionsItem(R.drawable.settings, "Settings") {
+        optionSettings = OptionsItem(R.drawable.settings, getString(R.string.settings_title)) {
             //Open sync
             startActivity(Intent(this, SettingsActivity::class.java))
         }
 
-        optionFilters = OptionsItem(R.drawable.filter, "Filters") {
+        optionFilters = OptionsItem(R.drawable.filter, getString(R.string.filters_title)) {
             //Create filters list
             val filters = listOf(
-                Filter(R.drawable.gallery_all, "All items", "*/*"),
-                Filter(R.drawable.gallery_image, "Only images", "image/*"),
-                Filter(R.drawable.gallery_video, "Only videos", "video/*")
+                Filter(R.drawable.gallery_all, R.string.filters_option_all, "*/*"),
+                Filter(R.drawable.gallery_image, R.string.filters_option_images, "image/*"),
+                Filter(R.drawable.gallery_video, R.string.filters_option_videos, "video/*")
             )
 
             //Create dialog
@@ -412,7 +412,7 @@ class HomeActivity : BaseActivity() {
             homeAdapter.notifyDataSetChanged()
 
             //Update subtitle
-            updateNavbarSubtitle()
+            updateNavbarTitle()
         }
     }
 
@@ -573,25 +573,29 @@ class HomeActivity : BaseActivity() {
     }
 
     //Navbar
-    private fun updateNavbarSubtitle() {
-        //Check if a filter is applied & toggle subtitle
+    private fun updateNavbarTitle() {
+        //Check if a filter is applied & toggle title
         val filter = Library.libraryFilter
         val isFiltered = filter != "*/*"
         navbarTitle.visibility = if (isFiltered) View.VISIBLE else View.GONE
         if (!isFiltered) return
 
-        //Parse filter & update subtitle
+        //Parse filter
         val parts = filter.split("/")
         val type = parts[0]
         val format = parts[1]
-        val subtitle = StringBuilder("Showing only ")
-        when (type) {
-            "image" -> subtitle.append("images ")
-            "video" -> subtitle.append("videos ")
-            else -> subtitle.append("custom ")
-        }
-        if (format != "*") subtitle.append("($format)")
-        navbarTitle.text = subtitle.toString()
+
+        //Update title
+        val title = StringBuilder(getString(
+            R.string.home_filtered_base,
+            when (type) {
+                "image" -> getString(R.string.home_filtered_images)
+                "video" -> getString(R.string.home_filtered_videos)
+                else -> getString(R.string.home_filtered_custom)
+            }
+        ))
+        if (format != "*") title.append(" ($format)")
+        navbarTitle.text = title.toString()
     }
 
 }

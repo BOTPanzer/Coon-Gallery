@@ -29,8 +29,8 @@ class FiltersDialog(context: Context, filters: List<Filter>) : CustomDialog(cont
     private var adapter: FiltersDialogAdapter = FiltersDialogAdapter(context, filters)
 
     //Text
-    private val TEXT_CUSTOM: String = "Custom filter"
-    private val TEXT_SELECT: String = "Select filter"
+    private val buttonTextCustom: String = context.getString(R.string.filters_custom_button)
+    private val buttonTextSelect: String = context.getString(R.string.filters_select_button)
 
 
     //Init
@@ -46,9 +46,9 @@ class FiltersDialog(context: Context, filters: List<Filter>) : CustomDialog(cont
     override fun initDialog(builder: MaterialAlertDialogBuilder): MaterialAlertDialogBuilder {
         //Init dialog
         return builder
-            .setTitle("Filters")
-            .setNeutralButton(TEXT_CUSTOM, null)
-            .setNegativeButton("Cancel", null)
+            .setTitle(context.getString(R.string.filters_title))
+            .setNeutralButton(buttonTextCustom, null)
+            .setNegativeButton(context.getString(R.string.dialog_cancel), null)
     }
 
     override fun initListeners() {
@@ -69,7 +69,7 @@ class FiltersDialog(context: Context, filters: List<Filter>) : CustomDialog(cont
             //Check if mime type is valid
             if (!Pattern.compile(".[/].").matcher(mimeType).find()) {
                 //Mime type is invalid
-                Toast.makeText(context, "Mime type is invalid", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.filters_error_invalid_mime), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -93,14 +93,14 @@ class FiltersDialog(context: Context, filters: List<Filter>) : CustomDialog(cont
                 customInput.requestFocus()
 
                 //Update neutral button
-                neutralButton.text = TEXT_SELECT
+                neutralButton.text = buttonTextSelect
             } else {
                 //Toggle menus (show filters list)
                 listLayout.visibility = View.VISIBLE
                 customLayout.visibility = View.GONE
 
                 //Update neutral button
-                neutralButton.text = TEXT_CUSTOM
+                neutralButton.text = buttonTextCustom
             }
         }
     }

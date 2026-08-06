@@ -81,7 +81,7 @@ class ExplorerDialog(
         return builder.apply {
             setTitle(if (isSelectingFiles) "Select a file" else "Select a folder")
             setNeutralButton(TEXT_CREATE, null)
-            setNegativeButton("Cancel", null)
+            setNegativeButton(context.getString(R.string.dialog_cancel), null)
         }
     }
 

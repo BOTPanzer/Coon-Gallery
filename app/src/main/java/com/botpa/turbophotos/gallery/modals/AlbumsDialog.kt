@@ -40,7 +40,7 @@ class AlbumsDialog(
         //Init dialog
         return builder
             .setTitle("Select an album")
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton(context.getString(R.string.dialog_cancel), null)
             .setNeutralButton("Select from folder",{ dialogInterface, which ->
                 //Select from folder
                 ExplorerDialog(context, false, onSelectFolder).buildAndShow()

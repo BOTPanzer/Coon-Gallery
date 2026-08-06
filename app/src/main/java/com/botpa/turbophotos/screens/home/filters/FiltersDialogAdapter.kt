@@ -19,7 +19,7 @@ class FiltersDialogAdapter(context: Context, items: List<Filter>) : SimpleCustom
     override fun onInitItemHolder(holder: FilterHolder, item: Filter) {
         //Update info
         holder.icon.setImageResource(item.icon)
-        holder.name.text = item.name
+        holder.name.text = context.getString(item.name)
 
         //Add listeners
         holder.item.setOnClickListener { view ->

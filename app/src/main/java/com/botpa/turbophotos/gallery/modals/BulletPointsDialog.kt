@@ -38,7 +38,7 @@ class BulletPointsDialog(
         //Init dialog
         return builder
             .setTitle(title)
-            .setPositiveButton("Close", null)
+            .setPositiveButton(context.getString(R.string.dialog_close), null)
     }
 
     override fun onInitEnd() {

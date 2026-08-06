@@ -34,8 +34,8 @@ class SliderDialog(
         //Init dialog
         return builder
             .setTitle(title)
-            .setNegativeButton("Cancel", null)
-            .setPositiveButton("Confirm", null)
+            .setNegativeButton(context.getString(R.string.dialog_cancel), null)
+            .setPositiveButton(context.getString(R.string.dialog_confirm), null)
     }
 
     override fun initListeners() {

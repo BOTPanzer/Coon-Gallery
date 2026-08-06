@@ -42,9 +42,9 @@ class HomeAdapter(
         holder.trashIcon.visibility = if (allTrashLoaded) View.GONE else View.VISIBLE
 
         //Update text
-        holder.allInfo.text = "${Library.all.size()} items"
-        holder.favouritesInfo.text = "${Library.favourites.size()} items"
-        holder.trashInfo.text = "${Library.trash.size()} items"
+        holder.allInfo.text = context.getString(R.string.items, Library.all.size())
+        holder.favouritesInfo.text = context.getString(R.string.items, Library.favourites.size())
+        holder.trashInfo.text = context.getString(R.string.items, Library.trash.size())
 
         //Add listeners
         addAlbumListener(holder.all, Library.all)
@@ -58,7 +58,7 @@ class HomeAdapter(
 
         //Update text
         holder.name.text = album.name
-        holder.info.text = "${album.size()} items"
+        holder.info.text = context.getString(R.string.items, album.size())
 
         //Add listeners
         addAlbumListener(holder.root, album)
