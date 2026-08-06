@@ -331,7 +331,7 @@ class VideoActivity : BaseActivity() {
         })
 
         //Options
-        optionPiP = OptionsItem(R.drawable.pip, "Open in PiP") {
+        optionPiP = OptionsItem(R.drawable.pip, R.string.context_option_pip) {
             //Create params
             val p = PictureInPictureParams.Builder()
             try {
@@ -346,17 +346,17 @@ class VideoActivity : BaseActivity() {
             isInPiP = enterPictureInPictureMode(p.build())
         }
 
-        optionSpeed = OptionsItem(R.drawable.speed, "Playback speed") {
+        optionSpeed = OptionsItem(R.drawable.speed, R.string.video_option_speed) {
             //Create speed slider dialog
-            SliderDialog(this@VideoActivity, "Playback speed", player.playbackParameters.speed, 0.25f, 2f, 0.25f) { speed ->
+            SliderDialog(this@VideoActivity, getString(R.string.video_option_speed), player.playbackParameters.speed, 0.25f, 2f, 0.25f) { speed ->
                 //Update speed
                 player.setPlaybackSpeed(speed)
             }.buildAndShow()
         }
 
-        optionSubtitles = OptionsItem(R.drawable.track_subtitles, "Subtitles Track") {
+        optionSubtitles = OptionsItem(R.drawable.track_subtitles, R.string.video_option_subtitles) {
             //Create subtitles track dialog
-            TracksDialog(this@VideoActivity, playerSubtitleTracks, "Subtitles Track") { track ->
+            TracksDialog(this@VideoActivity, playerSubtitleTracks, getString(R.string.video_option_subtitles)) { track ->
                 //Check track
                 if (track.trackIndex < 0) {
                     //Disable
@@ -368,9 +368,9 @@ class VideoActivity : BaseActivity() {
             }.buildAndShow()
         }
 
-        optionAudio = OptionsItem(R.drawable.track_audio, "Audio Track") {
+        optionAudio = OptionsItem(R.drawable.track_audio, R.string.video_option_audio) {
             //Create audio track dialog
-            TracksDialog(this@VideoActivity, playerAudioTracks, "Audio Track") { track ->
+            TracksDialog(this@VideoActivity, playerAudioTracks, getString(R.string.video_option_audio)) { track ->
                 //Check track
                 if (track.trackIndex < 0) {
                     //Disable
@@ -543,7 +543,7 @@ class VideoActivity : BaseActivity() {
 
                     //Update play button
                     overlayPlay.setIconResource(R.drawable.pause)
-                    overlayPlay.text = "Pause"
+                    overlayPlay.text = getString(R.string.video_state_pause)
 
                     //Start time update loop
                     if (overlayLayout.isVisible) enableUpdateTimeLoop(true)
@@ -553,7 +553,7 @@ class VideoActivity : BaseActivity() {
                 } else {
                     //Update play button
                     overlayPlay.setIconResource(R.drawable.play)
-                    overlayPlay.text = "Play"
+                    overlayPlay.text = getString(R.string.video_state_play)
 
                     //Stop time update loop
                     enableUpdateTimeLoop(false)
@@ -594,8 +594,11 @@ class VideoActivity : BaseActivity() {
 
                             //Create a user-friendly display name
                             val langCode = format.language
-                            val readableLanguage = if (langCode == "und") "Default" else langCode?.let { Locale.forLanguageTag(it).displayLanguage }
-                            val label = format.label ?: readableLanguage ?: "Track ${i + 1}"
+                            val readableLanguage = if (langCode == "und")
+                                getString(R.string.video_state_track_default)
+                            else
+                                langCode?.let { Locale.forLanguageTag(it).displayLanguage }
+                            val label = format.label ?: readableLanguage ?: getString(R.string.video_state_track, i + 1)
 
                             //Create track
                             val trackInfo = MediaTrackInfo(
@@ -617,8 +620,8 @@ class VideoActivity : BaseActivity() {
                 }
 
                 //Add "disabled" tracks
-                playerSubtitleTracks.add(0, MediaTrackInfo("Disabled", isSelected = !playerSubtitleTracks.any { it.isSelected }))
-                playerAudioTracks.add(0, MediaTrackInfo("Disabled", isSelected = !playerAudioTracks.any { it.isSelected }))
+                playerSubtitleTracks.add(0, MediaTrackInfo(getString(R.string.video_state_track_disabled), isSelected = !playerSubtitleTracks.any { it.isSelected }))
+                playerAudioTracks.add(0, MediaTrackInfo(getString(R.string.video_state_track_disabled), isSelected = !playerAudioTracks.any { it.isSelected }))
             }
 
             override fun onCues(cueGroup: CueGroup) {
@@ -669,7 +672,7 @@ class VideoActivity : BaseActivity() {
 
         //Create notification channel
         val channel = NotificationChannel(NOTIFICATION_CHANNEL_ID, NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW)
-        channel.description = "Appears when the video player is active"
+        channel.description = getString(R.string.video_notification_channel_description)
         notificationManager.createNotificationChannel(channel)
 
         //Create intents
@@ -690,7 +693,7 @@ class VideoActivity : BaseActivity() {
             .setStyle(style)
             .addAction(NotificationCompat.Action(
                 if (player.isPlaying) R.drawable.pause else R.drawable.play,
-                if (player.isPlaying) "Pause" else "Play",
+                getString(if (player.isPlaying) R.string.video_state_pause else R.string.video_state_play),
                 PendingIntent.getBroadcast(this, 0, pauseIntent, PendingIntent.FLAG_IMMUTABLE)
             ))
         notification = builder.build()

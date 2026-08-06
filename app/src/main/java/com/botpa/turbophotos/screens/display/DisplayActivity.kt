@@ -232,27 +232,27 @@ class DisplayActivity : BaseActivity() {
         overlayOptions.setOnClickListener { optionsManager.toggle(true) }
 
         //Options
-        optionRename = OptionsItem(R.drawable.rename, "Rename") {
+        optionRename = OptionsItem(R.drawable.rename, R.string.context_option_rename) {
             //Rename
             Library.renameItem(this, currentItem)
         }
 
-        optionEdit = OptionsItem(R.drawable.edit, "Edit") {
+        optionEdit = OptionsItem(R.drawable.edit, R.string.context_option_edit) {
             //Edit
             Library.editItem(this, currentItem)
         }
 
-        optionShare = OptionsItem(R.drawable.share, "Share") {
+        optionShare = OptionsItem(R.drawable.share, R.string.context_option_share) {
             //Share
             Library.shareItems(this, arrayOf(currentItem))
         }
 
-        optionSetAs = OptionsItem(R.drawable.wallpaper, "Set as") {
+        optionSetAs = OptionsItem(R.drawable.wallpaper, R.string.context_option_set) {
             //Set as
             Library.setItemAs(this, currentItem)
         }
 
-        optionPiP = OptionsItem(R.drawable.pip, "Open in PiP") {
+        optionPiP = OptionsItem(R.drawable.pip, R.string.context_option_pip) {
             //Create params
             val p = PictureInPictureParams.Builder()
             try {
@@ -266,42 +266,42 @@ class DisplayActivity : BaseActivity() {
             isInPiP = enterPictureInPictureMode(p.build())
         }
 
-        optionInfo = OptionsItem(R.drawable.info, "Info") {
+        optionInfo = OptionsItem(R.drawable.info, R.string.display_option_info) {
             //Toggle info
             InfoDrawer(this, currentItem).buildAndShow()
         }
 
-        optionFavourite = OptionsItem(R.drawable.favourite_on, "Favourite") {
+        optionFavourite = OptionsItem(R.drawable.favourite_on, R.string.context_option_favourite) {
             //Add to favourites
             favouriteItems(arrayOf(currentItem))
         }
 
-        optionUnfavourite = OptionsItem(R.drawable.favourite_off, "Unfavourite") {
+        optionUnfavourite = OptionsItem(R.drawable.favourite_off, R.string.context_option_unfavourite) {
             //Remove from favourites
             unfavouriteItems(arrayOf(currentItem))
         }
 
-        optionMove = OptionsItem(R.drawable.move, "Move to album") {
+        optionMove = OptionsItem(R.drawable.move, R.string.context_option_move) {
             //Move items
             Library.moveItems(this, arrayOf(currentItem))
         }
 
-        optionCopy = OptionsItem(R.drawable.copy, "Copy to album") {
+        optionCopy = OptionsItem(R.drawable.copy, R.string.context_option_copy) {
             //Copy items
             Library.copyItems(this, arrayOf(currentItem))
         }
 
-        optionTrash = OptionsItem(R.drawable.trash, "Move to trash") {
+        optionTrash = OptionsItem(R.drawable.trash, R.string.context_option_trash) {
             //Move to trash
             trashItems(arrayOf(currentItem))
         }
 
-        optionRestore = OptionsItem(R.drawable.restore, "Restore") {
+        optionRestore = OptionsItem(R.drawable.restore, R.string.context_option_restore) {
             //Restore from trash
             restoreItems(arrayOf(currentItem))
         }
 
-        optionDelete = OptionsItem(R.drawable.delete, "Delete") {
+        optionDelete = OptionsItem(R.drawable.delete, R.string.context_option_rename) {
             //Delete item
             Library.deleteItems(this, arrayOf(currentItem))
         }

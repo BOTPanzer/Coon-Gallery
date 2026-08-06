@@ -19,7 +19,7 @@ class OptionsItemAdapter(context: Context, items: List<OptionsItem>) : SimpleCus
     override fun onInitItemHolder(holder: OptionHolder, item: OptionsItem) {
         //Update info
         holder.icon.setImageResource(item.icon)
-        holder.name.text = item.name
+        holder.name.text = context.getString(item.name)
 
         //Add listeners
         holder.item.setOnClickListener { view: View ->

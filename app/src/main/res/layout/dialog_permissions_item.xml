@@ -36,7 +36,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
                 android:clickable="true"
-                android:text="@string/permissions_request" />
+                android:text="@string/dialog_permissions_request" />
 
         </LinearLayout>
 

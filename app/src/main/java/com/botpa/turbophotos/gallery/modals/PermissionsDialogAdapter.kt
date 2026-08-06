@@ -33,10 +33,10 @@ class PermissionsDialogAdapter(
     //Permissions
     fun getPermissionName(permission: PermissionType): String {
         return when (permission) {
-            PermissionType.Storage -> context.getString(R.string.permissions_permission_storage)
-            PermissionType.Media -> context.getString(R.string.permissions_permission_media)
-            PermissionType.Notifications -> context.getString(R.string.permissions_permission_notifications)
-            PermissionType.LocalAreaNetwork -> context.getString(R.string.permissions_permission_lan)
+            PermissionType.Storage -> context.getString(R.string.dialog_permissions_permission_storage)
+            PermissionType.Media -> context.getString(R.string.dialog_permissions_permission_media)
+            PermissionType.Notifications -> context.getString(R.string.dialog_permissions_permission_notifications)
+            PermissionType.LocalAreaNetwork -> context.getString(R.string.dialog_permissions_permission_lan)
         }
     }
 

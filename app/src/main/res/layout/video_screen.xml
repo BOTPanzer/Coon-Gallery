@@ -186,7 +186,7 @@
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
                                     android:layout_weight="1"
-                                    android:text="Play"
+                                    android:text="@string/video_state_play"
                                     app:icon="@drawable/play"
                                     app:iconGravity="textStart"
                                     app:iconTint="?attr/colorOnPrimary"

@@ -5,14 +5,22 @@
     <string name="app_title">Coon Gallery</string>
     <!-- General -->
     <string name="items">%d items</string>
-    <!-- Permissions -->
-    <string name="permissions_title">Permissions</string>
-    <string name="permissions_request">Request</string>
-    <string name="permissions_permission_storage">Storage</string>
-    <string name="permissions_permission_media">Media</string>
-    <string name="permissions_permission_notifications">Notifications</string>
-    <string name="permissions_permission_lan">Local area network</string>
-    <!-- Home screen -->
+    <!-- Reused context options -->
+    <string name="context_option_rename">Rename</string>
+    <string name="context_option_edit">Edit</string>
+    <string name="context_option_share">Share</string>
+    <string name="context_option_set">Set as</string>
+    <string name="context_option_pip">Open in PiP</string>
+    <string name="context_option_favourite">Add to favourites</string>
+    <string name="context_option_unfavourite">Remove from favourites</string>
+    <string name="context_option_move">Move to album</string>
+    <string name="context_option_copy">Copy to album</string>
+    <string name="context_option_trash">Move to trash</string>
+    <string name="context_option_restore">Restore</string>
+    <string name="context_option_restore_all">Restore all</string>
+    <string name="context_option_delete">Delete</string>
+    <string name="context_option_delete_all">Delete all</string>
+    <!-- Screen: Home -->
     <string name="home_album_all">All</string>
     <string name="home_album_trash">Trash</string>
     <string name="home_album_favourites">Favourites</string>
@@ -23,11 +31,34 @@
     <string name="home_refresh_release">Release to refresh</string>
     <string name="home_refresh_refreshing">Refreshing…</string>
     <string name="home_error_remove_filters">Please, remove the current filter first.</string>
+    <!-- Screen: Video -->
+    <string name="video_state_play">Play</string>
+    <string name="video_state_pause">Pause</string>
+    <string name="video_state_track">Track %d</string>
+    <string name="video_state_track_default">Default</string>
+    <string name="video_state_track_disabled">Disabled</string>
+    <string name="video_option_speed">Playback speed</string>
+    <string name="video_option_subtitles">Subtitles track</string>
+    <string name="video_option_audio">Audio track</string>
+    <string name="video_notification_channel_description">Appears when the video player is active.</string>
+    <!-- Screen: Display -->
+    <string name="display_option_info">Info</string>
+    <!-- Screen: Settings -->
+    <string name="settings_title">Settings</string>
+    <!-- Screen: Sync -->
+    <string name="sync_title">Sync</string>
     <!-- Dialogs -->
     <string name="dialog_cancel">Cancel</string>
     <string name="dialog_confirm">Confirm</string>
     <string name="dialog_close">Close</string>
-    <!-- Filters dialog -->
+    <!-- Dialog: Permissions -->
+    <string name="dialog_permissions_title">Permissions</string>
+    <string name="dialog_permissions_request">Request</string>
+    <string name="dialog_permissions_permission_storage">Storage</string>
+    <string name="dialog_permissions_permission_media">Media</string>
+    <string name="dialog_permissions_permission_notifications">Notifications</string>
+    <string name="dialog_permissions_permission_lan">Local area network</string>
+    <!-- Dialog: Filters -->
     <string name="dialog_filters_title">Filters</string>
     <string name="dialog_filters_option_all">All</string>
     <string name="dialog_filters_option_images">Images only</string>
@@ -37,12 +68,12 @@
     <string name="dialog_filters_custom_hint">MIME type</string>
     <string name="dialog_filters_select_button">Select filter</string>
     <string name="dialog_filters_error_invalid_mime">The specified MIME type is invalid.</string>
-    <!-- Albums dialog -->
+    <!-- Dialog: Albums -->
     <string name="dialog_albums_title">Select an album</string>
     <string name="dialog_albums_folder">Select from folder</string>
-    <!-- Errors dialog -->
+    <!-- Dialog: Errors -->
     <string name="dialog_errors_title">Errors</string>
-    <!-- Explorer dialog -->
+    <!-- Dialog: Explorer -->
     <string name="dialog_explorer_file_title">Select a file</string>
     <string name="dialog_explorer_file_hint">File name</string>
     <string name="dialog_explorer_file_create">Create a new one</string>
@@ -59,8 +90,4 @@
     <string name="dialog_explorer_error_folder_create">Failed to create folder.</string>
     <string name="dialog_explorer_previous_folder">Previous folder</string>
     <string name="dialog_explorer_external_storage">External storage</string>
-    <!-- Settings screen -->
-    <string name="settings_title">Settings</string>
-    <!-- Sync screen -->
-    <string name="sync_title">Sync</string>
 </resources>

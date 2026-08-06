@@ -5,14 +5,22 @@
     <string name="app_title">Galería Coon</string>
     <!-- General -->
     <string name="items">%d elementos</string>
-    <!-- Permissions -->
-    <string name="permissions_title">Permisos</string>
-    <string name="permissions_request">Solicitar</string>
-    <string name="permissions_permission_storage">Almacenamiento</string>
-    <string name="permissions_permission_media">Multimedia</string>
-    <string name="permissions_permission_notifications">Notificaciones</string>
-    <string name="permissions_permission_lan">Red local</string>
-    <!-- Home screen -->
+    <!-- Reused context options -->
+    <string name="context_option_rename">Renombrar</string>
+    <string name="context_option_edit">Editar</string>
+    <string name="context_option_share">Compartir</string>
+    <string name="context_option_set">Establecer como</string>
+    <string name="context_option_pip">Abrir en PiP</string>
+    <string name="context_option_favourite">Añadir a favoritos</string>
+    <string name="context_option_unfavourite">Quitar de favoritos</string>
+    <string name="context_option_move">Mover a álbum</string>
+    <string name="context_option_copy">Copiar a álbum</string>
+    <string name="context_option_trash">Mover a papelera</string>
+    <string name="context_option_restore">Restaurar</string>
+    <string name="context_option_restore_all">Restaurar todo</string>
+    <string name="context_option_delete">Borrar</string>
+    <string name="context_option_delete_all">Borrar todo</string>
+    <!-- Screen: Home -->
     <string name="home_album_all">Todo</string>
     <string name="home_album_trash">Papelera</string>
     <string name="home_album_favourites">Favoritos</string>
@@ -23,11 +31,34 @@
     <string name="home_refresh_release">Suelta para actualizar</string>
     <string name="home_refresh_refreshing">Actualizando…</string>
     <string name="home_error_remove_filters">Por favor, quita el filtro actual primero.</string>
+    <!-- Screen: Video -->
+    <string name="video_state_play">Reproducir</string>
+    <string name="video_state_pause">Pausar</string>
+    <string name="video_state_track">Pista %d</string>
+    <string name="video_state_track_default">Predeterminado</string>
+    <string name="video_state_track_disabled">Desactivado</string>
+    <string name="video_option_speed">Velocidad</string>
+    <string name="video_option_subtitles">Pista de subtitulos</string>
+    <string name="video_option_audio">Pista de audio</string>
+    <string name="video_notification_channel_description">Aparece cuando el reproductor de video está activo.</string>
+    <!-- Screen: Display -->
+    <string name="display_option_info">Info</string>
+    <!-- Screen: Settings -->
+    <string name="settings_title">Ajustes</string>
+    <!-- Screen: Sync -->
+    <string name="sync_title">Sync</string>
     <!-- Dialogs -->
     <string name="dialog_cancel">Cancelar</string>
     <string name="dialog_confirm">Confirmar</string>
     <string name="dialog_close">Cerrar</string>
-    <!-- Home filters dialog -->
+    <!-- Dialog: Permissions -->
+    <string name="dialog_permissions_title">Permisos</string>
+    <string name="dialog_permissions_request">Solicitar</string>
+    <string name="dialog_permissions_permission_storage">Almacenamiento</string>
+    <string name="dialog_permissions_permission_media">Multimedia</string>
+    <string name="dialog_permissions_permission_notifications">Notificaciones</string>
+    <string name="dialog_permissions_permission_lan">Red local</string>
+    <!-- Dialog: Filters -->
     <string name="dialog_filters_title">Filtros</string>
     <string name="dialog_filters_option_all">Todo</string>
     <string name="dialog_filters_option_images">Solo imágenes</string>
@@ -37,12 +68,12 @@
     <string name="dialog_filters_custom_hint">Tipo MIME</string>
     <string name="dialog_filters_select_button">Seleccionar filtro</string>
     <string name="dialog_filters_error_invalid_mime">El tipo MIME especificado es invalido.</string>
-    <!-- Albums dialog -->
+    <!-- Dialog: Albums -->
     <string name="dialog_albums_title">Selecciona un álbum</string>
     <string name="dialog_albums_folder">Seleccionar carpeta</string>
-    <!-- Errors dialog -->
+    <!-- Dialog: Errors -->
     <string name="dialog_errors_title">Errores</string>
-    <!-- Explorer dialog -->
+    <!-- Dialog: Explorer -->
     <string name="dialog_explorer_file_title">Selecciona un archivo</string>
     <string name="dialog_explorer_file_hint">Nombre del archivo</string>
     <string name="dialog_explorer_file_create">Crear nuevo</string>
@@ -50,6 +81,8 @@
     <string name="dialog_explorer_folder_hint">Nombre de la carpeta</string>
     <string name="dialog_explorer_folder_create">Crear nueva</string>
     <string name="dialog_explorer_select">Seleccionar existente</string>
+    <string name="dialog_explorer_previous_folder">Carpeta anterior</string>
+    <string name="dialog_explorer_external_storage">Almacenamiento externo</string>
     <string name="dialog_explorer_error_invalid_item">Elemento invalido.</string>
     <string name="dialog_explorer_error_missing_permissions">Faltan permisos para usar esa carpeta.</string>
     <string name="dialog_explorer_error_empty_name">El nombre no puede estar vacio.</string>
@@ -57,10 +90,4 @@
     <string name="dialog_explorer_error_file_create">Fallo al crear el archivo.</string>
     <string name="dialog_explorer_error_folder_exists">La carpeta ya existe.</string>
     <string name="dialog_explorer_error_folder_create">Fallo al crear la carpeta.</string>
-    <string name="dialog_explorer_previous_folder">Carpeta anterior</string>
-    <string name="dialog_explorer_external_storage">Almacenamiento externo</string>
-    <!-- Settings screen -->
-    <string name="settings_title">Ajustes</string>
-    <!-- Sync screen -->
-    <string name="sync_title">Sync</string>
 </resources>

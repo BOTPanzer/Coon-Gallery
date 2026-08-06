@@ -383,7 +383,7 @@ class AlbumActivity : BaseActivity() {
         searchClose.setOnClickListener { view: View -> showSearchLayout(false) }
 
         //Options
-        optionRename = OptionsItem(R.drawable.rename, "Rename") {
+        optionRename = OptionsItem(R.drawable.rename, R.string.context_option_rename) {
             //Only allow 1 selection
             if (selectedIndexes.size != 1) return@OptionsItem
 
@@ -391,7 +391,7 @@ class AlbumActivity : BaseActivity() {
             Library.renameItem(this, gallery[selectedIndexes.iterator().next()])
         }
 
-        optionEdit = OptionsItem(R.drawable.edit, "Edit") {
+        optionEdit = OptionsItem(R.drawable.edit, R.string.context_option_edit) {
             //Only allow 1 selection
             if (selectedIndexes.size != 1) return@OptionsItem
 
@@ -399,12 +399,12 @@ class AlbumActivity : BaseActivity() {
             Library.editItem(this, gallery[selectedIndexes.iterator().next()])
         }
 
-        optionShare = OptionsItem(R.drawable.share, "Share") {
+        optionShare = OptionsItem(R.drawable.share, R.string.context_option_share) {
             //Share
             Library.shareItems(this, getSelectedItems())
         }
 
-        optionSetAs = OptionsItem(R.drawable.wallpaper, "Set as") {
+        optionSetAs = OptionsItem(R.drawable.wallpaper, R.string.context_option_set) {
             //Only allow 1 selection
             if (selectedIndexes.size != 1) return@OptionsItem
 
@@ -412,47 +412,47 @@ class AlbumActivity : BaseActivity() {
             Library.setItemAs(this, gallery[selectedIndexes.iterator().next()])
         }
 
-        optionFavourite = OptionsItem(R.drawable.favourite_on, "Favourite") {
+        optionFavourite = OptionsItem(R.drawable.favourite_on, R.string.context_option_favourite) {
             //Add to favourites
             favouriteItems(getSelectedItems())
         }
 
-        optionUnfavourite = OptionsItem(R.drawable.favourite_off, "Unfavourite") {
+        optionUnfavourite = OptionsItem(R.drawable.favourite_off, R.string.context_option_unfavourite) {
             //Remove from favourites
             unfavouriteItems(getSelectedItems())
         }
 
-        optionMove = OptionsItem(R.drawable.move, "Move to album") {
+        optionMove = OptionsItem(R.drawable.move, R.string.context_option_move) {
             //Move items
             Library.moveItems(this, getSelectedItems())
         }
 
-        optionCopy = OptionsItem(R.drawable.copy, "Copy to album") {
+        optionCopy = OptionsItem(R.drawable.copy, R.string.context_option_copy) {
             //Copy items
             Library.copyItems(this, getSelectedItems())
         }
 
-        optionTrash = OptionsItem(R.drawable.trash, "Move to trash") {
+        optionTrash = OptionsItem(R.drawable.trash, R.string.context_option_trash) {
             //Move items to trash
             trashItems(getSelectedItems())
         }
 
-        optionRestore = OptionsItem(R.drawable.restore, "Restore") {
+        optionRestore = OptionsItem(R.drawable.restore, R.string.context_option_restore) {
             //Restore items from trash
             restoreItems(getSelectedItems())
         }
 
-        optionRestoreAll = OptionsItem(R.drawable.restore, "Restore all") {
+        optionRestoreAll = OptionsItem(R.drawable.restore, R.string.context_option_restore_all) {
             //Restore all items from trash
             restoreItems(currentAlbum.items.toTypedArray<Item>())
         }
 
-        optionDelete = OptionsItem(R.drawable.delete, "Delete") {
+        optionDelete = OptionsItem(R.drawable.delete, R.string.context_option_delete) {
             //Delete item
             Library.deleteItems(this, getSelectedItems())
         }
 
-        optionDeleteAll = OptionsItem(R.drawable.delete, "Delete all") {
+        optionDeleteAll = OptionsItem(R.drawable.delete, R.string.context_option_delete_all) {
             //Delete all items
             Library.deleteItems(this, currentAlbum.items.toTypedArray<Item>())
         }

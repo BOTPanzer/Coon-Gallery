@@ -259,7 +259,7 @@ class HomeActivity : BaseActivity() {
         }
 
         //Options
-        optionSync = OptionsItem(this, R.drawable.sync, R.string.sync_title) {
+        optionSync = OptionsItem(R.drawable.sync, R.string.sync_title) {
             //Block action if library is filtered
             if (Library.isLibraryFiltered) {
                 Orion.snack(this@HomeActivity, getString(R.string.home_error_remove_filters))
@@ -270,12 +270,12 @@ class HomeActivity : BaseActivity() {
             startActivity(Intent(this, SyncActivity::class.java))
         }
 
-        optionSettings = OptionsItem(this, R.drawable.settings, R.string.settings_title) {
+        optionSettings = OptionsItem(R.drawable.settings, R.string.settings_title) {
             //Open sync
             startActivity(Intent(this, SettingsActivity::class.java))
         }
 
-        optionFilters = OptionsItem(this, R.drawable.filter, R.string.dialog_filters_title) {
+        optionFilters = OptionsItem(R.drawable.filter, R.string.dialog_filters_title) {
             //Create filters list
             val filters = listOf(
                 Filter(R.drawable.gallery_all, R.string.dialog_filters_option_all, "*/*"),
