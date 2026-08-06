@@ -32,7 +32,7 @@ class ExplorerDialogAdapter(
         if (position < 0) {
             //Back button
             holder.icon.setImageResource(R.drawable.back)
-            holder.name.text = "Previous folder"
+            holder.name.text = context.getString(R.string.dialog_explorer_previous_folder)
             holder.select.visibility = View.GONE
         } else {
             //Item
@@ -85,7 +85,7 @@ class ExplorerDialogAdapter(
         val currentPath = currentFolder.absolutePath
         val storagePath = externalStorage.absolutePath
         val prettyPath = if (currentPath.startsWith(storagePath)) {
-            "External storage${currentPath.substring(storagePath.length)}"
+            "${context.getString(R.string.dialog_explorer_external_storage)}${currentPath.substring(storagePath.length)}"
         } else {
             currentPath
         }

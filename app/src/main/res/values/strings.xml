@@ -12,32 +12,53 @@
     <string name="permissions_permission_media">Media</string>
     <string name="permissions_permission_notifications">Notifications</string>
     <string name="permissions_permission_lan">Local area network</string>
-    <!-- Dialogs -->
-    <string name="dialog_cancel">Cancel</string>
-    <string name="dialog_confirm">Confirm</string>
-    <string name="dialog_close">Close</string>
     <!-- Home screen -->
     <string name="home_album_all">All</string>
     <string name="home_album_trash">Trash</string>
     <string name="home_album_favourites">Favourites</string>
-    <string name="home_filtered_base">Showing only %s</string>
-    <string name="home_filtered_images">images</string>
-    <string name="home_filtered_videos">videos</string>
-    <string name="home_filtered_custom">custom</string>
+    <string name="home_filtered_images">Showing only images</string>
+    <string name="home_filtered_videos">Showing only videos</string>
+    <string name="home_filtered_custom">Showing only custom</string>
     <string name="home_refresh_pull">Pull to refresh</string>
     <string name="home_refresh_release">Release to refresh</string>
     <string name="home_refresh_refreshing">Refreshing…</string>
     <string name="home_error_remove_filters">Please, remove the current filter first.</string>
-    <!-- Home filters dialog -->
-    <string name="filters_title">Filters</string>
-    <string name="filters_option_all">All</string>
-    <string name="filters_option_images">Images only</string>
-    <string name="filters_option_videos">Videos only</string>
-    <string name="filters_custom_button">Custom filter</string>
-    <string name="filters_custom_apply">Apply filter</string>
-    <string name="filters_custom_hint">MIME type</string>
-    <string name="filters_select_button">Select filter</string>
-    <string name="filters_error_invalid_mime">The specified MIME type is invalid.</string>
+    <!-- Dialogs -->
+    <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_confirm">Confirm</string>
+    <string name="dialog_close">Close</string>
+    <!-- Filters dialog -->
+    <string name="dialog_filters_title">Filters</string>
+    <string name="dialog_filters_option_all">All</string>
+    <string name="dialog_filters_option_images">Images only</string>
+    <string name="dialog_filters_option_videos">Videos only</string>
+    <string name="dialog_filters_custom_button">Custom filter</string>
+    <string name="dialog_filters_custom_apply">Apply filter</string>
+    <string name="dialog_filters_custom_hint">MIME type</string>
+    <string name="dialog_filters_select_button">Select filter</string>
+    <string name="dialog_filters_error_invalid_mime">The specified MIME type is invalid.</string>
+    <!-- Albums dialog -->
+    <string name="dialog_albums_title">Select an album</string>
+    <string name="dialog_albums_folder">Select from folder</string>
+    <!-- Errors dialog -->
+    <string name="dialog_errors_title">Errors</string>
+    <!-- Explorer dialog -->
+    <string name="dialog_explorer_file_title">Select a file</string>
+    <string name="dialog_explorer_file_hint">File name</string>
+    <string name="dialog_explorer_file_create">Create a new one</string>
+    <string name="dialog_explorer_folder_title">Select a folder</string>
+    <string name="dialog_explorer_folder_hint">Folder name</string>
+    <string name="dialog_explorer_folder_create">Create a new one</string>
+    <string name="dialog_explorer_select">Select existing</string>
+    <string name="dialog_explorer_error_invalid_item">Invalid item.</string>
+    <string name="dialog_explorer_error_missing_permissions">Missing permissions to use that folder.</string>
+    <string name="dialog_explorer_error_empty_name">Name can\'t be empty.</string>
+    <string name="dialog_explorer_error_file_exists">File already exists.</string>
+    <string name="dialog_explorer_error_file_create">Failed to create file.</string>
+    <string name="dialog_explorer_error_folder_exists">Folder already exists.</string>
+    <string name="dialog_explorer_error_folder_create">Failed to create folder.</string>
+    <string name="dialog_explorer_previous_folder">Previous folder</string>
+    <string name="dialog_explorer_external_storage">External storage</string>
     <!-- Settings screen -->
     <string name="settings_title">Settings</string>
     <!-- Sync screen -->

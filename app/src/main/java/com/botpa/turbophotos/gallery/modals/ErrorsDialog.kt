@@ -37,8 +37,8 @@ class ErrorsDialog(
     override fun initDialog(builder: MaterialAlertDialogBuilder): MaterialAlertDialogBuilder {
         //Init dialog
         return builder
-            .setTitle("Errors")
-            .setPositiveButton(context.getString(R.string.dialog_close), null)
+            .setTitle(R.string.dialog_errors_title)
+            .setPositiveButton(R.string.dialog_close, null)
     }
 
     override fun initListeners() {

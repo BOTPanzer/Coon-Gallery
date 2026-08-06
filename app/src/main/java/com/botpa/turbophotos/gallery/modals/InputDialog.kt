@@ -29,8 +29,8 @@ class InputDialog(
         //Init dialog
         return builder
             .setTitle(title)
-            .setNegativeButton(context.getString(R.string.dialog_cancel), null)
-            .setPositiveButton(context.getString(R.string.dialog_confirm), null)
+            .setNegativeButton(R.string.dialog_cancel, null)
+            .setPositiveButton(R.string.dialog_confirm, null)
     }
 
     override fun initListeners() {

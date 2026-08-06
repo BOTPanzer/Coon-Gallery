@@ -39,9 +39,9 @@ class AlbumsDialog(
     override fun initDialog(builder: MaterialAlertDialogBuilder): MaterialAlertDialogBuilder {
         //Init dialog
         return builder
-            .setTitle("Select an album")
-            .setNegativeButton(context.getString(R.string.dialog_cancel), null)
-            .setNeutralButton("Select from folder",{ dialogInterface, which ->
+            .setTitle(R.string.dialog_albums_title)
+            .setNegativeButton(R.string.dialog_cancel, null)
+            .setNeutralButton(R.string.dialog_albums_folder,{ dialogInterface, which ->
                 //Select from folder
                 ExplorerDialog(context, false, onSelectFolder).buildAndShow()
             })

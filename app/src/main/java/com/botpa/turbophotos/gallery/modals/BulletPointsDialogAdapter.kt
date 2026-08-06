@@ -18,7 +18,7 @@ class BulletPointsDialogAdapter(
         val view: View = convertView ?: LayoutInflater.from(context).inflate(R.layout.dialog_points_item, parent, false)
 
         //Get view
-        val text = view.findViewById<TextView>(R.id.pointText)
+        val text: TextView = view.findViewById(R.id.pointText)
 
         //Update item
         text.text = getItem(position)

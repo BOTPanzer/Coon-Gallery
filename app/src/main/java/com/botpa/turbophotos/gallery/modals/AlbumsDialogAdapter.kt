@@ -28,7 +28,7 @@ class AlbumsDialogAdapter(context: Context, albums: List<Album>) : SimpleCustomA
 
         //Update text
         holder.name.text = album.name
-        holder.info.text = "${album.size()} items"
+        holder.info.text = context.getString(R.string.items, album.size())
 
         //Add listeners
         holder.item.setOnClickListener { view: View ->

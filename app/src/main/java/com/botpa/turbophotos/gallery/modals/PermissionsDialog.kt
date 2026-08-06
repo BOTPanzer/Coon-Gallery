@@ -43,9 +43,9 @@ class PermissionsDialog(
     override fun initDialog(builder: MaterialAlertDialogBuilder): MaterialAlertDialogBuilder {
         //Init dialog
         return builder
-            .setTitle(context.getString(R.string.permissions_title))
+            .setTitle(R.string.permissions_title)
             .setCancelable(false)
-            .setNegativeButton(context.getString(R.string.dialog_cancel), { dialogInterface, which ->
+            .setNegativeButton(R.string.dialog_cancel, { dialogInterface, which ->
                 //Permissions missing -> Close activity
                 activity.finish()
             })

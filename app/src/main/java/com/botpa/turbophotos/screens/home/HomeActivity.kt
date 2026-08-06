@@ -259,7 +259,7 @@ class HomeActivity : BaseActivity() {
         }
 
         //Options
-        optionSync = OptionsItem(R.drawable.sync, getString(R.string.sync_title)) {
+        optionSync = OptionsItem(this, R.drawable.sync, R.string.sync_title) {
             //Block action if library is filtered
             if (Library.isLibraryFiltered) {
                 Orion.snack(this@HomeActivity, getString(R.string.home_error_remove_filters))
@@ -270,17 +270,17 @@ class HomeActivity : BaseActivity() {
             startActivity(Intent(this, SyncActivity::class.java))
         }
 
-        optionSettings = OptionsItem(R.drawable.settings, getString(R.string.settings_title)) {
+        optionSettings = OptionsItem(this, R.drawable.settings, R.string.settings_title) {
             //Open sync
             startActivity(Intent(this, SettingsActivity::class.java))
         }
 
-        optionFilters = OptionsItem(R.drawable.filter, getString(R.string.filters_title)) {
+        optionFilters = OptionsItem(this, R.drawable.filter, R.string.dialog_filters_title) {
             //Create filters list
             val filters = listOf(
-                Filter(R.drawable.gallery_all, R.string.filters_option_all, "*/*"),
-                Filter(R.drawable.gallery_image, R.string.filters_option_images, "image/*"),
-                Filter(R.drawable.gallery_video, R.string.filters_option_videos, "video/*")
+                Filter(R.drawable.gallery_all, R.string.dialog_filters_option_all, "*/*"),
+                Filter(R.drawable.gallery_image, R.string.dialog_filters_option_images, "image/*"),
+                Filter(R.drawable.gallery_video, R.string.dialog_filters_option_videos, "video/*")
             )
 
             //Create dialog
@@ -586,14 +586,11 @@ class HomeActivity : BaseActivity() {
         val format = parts[1]
 
         //Update title
-        val title = StringBuilder(getString(
-            R.string.home_filtered_base,
-            when (type) {
-                "image" -> getString(R.string.home_filtered_images)
-                "video" -> getString(R.string.home_filtered_videos)
-                else -> getString(R.string.home_filtered_custom)
-            }
-        ))
+        val title = StringBuilder(getString(when (type) {
+            "image" -> R.string.home_filtered_images
+            "video" -> R.string.home_filtered_videos
+            else -> R.string.home_filtered_custom
+        }))
         if (format != "*") title.append(" ($format)")
         navbarTitle.text = title.toString()
     }

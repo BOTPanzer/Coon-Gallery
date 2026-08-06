@@ -43,15 +43,12 @@ class ExplorerDialog(
     private val items: MutableList<File> = ArrayList()
 
     //Text
-    companion object {
-        //Generic
-        private const val TEXT_CREATE: String = "Create a new one"
-        private const val TEXT_SELECT: String = "Select existing"
-        //File picker
-        private const val TEXT_INPUT_FILE: String = "File name"
-        //Folder picker
-        private const val TEXT_INPUT_FOLDER: String = "Folder name"
-    }
+    private val buttonSelect: String = context.getString(R.string.dialog_explorer_select)
+    private val buttonFileCreate: String = context.getString(R.string.dialog_explorer_file_create)
+    private val buttonFolderCreate: String = context.getString(R.string.dialog_explorer_folder_create)
+    private val buttonCreate: String = if (isSelectingFiles) buttonFileCreate else buttonFolderCreate
+    private val hintFile: String = context.getString(R.string.dialog_explorer_file_hint)
+    private val hintFolder: String = context.getString(R.string.dialog_explorer_folder_hint)
 
 
     //Init
@@ -79,9 +76,9 @@ class ExplorerDialog(
     override fun initDialog(builder: MaterialAlertDialogBuilder): MaterialAlertDialogBuilder {
         //Init dialog
         return builder.apply {
-            setTitle(if (isSelectingFiles) "Select a file" else "Select a folder")
-            setNeutralButton(TEXT_CREATE, null)
-            setNegativeButton(context.getString(R.string.dialog_cancel), null)
+            setTitle(if (isSelectingFiles) R.string.dialog_explorer_file_title else R.string.dialog_explorer_folder_title)
+            setNeutralButton(buttonCreate, null)
+            setNegativeButton(R.string.dialog_cancel, null)
         }
     }
 
@@ -108,12 +105,12 @@ class ExplorerDialog(
             //Check if item is valid
             if (item == null) {
                 //Invalid item
-                Toast.makeText(context, "Invalid item", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, R.string.dialog_explorer_error_invalid_item, Toast.LENGTH_SHORT).show()
             } else if (item.isDirectory) {
                 //Check if folder can be read and written to
                 if (!item.canRead() || !item.canWrite()) {
                     //Folder can't be read/written to
-                    Toast.makeText(context, "Missing permissions to use that folder", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.dialog_explorer_error_missing_permissions, Toast.LENGTH_SHORT).show()
                 } else {
                     //Update adapter & dialog
                     updateItemsList(item)
@@ -133,7 +130,7 @@ class ExplorerDialog(
             //Check if item exists
             if (inputValue.isEmpty()) {
                 //Name is empty
-                Toast.makeText(context, "Name can't be empty.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, R.string.dialog_explorer_error_empty_name, Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -146,28 +143,28 @@ class ExplorerDialog(
                 //Check if file exists
                 if (item.exists()) {
                     //File already exists
-                    Toast.makeText(context, "File already exists.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.dialog_explorer_error_file_exists, Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
 
                 //Create file
                 if (!item.createNewFile()) {
                     //Failed to create file
-                    Toast.makeText(context, "Failed to create file.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.dialog_explorer_error_file_create, Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
             } else {
                 //Check if folder exists
                 if (item.exists()) {
                     //Folder already exists
-                    Toast.makeText(context, "Folder already exists.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.dialog_explorer_error_folder_exists, Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
 
                 //Create folder
                 if (!item.mkdir()) {
                     //Failed to create folder
-                    Toast.makeText(context, "Failed to create folder.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.dialog_explorer_error_folder_create, Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
             }
@@ -192,7 +189,7 @@ class ExplorerDialog(
                 createInput.requestFocus()
 
                 //Update neutral button
-                neutralButton.text = TEXT_SELECT
+                neutralButton.text = buttonSelect
             } else {
                 //Toggle menus (show filters list)
                 foldersLayout.visibility = View.VISIBLE
@@ -202,7 +199,7 @@ class ExplorerDialog(
                 createInput.clearFocus()
 
                 //Update neutral button
-                neutralButton.text = TEXT_CREATE
+                neutralButton.text = buttonCreate
             }
         }
     }
@@ -217,8 +214,8 @@ class ExplorerDialog(
         updateCurrentFolderName()
 
         //Update create menu
-        createInput.hint = if (isSelectingFiles) TEXT_INPUT_FILE else TEXT_INPUT_FOLDER
-        createButton.text = TEXT_CREATE
+        createInput.hint = if (isSelectingFiles) hintFile else hintFolder
+        createButton.text = buttonCreate
     }
 
     //Helpers
