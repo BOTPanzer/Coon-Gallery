@@ -584,11 +584,22 @@ class SettingsActivity : AppCompatActivity() {
                             //Divider
                             GroupDivider()
 
+                            //Copyright
+                            GroupItem {
+                                SettingsItem(
+                                    title = "Copyright © 2026",
+                                    description = "Alejandro Paniagua Moreno / @BOTPanzer"
+                                ) {}
+                            }
+
+                            //Divider
+                            GroupDivider()
+
                             //Developer
                             GroupItem {
                                 SettingsItem(
                                     title = "Developer",
-                                    description = "Click to see the things I make!"
+                                    description = "Check out the things I make!"
                                 ) {
                                     IconButton(
                                         onClick = { uriHandler.openUri("https://botpa.vercel.app/") },
@@ -604,8 +615,8 @@ class SettingsActivity : AppCompatActivity() {
                             //Github
                             GroupItem {
                                 SettingsItem(
-                                    title = "Github",
-                                    description = "Click to check for updates!"
+                                    title = "GitHub",
+                                    description = "Check for updates!"
                                 ) {
                                     IconButton(
                                         onClick = { uriHandler.openUri("https://github.com/BOTPanzer/Coon-Gallery") },

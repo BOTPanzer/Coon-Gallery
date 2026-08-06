@@ -66,3 +66,7 @@ To create **backups of your albums** and generate **metadata for their images**,
 3. **Sync your files**
    
    Once connected, you can manage what you want to sync from the PC app.
+
+## License
+Copyright © 2026 Alejandro Paniagua Moreno / @BOTPanzer on GitHub  
+Licensed under the GNU General Public License v3.0.
