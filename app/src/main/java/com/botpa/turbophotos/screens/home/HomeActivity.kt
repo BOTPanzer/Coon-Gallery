@@ -262,7 +262,7 @@ class HomeActivity : BaseActivity() {
         optionSync = OptionsItem(R.drawable.sync, R.string.sync_title) {
             //Block action if library is filtered
             if (Library.isLibraryFiltered) {
-                Orion.snack(this@HomeActivity, getString(R.string.home_error_remove_filters))
+                Orion.snack(this@HomeActivity, R.string.home_error_remove_filters)
                 return@OptionsItem
             }
 

@@ -29,6 +29,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -90,10 +91,26 @@ fun GroupTitle(title: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
+fun GroupTitle(title: Int, modifier: Modifier = Modifier) {
+    GroupTitle(
+        title = stringResource(title),
+        modifier = modifier
+    )
+}
+
+@Composable
 fun GroupDescription(description: String, modifier: Modifier = Modifier) {
     Text(
         text = description,
         fontSize = 14.sp,
+        modifier = modifier
+    )
+}
+
+@Composable
+fun GroupDescription(description: Int, modifier: Modifier = Modifier) {
+    GroupDescription(
+        description = stringResource(description),
         modifier = modifier
     )
 }
@@ -160,4 +177,13 @@ fun SimpleButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifie
             fontSize = 16.sp
         )
     }
+}
+
+@Composable
+fun SimpleButton(text: Int, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    SimpleButton(
+        text = stringResource(text),
+        onClick = onClick,
+        modifier = modifier
+    )
 }

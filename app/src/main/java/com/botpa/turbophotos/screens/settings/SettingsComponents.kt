@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -72,6 +73,21 @@ fun SettingsItem(
     }
 }
 
+@Composable
+fun SettingsItem(
+    title: Int,
+    description: Int? = null,
+    content: @Composable RowScope.() -> Unit
+) {
+    SettingsItem(
+        stringResource(title),
+        if (description != null) stringResource(description) else null
+    ) {
+        //Content
+        content()
+    }
+}
+
 //Links
 @Composable
 fun LinkItem(
@@ -97,7 +113,7 @@ fun LinkItem(
         ) {
             //Name
             Text(
-                text = "Link $index",
+                text = stringResource(R.string.settings_links_item_name, index),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
@@ -124,7 +140,7 @@ fun LinkItem(
                 //Name
                 val hasAlbum = link.albumFolder.name != ""
                 Text(
-                    text = if (hasAlbum) link.albumFolder.name else "Album folder",
+                    text = if (hasAlbum) link.albumFolder.name else stringResource(R.string.settings_links_placeholder_album),
                     fontFamily = FONT_OUTFIT,
                     fontSize = 14.sp,
                     maxLines = 1,
@@ -153,7 +169,7 @@ fun LinkItem(
                 //Name
                 val hasMetadata = link.metadataFile.name != ""
                 Text(
-                    text = if (hasMetadata) link.metadataFile.name else "Metadata file",
+                    text = if (hasMetadata) link.metadataFile.name else stringResource(R.string.settings_links_placeholder_metadata),
                     fontFamily = FONT_OUTFIT,
                     fontSize = 14.sp,
                     maxLines = 1,

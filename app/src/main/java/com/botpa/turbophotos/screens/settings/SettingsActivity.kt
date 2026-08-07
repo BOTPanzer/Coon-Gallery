@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.botpa.turbophotos.BuildConfig
 import com.botpa.turbophotos.R
@@ -91,7 +92,7 @@ class SettingsActivity : AppCompatActivity() {
                 ).buildAndShow()
 
                 //Feedback toast
-                Toast.makeText(activity, "Select a folder to create the backup.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(activity, R.string.settings_message_backup_create_select, Toast.LENGTH_SHORT).show()
             }
         }
         val onChooseBackupFile = remember {
@@ -107,7 +108,7 @@ class SettingsActivity : AppCompatActivity() {
                 ).buildAndShow()
 
                 //Feedback toast
-                Toast.makeText(activity, "Select a backup file to restore.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(activity, R.string.settings_message_backup_restore_select, Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -130,7 +131,7 @@ class SettingsActivity : AppCompatActivity() {
                 ).buildAndShow()
 
                 //Feedback toast
-                Toast.makeText(activity, "Select an album to link it.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(activity, R.string.settings_message_link_album_select, Toast.LENGTH_SHORT).show()
             }
         }
         val onChooseLinkMetadata = remember<(Int, Link) -> Unit> {
@@ -138,7 +139,7 @@ class SettingsActivity : AppCompatActivity() {
                 //Check if album folder exists
                 if (!link.albumFolder.exists()) {
                     //Feedback toast
-                    Toast.makeText(activity, "Add an album first.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(activity, R.string.settings_error_link_add_first, Toast.LENGTH_SHORT).show()
                 } else {
                     //Show select file dialog
                     ExplorerDialog(
@@ -152,7 +153,7 @@ class SettingsActivity : AppCompatActivity() {
                     ).buildAndShow()
 
                     //Feedback toast
-                    Toast.makeText(activity, "Select a file to link it.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(activity, R.string.settings_message_link_metadata_select, Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -170,15 +171,15 @@ class SettingsActivity : AppCompatActivity() {
                 item {
                     Group {
                         //Title
-                        GroupTitle("App")
+                        GroupTitle(R.string.settings_app_title)
 
                         //Items
                         GroupItems {
                             //Backup
                             GroupItem {
                                 SettingsItem(
-                                    title = "Backup",
-                                    description = "Create or load a backup of your settings."
+                                    title = R.string.settings_app_backup_title,
+                                    description = R.string.settings_app_backup_description
                                 ) {
                                     //Backup
                                     IconButton(
@@ -204,8 +205,8 @@ class SettingsActivity : AppCompatActivity() {
                             //Automatic metadata modification
                             GroupItem {
                                 SettingsItem(
-                                    title = "Metadata modification",
-                                    description = "Modify album metadata automatically when moving, copying or deleting items from an album."
+                                    title = R.string.settings_app_metadata_title,
+                                    description = R.string.settings_app_metadata_description
                                 ) {
                                     //Value
                                     Switch(
@@ -224,15 +225,15 @@ class SettingsActivity : AppCompatActivity() {
                 item {
                     Group {
                         //Title
-                        GroupTitle("Home Screen")
+                        GroupTitle(R.string.settings_home_title)
 
                         //Items
                         GroupItems {
                             //Items per row
                             GroupItem {
                                 SettingsItem(
-                                    title = "Items per row · ${view.homeItemsPerRow.toInt()} items",
-                                    description = "The amount of albums to show per home screen row."
+                                    title = stringResource(R.string.settings_home_row_title, view.homeItemsPerRow.toInt()),
+                                    description = stringResource(R.string.settings_home_row_description)
                                 ) {
                                     //Value
                                     Slider(
@@ -256,15 +257,15 @@ class SettingsActivity : AppCompatActivity() {
                 item {
                     Group {
                         //Title
-                        GroupTitle("Album Screen")
+                        GroupTitle(R.string.settings_album_title)
 
                         //Items
                         GroupItems {
                             //Items per row
                             GroupItem {
                                 SettingsItem(
-                                    title = "Items per row · ${view.albumItemsPerRow.toInt()} items",
-                                    description = "The amount of images/videos to show per album screen row."
+                                    title = stringResource(R.string.settings_album_row_title, view.albumItemsPerRow.toInt()),
+                                    description = stringResource(R.string.settings_album_row_description)
                                 ) {
                                     //Value
                                     Slider(
@@ -287,8 +288,8 @@ class SettingsActivity : AppCompatActivity() {
                             //Show missing metadata icon
                             GroupItem {
                                 SettingsItem(
-                                    title = "Show missing metadata icon",
-                                    description = "Show an icon on items without a metadata key if their album has metadata."
+                                    title = R.string.settings_album_metadata_title,
+                                    description = R.string.settings_album_metadata_description
                                 ) {
                                     //Value
                                     Switch(
@@ -307,15 +308,15 @@ class SettingsActivity : AppCompatActivity() {
                 item {
                     Group {
                         //Title
-                        GroupTitle("Display Screen")
+                        GroupTitle(R.string.settings_display_title)
 
                         //Items
                         GroupItems {
                             //Info shortcut
                             GroupItem {
                                 SettingsItem(
-                                    title = "Info shortcut",
-                                    description = "Show an info shortcut at the bottom of the screen."
+                                    title = R.string.settings_display_info_title,
+                                    description = R.string.settings_display_info_description
                                 ) {
                                     //Value
                                     Switch(
@@ -333,8 +334,8 @@ class SettingsActivity : AppCompatActivity() {
                             //Edit shortcut
                             GroupItem {
                                 SettingsItem(
-                                    title = "Edit shortcut",
-                                    description = "Show an edit shortcut at the bottom of the screen."
+                                    title = R.string.settings_display_edit_title,
+                                    description = R.string.settings_display_edit_description
                                 ) {
                                     //Value
                                     Switch(
@@ -352,8 +353,8 @@ class SettingsActivity : AppCompatActivity() {
                             //Share shortcut
                             GroupItem {
                                 SettingsItem(
-                                    title = "Share shortcut",
-                                    description = "Show a share shortcut at the bottom of the screen."
+                                    title = R.string.settings_display_share_title,
+                                    description = R.string.settings_display_share_description
                                 ) {
                                     //Value
                                     Switch(
@@ -371,8 +372,8 @@ class SettingsActivity : AppCompatActivity() {
                             //Favourite shortcut
                             GroupItem {
                                 SettingsItem(
-                                    title = "Favourite shortcut",
-                                    description = "Show a favourite shortcut at the bottom of the screen."
+                                    title = R.string.settings_display_favourite_title,
+                                    description = R.string.settings_display_favourite_description
                                 ) {
                                     //Value
                                     Switch(
@@ -391,15 +392,15 @@ class SettingsActivity : AppCompatActivity() {
                 item {
                     Group {
                         //Title
-                        GroupTitle("Video Player")
+                        GroupTitle(R.string.settings_video_title)
 
                         //Items
                         GroupItems {
                             //Skip backwards amount
                             GroupItem {
                                 SettingsItem(
-                                    title = "Skip backwards · ${view.videoSkipBackwardsAmount.toLong()}s",
-                                    description = "The amount of seconds to skip backwards when double tapping the screen on the left."
+                                    title = stringResource(R.string.settings_video_skip_backwards_title, view.videoSkipBackwardsAmount.toLong()),
+                                    description = stringResource(R.string.settings_video_skip_backwards_description)
                                 ) {
                                     //Value
                                     Slider(
@@ -422,8 +423,8 @@ class SettingsActivity : AppCompatActivity() {
                             //Skip forward amount
                             GroupItem {
                                 SettingsItem(
-                                    title = "Skip forward · ${view.videoSkipForwardAmount.toLong()}s",
-                                    description = "The amount of seconds to skip forward when double tapping the screen on the right."
+                                    title = stringResource(R.string.settings_video_skip_forward_title, view.videoSkipForwardAmount.toLong()),
+                                    description = stringResource(R.string.settings_video_skip_forward_description)
                                 ) {
                                     //Value
                                     Slider(
@@ -446,8 +447,8 @@ class SettingsActivity : AppCompatActivity() {
                             //Use internal player
                             GroupItem {
                                 SettingsItem(
-                                    title = "Use internal video player",
-                                    description = "Use internal video player instead of asking to use an external one when opening videos."
+                                    title = R.string.settings_video_internal_player_title,
+                                    description = R.string.settings_video_internal_player_description
                                 ) {
                                     //Value
                                     Switch(
@@ -465,8 +466,8 @@ class SettingsActivity : AppCompatActivity() {
                             //Ignore audio focus
                             GroupItem {
                                 SettingsItem(
-                                    title = "Ignore audio focus",
-                                    description = "Don't pause content if other apps are playing audio."
+                                    title = R.string.settings_video_audio_focus_title,
+                                    description = R.string.settings_video_audio_focus_description
                                 ) {
                                     //Value
                                     Switch(
@@ -484,8 +485,8 @@ class SettingsActivity : AppCompatActivity() {
                             //Show controller on start
                             GroupItem {
                                 SettingsItem(
-                                    title = "Show controls on start",
-                                    description = "Show video player controls after opening a video."
+                                    title = R.string.settings_video_show_controls_title,
+                                    description = R.string.settings_video_show_controls_description
                                 ) {
                                     //Value
                                     Switch(
@@ -511,7 +512,7 @@ class SettingsActivity : AppCompatActivity() {
                         ) {
                             //Title
                             GroupTitle(
-                                title = "Albums & Metadata Links",
+                                title = R.string.settings_links_title,
                                 modifier = Modifier
                                     .weight(1f)
                             )
@@ -522,11 +523,11 @@ class SettingsActivity : AppCompatActivity() {
                                     //Create info dialog
                                     BulletPointsDialog(
                                         context,
-                                        "Links",
-                                        "Links let you to backup your albums and enable smart search.",
-                                        listOf(
-                                            "Add an album to enable backing it up in the sync service.",
-                                            "Add a metadata file to improve search and find things in your images."
+                                        title = R.string.settings_links_info_title,
+                                        text = R.string.settings_links_info_description,
+                                        points = listOf(
+                                            R.string.settings_links_info_point1,
+                                            R.string.settings_links_info_point2
                                         )
                                     ).buildAndShow()
                                 },
@@ -556,7 +557,7 @@ class SettingsActivity : AppCompatActivity() {
 
                         //Add link button
                         SimpleButton(
-                            text = "Add link",
+                            text = R.string.settings_links_add,
                             onClick = { view.addLink(activity) },
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -569,15 +570,15 @@ class SettingsActivity : AppCompatActivity() {
                 item {
                     Group {
                         //Title
-                        GroupTitle("About")
+                        GroupTitle(R.string.settings_about_title)
 
                         //Items
                         GroupItems {
                             //Version
                             GroupItem {
                                 SettingsItem(
-                                    title = "Version",
-                                    description = "Coon Gallery v${BuildConfig.VERSION_NAME}"
+                                    title = stringResource(R.string.settings_about_version_title),
+                                    description = stringResource(R.string.settings_about_version_description, BuildConfig.VERSION_NAME)
                                 ) {}
                             }
 
@@ -587,8 +588,8 @@ class SettingsActivity : AppCompatActivity() {
                             //Copyright
                             GroupItem {
                                 SettingsItem(
-                                    title = "Copyright © 2026",
-                                    description = "Alejandro Paniagua Moreno / @BOTPanzer"
+                                    title = R.string.settings_about_copyright_title,
+                                    description = R.string.settings_about_copyright_description
                                 ) {}
                             }
 
@@ -598,8 +599,8 @@ class SettingsActivity : AppCompatActivity() {
                             //Developer
                             GroupItem {
                                 SettingsItem(
-                                    title = "Developer",
-                                    description = "Check out the things I make!"
+                                    title = R.string.settings_about_developer_title,
+                                    description = R.string.settings_about_developer_description
                                 ) {
                                     IconButton(
                                         onClick = { uriHandler.openUri("https://botpa.vercel.app/") },
@@ -615,8 +616,8 @@ class SettingsActivity : AppCompatActivity() {
                             //Github
                             GroupItem {
                                 SettingsItem(
-                                    title = "GitHub",
-                                    description = "Check for updates!"
+                                    title = R.string.settings_about_repo_title,
+                                    description = R.string.settings_about_repo_description
                                 ) {
                                     IconButton(
                                         onClick = { uriHandler.openUri("https://github.com/BOTPanzer/Coon-Gallery") },

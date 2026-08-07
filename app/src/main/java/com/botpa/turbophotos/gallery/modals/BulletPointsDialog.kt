@@ -9,9 +9,9 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class BulletPointsDialog(
     context: Context,
-    private val title: String,
-    private val text: String,
-    private val points: List<String>
+    private val title: Int,
+    private val text: Int,
+    private val points: List<Int>
 ) : CustomDialog(context, R.layout.dialog_points) {
 
     //Views
@@ -43,7 +43,7 @@ class BulletPointsDialog(
 
     override fun onInitEnd() {
         //Update info text
-        info.text = text
+        info.text = context.getString(text)
 
         //Assign adapter to list
         list.adapter = adapter

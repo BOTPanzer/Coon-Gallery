@@ -123,6 +123,10 @@ object Orion {
         snackShow(snack, snackLayout)
     }
 
+    fun snack(activity: Activity, message: Int, button: String = "ok", runnable: Runnable? = null, duration: Int = snackDuration) {
+        snack(activity, activity.getString(message), button, runnable, duration)
+    }
+
     @JvmOverloads
     fun snackTwo(activity: Activity, message: String, cancel: String, confirm: String, runnable: Runnable, duration: Int = snackDuration) {
         //Create base

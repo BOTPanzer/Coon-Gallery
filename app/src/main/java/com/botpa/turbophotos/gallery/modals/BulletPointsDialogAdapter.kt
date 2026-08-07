@@ -10,8 +10,8 @@ import com.botpa.turbophotos.R
 
 class BulletPointsDialogAdapter(
     context: Context,
-    points: List<String>
-) : ArrayAdapter<String>(context, 0, points) {
+    points: List<Int>
+) : ArrayAdapter<Int>(context, 0, points) {
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         //Inflate
@@ -21,7 +21,7 @@ class BulletPointsDialogAdapter(
         val text: TextView = view.findViewById(R.id.pointText)
 
         //Update item
-        text.text = getItem(position)
+        text.text = context.getString(getItem(position)!!)
 
         return view
     }

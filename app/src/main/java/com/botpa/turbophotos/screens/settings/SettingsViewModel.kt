@@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Link
 import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.util.Orion
@@ -84,10 +85,10 @@ class SettingsViewModel : ViewModel() {
         val file = File(folder, name)
         if (Orion.writeJsonPretty(file, json)) {
             //Success creating file
-            Toast.makeText(context, "Backup saved to selected folder.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, R.string.settings_message_backup_create_success, Toast.LENGTH_SHORT).show()
         } else {
             //Error creating file
-            Toast.makeText(context, "Error creating backup file.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, R.string.settings_error_backup_create, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -175,7 +176,7 @@ class SettingsViewModel : ViewModel() {
         loadSettingsFromJson(json)
 
         //Success restoring backup
-        Toast.makeText(context, "Backup restored.", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, R.string.settings_message_backup_restore_success, Toast.LENGTH_SHORT).show()
 
         //Reload library on exit & close settings screen
         reloadLibraryOnExit = true
@@ -255,7 +256,7 @@ class SettingsViewModel : ViewModel() {
         //Check if update was successful
         if (!updated) {
             //Failed -> There is another link with the same album
-            Orion.snack(activity, "A link with that album already exists")
+            Orion.snack(activity, R.string.settings_error_link_album_exists)
         } else {
             //Success -> Reload library on exit
             reloadLibraryOnExit = true
@@ -285,7 +286,7 @@ class SettingsViewModel : ViewModel() {
         //Try to add new empty link
         if (!Link.addLink(Link("", ""))) {
             //Not added -> There is another link with the same album
-            Orion.snack(activity, "A link with that album already exists")
+            Orion.snack(activity, R.string.settings_error_link_album_exists)
             return
         }
 

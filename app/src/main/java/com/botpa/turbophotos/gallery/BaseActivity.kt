@@ -49,7 +49,7 @@ open class BaseActivity : AppCompatActivity() {
             action.isOfType(Action.TYPE_RESTORE) -> Library.onRestoreItemsResult(this, action)
             action.isOfType(Action.TYPE_FAVOURITE) -> Library.onFavouriteItemsResult(this, action)
             action.isOfType(Action.TYPE_UNFAVOURITE) -> Library.onUnfavouriteItemsResult(this, action)
-            else -> Orion.snack(this, getString(R.string.library_error_invalid_action_type))
+            else -> Orion.snack(this, R.string.library_error_invalid_action_type)
         }
 
         //Clear pending action
@@ -117,7 +117,7 @@ open class BaseActivity : AppCompatActivity() {
     protected fun trashItems(itemsToTrash: Array<Item>) {
         //Check if there is a pending action
         if (pendingAction != null) {
-            Orion.snack(this, getString(R.string.library_error_pending_action))
+            Orion.snack(this, R.string.library_error_pending_action)
         } else {
             //Trash items
             pendingAction = Library.trashItems(this, itemsToTrash, actionLauncher)
@@ -127,7 +127,7 @@ open class BaseActivity : AppCompatActivity() {
     protected fun restoreItems(itemsToRestore: Array<Item>) {
         //Check if there is a pending action
         if (pendingAction != null) {
-            Orion.snack(this, getString(R.string.library_error_pending_action))
+            Orion.snack(this, R.string.library_error_pending_action)
         } else {
             //Restore items
             pendingAction = Library.restoreItems(this, itemsToRestore, actionLauncher)
@@ -138,7 +138,7 @@ open class BaseActivity : AppCompatActivity() {
     protected fun favouriteItems(itemsToFavourite: Array<Item>) {
         //Check if there is a pending action
         if (pendingAction != null) {
-            Orion.snack(this, getString(R.string.library_error_pending_action))
+            Orion.snack(this, R.string.library_error_pending_action)
         } else {
             //Favourite items
             pendingAction = Library.favouriteItems(this, itemsToFavourite, actionLauncher)
@@ -148,7 +148,7 @@ open class BaseActivity : AppCompatActivity() {
     protected fun unfavouriteItems(itemsToUnfavourite: Array<Item>) {
         //Check if there is a pending action
         if (pendingAction != null) {
-            Orion.snack(this, getString(R.string.library_error_pending_action))
+            Orion.snack(this, R.string.library_error_pending_action)
         } else {
             //Unfavourite items
             pendingAction = Library.unfavouriteItems(this, itemsToUnfavourite, actionLauncher)

@@ -27,7 +27,7 @@
     <string name="library_error_item_not_in_trash">Item is not in the trash.</string>
     <string name="library_error_item_in_favourites_already">Item is already favourited.</string>
     <string name="library_error_item_not_in_favourites">Item is not favourited.</string>
-    <!-- Reused context options -->
+    <!-- Item context options -->
     <string name="context_option_rename">Rename</string>
     <string name="context_option_edit">Edit</string>
     <string name="context_option_share">Share</string>
@@ -73,6 +73,66 @@
     <string name="display_option_info">Info</string>
     <!-- Screen: Settings -->
     <string name="settings_title">Settings</string>
+    <string name="settings_app_title">App</string>
+    <string name="settings_app_backup_title">Backup</string>
+    <string name="settings_app_backup_description">Create or load a backup of your settings.</string>
+    <string name="settings_app_metadata_title">Metadata modification</string>
+    <string name="settings_app_metadata_description">Modify album metadata automatically when moving, copying or deleting items from an album.</string>
+    <string name="settings_home_title">Home screen</string>
+    <string name="settings_home_row_title">Items per row · %d</string>
+    <string name="settings_home_row_description">The amount of albums to show per home screen row.</string>
+    <string name="settings_album_title">Album screen</string>
+    <string name="settings_album_row_title">Items per row · %d</string>
+    <string name="settings_album_row_description">The amount of images and videos to show per album screen row.</string>
+    <string name="settings_album_metadata_title">Show missing metadata icon</string>
+    <string name="settings_album_metadata_description">Show an icon on items without a metadata key if their album has metadata.</string>
+    <string name="settings_display_title">Display screen</string>
+    <string name="settings_display_info_title">Info shortcut</string>
+    <string name="settings_display_info_description">Show an info shortcut at the bottom of the screen.</string>
+    <string name="settings_display_edit_title">Edit shortcut</string>
+    <string name="settings_display_edit_description">Show an edit shortcut at the bottom of the screen.</string>
+    <string name="settings_display_share_title">Share shortcut</string>
+    <string name="settings_display_share_description">Show a share shortcut at the bottom of the screen.</string>
+    <string name="settings_display_favourite_title">Favourite shortcut</string>
+    <string name="settings_display_favourite_description">Show an add to favourites shortcut at the bottom of the screen.</string>
+    <string name="settings_video_title">Video player</string>
+    <string name="settings_video_skip_backwards_title">Skip backwards · %ds</string>
+    <string name="settings_video_skip_backwards_description">The amount of seconds to skip backwards when double tapping the screen on the left.</string>
+    <string name="settings_video_skip_forward_title">Skip forward · %ds</string>
+    <string name="settings_video_skip_forward_description">The amount of seconds to skip forward when double tapping the screen on the right.</string>
+    <string name="settings_video_internal_player_title">Use internal video player</string>
+    <string name="settings_video_internal_player_description">Use internal video player instead of asking to use an external one when opening videos.</string>
+    <string name="settings_video_audio_focus_title">Ignore audio focus</string>
+    <string name="settings_video_audio_focus_description">Don\'t pause content if other apps are playing audio.</string>
+    <string name="settings_video_show_controls_title">Show controls on start</string>
+    <string name="settings_video_show_controls_description">Show video player controls after opening a video.</string>
+    <string name="settings_links_title">Albums &amp; metadata links</string>
+    <string name="settings_links_info_title">Links</string>
+    <string name="settings_links_info_description">Links let you to backup your albums and enable smart search.</string>
+    <string name="settings_links_info_point1">Add an album to enable backing it up in the sync service.</string>
+    <string name="settings_links_info_point2">Add a metadata file to improve search and find things in your images.</string>
+    <string name="settings_links_add">Add link</string>
+    <string name="settings_links_item_name">Link %d</string>
+    <string name="settings_links_placeholder_album">Album folder</string>
+    <string name="settings_links_placeholder_metadata">Metadata file</string>
+    <string name="settings_about_title">About</string>
+    <string name="settings_about_version_title">Version</string>
+    <string name="settings_about_version_description">Coon Gallery v%s</string>
+    <string name="settings_about_copyright_title">Copyright © 2026</string>
+    <string name="settings_about_copyright_description">Alejandro Paniagua Moreno / @BOTPanzer</string>
+    <string name="settings_about_developer_title">Developer</string>
+    <string name="settings_about_developer_description">Check out the things I make!</string>
+    <string name="settings_about_repo_title">GitHub</string>
+    <string name="settings_about_repo_description">Check for updates!</string>
+    <string name="settings_message_backup_create_select">Select a folder to create the backup.</string>
+    <string name="settings_message_backup_create_success">Backup saved to selected folder.</string>
+    <string name="settings_message_backup_restore_select">Select a backup file to restore.</string>
+    <string name="settings_message_backup_restore_success">Backup restored.</string>
+    <string name="settings_message_link_album_select">Select an album to link it.</string>
+    <string name="settings_message_link_metadata_select">Select a file to link it.</string>
+    <string name="settings_error_backup_create">Error creating backup file.</string>
+    <string name="settings_error_link_album_exists">A link with that album already exists.</string>
+    <string name="settings_error_link_add_first">Add an album first.</string>
     <!-- Screen: Sync -->
     <string name="sync_title">Sync</string>
     <!-- Dialogs -->
