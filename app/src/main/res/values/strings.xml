@@ -69,8 +69,8 @@
     <string name="video_option_subtitles">Subtitles track</string>
     <string name="video_option_audio">Audio track</string>
     <string name="video_notification_channel_description">Appears when the video player is active.</string>
-    <!-- Screen: Display -->
-    <string name="display_option_info">Info</string>
+    <!-- Screen: Viewer -->
+    <string name="viewer_option_info">Info</string>
     <!-- Screen: Settings -->
     <string name="settings_title">Settings</string>
     <string name="settings_app_title">App</string>
@@ -86,15 +86,15 @@
     <string name="settings_album_row_description">The amount of images and videos to show per album screen row.</string>
     <string name="settings_album_metadata_title">Show missing metadata icon</string>
     <string name="settings_album_metadata_description">Show an icon on items without a metadata key if their album has metadata.</string>
-    <string name="settings_display_title">Display screen</string>
-    <string name="settings_display_info_title">Info shortcut</string>
-    <string name="settings_display_info_description">Show an info shortcut at the bottom of the screen.</string>
-    <string name="settings_display_edit_title">Edit shortcut</string>
-    <string name="settings_display_edit_description">Show an edit shortcut at the bottom of the screen.</string>
-    <string name="settings_display_share_title">Share shortcut</string>
-    <string name="settings_display_share_description">Show a share shortcut at the bottom of the screen.</string>
-    <string name="settings_display_favourite_title">Favourite shortcut</string>
-    <string name="settings_display_favourite_description">Show an add to favourites shortcut at the bottom of the screen.</string>
+    <string name="settings_viewer_title">Viewer screen</string>
+    <string name="settings_viewer_info_title">Info shortcut</string>
+    <string name="settings_viewer_info_description">Show an info shortcut at the bottom of the screen.</string>
+    <string name="settings_viewer_edit_title">Edit shortcut</string>
+    <string name="settings_viewer_edit_description">Show an edit shortcut at the bottom of the screen.</string>
+    <string name="settings_viewer_share_title">Share shortcut</string>
+    <string name="settings_viewer_share_description">Show a share shortcut at the bottom of the screen.</string>
+    <string name="settings_viewer_favourite_title">Favourite shortcut</string>
+    <string name="settings_viewer_favourite_description">Show an add to favourites shortcut at the bottom of the screen.</string>
     <string name="settings_video_title">Video player</string>
     <string name="settings_video_skip_backwards_title">Skip backwards · %ds</string>
     <string name="settings_video_skip_backwards_description">The amount of seconds to skip backwards when double tapping the screen on the left.</string>

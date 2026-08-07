@@ -69,8 +69,8 @@
     <string name="video_option_subtitles">Pista de subtitulos</string>
     <string name="video_option_audio">Pista de audio</string>
     <string name="video_notification_channel_description">Aparece cuando el reproductor de video está activo.</string>
-    <!-- Screen: Display -->
-    <string name="display_option_info">Información</string>
+    <!-- Screen: Viewer -->
+    <string name="viewer_option_info">Información</string>
     <!-- Screen: Settings -->
     <string name="settings_title">Ajustes</string>
     <string name="settings_app_title">Aplicación</string>
@@ -86,15 +86,15 @@
     <string name="settings_album_row_description">La cantidad de imágenes y videos que se muestran por fila en la pantalla de álbum.</string>
     <string name="settings_album_metadata_title">Mostrar icono de ausencia de metadatos</string>
     <string name="settings_album_metadata_description">Mostrar un icono en los elementos sin clave de metadatos si su álbum tiene metadatos.</string>
-    <string name="settings_display_title">Pantalla de visualización</string>
-    <string name="settings_display_info_title">Acceso directo a información</string>
-    <string name="settings_display_info_description">Mostrar un acceso directo a información en la parte inferior de la pantalla.</string>
-    <string name="settings_display_edit_title">Acceso directo a editar</string>
-    <string name="settings_display_edit_description">Mostrar un acceso directo a editar en la parte inferior de la pantalla.</string>
-    <string name="settings_display_share_title">Acceso directo a compartir</string>
-    <string name="settings_display_share_description">Mostrar un acceso directo a compartir en la parte inferior de la pantalla.</string>
-    <string name="settings_display_favourite_title">Acceso directo a favoritos</string>
-    <string name="settings_display_favourite_description">Mostrar un acceso directo a añadir a favoritos en la parte inferior de la pantalla.</string>
+    <string name="settings_viewer_title">Pantalla de visualización</string>
+    <string name="settings_viewer_info_title">Acceso directo a información</string>
+    <string name="settings_viewer_info_description">Mostrar un acceso directo a información en la parte inferior de la pantalla.</string>
+    <string name="settings_viewer_edit_title">Acceso directo a editar</string>
+    <string name="settings_viewer_edit_description">Mostrar un acceso directo a editar en la parte inferior de la pantalla.</string>
+    <string name="settings_viewer_share_title">Acceso directo a compartir</string>
+    <string name="settings_viewer_share_description">Mostrar un acceso directo a compartir en la parte inferior de la pantalla.</string>
+    <string name="settings_viewer_favourite_title">Acceso directo a favoritos</string>
+    <string name="settings_viewer_favourite_description">Mostrar un acceso directo a añadir a favoritos en la parte inferior de la pantalla.</string>
     <string name="settings_video_title">Reproductor de video</string>
     <string name="settings_video_skip_backwards_title">Retroceder · %ds</string>
     <string name="settings_video_skip_backwards_description">La cantidad de segundos que se retrocederá al tocar dos veces la parte izquierda de la pantalla.</string>

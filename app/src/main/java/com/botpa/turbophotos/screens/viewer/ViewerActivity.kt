@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.screens.display
+package com.botpa.turbophotos.screens.viewer
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -35,29 +35,26 @@ import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.options.OptionsManager
 import com.botpa.turbophotos.gallery.permissions.PermissionType
 import com.botpa.turbophotos.gallery.views.ZoomableLayout
-import com.botpa.turbophotos.screens.display.info.InfoDrawer
+import com.botpa.turbophotos.screens.viewer.info.InfoDrawer
 import com.botpa.turbophotos.screens.video.VideoActivity
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
 
 @SuppressLint("SetTextI18n", "NotifyDataSetChanged")
-class DisplayActivity : BaseActivity() {
+class ViewerActivity : BaseActivity() {
 
-     /*$$$$$$  /$$                     /$$
-    | $$__  $$|__/                    | $$
-    | $$  \ $$ /$$  /$$$$$$$  /$$$$$$ | $$  /$$$$$$  /$$   /$$
-    | $$  | $$| $$ /$$_____/ /$$__  $$| $$ |____  $$| $$  | $$
-    | $$  | $$| $$|  $$$$$$ | $$  \ $$| $$  /$$$$$$$| $$  | $$
-    | $$  | $$| $$ \____  $$| $$  | $$| $$ /$$__  $$| $$  | $$
-    | $$$$$$$/| $$ /$$$$$$$/| $$$$$$$/| $$|  $$$$$$$|  $$$$$$$
-    |_______/ |__/|_______/ | $$____/ |__/ \_______/ \____  $$
-                            | $$                     /$$  | $$
-                            | $$                    |  $$$$$$/
-                            |__/                     \_____*/
+     /*$    /$$ /$$
+    | $$   | $$|__/
+    | $$   | $$ /$$  /$$$$$$  /$$  /$$  /$$  /$$$$$$   /$$$$$$
+    |  $$ / $$/| $$ /$$__  $$| $$ | $$ | $$ /$$__  $$ /$$__  $$
+     \  $$ $$/ | $$| $$$$$$$$| $$ | $$ | $$| $$$$$$$$| $$  \__/
+      \  $$$/  | $$| $$_____/| $$ | $$ | $$| $$_____/| $$
+       \  $/   | $$|  $$$$$$$|  $$$$$/$$$$/|  $$$$$$$| $$
+        \_/    |__/ \_______/ \_____/\___/  \_______/|_*/
 
     //Activity
     override val permissions: List<PermissionType> = listOf(PermissionType.Storage, PermissionType.Media)
-    override val contentViewResource: Int = R.layout.display_screen
+    override val contentViewResource: Int = R.layout.viewer_screen
 
     private var isInit = false
     private var isViewingExternal: Boolean = false
@@ -73,14 +70,14 @@ class DisplayActivity : BaseActivity() {
     private val onAction = ActionEvent { action -> this.manageAction(action) }
 
     //List
-    private lateinit var displayLayoutManager: DisplayLayoutManager
-    private lateinit var displayAdapter: DisplayAdapter
+    private lateinit var viewerLayoutManager: ViewerLayoutManager
+    private lateinit var viewerAdapter: ViewerAdapter
 
-    private lateinit var displayGallery: List<Item>
+    private lateinit var viewerGallery: List<Item>
     private var currentIndexInGallery = -1
 
-    private val displayItems: MutableList<Item> = ArrayList()
-    private var currentIndexInDisplay = -1
+    private val viewerItems: MutableList<Item> = ArrayList()
+    private var currentIndexInViewer = -1
 
     private var useInternalVideoPlayer: Boolean = true
     private var showInfo: Boolean = true
@@ -90,7 +87,7 @@ class DisplayActivity : BaseActivity() {
 
     private lateinit var currentItem: Item
 
-    private lateinit var displayList: RecyclerView
+    private lateinit var viewerList: RecyclerView
 
       /*$$$$$              /$$     /$$
      /$$__  $$            | $$    |__/
@@ -149,17 +146,14 @@ class DisplayActivity : BaseActivity() {
 
 
 
-     /*$$$$$$  /$$                     /$$
-    | $$__  $$|__/                    | $$
-    | $$  \ $$ /$$  /$$$$$$$  /$$$$$$ | $$  /$$$$$$  /$$   /$$
-    | $$  | $$| $$ /$$_____/ /$$__  $$| $$ |____  $$| $$  | $$
-    | $$  | $$| $$|  $$$$$$ | $$  \ $$| $$  /$$$$$$$| $$  | $$
-    | $$  | $$| $$ \____  $$| $$  | $$| $$ /$$__  $$| $$  | $$
-    | $$$$$$$/| $$ /$$$$$$$/| $$$$$$$/| $$|  $$$$$$$|  $$$$$$$
-    |_______/ |__/|_______/ | $$____/ |__/ \_______/ \____  $$
-                            | $$                     /$$  | $$
-                            | $$                    |  $$$$$$/
-                            |__/                     \_____*/
+    /*$    /$$ /$$
+   | $$   | $$|__/
+   | $$   | $$ /$$  /$$$$$$  /$$  /$$  /$$  /$$$$$$   /$$$$$$
+   |  $$ / $$/| $$ /$$__  $$| $$ | $$ | $$ /$$__  $$ /$$__  $$
+    \  $$ $$/ | $$| $$$$$$$$| $$ | $$ | $$| $$$$$$$$| $$  \__/
+     \  $$$/  | $$| $$_____/| $$ | $$ | $$| $$_____/| $$
+      \  $/   | $$|  $$$$$$$|  $$$$$/$$$$/|  $$$$$$$| $$
+       \_/    |__/ \_______/ \_____/\___/  \_______/|_*/
 
     //Activity
     override fun onBeforeInitViews() {
@@ -172,7 +166,7 @@ class DisplayActivity : BaseActivity() {
 
     override fun onInitViews() {
         //List
-        displayList = findViewById(R.id.list)
+        viewerList = findViewById(R.id.list)
 
         //Overlay
         overlayLayout = findViewById(R.id.overlayLayout)
@@ -206,9 +200,9 @@ class DisplayActivity : BaseActivity() {
             view.layoutParams = params
 
             //Album list notifications bar margin
-            if (displayAdapter.bottomMargin == 0) {
-                displayAdapter.bottomMargin = insets.bottom
-                displayAdapter.notifyDataSetChanged()
+            if (viewerAdapter.bottomMargin == 0) {
+                viewerAdapter.bottomMargin = insets.bottom
+                viewerAdapter.notifyDataSetChanged()
             }
         }
 
@@ -256,7 +250,7 @@ class DisplayActivity : BaseActivity() {
             //Create params
             val p = PictureInPictureParams.Builder()
             try {
-                val image = (displayList.findViewHolderForAdapterPosition(currentIndexInDisplay) as DisplayAdapter.ItemHolder).image
+                val image = (viewerList.findViewHolderForAdapterPosition(currentIndexInViewer) as ViewerAdapter.ItemHolder).image
                 p.setAspectRatio(Rational(image.width, image.height))
             } catch (_: Exception) {
                 p.setAspectRatio(Rational(9, 16))
@@ -266,7 +260,7 @@ class DisplayActivity : BaseActivity() {
             isInPiP = enterPictureInPictureMode(p.build())
         }
 
-        optionInfo = OptionsItem(R.drawable.info, R.string.display_option_info) {
+        optionInfo = OptionsItem(R.drawable.info, R.string.viewer_option_info) {
             //Toggle info
             InfoDrawer(this, currentItem).buildAndShow()
         }
@@ -312,7 +306,7 @@ class DisplayActivity : BaseActivity() {
         overlayLayout.visibility = View.GONE
 
         //Init components
-        initDisplayList()
+        initViewerList()
     }
 
     override fun onRequestPermission(permission: PermissionType) {
@@ -369,10 +363,10 @@ class DisplayActivity : BaseActivity() {
 
         //Update settings
         useInternalVideoPlayer = Storage.getBool(StoragePairs.VIDEO_USE_INTERNAL_PLAYER)
-        showInfo = Storage.getBool(StoragePairs.DISPLAY_SHOW_INFO)
-        showEdit = Storage.getBool(StoragePairs.DISPLAY_SHOW_EDIT)
-        showShare = Storage.getBool(StoragePairs.DISPLAY_SHOW_SHARE)
-        showFavourite = Storage.getBool(StoragePairs.DISPLAY_SHOW_FAVOURITE)
+        showInfo = Storage.getBool(StoragePairs.VIEWER_SHOW_INFO)
+        showEdit = Storage.getBool(StoragePairs.VIEWER_SHOW_EDIT)
+        showShare = Storage.getBool(StoragePairs.VIEWER_SHOW_SHARE)
+        showFavourite = Storage.getBool(StoragePairs.VIEWER_SHOW_FAVOURITE)
 
         //Check for permissions
         if (!permissionManager.hasAllPermissions) {
@@ -388,8 +382,8 @@ class DisplayActivity : BaseActivity() {
 
         //Check if current item was modified
         if (currentItem.updateLastModified()) {
-            //Item was modified -> Refresh display & sort library
-            displayAdapter.notifyItemChanged(currentIndexInDisplay)
+            //Item was modified -> Refresh viewer & sort library
+            viewerAdapter.notifyItemChanged(currentIndexInViewer)
             Library.sortLibrary()
         }
 
@@ -413,7 +407,7 @@ class DisplayActivity : BaseActivity() {
 
             //Init gallery list
             val gallery: MutableList<Item> = ArrayList()
-            displayGallery = gallery
+            viewerGallery = gallery
 
             //Create item from uri & add it to list
             gallery.add(Item.createFromUri(this, uri, Album("Temp")))
@@ -425,7 +419,7 @@ class DisplayActivity : BaseActivity() {
             isViewingExternal = false
 
             //Init gallery list
-            displayGallery = Library.gallery
+            viewerGallery = Library.gallery
 
             //Check if intent has item index
             val index = intent.getIntExtra("index", -1)
@@ -443,8 +437,8 @@ class DisplayActivity : BaseActivity() {
         if (action.isOfType(Action.TYPE_NONE)) return
 
         //Check if gallery is empty
-        if (displayGallery.isEmpty()) {
-            //Is empty -> Close display
+        if (viewerGallery.isEmpty()) {
+            //Is empty -> Close viewer
             finish()
             return
         }
@@ -458,30 +452,30 @@ class DisplayActivity : BaseActivity() {
         selectItem(currentIndexInGallery)
     }
 
-    //Display
-    private fun initDisplayList() {
-        //Init display layout manager
-        displayLayoutManager = DisplayLayoutManager(this)
-        displayLayoutManager.setOrientation(RecyclerView.HORIZONTAL)
-        displayList.setLayoutManager(displayLayoutManager)
+    //Viewer
+    private fun initViewerList() {
+        //Init viewer layout manager
+        viewerLayoutManager = ViewerLayoutManager(this)
+        viewerLayoutManager.setOrientation(RecyclerView.HORIZONTAL)
+        viewerList.setLayoutManager(viewerLayoutManager)
 
-        //Init display adapter
-        displayAdapter = DisplayAdapter(this, displayItems, true, 0)
-        displayList.setAdapter(displayAdapter)
+        //Init viewer adapter
+        viewerAdapter = ViewerAdapter(this, viewerItems, true, 0)
+        viewerList.setAdapter(viewerAdapter)
 
         //Add adapter listeners
-        displayAdapter.onClick = { zoom: ZoomableLayout, image: ImageView, position: Int ->
+        viewerAdapter.onClick = { zoom: ZoomableLayout, image: ImageView, position: Int ->
             toggleOverlay(!overlayLayout.isVisible)
         }
-        displayAdapter.onZoomChanged = { zoom: ZoomableLayout, image: ImageView, position: Int ->
+        viewerAdapter.onZoomChanged = { zoom: ZoomableLayout, image: ImageView, position: Int ->
             //Enable scrolling only if not zoomed and one finger is over
-            displayLayoutManager.setScrollEnabled(zoom.zoom <= 1 && zoom.pointers <= 1)
+            viewerLayoutManager.setScrollEnabled(zoom.zoom <= 1 && zoom.pointers <= 1)
         }
-        displayAdapter.onPointersChanged = { zoom: ZoomableLayout, image: ImageView, position: Int ->
+        viewerAdapter.onPointersChanged = { zoom: ZoomableLayout, image: ImageView, position: Int ->
             //Enable scrolling only if not zoomed and one finger is over
-            displayLayoutManager.setScrollEnabled(zoom.zoom <= 1 && zoom.pointers <= 1)
+            viewerLayoutManager.setScrollEnabled(zoom.zoom <= 1 && zoom.pointers <= 1)
         }
-        displayAdapter.onPlay = { zoom: ZoomableLayout, image: ImageView, position: Int ->
+        viewerAdapter.onPlay = { zoom: ZoomableLayout, image: ImageView, position: Int ->
             val intent = if (useInternalVideoPlayer) {
                 //Play in internal player
                 Intent(this, VideoActivity::class.java)
@@ -495,25 +489,25 @@ class DisplayActivity : BaseActivity() {
 
         //Create snap helper
         val snapHelper: SnapHelper = PagerSnapHelper()
-        snapHelper.attachToRecyclerView(displayList)
+        snapHelper.attachToRecyclerView(viewerList)
 
         //Add snap helper listener
-        displayList.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        viewerList.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                if (newState == RecyclerView.SCROLL_STATE_IDLE && displayLayoutManager.canScrollHorizontally()) {
+                if (newState == RecyclerView.SCROLL_STATE_IDLE && viewerLayoutManager.canScrollHorizontally()) {
                     //Get position
-                    val view = snapHelper.findSnapView(displayLayoutManager)
-                    val position = if (view != null) displayLayoutManager.getPosition(view) else -1
+                    val view = snapHelper.findSnapView(viewerLayoutManager)
+                    val position = if (view != null) viewerLayoutManager.getPosition(view) else -1
                     if (position == -1) return
 
                     //Check what to do
-                    if (position < currentIndexInDisplay) {
+                    if (position < currentIndexInViewer) {
                         //Previous
-                        displayLayoutManager.setScrollEnabled(false)
+                        viewerLayoutManager.setScrollEnabled(false)
                         selectItem(currentIndexInGallery - 1)
-                    } else if (position > currentIndexInDisplay) {
+                    } else if (position > currentIndexInViewer) {
                         //Next
-                        displayLayoutManager.setScrollEnabled(false)
+                        viewerLayoutManager.setScrollEnabled(false)
                         selectItem(currentIndexInGallery + 1)
                     }
                 }
@@ -525,12 +519,12 @@ class DisplayActivity : BaseActivity() {
     private fun toggleOverlay(show: Boolean) {
         if (show) {
             //Show
-            displayAdapter.toggleOverlay(true, displayList)
+            viewerAdapter.toggleOverlay(true, viewerList)
             Orion.animateShow(overlayLayout, 500)
             Orion.toggleSystemUI(this, true)
         } else {
             //Hide
-            displayAdapter.toggleOverlay(false, displayList)
+            viewerAdapter.toggleOverlay(false, viewerList)
             Orion.animateHide(overlayLayout, 500)
             Orion.toggleSystemUI(this, false)
         }
@@ -545,43 +539,43 @@ class DisplayActivity : BaseActivity() {
 
     //Current item
     private fun selectItem(index: Int) {
-        //Empty display gallery
-        if (displayGallery.isEmpty()) {
+        //Empty viewer gallery
+        if (viewerGallery.isEmpty()) {
             finish()
             return
         }
 
         //Fix index overflow
         var index = index
-        index = Math.clamp(index.toLong(), 0, displayGallery.size - 1)
+        index = Math.clamp(index.toLong(), 0, viewerGallery.size - 1)
 
         //Create return intent (to scroll album list to current item on close)
         val returnIntent = Intent()
         returnIntent.putExtra("index", index)
         setResult(RESULT_OK, returnIntent)
 
-        //Reset display items
-        displayItems.clear()
+        //Reset viewer items
+        viewerItems.clear()
         currentIndexInGallery = index
-        currentIndexInDisplay = 0
+        currentIndexInViewer = 0
 
-        //Add items to display list
+        //Add items to viewer list
         if (index > 0) {
             //Has item before -> Add it
-            displayItems.add(displayGallery[index - 1])
-            currentIndexInDisplay++
+            viewerItems.add(viewerGallery[index - 1])
+            currentIndexInViewer++
         }
-        displayItems.add(displayGallery[index])
-        if (index < displayGallery.size - 1) {
+        viewerItems.add(viewerGallery[index])
+        if (index < viewerGallery.size - 1) {
             //Has item after -> Add it
-            displayItems.add(displayGallery[index + 1])
+            viewerItems.add(viewerGallery[index + 1])
         }
 
         //Get current image, update adapter & select it
-        currentItem = displayItems[currentIndexInDisplay]
-        displayAdapter.notifyDataSetChanged()
-        displayList.scrollToPosition(currentIndexInDisplay)
-        displayLayoutManager.setScrollEnabled(true)
+        currentItem = viewerItems[currentIndexInViewer]
+        viewerAdapter.notifyDataSetChanged()
+        viewerList.scrollToPosition(currentIndexInViewer)
+        viewerLayoutManager.setScrollEnabled(true)
 
         //Change image name & favourite state
         overlayTitle.text = currentItem.name

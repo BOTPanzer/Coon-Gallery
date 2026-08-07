@@ -33,11 +33,11 @@ class SettingsViewModel : ViewModel() {
     var albumItemsPerRow by mutableFloatStateOf(Storage.getInt(StoragePairs.ALBUM_ITEMS_PER_ROW).toFloat())
     var albumShowMissingMetadataIcon by  mutableStateOf(Storage.getBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON))
 
-    //Display screen
-    var displayShowInfo by mutableStateOf(Storage.getBool(StoragePairs.DISPLAY_SHOW_INFO))
-    var displayShowEdit by mutableStateOf(Storage.getBool(StoragePairs.DISPLAY_SHOW_EDIT))
-    var displayShowShare by mutableStateOf(Storage.getBool(StoragePairs.DISPLAY_SHOW_SHARE))
-    var displayShowFavourite by mutableStateOf(Storage.getBool(StoragePairs.DISPLAY_SHOW_FAVOURITE))
+    //Viewer screen
+    var viewerShowInfo by mutableStateOf(Storage.getBool(StoragePairs.VIEWER_SHOW_INFO))
+    var viewerShowEdit by mutableStateOf(Storage.getBool(StoragePairs.VIEWER_SHOW_EDIT))
+    var viewerShowShare by mutableStateOf(Storage.getBool(StoragePairs.VIEWER_SHOW_SHARE))
+    var viewerShowFavourite by mutableStateOf(Storage.getBool(StoragePairs.VIEWER_SHOW_FAVOURITE))
 
     //Video player
     var videoSkipBackwardsAmount by mutableFloatStateOf(Storage.getLong(StoragePairs.VIDEO_SKIP_BACKWARDS).toFloat())
@@ -203,25 +203,25 @@ class SettingsViewModel : ViewModel() {
         Storage.putBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON, isChecked)
     }
 
-    //Display screen
-    fun updateDisplayShowInfo(isChecked: Boolean) {
-        displayShowInfo = isChecked
-        Storage.putBool(StoragePairs.DISPLAY_SHOW_INFO, isChecked)
+    //Viewer screen
+    fun updateViewerShowInfo(isChecked: Boolean) {
+        viewerShowInfo = isChecked
+        Storage.putBool(StoragePairs.VIEWER_SHOW_INFO, isChecked)
     }
 
-    fun updateDisplayShowEdit(isChecked: Boolean) {
-        displayShowEdit = isChecked
-        Storage.putBool(StoragePairs.DISPLAY_SHOW_EDIT, isChecked)
+    fun updateViewerShowEdit(isChecked: Boolean) {
+        viewerShowEdit = isChecked
+        Storage.putBool(StoragePairs.VIEWER_SHOW_EDIT, isChecked)
     }
 
-    fun updateDisplayShowShare(isChecked: Boolean) {
-        displayShowShare = isChecked
-        Storage.putBool(StoragePairs.DISPLAY_SHOW_SHARE, isChecked)
+    fun updateViewerShowShare(isChecked: Boolean) {
+        viewerShowShare = isChecked
+        Storage.putBool(StoragePairs.VIEWER_SHOW_SHARE, isChecked)
     }
 
-    fun updateDisplayShowFavourite(isChecked: Boolean) {
-        displayShowFavourite = isChecked
-        Storage.putBool(StoragePairs.DISPLAY_SHOW_FAVOURITE, isChecked)
+    fun updateViewerShowFavourite(isChecked: Boolean) {
+        viewerShowFavourite = isChecked
+        Storage.putBool(StoragePairs.VIEWER_SHOW_FAVOURITE, isChecked)
     }
 
     //Video player

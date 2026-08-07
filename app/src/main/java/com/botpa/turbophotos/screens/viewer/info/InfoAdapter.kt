@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.screens.display.info
+package com.botpa.turbophotos.screens.viewer.info
 
 import android.content.Context
 import android.view.View
@@ -12,7 +12,7 @@ class InfoAdapter(context: Context, items: List<Info>) : SimpleCustomAdapter<Inf
 
     //Adapter
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ItemHolder {
-        return ItemHolder(inflateView(context, R.layout.drawer_display_info_item, viewGroup))
+        return ItemHolder(inflateView(context, R.layout.drawer_viewer_info_item, viewGroup))
     }
 
     override fun onInitItemHolder(holder: ItemHolder, item: Info) {

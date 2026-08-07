@@ -37,7 +37,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="4dp"
-                    android:divider="@drawable/display_item_info_divider"
+                    android:divider="@drawable/viewer_item_info_divider"
                     android:orientation="horizontal"
                     android:showDividers="middle">
 

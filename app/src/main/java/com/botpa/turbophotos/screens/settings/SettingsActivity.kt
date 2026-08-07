@@ -304,25 +304,25 @@ class SettingsActivity : AppCompatActivity() {
                     }
                 }
 
-                //Display screen
+                //Viewer screen
                 item {
                     Group {
                         //Title
-                        GroupTitle(R.string.settings_display_title)
+                        GroupTitle(R.string.settings_viewer_title)
 
                         //Items
                         GroupItems {
                             //Info shortcut
                             GroupItem {
                                 SettingsItem(
-                                    title = R.string.settings_display_info_title,
-                                    description = R.string.settings_display_info_description
+                                    title = R.string.settings_viewer_info_title,
+                                    description = R.string.settings_viewer_info_description
                                 ) {
                                     //Value
                                     Switch(
-                                        checked = view.displayShowInfo,
+                                        checked = view.viewerShowInfo,
                                         onCheckedChange = { isChecked ->
-                                            view.updateDisplayShowInfo(isChecked)
+                                            view.updateViewerShowInfo(isChecked)
                                         }
                                     )
                                 }
@@ -334,14 +334,14 @@ class SettingsActivity : AppCompatActivity() {
                             //Edit shortcut
                             GroupItem {
                                 SettingsItem(
-                                    title = R.string.settings_display_edit_title,
-                                    description = R.string.settings_display_edit_description
+                                    title = R.string.settings_viewer_edit_title,
+                                    description = R.string.settings_viewer_edit_description
                                 ) {
                                     //Value
                                     Switch(
-                                        checked = view.displayShowEdit,
+                                        checked = view.viewerShowEdit,
                                         onCheckedChange = { isChecked ->
-                                            view.updateDisplayShowEdit(isChecked)
+                                            view.updateViewerShowEdit(isChecked)
                                         }
                                     )
                                 }
@@ -353,14 +353,14 @@ class SettingsActivity : AppCompatActivity() {
                             //Share shortcut
                             GroupItem {
                                 SettingsItem(
-                                    title = R.string.settings_display_share_title,
-                                    description = R.string.settings_display_share_description
+                                    title = R.string.settings_viewer_share_title,
+                                    description = R.string.settings_viewer_share_description
                                 ) {
                                     //Value
                                     Switch(
-                                        checked = view.displayShowShare,
+                                        checked = view.viewerShowShare,
                                         onCheckedChange = { isChecked ->
-                                            view.updateDisplayShowShare(isChecked)
+                                            view.updateViewerShowShare(isChecked)
                                         }
                                     )
                                 }
@@ -372,14 +372,14 @@ class SettingsActivity : AppCompatActivity() {
                             //Favourite shortcut
                             GroupItem {
                                 SettingsItem(
-                                    title = R.string.settings_display_favourite_title,
-                                    description = R.string.settings_display_favourite_description
+                                    title = R.string.settings_viewer_favourite_title,
+                                    description = R.string.settings_viewer_favourite_description
                                 ) {
                                     //Value
                                     Switch(
-                                        checked = view.displayShowFavourite,
+                                        checked = view.viewerShowFavourite,
                                         onCheckedChange = { isChecked ->
-                                            view.updateDisplayShowFavourite(isChecked)
+                                            view.updateViewerShowFavourite(isChecked)
                                         }
                                     )
                                 }

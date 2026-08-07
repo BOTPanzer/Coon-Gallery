@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.screens.display.info
+package com.botpa.turbophotos.screens.viewer.info
 
 import android.app.Activity
 import android.graphics.BitmapFactory
@@ -27,7 +27,7 @@ import kotlin.math.round
 class InfoDrawer(
     private val activity: Activity,
     private val item: Item
-) : CustomDrawer(activity, R.layout.drawer_display_info) {
+) : CustomDrawer(activity, R.layout.drawer_viewer_info) {
 
     //Views (info)
     private lateinit var infoLayout: View

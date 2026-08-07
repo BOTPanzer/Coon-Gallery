@@ -1,9 +1,9 @@
-package com.botpa.turbophotos.screens.display
+package com.botpa.turbophotos.screens.viewer
 
 import android.content.Context
 import androidx.recyclerview.widget.LinearLayoutManager
 
-class DisplayLayoutManager(context: Context) : LinearLayoutManager(context) {
+class ViewerLayoutManager(context: Context) : LinearLayoutManager(context) {
 
     private var isScrollEnabled = true
 

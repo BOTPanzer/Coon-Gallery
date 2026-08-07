@@ -36,7 +36,7 @@ import com.botpa.turbophotos.gallery.options.OptionsManager
 import com.botpa.turbophotos.gallery.permissions.PermissionType
 import com.botpa.turbophotos.gallery.views.GridListSeparator
 import com.botpa.turbophotos.screens.album.search.SearchDialog
-import com.botpa.turbophotos.screens.display.DisplayActivity
+import com.botpa.turbophotos.screens.viewer.ViewerActivity
 import com.botpa.turbophotos.util.BackAnimationEvent
 import com.botpa.turbophotos.util.Ease
 import com.botpa.turbophotos.util.Orion
@@ -90,18 +90,18 @@ class AlbumActivity : BaseActivity() {
     private var currentSearchMethod: SearchMethod = SearchMethod.ContainsWords
     private var currentSearch: String = ""
 
-    //Display
-    private var displayIndex: Int = -1
+    //Viewer
+    private var viewerIndex: Int = -1
 
-    private val onDisplayClosed = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+    private val onViewerClosed = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         //Not OK
         if (result.resultCode != RESULT_OK) return@registerForActivityResult
 
-        //Move to last opened item on display when it closes
+        //Move to last opened item on viewer when it closes
         val intent = result.data
-        val newDisplayIndex = intent?.getIntExtra("index", displayIndex) ?: displayIndex
-        if (newDisplayIndex != displayIndex) {
-            albumList.scrollToPosition(newDisplayIndex)
+        val newViewerIndex = intent?.getIntExtra("index", viewerIndex) ?: viewerIndex
+        if (newViewerIndex != viewerIndex) {
+            albumList.scrollToPosition(newViewerIndex)
         }
     }
 
@@ -538,7 +538,7 @@ class AlbumActivity : BaseActivity() {
 
         //Check if gallery is empty
         if (gallery.isEmpty()) {
-            //Is empty -> Close display
+            //Is empty -> Close viewer
             finish()
             return
         }
@@ -640,12 +640,12 @@ class AlbumActivity : BaseActivity() {
             finish()
         } else {
             //Save index
-            displayIndex = index
+            viewerIndex = index
 
-            //Open display
-            val intent = Intent(this, DisplayActivity::class.java)
+            //Open viewer
+            val intent = Intent(this, ViewerActivity::class.java)
             intent.putExtra("index", index)
-            onDisplayClosed.launch(intent)
+            onViewerClosed.launch(intent)
         }
     }
 

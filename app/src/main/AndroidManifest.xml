@@ -62,9 +62,9 @@
             android:exported="false">
         </activity>
 
-        <!-- Display screen -->
+        <!-- Viewer screen -->
         <activity
-            android:name=".screens.display.DisplayActivity"
+            android:name=".screens.viewer.ViewerActivity"
             android:launchMode="standard"
             android:exported="true"
             android:configChanges="orientation|screenSize|screenLayout"

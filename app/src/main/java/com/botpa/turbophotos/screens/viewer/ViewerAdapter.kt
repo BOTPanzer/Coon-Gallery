@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.screens.display
+package com.botpa.turbophotos.screens.viewer
 
 import android.content.Context
 import android.view.View
@@ -12,16 +12,16 @@ import com.botpa.turbophotos.gallery.modals.core.CustomAdapter
 import com.botpa.turbophotos.gallery.views.ZoomableLayout
 import com.botpa.turbophotos.util.Orion
 
-class DisplayAdapter(
+class ViewerAdapter(
     context: Context,
     items: List<Item>,
     private var showOverlay: Boolean,
     var bottomMargin: Int
-) : CustomAdapter<Item, DisplayAdapter.ItemHolder>(context, items) {
+) : CustomAdapter<Item, ViewerAdapter.ItemHolder>(context, items) {
 
     //Adapter
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ItemHolder {
-        return ItemHolder(inflateView(context, R.layout.display_item, viewGroup))
+        return ItemHolder(inflateView(context, R.layout.viewer_item, viewGroup))
     }
 
     override fun onInitItemHolder(holder: ItemHolder, item: Item) {
@@ -58,12 +58,12 @@ class DisplayAdapter(
     }
 
     //Listeners
-    var onClick: DisplayListener? = null
-    var onZoomChanged: DisplayListener? = null
-    var onPointersChanged: DisplayListener? = null
-    var onPlay: DisplayListener? = null
+    var onClick: ViewerListener? = null
+    var onZoomChanged: ViewerListener? = null
+    var onPointersChanged: ViewerListener? = null
+    var onPlay: ViewerListener? = null
 
-    fun interface DisplayListener {
+    fun interface ViewerListener {
         fun run(zoom: ZoomableLayout, image: ImageView, position: Int)
     }
 
