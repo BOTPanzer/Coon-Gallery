@@ -189,7 +189,7 @@ class SyncService : Service() {
                 //End sync
                 "endSync" -> {
                     //Log
-                    sendLog("Finished sync")
+                    sendLog(getString(R.string.sync_logs_finished))
                 }
 
                 //Send item info
@@ -204,7 +204,7 @@ class SyncService : Service() {
                     val file = item.file
 
                     //Log
-                    sendLog("- Sending item \"${item.name}\"...")
+                    sendLog(getString(R.string.sync_logs_send_item, item.name))
 
                     //Create message
                     val obj = Orion.emptyJson
@@ -252,7 +252,7 @@ class SyncService : Service() {
                         buffer.close()
 
                         //Log
-                        sendLog("$requestText Success")
+                        sendLog(getString(R.string.sync_logs_success, requestText))
 
                         //Send message
                         sendThroughWebSocket(bytes)
@@ -262,7 +262,7 @@ class SyncService : Service() {
                         if (errorMessage != null) Log.e("Send item data", errorMessage)
 
                         //Log
-                        sendLog("$requestText Error reading item data")
+                        sendLog(getString(R.string.sync_logs_error_read_item_data, requestText))
 
                         //Send empty blob
                         sendThroughWebSocket(ByteArray(0))
@@ -276,7 +276,7 @@ class SyncService : Service() {
                     val file = Link.links[albumIndex].metadataFile
 
                     //Log
-                    sendLog("- Sending metadata for album $albumIndex...")
+                    sendLog(getString(R.string.sync_logs_send_metadata, albumIndex))
 
                     //Create message
                     val obj = Orion.emptyJson
@@ -309,7 +309,7 @@ class SyncService : Service() {
                         buffer.close()
 
                         //Log
-                        sendLog("$requestText Success")
+                        sendLog(getString(R.string.sync_logs_success, requestText))
 
                         //Send message
                         sendThroughWebSocket(bytes)
@@ -319,7 +319,7 @@ class SyncService : Service() {
                         if (errorMessage != null) Log.e("Send metadata data", errorMessage)
 
                         //Log
-                        sendLog("$requestText Error reading metadata data")
+                        sendLog(getString(R.string.sync_logs_error_read_metadata_data, requestText))
 
                         //Send empty blob
                         sendThroughWebSocket(ByteArray(0))
@@ -356,7 +356,7 @@ class SyncService : Service() {
             if (errorMessage != null) Log.e("Parse message", errorMessage)
 
             //Log
-            sendLog("Error parsing message")
+            sendLog(getString(R.string.sync_logs_error_parse_message))
         }
     }
 
@@ -388,14 +388,14 @@ class SyncService : Service() {
             sendReloadLibraryOnExit()
 
             //Log
-            sendLog("$requestText Success")
+            sendLog(getString(R.string.sync_logs_success, requestText))
         } catch (e: IOException) {
             //Error
             val errorMessage = e.message
             if (errorMessage != null) Log.e("Save metadata data", errorMessage)
 
             //Log
-            sendLog("$requestText Error saving metadata")
+            sendLog(getString(R.string.sync_logs_error_save_metadata, requestText))
         }
 
         //Request next
@@ -417,7 +417,7 @@ class SyncService : Service() {
 
         //Create notification channel
         val channel = NotificationChannel(NOTIFICATION_CHANNEL_ID, NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW)
-        channel.description = "Appears when the sync service is active"
+        channel.description = getString(R.string.sync_notification_channel_description)
         notificationManager.createNotificationChannel(channel)
 
         //Create intent
@@ -426,8 +426,8 @@ class SyncService : Service() {
         //Create notification
         val builder = NotificationCompat.Builder(this, channel.id)
             .setSmallIcon(R.drawable.app_icon)
-            .setContentTitle("Sync")
-            .setContentText("The sync service is active")
+            .setContentTitle(getString(R.string.sync_title))
+            .setContentText(getString(R.string.sync_notification_content))
             .setContentIntent(PendingIntent.getActivity(this, 0, resumeIntent, PendingIntent.FLAG_IMMUTABLE))
             .setAutoCancel(true)
             .setOngoing(true)
@@ -487,7 +487,7 @@ class SyncService : Service() {
         //Finished
         if (metadataRequestIndex >= Link.links.size) {
             //Log
-            sendLog("Finished metadata sync")
+            sendLog(getString(R.string.sync_logs_finished_metadata))
 
             //Create message
             val obj = Orion.emptyJson
@@ -502,7 +502,7 @@ class SyncService : Service() {
         val file = Link.links[metadataRequestIndex].metadataFile
         if (!file.exists()) {
             //Log
-            sendLog("- Skipping metadata for album $metadataRequestIndex... (file does not exist)")
+            sendLog(getString(R.string.sync_logs_skip_metadata, metadataRequestIndex))
 
             //Request next
             requestNextMetadata(false)
@@ -510,7 +510,7 @@ class SyncService : Service() {
         }
 
         //Log
-        sendLog("- Requesting metadata for album $metadataRequestIndex...")
+        sendLog(getString(R.string.sync_logs_request_metadata, metadataRequestIndex))
 
         //Request next metadata
         val obj = Orion.emptyJson

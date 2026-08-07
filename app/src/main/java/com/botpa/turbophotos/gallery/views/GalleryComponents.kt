@@ -66,6 +66,15 @@ fun Layout(title: String, content: @Composable (PaddingValues) -> Unit) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun Layout(title: Int, content: @Composable (PaddingValues) -> Unit) {
+    Layout(
+        title = stringResource(title),
+        content = content
+    )
+}
+
 //Groups
 val groupItemPaddingHorizontal: Dp = 15.dp
 val groupItemPaddingVertical: Dp = 10.dp

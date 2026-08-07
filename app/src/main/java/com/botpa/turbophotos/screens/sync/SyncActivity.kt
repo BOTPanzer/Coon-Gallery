@@ -2,6 +2,7 @@ package com.botpa.turbophotos.screens.sync
 
 import android.Manifest
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -38,9 +39,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Observer
+import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.gallery.permissions.PermissionManager
@@ -79,7 +82,7 @@ class SyncActivity : AppCompatActivity() {
         loadUsers()
 
         //Init components
-        initEventsObserver()
+        initEventsObserver(this)
 
         //Content
         setContent {
@@ -102,7 +105,7 @@ class SyncActivity : AppCompatActivity() {
     //Layout
     @Composable
     private fun SyncLayout() {
-        Layout("Sync") {
+        Layout(R.string.sync_title) {
             if (!view.hasPermissions) {
                 //Ask for permissions
                 RequestPermissions()
@@ -183,7 +186,7 @@ class SyncActivity : AppCompatActivity() {
             //Connect
             Group {
                 //Title
-                GroupTitle("Connect")
+                GroupTitle(R.string.sync_connect_title)
 
                 //Items
                 GroupItems {
@@ -191,7 +194,9 @@ class SyncActivity : AppCompatActivity() {
                     GroupItem {
                         TextField(
                             value = view.connectName,
-                            label = { Text("Name (optional)") },
+                            label = {
+                                Text(stringResource(R.string.sync_connect_name_hint))
+                            },
                             maxLines = 1,
                             onValueChange = { newValue: String -> view.connectName = newValue },
                             colors = TextFieldDefaults.colors(
@@ -214,7 +219,9 @@ class SyncActivity : AppCompatActivity() {
                     GroupItem {
                         TextField(
                             value = view.connectCode,
-                            label = { Text("Code") },
+                            label = {
+                                Text(stringResource(R.string.sync_connect_code_hint))
+                            },
                             maxLines = 1,
                             onValueChange = { newValue: String -> view.connectCode = newValue },
                             colors = TextFieldDefaults.colors(
@@ -241,7 +248,7 @@ class SyncActivity : AppCompatActivity() {
                 ) {
                     //Connect button
                     SimpleButton(
-                        text = "Connect",
+                        text = R.string.sync_connect_action_connect,
                         onClick = {
                             //Already trying to connect
                             if (view.connectionStatus != SyncService.STATUS_OFFLINE) return@SimpleButton
@@ -302,14 +309,14 @@ class SyncActivity : AppCompatActivity() {
                 item {
                     Group {
                         //Title
-                        GroupTitle("Users")
+                        GroupTitle(R.string.sync_users_title)
 
                         //Items
                         GroupItems {
                             if (view.users.isEmpty()) {
                                 //Empty users message
                                 Text(
-                                    text = "There are no saved users",
+                                    text = stringResource(R.string.sync_users_message_empty),
                                     modifier = Modifier
                                         .padding(horizontal = groupItemPaddingHorizontal, vertical = groupItemPaddingVertical)
                                 )
@@ -497,30 +504,30 @@ class SyncActivity : AppCompatActivity() {
     }
 
     //Events
-    private fun initEventsObserver() {
+    private fun initEventsObserver(context: Context) {
         //Get instance
         val instance = instance
 
         //Observe
         instance.trigger.observe(this, Observer { t: Boolean ->
             var event: SyncEvent?
-            while ((instance.eventQueue.poll().also { event = it }) != null) handleEvent(event)
+            while ((instance.eventQueue.poll().also { event = it }) != null) handleEvent(context, event)
         })
     }
 
-    private fun handleEvent(event: SyncEvent?) {
+    private fun handleEvent(context: Context, event: SyncEvent?) {
         //Get command
         val command = event?.command ?: return
 
         //Check command
         when (command) {
-            "init" -> log("Service started")
+            "init" -> log(context.getString(R.string.sync_logs_started))
             "status" -> {
                 view.connectionStatus = event.valueInt
                 when (view.connectionStatus) {
-                    SyncService.STATUS_OFFLINE -> log("Disconnected")
-                    SyncService.STATUS_CONNECTING -> log("Connecting...")
-                    SyncService.STATUS_ONLINE -> log("Connected")
+                    SyncService.STATUS_OFFLINE -> log(context.getString(R.string.sync_logs_status_offline))
+                    SyncService.STATUS_CONNECTING -> log(context.getString(R.string.sync_logs_status_connecting))
+                    SyncService.STATUS_ONLINE -> log(context.getString(R.string.sync_logs_status_online))
                 }
             }
             "snack" -> Orion.snack(this, event.valueString)

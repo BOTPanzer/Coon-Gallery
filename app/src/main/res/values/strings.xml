@@ -135,6 +135,29 @@
     <string name="settings_error_link_add_first">Add an album first.</string>
     <!-- Screen: Sync -->
     <string name="sync_title">Sync</string>
+    <string name="sync_connect_title">Connect</string>
+    <string name="sync_connect_name_hint">Name (optional)</string>
+    <string name="sync_connect_code_hint">Code</string>
+    <string name="sync_connect_action_connect">Connect</string>
+    <string name="sync_users_title">Users</string>
+    <string name="sync_users_message_empty">There are no saved users.</string>
+    <string name="sync_logs_started">Service started</string>
+    <string name="sync_logs_status_offline">Disconnected</string>
+    <string name="sync_logs_status_connecting">Connecting…</string>
+    <string name="sync_logs_status_online">Connected</string>
+    <string name="sync_logs_finished">Finished sync</string>
+    <string name="sync_logs_finished_metadata">Finished metadata sync</string>
+    <string name="sync_logs_success">%s Success</string>
+    <string name="sync_logs_send_item">- Sending item \"%s\"…</string>
+    <string name="sync_logs_send_metadata">- Sending metadata for album %d…</string>
+    <string name="sync_logs_skip_metadata">- Skipping metadata for album %d… (file does not exist)</string>
+    <string name="sync_logs_request_metadata">- Requesting metadata for album %d…</string>
+    <string name="sync_logs_error_parse_message">Error parsing message</string>
+    <string name="sync_logs_error_save_metadata">%s Error saving metadata</string>
+    <string name="sync_logs_error_read_metadata_data">%s Error reading metadata data</string>
+    <string name="sync_logs_error_read_item_data">%s Error reading item data</string>
+    <string name="sync_notification_content">The sync service is active.</string>
+    <string name="sync_notification_channel_description">Appears when the sync service is active.</string>
     <!-- Dialogs -->
     <string name="dialog_cancel">Cancel</string>
     <string name="dialog_confirm">Confirm</string>

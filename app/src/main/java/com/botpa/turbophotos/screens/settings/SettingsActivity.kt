@@ -159,7 +159,7 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         //Layout
-        Layout("Settings") {
+        Layout(R.string.settings_title) {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()

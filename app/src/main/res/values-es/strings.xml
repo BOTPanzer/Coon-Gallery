@@ -134,7 +134,30 @@
     <string name="settings_error_link_album_exists">Un link con ese álbum ya existe.</string>
     <string name="settings_error_link_add_first">Añade un álbum primero.</string>
     <!-- Screen: Sync -->
-    <string name="sync_title">Sync</string>
+    <string name="sync_title">Sincronizacion</string>
+    <string name="sync_connect_title">Conexión</string>
+    <string name="sync_connect_name_hint">Nombre (opcional)</string>
+    <string name="sync_connect_code_hint">Código</string>
+    <string name="sync_connect_action_connect">Conectarse</string>
+    <string name="sync_users_title">Usuarios</string>
+    <string name="sync_users_message_empty">No hay usuarios guardados.</string>
+    <string name="sync_logs_started">Servicio iniciado</string>
+    <string name="sync_logs_status_offline">Desconectado</string>
+    <string name="sync_logs_status_connecting">Conectando…</string>
+    <string name="sync_logs_status_online">Conectado</string>
+    <string name="sync_logs_finished">Sincronización finalizada</string>
+    <string name="sync_logs_finished_metadata">Sincronización de metadatos finalizada</string>
+    <string name="sync_logs_success">%s Correcto</string>
+    <string name="sync_logs_send_item">- Enviando elemento \"%s\"…</string>
+    <string name="sync_logs_send_metadata">- Enviando metadatos para el álbum %d…</string>
+    <string name="sync_logs_skip_metadata">- Omitiendo metadatos para el álbum %d… (el archivo no existe)</string>
+    <string name="sync_logs_request_metadata">- Solicitando metadatos para el álbum %d…</string>
+    <string name="sync_logs_error_parse_message">Error al analizar el mensaje</string>
+    <string name="sync_logs_error_save_metadata">%s Error al guardar metadatos</string>
+    <string name="sync_logs_error_read_metadata_data">%s Error al leer datos de metadatos</string>
+    <string name="sync_logs_error_read_item_data">%s Error al leer datos del elemento</string>
+    <string name="sync_notification_content">El servicio de sincronización está activo.</string>
+    <string name="sync_notification_channel_description">Aparece cuando el servicio de sincronización está activo.</string>
     <!-- Dialogs -->
     <string name="dialog_cancel">Cancelar</string>
     <string name="dialog_confirm">Confirmar</string>
