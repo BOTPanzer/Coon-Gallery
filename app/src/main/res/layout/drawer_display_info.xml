@@ -23,7 +23,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/opificio_bold_rounded"
                 android:paddingBottom="10dp"
-                android:text="File"
+                android:text="@string/drawer_info_file_title"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="16sp" />
 
@@ -56,7 +56,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/opificio_bold_rounded"
                 android:paddingBottom="10dp"
-                android:text="Camera"
+                android:text="@string/drawer_info_camera_title"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="16sp" />
 
@@ -88,7 +88,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/opificio_bold_rounded"
                 android:paddingBottom="10dp"
-                android:text="Search Metadata"
+                android:text="@string/drawer_info_search_title"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="16sp" />
 
@@ -119,7 +119,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Close" />
+                android:text="@string/drawer_info_actions_close" />
 
             <Button
                 android:id="@+id/infoEdit"
@@ -127,7 +127,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
                 android:layout_weight="1"
-                android:text="Edit search metadata" />
+                android:text="@string/drawer_info_actions_edit" />
 
         </LinearLayout>
 
@@ -151,7 +151,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/opificio_bold_rounded"
                 android:paddingBottom="10dp"
-                android:text="Search Metadata"
+                android:text="@string/drawer_info_search_title"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="16sp" />
 
@@ -185,7 +185,7 @@
                             <TextView
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="Caption"
+                                android:text="@string/drawer_info_search_caption"
                                 android:textColor="?attr/colorOnSurface"
                                 android:textSize="16sp"
                                 android:textStyle="bold" />
@@ -195,7 +195,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:backgroundTint="?attr/colorOnSurface"
-                                android:hint="Caption"
+                                android:hint="@string/drawer_info_search_caption"
                                 android:textColor="?attr/colorOnSurface"
                                 android:textColorHighlight="?attr/colorPrimary"
                                 android:textColorHint="#757575"
@@ -223,7 +223,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="10dp"
-                                android:text="Labels"
+                                android:text="@string/drawer_info_search_labels"
                                 android:textColor="?attr/colorOnSurface"
                                 android:textSize="16sp"
                                 android:textStyle="bold" />
@@ -233,7 +233,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:backgroundTint="?attr/colorOnSurface"
-                                android:hint="Labels (coma separated)"
+                                android:hint="@string/drawer_edit_labels_hint"
                                 android:textColor="?attr/colorOnSurface"
                                 android:textColorHighlight="?attr/colorPrimary"
                                 android:textColorHint="#757575"
@@ -257,7 +257,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Cancel" />
+                android:text="@string/drawer_edit_actions_close" />
 
             <Button
                 android:id="@+id/editSave"
@@ -265,7 +265,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
                 android:layout_weight="1"
-                android:text="Save" />
+                android:text="@string/drawer_edit_actions_save" />
 
         </LinearLayout>
 

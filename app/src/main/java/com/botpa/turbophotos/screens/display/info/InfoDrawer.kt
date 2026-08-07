@@ -90,22 +90,18 @@ class InfoDrawer(
         infoEdit.setOnClickListener { view: View ->
             //No metadata file
             if (!item.album.hasMetadata()) {
-                Toast.makeText(
-                    context,
-                    "This item's album does not have a metadata file linked to it",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(context, R.string.drawer_edit_error_missing_metadata, Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
             //Update edit info
-            for (i in 0 until infoSearchItems.size) {
+            for (i in infoSearchItems.indices) {
                 val item = infoSearchItems[i]
                 when (item.name) {
-                    "Caption" -> {
+                    R.string.drawer_info_search_caption -> {
                         editCaption.text = item.info
                     }
-                    "Labels" -> {
+                    R.string.drawer_info_search_labels -> {
                         editLabels.text = item.info
                     }
                 }
@@ -151,7 +147,7 @@ class InfoDrawer(
             val saved = item.album.saveMetadata()
             Toast.makeText(
                 context,
-                if (saved) "Saved successfully" else "An error occurred while saving",
+                if (saved) R.string.drawer_edit_message_save else R.string.drawer_edit_error_save,
                 Toast.LENGTH_SHORT
             ).show()
 
@@ -179,12 +175,12 @@ class InfoDrawer(
         val location = exif.latLong
 
         //Create items list (file)
-        infoFileItems.add(Info("Name", item.name))
-        infoFileItems.add(Info("Path", path))
-        infoFileItems.add(Info("Date", dateFormatter.format(date)))
-        infoFileItems.add(Info("Size", if (size > 1000) "${round(size / 10) / 100} MB" else "$size KB"))
+        infoFileItems.add(Info(R.string.drawer_info_file_name, item.name))
+        infoFileItems.add(Info(R.string.drawer_info_file_path, path))
+        infoFileItems.add(Info(R.string.drawer_info_file_date, dateFormatter.format(date)))
+        infoFileItems.add(Info(R.string.drawer_info_file_size, if (size > 1000) "${round(size / 10) / 100} MB" else "$size KB"))
         if (resolution.first > 0 && resolution.second > 0) {
-            infoFileItems.add(Info("Resolution", "${resolution.first}x${resolution.second}"))
+            infoFileItems.add(Info(R.string.drawer_info_file_resolution, "${resolution.first}x${resolution.second}"))
         }
         if (location != null) {
             //Get location info
@@ -193,7 +189,7 @@ class InfoDrawer(
             val longitude = location[1]
             val longitudeText = String.format(Locale.getDefault(), "%.4f", longitude)
             val locationCoordinates = "${latitudeText}º N, ${longitudeText}º W"
-            val item = Info("Location", "Finding location name...\n$locationCoordinates")
+            val item = Info(R.string.drawer_info_file_location, "${context.getString(R.string.drawer_info_file_location_finding)}\n$locationCoordinates")
             infoFileItems.add(item)
 
             //Async load location name
@@ -212,33 +208,33 @@ class InfoDrawer(
         initList(infoFileLayout, infoFileList, infoFileItems)
 
         //Get info (camera)
-        val cameraMake = exif.getAttribute(ExifInterface.TAG_MAKE)
+        val cameraBrand = exif.getAttribute(ExifInterface.TAG_MAKE)
         val cameraModel = exif.getAttribute(ExifInterface.TAG_MODEL)
         val iso = exif.getAttribute(ExifInterface.TAG_PHOTOGRAPHIC_SENSITIVITY)
         val aperture = exif.getAttribute(ExifInterface.TAG_F_NUMBER)
         val shutterSpeed = exif.getAttribute(ExifInterface.TAG_EXPOSURE_TIME)
 
         //Create items list (camera)
-        if (cameraMake != null) {
-            infoCameraItems.add(Info("Brand", cameraMake))
+        if (cameraBrand != null) {
+            infoCameraItems.add(Info(R.string.drawer_info_camera_brand, cameraBrand))
         }
         if (cameraModel != null) {
-            infoCameraItems.add(Info("Model", cameraModel))
+            infoCameraItems.add(Info(R.string.drawer_info_camera_model, cameraModel))
         }
         if (iso != null) {
-            infoCameraItems.add(Info("ISO", iso))
+            infoCameraItems.add(Info(R.string.drawer_info_camera_iso, iso))
         }
         if (aperture != null) {
-            infoCameraItems.add(Info("Aperture", aperture))
+            infoCameraItems.add(Info(R.string.drawer_info_camera_aperture, aperture))
         }
         if (shutterSpeed != null) {
-            infoCameraItems.add(Info("Shutter Speed", shutterSpeed))
+            infoCameraItems.add(Info(R.string.drawer_info_camera_shutter, shutterSpeed))
         }
 
         //Init list (camera)
         initList(infoCameraLayout, infoCameraList, infoCameraItems)
 
-        //Get info (search: caption, labels & text)
+        //Get info (search metadata)
         var caption = ""
         var labels = ""
         var text = ""
@@ -284,18 +280,18 @@ class InfoDrawer(
             //Error while parsing JSON
         }
 
-        //Create items list (file)
+        //Create items list (search metadata)
         if (caption.isNotEmpty()) {
-            infoSearchItems.add(Info("Caption", caption))
+            infoSearchItems.add(Info(R.string.drawer_info_search_caption, caption))
         }
         if (labels.isNotEmpty()) {
-            infoSearchItems.add(Info("Labels", labels))
+            infoSearchItems.add(Info(R.string.drawer_info_search_labels, labels))
         }
         if (text.isNotEmpty()) {
-            infoSearchItems.add(Info("Text", text))
+            infoSearchItems.add(Info(R.string.drawer_info_search_text, text))
         }
 
-        //Init list (file)
+        //Init list (search metadata)
         initList(infoSearchLayout, infoSearchList, infoSearchItems)
     }
 

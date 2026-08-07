@@ -52,7 +52,7 @@
     <string name="home_error_remove_filters">Por favor, quita el filtro actual primero.</string>
     <!-- Screen: Album -->
     <string name="album_loading_search">Buscando…</string>
-    <string name="album_loading_metadata">"Cargando metadata de \"%s\"…</string>
+    <string name="album_loading_metadata">"Cargando metadatos de \"%s\"…</string>
     <string name="album_loading_selection_item">%d elemento seleccionado</string>
     <string name="album_loading_selection_items">%d elementos seleccionados</string>
     <string name="album_header">%d elementos</string>
@@ -70,7 +70,7 @@
     <string name="video_option_audio">Pista de audio</string>
     <string name="video_notification_channel_description">Aparece cuando el reproductor de video está activo.</string>
     <!-- Screen: Display -->
-    <string name="display_option_info">Info</string>
+    <string name="display_option_info">Información</string>
     <!-- Screen: Settings -->
     <string name="settings_title">Ajustes</string>
     <!-- Screen: Sync -->
@@ -135,4 +135,31 @@
     <string name="dialog_delete_message_single">¿Seguro que quieres eliminar \"%s\" permanentemente?</string>
     <string name="dialog_delete_message_multi">¿Seguro que quieres eliminar %d elementos permanentemente?</string>
     <string name="dialog_delete_confirm">Eliminar</string>
+    <!-- Drawer: Info & edit -->
+    <string name="drawer_info_file_title">Archivo</string>
+    <string name="drawer_info_file_name">Nombre</string>
+    <string name="drawer_info_file_path">Ruta</string>
+    <string name="drawer_info_file_date">Fecha</string>
+    <string name="drawer_info_file_size">Tamaño</string>
+    <string name="drawer_info_file_resolution">Resolución</string>
+    <string name="drawer_info_file_location">Ubicación</string>
+    <string name="drawer_info_file_location_finding">Encontrando nombre de ubicación…</string>
+    <string name="drawer_info_camera_title">Cámara</string>
+    <string name="drawer_info_camera_brand">Marca</string>
+    <string name="drawer_info_camera_model">Modelo</string>
+    <string name="drawer_info_camera_iso">ISO</string>
+    <string name="drawer_info_camera_aperture">Apertura</string>
+    <string name="drawer_info_camera_shutter">Velocidad de obturación</string>
+    <string name="drawer_info_search_title">Metadatos de busqueda</string>
+    <string name="drawer_info_search_caption">Pie de foto</string>
+    <string name="drawer_info_search_labels">Etiquetas</string>
+    <string name="drawer_info_search_text">Texto</string>
+    <string name="drawer_info_actions_close">Cerrar</string>
+    <string name="drawer_info_actions_edit">Editar metadatos de busqueda</string>
+    <string name="drawer_edit_labels_hint">Etiquetas (separadas por comas)</string>
+    <string name="drawer_edit_actions_close">Cerrar</string>
+    <string name="drawer_edit_actions_save">Guardar</string>
+    <string name="drawer_edit_message_save">Guardado correctamente.</string>
+    <string name="drawer_edit_error_save">Ha ocurrido un error al guardar.</string>
+    <string name="drawer_edit_error_missing_metadata">El álbum de este item no tiene un archivo de metadatos conectado.</string>
 </resources>

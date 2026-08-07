@@ -3,12 +3,10 @@ package com.botpa.turbophotos.screens.display.info
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.modals.core.SimpleCustomAdapter
-import com.botpa.turbophotos.screens.home.filters.Filter
 
 class InfoAdapter(context: Context, items: List<Info>) : SimpleCustomAdapter<Info, InfoAdapter.ItemHolder>(context, items) {
 
@@ -19,7 +17,7 @@ class InfoAdapter(context: Context, items: List<Info>) : SimpleCustomAdapter<Inf
 
     override fun onInitItemHolder(holder: ItemHolder, item: Info) {
         //Update info
-        holder.name.text = item.name
+        holder.name.text = context.getString(item.name)
         holder.info.text = item.info
 
         //Add listeners
