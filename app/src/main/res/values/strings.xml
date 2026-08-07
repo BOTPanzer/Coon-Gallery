@@ -9,6 +9,24 @@
     <string name="library_album_all">All</string>
     <string name="library_album_trash">Trash</string>
     <string name="library_album_favourites">Favourites</string>
+    <string name="library_search_method_words">Contains words</string>
+    <string name="library_search_method_text">Contains text</string>
+    <string name="library_error_delete">Error while deleting file.</string>
+    <string name="library_error_move">Error while moving file.</string>
+    <string name="library_error_copy">Error while copying file.</string>
+    <string name="library_error_resolve_path">Could not resolve file path.</string>
+    <string name="library_error_missing_new_file">New file does not exist.</string>
+    <string name="library_error_invalid_uri">Invalid item URI.</string>
+    <string name="library_error_operation_failed">Operation failed.</string>
+    <string name="library_error_invalid_action_type">Action type isn\'t valid.</string>
+    <string name="library_error_missing_permissions">Missing permissions.</string>
+    <string name="library_error_pending_action">There is a pending action.</string>
+    <string name="library_error_item_in_destination_already">Item is already in the destination album.</string>
+    <string name="library_error_item_in_trash">Item is in the trash.</string>
+    <string name="library_error_item_in_trash_already">Item is already in the trash.</string>
+    <string name="library_error_item_not_in_trash">Item is not in the trash.</string>
+    <string name="library_error_item_in_favourites_already">Item is already favourited.</string>
+    <string name="library_error_item_not_in_favourites">Item is not favourited.</string>
     <!-- Reused context options -->
     <string name="context_option_rename">Rename</string>
     <string name="context_option_edit">Edit</string>
@@ -81,10 +99,8 @@
     <!-- Dialog: Search -->
     <string name="dialog_search_title">Search method</string>
     <string name="dialog_search_method_good_for">Good for:</string>
-    <string name="dialog_search_method_words_name">Contains words</string>
     <string name="dialog_search_method_words_description">Checks if all words in the search are contained.</string>
     <string name="dialog_search_method_words_use">· Finding whole words like \"cat\", \"pink\"…</string>
-    <string name="dialog_search_method_text_name">Contains text</string>
     <string name="dialog_search_method_text_description">Checks if the whole text is contained.</string>
     <string name="dialog_search_method_text_use">· Finding a whole sentence.\n· Finding part of a word.</string>
     <!-- Dialog: Albums -->
@@ -104,9 +120,19 @@
     <string name="dialog_explorer_error_missing_permissions">Missing permissions to use that folder.</string>
     <string name="dialog_explorer_error_empty_name">Name can\'t be empty.</string>
     <string name="dialog_explorer_error_file_exists">File already exists.</string>
-    <string name="dialog_explorer_error_file_create">Failed to create file.</string>
+    <string name="dialog_explorer_error_file_create_fail">Failed to create file.</string>
     <string name="dialog_explorer_error_folder_exists">Folder already exists.</string>
-    <string name="dialog_explorer_error_folder_create">Failed to create folder.</string>
+    <string name="dialog_explorer_error_folder_create_fail">Failed to create folder.</string>
     <string name="dialog_explorer_previous_folder">Previous folder</string>
     <string name="dialog_explorer_external_storage">External storage</string>
+    <!-- Dialog: Rename -->
+    <string name="dialog_rename_title">Rename</string>
+    <string name="dialog_rename_hint">New name</string>
+    <string name="dialog_rename_error_empty_name">New name can\'t be empty.</string>
+    <string name="dialog_rename_error_file_exists">A file named \"%s\" already exists…</string>
+    <string name="dialog_rename_error_rename_fail">Failed to rename \"%s\" to \"%s\".</string>
+    <!-- Dialog: Delete -->
+    <string name="dialog_delete_message_single">Are you sure you want to permanently delete \"%s\"?</string>
+    <string name="dialog_delete_message_multi">Are you sure you want to permanently delete %d items?</string>
+    <string name="dialog_delete_confirm">Delete</string>
 </resources>

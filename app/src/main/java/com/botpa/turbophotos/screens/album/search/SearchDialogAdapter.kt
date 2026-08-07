@@ -20,12 +20,12 @@ class SearchDialogAdapter(context: Context, items: List<SearchMethod>) : SimpleC
         //Update info
         when (item) {
             SearchMethod.ContainsWords -> {
-                holder.name.text = context.getString(R.string.dialog_search_method_words_name)
+                holder.name.text = context.getString(R.string.library_search_method_words)
                 holder.description.text = context.getString(R.string.dialog_search_method_words_description)
                 holder.use.text = context.getString(R.string.dialog_search_method_words_use)
             }
             SearchMethod.ContainsText -> {
-                holder.name.text = context.getString(R.string.dialog_search_method_text_name)
+                holder.name.text = context.getString(R.string.library_search_method_text)
                 holder.description.text = context.getString(R.string.dialog_search_method_text_description)
                 holder.use.text = context.getString(R.string.dialog_search_method_text_use)
             }

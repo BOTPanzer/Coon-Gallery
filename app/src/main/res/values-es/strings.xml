@@ -5,6 +5,28 @@
     <string name="app_title">Galería Coon</string>
     <!-- General -->
     <string name="items">%d elementos</string>
+    <!-- Library -->
+    <string name="library_album_all">Todo</string>
+    <string name="library_album_trash">Papelera</string>
+    <string name="library_album_favourites">Favoritos</string>
+    <string name="library_search_method_words">Contiene palabras</string>
+    <string name="library_search_method_text">Contiene texto</string>
+    <string name="library_error_delete">Error al borrar el archivo.</string>
+    <string name="library_error_move">Error al mover el archivo.</string>
+    <string name="library_error_copy">Error al copiar el archivo.</string>
+    <string name="library_error_resolve_path">No se pudo resolver la ruta del archivo.</string>
+    <string name="library_error_missing_new_file">El archivo nuevo no existe.</string>
+    <string name="library_error_invalid_uri">La URI del elemento es invalida.</string>
+    <string name="library_error_operation_failed">Operación fallida.</string>
+    <string name="library_error_invalid_action_type">El tipo de la acción es invalido.</string>
+    <string name="library_error_missing_permissions">Faltan permisos.</string>
+    <string name="library_error_pending_action">Existe una acción pendiente.</string>
+    <string name="library_error_item_in_destination_already">El elemento ya está en el álbum de destino.</string>
+    <string name="library_error_item_in_trash">El elemento está en la papelera.</string>
+    <string name="library_error_item_in_trash_already">El elemento ya está en la papelera.</string>
+    <string name="library_error_item_not_in_trash">El elemento no está en la papelera.</string>
+    <string name="library_error_item_in_favourites_already">El elemento ya está en favoritos.</string>
+    <string name="library_error_item_not_in_favourites">El elemento no está en favoritos.</string>
     <!-- Reused context options -->
     <string name="context_option_rename">Renombrar</string>
     <string name="context_option_edit">Editar</string>
@@ -18,12 +40,9 @@
     <string name="context_option_trash">Mover a papelera</string>
     <string name="context_option_restore">Restaurar</string>
     <string name="context_option_restore_all">Restaurar todo</string>
-    <string name="context_option_delete">Borrar</string>
-    <string name="context_option_delete_all">Borrar todo</string>
+    <string name="context_option_delete">Eliminar</string>
+    <string name="context_option_delete_all">Eliminar todo</string>
     <!-- Screen: Home -->
-    <string name="library_album_all">Todo</string>
-    <string name="library_album_trash">Papelera</string>
-    <string name="library_album_favourites">Favoritos</string>
     <string name="home_filtered_images">Mostrando solo imágenes</string>
     <string name="home_filtered_videos">Mostrando solo videos</string>
     <string name="home_filtered_custom">Mostrando solo personalizado</string>
@@ -80,10 +99,8 @@
     <!-- Dialog: Search -->
     <string name="dialog_search_title">Método de busqueda</string>
     <string name="dialog_search_method_good_for">Bueno para:</string>
-    <string name="dialog_search_method_words_name">Contiene palabras</string>
     <string name="dialog_search_method_words_description">Comprueba que todas las palabras en la busqueda están contenidas.</string>
     <string name="dialog_search_method_words_use">· Encontrar palabras como \"gato\" o \"rosa\"…</string>
-    <string name="dialog_search_method_text_name">Contiene texto</string>
     <string name="dialog_search_method_text_description">Comprueba que el texto de la busqueda está contenido.</string>
     <string name="dialog_search_method_text_use">· Encontrar una frase completa.\n· Encontrar parte de una palabra.</string>
     <!-- Dialog: Albums -->
@@ -105,7 +122,17 @@
     <string name="dialog_explorer_error_missing_permissions">Faltan permisos para usar esa carpeta.</string>
     <string name="dialog_explorer_error_empty_name">El nombre no puede estar vacio.</string>
     <string name="dialog_explorer_error_file_exists">El archivo ya existe.</string>
-    <string name="dialog_explorer_error_file_create">Fallo al crear el archivo.</string>
+    <string name="dialog_explorer_error_file_create_fail">Fallo al crear el archivo.</string>
     <string name="dialog_explorer_error_folder_exists">La carpeta ya existe.</string>
-    <string name="dialog_explorer_error_folder_create">Fallo al crear la carpeta.</string>
+    <string name="dialog_explorer_error_folder_create_fail">Fallo al crear la carpeta.</string>
+    <!-- Dialog: Rename -->
+    <string name="dialog_rename_title">Renombrar</string>
+    <string name="dialog_rename_hint">Nuevo nombre</string>
+    <string name="dialog_rename_error_empty_name">El nuevo nombre no puede estar vacio.</string>
+    <string name="dialog_rename_error_file_exists">Un archivo llamado \"%s\" ya existe…</string>
+    <string name="dialog_rename_error_rename_fail">Fallo al renombrar \"%s\" a \"%s\".</string>
+    <!-- Dialog: Delete -->
+    <string name="dialog_delete_message_single">¿Seguro que quieres eliminar \"%s\" permanentemente?</string>
+    <string name="dialog_delete_message_multi">¿Seguro que quieres eliminar %d elementos permanentemente?</string>
+    <string name="dialog_delete_confirm">Eliminar</string>
 </resources>

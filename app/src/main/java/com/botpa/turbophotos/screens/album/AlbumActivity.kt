@@ -956,8 +956,8 @@ class AlbumActivity : BaseActivity() {
 
     private fun getSearchMethodName(searchMethod: SearchMethod): String {
         return getString(when (searchMethod) {
-            SearchMethod.ContainsWords -> R.string.dialog_search_method_words_name
-            SearchMethod.ContainsText -> R.string.dialog_search_method_text_name
+            SearchMethod.ContainsWords -> R.string.library_search_method_words
+            SearchMethod.ContainsText -> R.string.library_search_method_text
         })
     }
 

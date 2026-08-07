@@ -150,7 +150,7 @@ class ExplorerDialog(
                 //Create file
                 if (!item.createNewFile()) {
                     //Failed to create file
-                    Toast.makeText(context, R.string.dialog_explorer_error_file_create, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.dialog_explorer_error_file_create_fail, Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
             } else {
@@ -164,7 +164,7 @@ class ExplorerDialog(
                 //Create folder
                 if (!item.mkdir()) {
                     //Failed to create folder
-                    Toast.makeText(context, R.string.dialog_explorer_error_folder_create, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.dialog_explorer_error_folder_create_fail, Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
             }

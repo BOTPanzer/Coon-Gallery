@@ -184,7 +184,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="5dp"
                                 android:layout_weight="1"
-                                android:text="@string/dialog_search_method_words_name"
+                                android:text="@string/library_search_method_words"
                                 android:textColor="?attr/colorOnSurface" />
 
                             <androidx.cardview.widget.CardView

@@ -9,8 +9,8 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class InputDialog(
     context: Context,
-    private val title: String,
-    private val hint: String,
+    private val title: Int,
+    private val hint: Int,
     private val onValidate: (String) -> Boolean,
     private val onConfirm: (String) -> Unit
 ) : CustomDialog(context, R.layout.dialog_input) {
@@ -52,7 +52,7 @@ class InputDialog(
 
     override fun onInitEnd() {
         //Update hint
-        input.hint = hint
+        input.hint = context.getString(hint)
     }
 
     //Util

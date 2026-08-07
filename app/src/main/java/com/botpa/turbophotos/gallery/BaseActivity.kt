@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts.StartIntentSenderForResult
 import androidx.appcompat.app.AppCompatActivity
+import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.actions.Action
 import com.botpa.turbophotos.gallery.actions.ActionError
 import com.botpa.turbophotos.gallery.permissions.PermissionManager
@@ -35,7 +36,7 @@ open class BaseActivity : AppCompatActivity() {
         if (result.resultCode != RESULT_OK) {
             //Action failed or was cancelled -> Add errors
             for (item in action.pending.values) {
-                action.errors.add(ActionError(item, "Operation failed."))
+                action.errors.add(ActionError(item, getString(R.string.library_error_operation_failed)))
             }
 
             //Empty pending items
@@ -48,7 +49,7 @@ open class BaseActivity : AppCompatActivity() {
             action.isOfType(Action.TYPE_RESTORE) -> Library.onRestoreItemsResult(this, action)
             action.isOfType(Action.TYPE_FAVOURITE) -> Library.onFavouriteItemsResult(this, action)
             action.isOfType(Action.TYPE_UNFAVOURITE) -> Library.onUnfavouriteItemsResult(this, action)
-            else -> Orion.snack(this, "Action type isn't valid.")
+            else -> Orion.snack(this, getString(R.string.library_error_invalid_action_type))
         }
 
         //Clear pending action
@@ -101,7 +102,7 @@ open class BaseActivity : AppCompatActivity() {
             permissionManager.showDialog(this)
         } else {
             //Denied -> End
-            Toast.makeText(this, "Missing permissions.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, R.string.library_error_missing_permissions, Toast.LENGTH_SHORT).show()
             finish()
         }
     }
@@ -116,7 +117,7 @@ open class BaseActivity : AppCompatActivity() {
     protected fun trashItems(itemsToTrash: Array<Item>) {
         //Check if there is a pending action
         if (pendingAction != null) {
-            Orion.snack(this, "There is a pending action.")
+            Orion.snack(this, getString(R.string.library_error_pending_action))
         } else {
             //Trash items
             pendingAction = Library.trashItems(this, itemsToTrash, actionLauncher)
@@ -126,7 +127,7 @@ open class BaseActivity : AppCompatActivity() {
     protected fun restoreItems(itemsToRestore: Array<Item>) {
         //Check if there is a pending action
         if (pendingAction != null) {
-            Orion.snack(this, "There is a pending action.")
+            Orion.snack(this, getString(R.string.library_error_pending_action))
         } else {
             //Restore items
             pendingAction = Library.restoreItems(this, itemsToRestore, actionLauncher)
@@ -137,7 +138,7 @@ open class BaseActivity : AppCompatActivity() {
     protected fun favouriteItems(itemsToFavourite: Array<Item>) {
         //Check if there is a pending action
         if (pendingAction != null) {
-            Orion.snack(this, "There is a pending action.")
+            Orion.snack(this, getString(R.string.library_error_pending_action))
         } else {
             //Favourite items
             pendingAction = Library.favouriteItems(this, itemsToFavourite, actionLauncher)
@@ -147,7 +148,7 @@ open class BaseActivity : AppCompatActivity() {
     protected fun unfavouriteItems(itemsToUnfavourite: Array<Item>) {
         //Check if there is a pending action
         if (pendingAction != null) {
-            Orion.snack(this, "There is a pending action.")
+            Orion.snack(this, getString(R.string.library_error_pending_action))
         } else {
             //Unfavourite items
             pendingAction = Library.unfavouriteItems(this, itemsToUnfavourite, actionLauncher)

@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.core.content.MimeTypeFilter
+import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Link.Companion.loadLinks
 import com.botpa.turbophotos.gallery.Link.Companion.relinkWithAlbum
 import com.botpa.turbophotos.gallery.actions.Action
@@ -679,8 +680,8 @@ object Library {
         //Ask for a new name
         val dialog = InputDialog(
             context,
-            "Rename",
-            "New name",
+            R.string.dialog_rename_title,
+            R.string.dialog_rename_hint,
             label@{ newNameNoExtension: String? ->
                 //Check if name changed
                 if (newNameNoExtension == oldNameNoExtension) {
@@ -691,7 +692,7 @@ object Library {
                 //Check if name is valid
                 if (newNameNoExtension!!.isEmpty()) {
                     //Name is empty -> Prevent from renaming
-                    Toast.makeText(context, "New name can't be empty.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.dialog_rename_error_empty_name, Toast.LENGTH_SHORT).show()
                     return@label false
                 }
 
@@ -702,11 +703,7 @@ object Library {
                 //Check if new file already exists
                 if (newFile.exists()) {
                     //New file already exists -> Prevent from renaming
-                    Toast.makeText(
-                        context,
-                        "A file named \"$newName\" already exists.",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(context, context.getString(R.string.dialog_rename_error_file_exists, newFile), Toast.LENGTH_SHORT).show()
                     return@label false
                 }
                 true
@@ -726,12 +723,7 @@ object Library {
                 val renamed = item.file.renameTo(newFile)
                 if (!renamed) {
                     //Failed to rename file
-                    action.errors.add(
-                        ActionError(
-                            item,
-                            "Failed to rename \"$oldName\" to \"$newName\"."
-                        )
-                    )
+                    action.errors.add(ActionError(item, context.getString(R.string.dialog_rename_error_rename_fail, oldName, newName)))
                     evaluateAction(context, action)
                     return@label
                 }
@@ -812,7 +804,7 @@ object Library {
             //Check if item is in trash
             if (item.isTrashed) {
                 //Item is in trash -> Error
-                action.errors.add(ActionError(item, "Item is in the trash."))
+                action.errors.add(ActionError(item, context.getString(R.string.library_error_item_in_trash)))
                 return@performAction
             }
 
@@ -822,7 +814,7 @@ object Library {
             //Check if item is being moved to the same album
             if (newAlbum == oldAlbum) {
                 //Already in the destination album -> Error
-                action.errors.add(ActionError(item, "Item is already in the destination album."))
+                action.errors.add(ActionError(item, context.getString(R.string.library_error_item_in_destination_already)))
                 return@performAction
             }
 
@@ -830,7 +822,7 @@ object Library {
             val newFile = File(newAlbum.imagesPath, item.name)
             if (!item.file.renameTo(newFile)) {
                 //Failed to move file -> Error
-                action.errors.add(ActionError(item, "Error while moving item file."))
+                action.errors.add(ActionError(item, context.getString(R.string.library_error_move)))
                 return@performAction
             }
 
@@ -874,7 +866,7 @@ object Library {
             //Check if item is in trash
             if (item.isTrashed) {
                 //Item is in trash -> Error
-                action.errors.add(ActionError(item, "Item is in the trash."))
+                action.errors.add(ActionError(item, context.getString(R.string.library_error_item_in_trash)))
                 return@performAction
             }
 
@@ -884,7 +876,7 @@ object Library {
             //Check if item is being moved to the same album
             if (newAlbum == oldAlbum) {
                 //Already in the destination album -> Error
-                action.errors.add(ActionError(item, "Item is already in the destination album."))
+                action.errors.add(ActionError(item, context.getString(R.string.library_error_item_in_destination_already)))
                 return@performAction
             }
 
@@ -892,7 +884,7 @@ object Library {
             val newFile = File(newAlbum.imagesPath, item.name)
             if (!Orion.cloneFile(context, item.file, newFile)) {
                 //Failed to copy file -> Error
-                action.errors.add(ActionError(item, "Error while copying item file."))
+                action.errors.add(ActionError(item, context.getString(R.string.library_error_copy)))
                 return@performAction
             }
             recentlyAddedFiles.add(newFile) //Mark file as recently added to prevent duplicates on refresh
@@ -930,28 +922,28 @@ object Library {
                 Action.TYPE_TRASH -> {
                     //Item is trashed
                     if (item.isTrashed) {
-                        action.errors.add(ActionError(item, "Item is already in the trash."))
+                        action.errors.add(ActionError(item, context.getString(R.string.library_error_item_in_trash_already)))
                         continue
                     }
                 }
                 Action.TYPE_RESTORE -> {
                     //Item is not trashed
                     if (!item.isTrashed) {
-                        action.errors.add(ActionError(item, "Item is not in the trash."))
+                        action.errors.add(ActionError(item, context.getString(R.string.library_error_item_not_in_trash)))
                         continue
                     }
                 }
                 Action.TYPE_FAVOURITE -> {
                     //Item is favourited
                     if (item.isFavourite) {
-                        action.errors.add(ActionError(item, "Item is already favourited."))
+                        action.errors.add(ActionError(item, context.getString(R.string.library_error_item_in_favourites_already)))
                         continue
                     }
                 }
                 Action.TYPE_UNFAVOURITE -> {
                     //Item is not favourited
                     if (!item.isFavourite) {
-                        action.errors.add(ActionError(item, "Item is not favourited."))
+                        action.errors.add(ActionError(item, context.getString(R.string.library_error_item_not_in_favourites)))
                         continue
                     }
                 }
@@ -963,7 +955,7 @@ object Library {
             //Check if URI is valid
             if (uri == null) {
                 //Not valid
-                action.errors.add(ActionError(item, "Invalid item URI."))
+                action.errors.add(ActionError(item, context.getString(R.string.library_error_invalid_uri)))
                 continue
             }
 
@@ -1101,13 +1093,13 @@ object Library {
             val newFilePath = Orion.getFilePathFromMediaUri(context, uri)
             if (newFilePath == null) {
                 //New file path is invalid -> Error
-                action.errors.add(ActionError(item, "Could not resolve file path."))
+                action.errors.add(ActionError(item, context.getString(R.string.library_error_resolve_path)))
                 continue
             }
             val newFile = File(newFilePath)
             if (!newFile.exists()) {
                 //New file does not exist -> Error
-                action.errors.add(ActionError(item, "New file does not exist."))
+                action.errors.add(ActionError(item, context.getString(R.string.library_error_missing_new_file)))
                 continue
             }
 
@@ -1169,13 +1161,13 @@ object Library {
             val newFilePath = Orion.getFilePathFromMediaUri(context, uri)
             if (newFilePath == null) {
                 //New file path is invalid -> Error
-                action.errors.add(ActionError(item, "Could not resolve file path."))
+                action.errors.add(ActionError(item, context.getString(R.string.library_error_resolve_path)))
                 continue
             }
             val newFile = File(newFilePath)
             if (!newFile.exists()) {
                 //New file does not exist -> Error
-                action.errors.add(ActionError(item, "New file does not exist."))
+                action.errors.add(ActionError(item, context.getString(R.string.library_error_missing_new_file)))
                 continue
             }
 
@@ -1210,7 +1202,7 @@ object Library {
             //Delete item file
             if (!item.file.delete()) {
                 //Failed to delete file -> Error
-                action.errors.add(ActionError(item, "Error while deleting item file."))
+                action.errors.add(ActionError(item, context.getString(R.string.library_error_delete)))
                 return@performAction
             }
 
@@ -1242,23 +1234,16 @@ object Library {
 
     fun deleteItems(context: Context, items: Array<Item>) {
         //Create message
-        val message = StringBuilder()
-        message.append("Are you sure you want to permanently delete ")
-        if (items.size == 1) {
-            message.append("\"")
-            message.append(items[0].name)
-            message.append("\"")
-        } else {
-            message.append(items.size)
-            message.append(" items")
-        }
-        message.append("?")
+        val message = if (items.size <= 1)
+            context.getString(R.string.dialog_delete_message_single, items[0].name)
+        else
+            context.getString(R.string.dialog_delete_message_multi, items.size)
 
         //Show confirmation dialog
         MaterialAlertDialogBuilder(context)
-            .setMessage(message.toString())
-            .setNegativeButton("Cancel", null)
-            .setPositiveButton("Delete") { dialog, whichButton -> deleteItemsInternal(context, items) }
+            .setMessage(message)
+            .setNegativeButton(R.string.dialog_cancel, null)
+            .setPositiveButton(R.string.dialog_delete_confirm) { dialog, whichButton -> deleteItemsInternal(context, items) }
             .show()
     }
 
