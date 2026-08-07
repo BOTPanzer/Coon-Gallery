@@ -33,8 +33,8 @@ class SearchDialog(context: Context, private val onSelect: (SearchMethod) -> Uni
     override fun initDialog(builder: MaterialAlertDialogBuilder): MaterialAlertDialogBuilder {
         //Init dialog
         return builder
-            .setTitle("Search method")
-            .setNegativeButton("Cancel", null)
+            .setTitle(R.string.dialog_search_title)
+            .setNegativeButton(R.string.dialog_cancel, null)
     }
 
     override fun initListeners() {

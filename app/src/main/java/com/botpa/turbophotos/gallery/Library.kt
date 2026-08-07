@@ -383,7 +383,7 @@ object Library {
         if (!album.exists()) return
 
         //Update load indicator
-        indicator?.load(album.name, "metadata")
+        indicator?.metadata(album.name)
 
         //Load metadata
         album.loadMetadata()

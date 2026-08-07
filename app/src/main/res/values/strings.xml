@@ -5,6 +5,10 @@
     <string name="app_title">Coon Gallery</string>
     <!-- General -->
     <string name="items">%d items</string>
+    <!-- Library -->
+    <string name="library_album_all">All</string>
+    <string name="library_album_trash">Trash</string>
+    <string name="library_album_favourites">Favourites</string>
     <!-- Reused context options -->
     <string name="context_option_rename">Rename</string>
     <string name="context_option_edit">Edit</string>
@@ -21,9 +25,6 @@
     <string name="context_option_delete">Delete</string>
     <string name="context_option_delete_all">Delete all</string>
     <!-- Screen: Home -->
-    <string name="home_album_all">All</string>
-    <string name="home_album_trash">Trash</string>
-    <string name="home_album_favourites">Favourites</string>
     <string name="home_filtered_images">Showing only images</string>
     <string name="home_filtered_videos">Showing only videos</string>
     <string name="home_filtered_custom">Showing only custom</string>
@@ -31,6 +32,15 @@
     <string name="home_refresh_release">Release to refresh</string>
     <string name="home_refresh_refreshing">Refreshing…</string>
     <string name="home_error_remove_filters">Please, remove the current filter first.</string>
+    <!-- Screen: Album -->
+    <string name="album_loading_search">Searching…</string>
+    <string name="album_loading_metadata">Loading \"%s\" metadata…</string>
+    <string name="album_loading_selection_item">%d item selected</string>
+    <string name="album_loading_selection_items">%d items selected</string>
+    <string name="album_header">%d items</string>
+    <string name="album_header_search">%d items - Searching for %s</string>
+    <string name="album_search_hint">Search</string>
+    <string name="album_search_method">Method:</string>
     <!-- Screen: Video -->
     <string name="video_state_play">Play</string>
     <string name="video_state_pause">Pause</string>
@@ -68,6 +78,15 @@
     <string name="dialog_filters_custom_hint">MIME type</string>
     <string name="dialog_filters_select_button">Select filter</string>
     <string name="dialog_filters_error_invalid_mime">The specified MIME type is invalid.</string>
+    <!-- Dialog: Search -->
+    <string name="dialog_search_title">Search method</string>
+    <string name="dialog_search_method_good_for">Good for:</string>
+    <string name="dialog_search_method_words_name">Contains words</string>
+    <string name="dialog_search_method_words_description">Checks if all words in the search are contained.</string>
+    <string name="dialog_search_method_words_use">· Finding whole words like \"cat\", \"pink\"…</string>
+    <string name="dialog_search_method_text_name">Contains text</string>
+    <string name="dialog_search_method_text_description">Checks if the whole text is contained.</string>
+    <string name="dialog_search_method_text_use">· Finding a whole sentence.\n· Finding part of a word.</string>
     <!-- Dialog: Albums -->
     <string name="dialog_albums_title">Select an album</string>
     <string name="dialog_albums_folder">Select from folder</string>

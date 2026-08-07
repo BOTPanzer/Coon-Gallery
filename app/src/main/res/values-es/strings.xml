@@ -21,9 +21,9 @@
     <string name="context_option_delete">Borrar</string>
     <string name="context_option_delete_all">Borrar todo</string>
     <!-- Screen: Home -->
-    <string name="home_album_all">Todo</string>
-    <string name="home_album_trash">Papelera</string>
-    <string name="home_album_favourites">Favoritos</string>
+    <string name="library_album_all">Todo</string>
+    <string name="library_album_trash">Papelera</string>
+    <string name="library_album_favourites">Favoritos</string>
     <string name="home_filtered_images">Mostrando solo imágenes</string>
     <string name="home_filtered_videos">Mostrando solo videos</string>
     <string name="home_filtered_custom">Mostrando solo personalizado</string>
@@ -31,6 +31,15 @@
     <string name="home_refresh_release">Suelta para actualizar</string>
     <string name="home_refresh_refreshing">Actualizando…</string>
     <string name="home_error_remove_filters">Por favor, quita el filtro actual primero.</string>
+    <!-- Screen: Album -->
+    <string name="album_loading_search">Buscando…</string>
+    <string name="album_loading_metadata">"Cargando metadata de \"%s\"…</string>
+    <string name="album_loading_selection_item">%d elemento seleccionado</string>
+    <string name="album_loading_selection_items">%d elementos seleccionados</string>
+    <string name="album_header">%d elementos</string>
+    <string name="album_header_search">%d elementos - Buscando %s</string>
+    <string name="album_search_hint">Buscar</string>
+    <string name="album_search_method">Método:</string>
     <!-- Screen: Video -->
     <string name="video_state_play">Reproducir</string>
     <string name="video_state_pause">Pausar</string>
@@ -68,6 +77,15 @@
     <string name="dialog_filters_custom_hint">Tipo MIME</string>
     <string name="dialog_filters_select_button">Seleccionar filtro</string>
     <string name="dialog_filters_error_invalid_mime">El tipo MIME especificado es invalido.</string>
+    <!-- Dialog: Search -->
+    <string name="dialog_search_title">Método de busqueda</string>
+    <string name="dialog_search_method_good_for">Bueno para:</string>
+    <string name="dialog_search_method_words_name">Contiene palabras</string>
+    <string name="dialog_search_method_words_description">Comprueba que todas las palabras en la busqueda están contenidas.</string>
+    <string name="dialog_search_method_words_use">· Encontrar palabras como \"gato\" o \"rosa\"…</string>
+    <string name="dialog_search_method_text_name">Contiene texto</string>
+    <string name="dialog_search_method_text_description">Comprueba que el texto de la busqueda está contenido.</string>
+    <string name="dialog_search_method_text_use">· Encontrar una frase completa.\n· Encontrar parte de una palabra.</string>
     <!-- Dialog: Albums -->
     <string name="dialog_albums_title">Selecciona un álbum</string>
     <string name="dialog_albums_folder">Seleccionar carpeta</string>

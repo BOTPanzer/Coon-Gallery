@@ -10,7 +10,7 @@ import com.google.android.material.slider.Slider
 
 class SliderDialog(
     context: Context,
-    private val title: String,
+    private val title: Int,
     private val value: Float,
     private val min: Float,
     private val max: Float,

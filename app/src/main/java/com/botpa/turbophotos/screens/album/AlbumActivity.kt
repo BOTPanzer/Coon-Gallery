@@ -168,20 +168,13 @@ class AlbumActivity : BaseActivity() {
 
     var loadingIndicatorManager: LoadingIndicator = object : LoadingIndicator {
         override fun search() {
-            loadingIndicatorText.text = "Searching..."
+            loadingIndicatorText.text = getString(R.string.album_loading_search)
             loadingIndicator.visibility = View.VISIBLE
         }
 
-        override fun load(content: String) {
+        override fun metadata(album: String) {
             runOnUiThread {
-                loadingIndicatorText.text = "Loading ${content}..."
-                loadingIndicator.visibility = View.VISIBLE
-            }
-        }
-
-        override fun load(folder: String, type: String) {
-            runOnUiThread {
-                loadingIndicatorText.text = "Loading \"${folder}\" ${type}..."
+                loadingIndicatorText.text = getString(R.string.album_loading_metadata, album)
                 loadingIndicator.visibility = View.VISIBLE
             }
         }
@@ -478,8 +471,8 @@ class AlbumActivity : BaseActivity() {
         if (intent.hasExtra("albumName")) {
             //Has name -> Check it
             when (intent.getStringExtra("albumName")) {
-                "trash" -> selectAlbum(Library.trash)
                 "all" -> selectAlbum(Library.all)
+                "trash" -> selectAlbum(Library.trash)
                 "favourites" -> selectAlbum(Library.favourites)
                 else -> finish()
             }
@@ -610,7 +603,7 @@ class AlbumActivity : BaseActivity() {
         currentAlbum = album
 
         //Update adapter header
-        albumAdapter.title = currentAlbum.name
+        albumAdapter.title = getLocalizedAlbumName(album)
 
         //Check if in trash (trash always shows options cause of "Delete all" action)
         inTrash = (album == Library.trash)
@@ -625,6 +618,15 @@ class AlbumActivity : BaseActivity() {
         //Load album
         loadMetadata(album)
         filterItems()
+    }
+
+    private fun getLocalizedAlbumName(album: Album): String {
+        return when (album) {
+            Library.all -> getString(R.string.library_album_all)
+            Library.trash -> getString(R.string.library_album_trash)
+            Library.favourites -> getString(R.string.library_album_favourites)
+            else -> album.name
+        }
     }
 
     private fun openItem(index: Int) {
@@ -739,7 +741,7 @@ class AlbumActivity : BaseActivity() {
             navbarTitle.visibility = View.GONE
         } else {
             navbarTitle.visibility = View.VISIBLE
-            navbarTitle.text = "${selectedIndexes.size} ${if (selectedIndexes.size > 1) "items" else "item"} selected"
+            navbarTitle.text = getString(if (selectedIndexes.size <= 1) R.string.album_loading_selection_item else R.string.album_loading_selection_items, selectedIndexes.size)
         }
     }
 
@@ -936,7 +938,8 @@ class AlbumActivity : BaseActivity() {
     }
 
     private fun updateHeaderSubtitle() {
-        albumAdapter.subtitle = "${gallery.size} items${if (currentSearch.isNotEmpty()) " - Searching for \"${currentSearch}\"" else ""}"
+        val id = if (currentSearch.isEmpty()) R.string.album_header else R.string.album_header_search
+        albumAdapter.subtitle = getString(id, gallery.size, currentSearch)
     }
 
     private fun updateSearchMethod() {
@@ -952,10 +955,10 @@ class AlbumActivity : BaseActivity() {
     }
 
     private fun getSearchMethodName(searchMethod: SearchMethod): String {
-        return when (searchMethod) {
-            SearchMethod.ContainsWords -> "Contains words"
-            SearchMethod.ContainsText -> "Contains text"
-        }
+        return getString(when (searchMethod) {
+            SearchMethod.ContainsWords -> R.string.dialog_search_method_words_name
+            SearchMethod.ContainsText -> R.string.dialog_search_method_text_name
+        })
     }
 
     private fun showSearchLayout(show: Boolean) {

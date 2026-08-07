@@ -26,7 +26,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="2dp"
-                android:text="Method name"
+                android:text="@string/dialog_search_method_words_name"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -35,14 +35,14 @@
                 android:id="@+id/methodDescription"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Method description"
+                android:text="@string/dialog_search_method_words_description"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="14sp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Good for:"
+                android:text="@string/dialog_search_method_good_for"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="14sp"
                 android:textStyle="italic" />
@@ -52,7 +52,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
-                android:text="Method use"
+                android:text="@string/dialog_search_method_words_use"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="14sp"
                 android:textStyle="italic" />

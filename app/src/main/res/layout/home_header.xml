@@ -87,7 +87,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="2dp"
-                            android:text="@string/home_album_all"
+                            android:text="@string/library_album_all"
                             android:textColor="?attr/colorOnSurface"
                             android:textSize="16sp" />
 
@@ -157,7 +157,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="2dp"
-                            android:text="@string/home_album_trash"
+                            android:text="@string/library_album_trash"
                             android:textColor="?attr/colorOnSurface"
                             android:textSize="16sp" />
 
@@ -237,7 +237,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="2dp"
-                            android:text="@string/home_album_favourites"
+                            android:text="@string/library_album_favourites"
                             android:textColor="?attr/colorOnSurface"
                             android:textSize="16sp" />
 
