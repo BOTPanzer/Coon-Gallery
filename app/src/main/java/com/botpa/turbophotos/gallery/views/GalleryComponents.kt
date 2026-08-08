@@ -76,14 +76,14 @@ fun Layout(title: Int, content: @Composable (PaddingValues) -> Unit) {
 }
 
 //Groups
-val groupItemPaddingHorizontal: Dp = 15.dp
-val groupItemPaddingVertical: Dp = 10.dp
+val groupItemPaddingHorizontal: Dp = 16.dp
+val groupItemPaddingVertical: Dp = 14.dp
 
 @Composable
 fun Group(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
     Column(
         modifier = modifier
-            .padding(top = 20.dp, bottom = 10.dp)
+            .padding(bottom = 20.dp)
     ) {
         content()
     }
@@ -96,6 +96,7 @@ fun GroupTitle(title: String, modifier: Modifier = Modifier) {
         fontFamily = FONT_OPIFICIO,
         fontSize = 18.sp,
         modifier = modifier
+            .padding(bottom = 10.dp)
     )
 }
 
@@ -131,21 +132,32 @@ fun GroupItems(modifier: Modifier = Modifier, content: @Composable ColumnScope.(
         shape = RoundedCornerShape(20.dp), //Clips everything inside
         modifier = modifier
             .fillMaxWidth()
-            .padding(top = 10.dp)
     ) {
         content()
     }
 }
 
 @Composable
-fun GroupItem(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
-        shape = RoundedCornerShape(5.dp),
-        modifier = modifier
-            .fillMaxWidth()
-    ) {
-        content()
+fun GroupItem(modifier: Modifier = Modifier, onClick: (() -> Unit)? = null, content: @Composable ColumnScope.() -> Unit) {
+    if (onClick != null) {
+        Card(
+            onClick = onClick,
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+            shape = RoundedCornerShape(5.dp),
+            modifier = modifier
+                .fillMaxWidth()
+        ) {
+            content()
+        }
+    } else {
+        Card(
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+            shape = RoundedCornerShape(5.dp),
+            modifier = modifier
+                .fillMaxWidth()
+        ) {
+            content()
+        }
     }
 }
 

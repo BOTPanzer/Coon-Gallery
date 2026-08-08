@@ -15,7 +15,8 @@ constraintlayout = "2.2.2"
 glide = "5.0.9"
 material3 = "1.4.0"
 media = "1.8.0"
-media3Exoplayer = "1.10.1"
+media3Exoplayer = "1.11.0"
+navigationCompose = "2.9.8"
 recyclerview = "1.4.0"
 kotlin = "2.4.10"
 coreKtx = "1.19.0"
@@ -43,6 +44,7 @@ media = { module = "androidx.media:media", version.ref = "media" }
 media3-common = { module = "androidx.media3:media3-common", version.ref = "media3Exoplayer" }
 media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = "media3Exoplayer" }
 media3-ui = { module = "androidx.media3:media3-ui", version.ref = "media3Exoplayer" }
+navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 refresh-layout-kernel = { module = "io.github.scwang90:refresh-layout-kernel", version.ref = "refreshLayoutKernel" }

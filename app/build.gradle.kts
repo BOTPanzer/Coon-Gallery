@@ -78,6 +78,7 @@ dependencies {
     debugImplementation(libs.ui.tooling)
     implementation(libs.ui.tooling.preview)
     implementation(libs.activity.compose)
+    implementation(libs.navigation.compose)
 
     //WebSockets
     implementation(libs.java.android.websocket.client)

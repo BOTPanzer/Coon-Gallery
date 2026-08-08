@@ -1,5 +1,7 @@
 package com.botpa.turbophotos.screens.settings
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -9,11 +11,13 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -33,7 +37,7 @@ import com.botpa.turbophotos.theme.FONT_OUTFIT
 fun SettingsItem(
     title: String,
     description: String? = null,
-    content: @Composable RowScope.() -> Unit
+    content: @Composable (RowScope.() -> Unit)? = null
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -44,8 +48,9 @@ fun SettingsItem(
     ) {
         //Title & description
         Column(
+            verticalArrangement = Arrangement.Center,
             modifier = Modifier
-                .padding(end = 10.dp)
+                .padding(end = if (content != null) 14.dp else 0.dp)
                 .weight(1f)
         ) {
             //Title
@@ -69,7 +74,7 @@ fun SettingsItem(
         }
 
         //Content
-        content()
+        if (content != null) content()
     }
 }
 
@@ -77,15 +82,13 @@ fun SettingsItem(
 fun SettingsItem(
     title: Int,
     description: Int? = null,
-    content: @Composable RowScope.() -> Unit
+    content: @Composable (RowScope.() -> Unit)? = null
 ) {
     SettingsItem(
         stringResource(title),
-        if (description != null) stringResource(description) else null
-    ) {
-        //Content
-        content()
-    }
+        if (description != null) stringResource(description) else null,
+        content = content
+    )
 }
 
 //Links
@@ -113,7 +116,7 @@ fun LinkItem(
         ) {
             //Name
             Text(
-                text = stringResource(R.string.settings_links_item_name, index),
+                text = stringResource(R.string.settings_metadata_links_item_name, index),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
@@ -140,7 +143,7 @@ fun LinkItem(
                 //Name
                 val hasAlbum = link.albumFolder.name != ""
                 Text(
-                    text = if (hasAlbum) link.albumFolder.name else stringResource(R.string.settings_links_placeholder_album),
+                    text = if (hasAlbum) link.albumFolder.name else stringResource(R.string.settings_metadata_links_placeholder_album),
                     fontFamily = FONT_OUTFIT,
                     fontSize = 14.sp,
                     maxLines = 1,
@@ -169,7 +172,7 @@ fun LinkItem(
                 //Name
                 val hasMetadata = link.metadataFile.name != ""
                 Text(
-                    text = if (hasMetadata) link.metadataFile.name else stringResource(R.string.settings_links_placeholder_metadata),
+                    text = if (hasMetadata) link.metadataFile.name else stringResource(R.string.settings_metadata_links_placeholder_metadata),
                     fontFamily = FONT_OUTFIT,
                     fontSize = 14.sp,
                     maxLines = 1,
