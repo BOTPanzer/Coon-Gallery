@@ -9,7 +9,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -201,176 +200,169 @@ class SettingsActivity : AppCompatActivity() {
         val navController = rememberNavController()
 
         //Layout
+        NavHost(
+            navController = navController,
+            startDestination = SettingsRoutes.MAIN,
+            enterTransition = {
+                slideIntoContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                    animationSpec = tween(500)
+                )
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                    animationSpec = tween(500)
+                )
+            },
+            popEnterTransition = {
+                slideIntoContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec = tween(500)
+                )
+            },
+            popExitTransition = {
+                slideOutOfContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec = tween(500)
+                )
+            }
+        ) {
+            composable(SettingsRoutes.MAIN) {
+                SettingsMainLayout(
+                    onCategoryClick = { route -> navController.navigate(route) }
+                )
+            }
+            composable(SettingsRoutes.APP) {
+                SettingsAppLayout(
+                    uriHandler,
+                    onCreateBackup,
+                    onChooseBackupFile
+                )
+            }
+            composable(SettingsRoutes.METADATA) {
+                SettingsMetadataLayout(
+                    onShowLinksInfo,
+                    onChooseLinkAlbum,
+                    onChooseLinkMetadata,
+                    onAddLink
+                )
+            }
+            composable(SettingsRoutes.HOME_SCREEN) {
+                SettingsHomeScreenLayout()
+            }
+            composable(SettingsRoutes.ALBUM_SCREEN) {
+                SettingsAlbumScreenLayout()
+            }
+            composable(SettingsRoutes.VIEWER_SCREEN) {
+                SettingsViewerScreenLayout()
+            }
+            composable(SettingsRoutes.VIDEO_SCREEN) {
+                SettingsVideoPlayerLayout()
+            }
+        }
+    }
+
+    @Composable
+    private fun SettingsMainLayout(onCategoryClick: (String) -> Unit) {
         Layout(R.string.settings_title) {
-            NavHost(
-                navController = navController,
-                startDestination = SettingsRoutes.MAIN,
-                enterTransition = {
-                    slideIntoContainer(
-                        towards = AnimatedContentTransitionScope.SlideDirection.Left,
-                        animationSpec = tween(500)
-                    )
-                },
-                exitTransition = {
-                    slideOutOfContainer(
-                        towards = AnimatedContentTransitionScope.SlideDirection.Left,
-                        animationSpec = tween(500)
-                    )
-                },
-                popEnterTransition = {
-                    slideIntoContainer(
-                        towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                        animationSpec = tween(500)
-                    )
-                },
-                popExitTransition = {
-                    slideOutOfContainer(
-                        towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                        animationSpec = tween(500)
-                    )
-                }
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(it)
+                    .padding(horizontal = 20.dp)
+                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
             ) {
-                //Get padding
-                val paddingValues = it
+                //General
+                item {
+                    //Title
+                    GroupTitle(R.string.settings_main_general_title)
 
-                //Screen selection
-                composable(SettingsRoutes.MAIN) {
-                    SettingsMainLayout(
-                        paddingValues,
-                        onCategoryClick = { route -> navController.navigate(route) }
-                    )
-                }
-                composable(SettingsRoutes.APP) {
-                    SettingsAppLayout(
-                        paddingValues,
-                        uriHandler,
-                        onCreateBackup,
-                        onChooseBackupFile
-                    )
-                }
-                composable(SettingsRoutes.METADATA) {
-                    SettingsMetadataLayout(
-                        paddingValues,
-                        onShowLinksInfo,
-                        onChooseLinkAlbum,
-                        onChooseLinkMetadata,
-                        onAddLink
-                    )
-                }
-                composable(SettingsRoutes.HOME_SCREEN) {
-                    SettingsHomeScreenLayout(paddingValues)
-                }
-                composable(SettingsRoutes.ALBUM_SCREEN) {
-                    SettingsAlbumScreenLayout(paddingValues)
-                }
-                composable(SettingsRoutes.VIEWER_SCREEN) {
-                    SettingsViewerScreenLayout(paddingValues)
-                }
-                composable(SettingsRoutes.VIDEO_SCREEN) {
-                    SettingsVideoPlayerLayout(paddingValues)
-                }
-            }
-        }
-    }
+                    //Items
+                    Group {
+                        GroupItems {
+                            //App
+                            GroupItem(
+                                onClick = { onCategoryClick(SettingsRoutes.APP) }
+                            )  {
+                                SettingsItem(
+                                    title = R.string.settings_main_general_app_title,
+                                    description = R.string.settings_main_general_app_description
+                                )
+                            }
 
-    @Composable
-    private fun SettingsMainLayout(paddingValues: PaddingValues, onCategoryClick: (String) -> Unit) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(paddingValues)
-                .padding(horizontal = 20.dp)
-                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
-        ) {
-            //General
-            item {
-                //Title
-                GroupTitle(R.string.settings_main_general_title)
+                            //Divider
+                            GroupDivider()
 
-                //Items
-                Group {
-                    GroupItems {
-                        //App
-                        GroupItem(
-                            onClick = { onCategoryClick(SettingsRoutes.APP) }
-                        )  {
-                            SettingsItem(
-                                title = R.string.settings_main_general_app_title,
-                                description = R.string.settings_main_general_app_description
-                            )
-                        }
-
-                        //Divider
-                        GroupDivider()
-
-                        //Metadata
-                        GroupItem(
-                            onClick = { onCategoryClick(SettingsRoutes.METADATA) }
-                        )  {
-                            SettingsItem(
-                                title = R.string.settings_main_general_metadata_title,
-                                description = R.string.settings_main_general_metadata_description
-                            )
+                            //Metadata
+                            GroupItem(
+                                onClick = { onCategoryClick(SettingsRoutes.METADATA) }
+                            )  {
+                                SettingsItem(
+                                    title = R.string.settings_main_general_metadata_title,
+                                    description = R.string.settings_main_general_metadata_description
+                                )
+                            }
                         }
                     }
                 }
-            }
 
-            //Screens
-            item {
-                //Title
-                GroupTitle(R.string.settings_main_screens_title)
+                //Screens
+                item {
+                    //Title
+                    GroupTitle(R.string.settings_main_screens_title)
 
-                //Items
-                Group {
-                    GroupItems {
-                        //Home screen
-                        GroupItem(
-                            onClick = { onCategoryClick(SettingsRoutes.HOME_SCREEN) }
-                        )  {
-                            SettingsItem(
-                                title = R.string.settings_main_screens_home_title,
-                                description = R.string.settings_main_screens_home_description
-                            )
-                        }
+                    //Items
+                    Group {
+                        GroupItems {
+                            //Home screen
+                            GroupItem(
+                                onClick = { onCategoryClick(SettingsRoutes.HOME_SCREEN) }
+                            )  {
+                                SettingsItem(
+                                    title = R.string.settings_main_screens_home_title,
+                                    description = R.string.settings_main_screens_home_description
+                                )
+                            }
 
-                        //Divider
-                        GroupDivider()
+                            //Divider
+                            GroupDivider()
 
-                        //Album screen
-                        GroupItem(
-                            onClick = { onCategoryClick(SettingsRoutes.ALBUM_SCREEN) }
-                        )  {
-                            SettingsItem(
-                                title = R.string.settings_main_screens_album_title,
-                                description = R.string.settings_main_screens_album_description
-                            )
-                        }
+                            //Album screen
+                            GroupItem(
+                                onClick = { onCategoryClick(SettingsRoutes.ALBUM_SCREEN) }
+                            )  {
+                                SettingsItem(
+                                    title = R.string.settings_main_screens_album_title,
+                                    description = R.string.settings_main_screens_album_description
+                                )
+                            }
 
-                        //Divider
-                        GroupDivider()
+                            //Divider
+                            GroupDivider()
 
-                        //Viewer screen
-                        GroupItem(
-                            onClick = { onCategoryClick(SettingsRoutes.VIEWER_SCREEN) }
-                        )  {
-                            SettingsItem(
-                                title = R.string.settings_main_screens_viewer_title,
-                                description = R.string.settings_main_screens_viewer_description
-                            )
-                        }
+                            //Viewer screen
+                            GroupItem(
+                                onClick = { onCategoryClick(SettingsRoutes.VIEWER_SCREEN) }
+                            )  {
+                                SettingsItem(
+                                    title = R.string.settings_main_screens_viewer_title,
+                                    description = R.string.settings_main_screens_viewer_description
+                                )
+                            }
 
-                        //Divider
-                        GroupDivider()
+                            //Divider
+                            GroupDivider()
 
-                        //Video player
-                        GroupItem(
-                            onClick = { onCategoryClick(SettingsRoutes.VIDEO_SCREEN) }
-                        ) {
-                            SettingsItem(
-                                title = R.string.settings_main_screens_video_title,
-                                description = R.string.settings_main_screens_video_description
-                            )
+                            //Video player
+                            GroupItem(
+                                onClick = { onCategoryClick(SettingsRoutes.VIDEO_SCREEN) }
+                            ) {
+                                SettingsItem(
+                                    title = R.string.settings_main_screens_video_title,
+                                    description = R.string.settings_main_screens_video_description
+                                )
+                            }
                         }
                     }
                 }
@@ -379,313 +371,120 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     @Composable
-    private fun SettingsAppLayout(paddingValues: PaddingValues, uriHandler: UriHandler, onCreateBackup: () -> Unit, onChooseBackupFile: () -> Unit) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(paddingValues)
-                .padding(horizontal = 20.dp)
-                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
-        ) {
-            //Backups
-            item {
-                Group {
-                    //Title
-                    GroupTitle(R.string.settings_app_backup_title)
+    private fun SettingsAppLayout(uriHandler: UriHandler, onCreateBackup: () -> Unit, onChooseBackupFile: () -> Unit) {
+        Layout(R.string.settings_main_general_app_title) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(it)
+                    .padding(horizontal = 20.dp)
+                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
+            ) {
+                //Backups
+                item {
+                    Group {
+                        //Title
+                        GroupTitle(R.string.settings_app_backup_title)
 
-                    //Items
-                    GroupItems {
-                        //Create backup
-                        GroupItem(
-                            onClick = onCreateBackup
-                        ) {
-                            SettingsItem(
-                                title = R.string.settings_app_backup_create_title,
-                                description = R.string.settings_app_backup_create_description,
-                            )
-                        }
-
-                        //Divider
-                        GroupDivider()
-
-                        //Recover backup
-                        GroupItem(
-                            onClick = onChooseBackupFile
-                        )  {
-                            SettingsItem(
-                                title = R.string.settings_app_backup_recover_title,
-                                description = R.string.settings_app_backup_recover_description,
-                            )
-                        }
-                    }
-                }
-            }
-
-            //About
-            item {
-                //Title
-                GroupTitle(R.string.settings_app_about_title)
-
-                //Items
-                Group {
-                    GroupItems {
-                        //Version
-                        GroupItem {
-                            SettingsItem(
-                                title = stringResource(R.string.settings_app_about_version_title),
-                                description = stringResource(R.string.settings_app_about_version_description, BuildConfig.VERSION_NAME)
-                            )
-                        }
-
-                        //Divider
-                        GroupDivider()
-
-                        //Developer
-                        GroupItem(
-                            onClick = { uriHandler.openUri("https://botpa.vercel.app/") }
-                        ) {
-                            SettingsItem(
-                                title = R.string.settings_app_about_developer_title,
-                                description = R.string.settings_app_about_developer_description
+                        //Items
+                        GroupItems {
+                            //Create backup
+                            GroupItem(
+                                onClick = onCreateBackup
                             ) {
-                                Image(
-                                    painter = painterResource(R.drawable.open),
-                                    contentDescription = "Portfolio",
-                                    contentScale = ContentScale.Fit,
-                                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
-                                    modifier = Modifier
-                                        .size(24.dp)
+                                SettingsItem(
+                                    title = R.string.settings_app_backup_create_title,
+                                    description = R.string.settings_app_backup_create_description,
                                 )
                             }
-                        }
 
-                        //Divider
-                        GroupDivider()
+                            //Divider
+                            GroupDivider()
 
-                        //Github
-                        GroupItem(
-                            onClick = { uriHandler.openUri("https://github.com/BOTPanzer/Coon-Gallery") }
-                        ) {
-                            SettingsItem(
-                                title = R.string.settings_app_about_repo_title,
-                                description = R.string.settings_app_about_repo_description
+                            //Recover backup
+                            GroupItem(
+                                onClick = onChooseBackupFile
                             ) {
-                                Image(
-                                    painter = painterResource(R.drawable.open),
-                                    contentDescription = "GitHub",
-                                    contentScale = ContentScale.Fit,
-                                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
-                                    modifier = Modifier
-                                        .size(24.dp)
-                                )
-                            }
-                        }
-
-                        //Divider
-                        GroupDivider()
-
-                        //Copyright
-                        GroupItem {
-                            SettingsItem(
-                                title = R.string.settings_app_about_copyright_title,
-                                description = R.string.settings_app_about_copyright_description
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    @Composable
-    private fun SettingsMetadataLayout(paddingValues: PaddingValues, onShowLinksInfo: () -> Unit, onChooseLinkAlbum: (Int) -> Unit, onChooseLinkMetadata: (Int, Link) -> Unit, onAddLink: () -> Unit) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(paddingValues)
-                .padding(horizontal = 20.dp)
-                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
-        ) {
-            item {
-                //Metadata
-                Group {
-                    //Title
-                    GroupTitle(R.string.settings_metadata_management_title)
-
-                    //Items
-                    GroupItems {
-                        //Automatic metadata modification
-                        GroupItem {
-                            SettingsItem(
-                                title = R.string.settings_metadata_management_modification_title,
-                                description = R.string.settings_metadata_management_modification_description
-                            ) {
-                                //Value
-                                Switch(
-                                    checked = view.appModifyMetadata,
-                                    onCheckedChange = { isChecked ->
-                                        view.updateAppModifyMetadata(isChecked)
-                                    }
+                                SettingsItem(
+                                    title = R.string.settings_app_backup_recover_title,
+                                    description = R.string.settings_app_backup_recover_description,
                                 )
                             }
                         }
                     }
                 }
 
-                //Links
-                Group {
+                //About
+                item {
                     //Title
-                    GroupTitle(R.string.settings_metadata_links_title)
+                    GroupTitle(R.string.settings_app_about_title)
 
                     //Items
-                    GroupItems {
-                        //Info
-                        GroupItem(
-                            onClick = onShowLinksInfo
-                        ) {
-                            SettingsItem(
-                                title = R.string.settings_metadata_links_info_title,
-                                description = R.string.settings_metadata_links_info_description
-                            )
-                        }
-
-                        //Divider
-                        if (Link.links.isNotEmpty()) GroupDivider()
-
-                        //Links
-                        Link.links.forEachIndexed { index, link ->
-                            //Add item
+                    Group {
+                        GroupItems {
+                            //Version
                             GroupItem {
-                                LinkItem(
-                                    index = index,
-                                    link = link,
-                                    onChooseAlbum = onChooseLinkAlbum,
-                                    onChooseMetadata = onChooseLinkMetadata,
-                                    onDelete = { index -> view.removeLink(index) }
+                                SettingsItem(
+                                    title = stringResource(R.string.settings_app_about_version_title),
+                                    description = stringResource(
+                                        R.string.settings_app_about_version_description,
+                                        BuildConfig.VERSION_NAME
+                                    )
                                 )
                             }
 
-                            //Add divider between items
-                            if (index < Link.links.size - 1) GroupDivider()
-                        }
-                    }
+                            //Divider
+                            GroupDivider()
 
-                    //Add link button
-                    SimpleButton(
-                        text = R.string.settings_metadata_links_add,
-                        onClick = onAddLink,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 10.dp)
-                    )
-                }
-            }
-        }
-    }
-
-    @Composable
-    private fun SettingsHomeScreenLayout(paddingValues: PaddingValues) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(paddingValues)
-                .padding(horizontal = 20.dp)
-                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
-        ) {
-            item {
-                Group {
-                    //Title
-                    GroupTitle(R.string.settings_home_grid_title)
-
-                    //Items
-                    GroupItems {
-                        //Items per row
-                        GroupItem {
-                            SettingsItem(
-                                title = stringResource(R.string.settings_home_grid_row_title, view.homeItemsPerRow.toInt()),
-                                description = stringResource(R.string.settings_home_grid_row_description)
+                            //Developer
+                            GroupItem(
+                                onClick = { uriHandler.openUri("https://botpa.vercel.app/") }
                             ) {
-                                //Value
-                                Slider(
-                                    value = view.homeItemsPerRow,
-                                    onValueChange = { newValue ->
-                                        view.homeItemsPerRow = newValue
-                                    },
-                                    onValueChangeFinished = { view.saveHomeItemsPerRow() },
-                                    valueRange = 1f..5f,
-                                    steps = 3,
-                                    modifier = Modifier
-                                        .weight(0.5f)
-                                )
+                                SettingsItem(
+                                    title = R.string.settings_app_about_developer_title,
+                                    description = R.string.settings_app_about_developer_description
+                                ) {
+                                    Image(
+                                        painter = painterResource(R.drawable.open),
+                                        contentDescription = "Portfolio",
+                                        contentScale = ContentScale.Fit,
+                                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
+                                        modifier = Modifier
+                                            .size(24.dp)
+                                    )
+                                }
                             }
-                        }
-                    }
-                }
-            }
-        }
-    }
 
-    @Composable
-    private fun SettingsAlbumScreenLayout(paddingValues: PaddingValues) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(paddingValues)
-                .padding(horizontal = 20.dp)
-                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
-        ) {
-            //Grid
-            item {
-                Group {
-                    //Title
-                    GroupTitle(R.string.settings_album_grid_title)
+                            //Divider
+                            GroupDivider()
 
-                    //Items
-                    GroupItems {
-                        //Items per row
-                        GroupItem {
-                            SettingsItem(
-                                title = stringResource(R.string.settings_album_grid_row_title, view.albumItemsPerRow.toInt()),
-                                description = stringResource(R.string.settings_album_grid_row_description)
+                            //Github
+                            GroupItem(
+                                onClick = { uriHandler.openUri("https://github.com/BOTPanzer/Coon-Gallery") }
                             ) {
-                                //Value
-                                Slider(
-                                    value = view.albumItemsPerRow,
-                                    onValueChange = { newValue ->
-                                        view.albumItemsPerRow = newValue
-                                    },
-                                    onValueChangeFinished = { view.saveAlbumItemsPerRow() },
-                                    valueRange = 1f..5f,
-                                    steps = 3,
-                                    modifier = Modifier
-                                        .weight(0.5f)
-                                )
+                                SettingsItem(
+                                    title = R.string.settings_app_about_repo_title,
+                                    description = R.string.settings_app_about_repo_description
+                                ) {
+                                    Image(
+                                        painter = painterResource(R.drawable.open),
+                                        contentDescription = "GitHub",
+                                        contentScale = ContentScale.Fit,
+                                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
+                                        modifier = Modifier
+                                            .size(24.dp)
+                                    )
+                                }
                             }
-                        }
-                    }
-                }
-            }
 
-            //Advanced
-            item {
-                Group {
-                    //Title
-                    GroupTitle(R.string.settings_album_advanced_title)
+                            //Divider
+                            GroupDivider()
 
-                    //Items
-                    GroupItems {
-                        //Show missing metadata icon
-                        GroupItem {
-                            SettingsItem(
-                                title = R.string.settings_album_advanced_metadata_title,
-                                description = R.string.settings_album_advanced_metadata_description
-                            ) {
-                                //Value
-                                Switch(
-                                    checked = view.albumShowMissingMetadataIcon,
-                                    onCheckedChange = { isChecked ->
-                                        view.updateAlbumShowMissingMetadataIcon(isChecked)
-                                    }
+                            //Copyright
+                            GroupItem {
+                                SettingsItem(
+                                    title = R.string.settings_app_about_copyright_title,
+                                    description = R.string.settings_app_about_copyright_description
                                 )
                             }
                         }
@@ -696,91 +495,138 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     @Composable
-    private fun SettingsViewerScreenLayout(paddingValues: PaddingValues) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(paddingValues)
-                .padding(horizontal = 20.dp)
-                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
-        ) {
-            item {
-                Group {
-                    //Title
-                    GroupTitle(R.string.settings_viewer_shortcuts_title)
+    private fun SettingsMetadataLayout(onShowLinksInfo: () -> Unit, onChooseLinkAlbum: (Int) -> Unit, onChooseLinkMetadata: (Int, Link) -> Unit, onAddLink: () -> Unit) {
+        Layout(R.string.settings_main_general_metadata_title) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(it)
+                    .padding(horizontal = 20.dp)
+                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
+            ) {
+                item {
+                    //Metadata
+                    Group {
+                        //Title
+                        GroupTitle(R.string.settings_metadata_management_title)
 
-                    //Items
-                    GroupItems {
-                        //Info shortcut
-                        GroupItem {
-                            SettingsItem(
-                                title = R.string.settings_viewer_shortcuts_info_title,
-                                description = R.string.settings_viewer_shortcuts_info_description
+                        //Items
+                        GroupItems {
+                            //Automatic metadata modification
+                            GroupItem {
+                                SettingsItem(
+                                    title = R.string.settings_metadata_management_modification_title,
+                                    description = R.string.settings_metadata_management_modification_description
+                                ) {
+                                    //Value
+                                    Switch(
+                                        checked = view.appModifyMetadata,
+                                        onCheckedChange = { isChecked ->
+                                            view.updateAppModifyMetadata(isChecked)
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    //Links
+                    Group {
+                        //Title
+                        GroupTitle(R.string.settings_metadata_links_title)
+
+                        //Items
+                        GroupItems {
+                            //Info
+                            GroupItem(
+                                onClick = onShowLinksInfo
                             ) {
-                                //Value
-                                Switch(
-                                    checked = view.viewerShowInfo,
-                                    onCheckedChange = { isChecked ->
-                                        view.updateViewerShowInfo(isChecked)
-                                    }
+                                SettingsItem(
+                                    title = R.string.settings_metadata_links_info_title,
+                                    description = R.string.settings_metadata_links_info_description
                                 )
+                            }
+
+                            //Divider
+                            if (Link.links.isNotEmpty()) GroupDivider()
+
+                            //Links
+                            Link.links.forEachIndexed { index, link ->
+                                //Add item
+                                GroupItem {
+                                    LinkItem(
+                                        index = index,
+                                        link = link,
+                                        onChooseAlbum = onChooseLinkAlbum,
+                                        onChooseMetadata = onChooseLinkMetadata,
+                                        onDelete = { index -> view.removeLink(index) }
+                                    )
+                                }
+
+                                //Add divider between items
+                                if (index < Link.links.size - 1) GroupDivider()
                             }
                         }
 
-                        //Divider
-                        GroupDivider()
+                        //Add link button
+                        SimpleButton(
+                            text = R.string.settings_metadata_links_add,
+                            onClick = onAddLink,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 10.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
 
-                        //Edit shortcut
-                        GroupItem {
-                            SettingsItem(
-                                title = R.string.settings_viewer_shortcuts_edit_title,
-                                description = R.string.settings_viewer_shortcuts_edit_description
-                            ) {
-                                //Value
-                                Switch(
-                                    checked = view.viewerShowEdit,
-                                    onCheckedChange = { isChecked ->
-                                        view.updateViewerShowEdit(isChecked)
-                                    }
-                                )
-                            }
-                        }
+    @Composable
+    private fun SettingsHomeScreenLayout() {
+        Layout(R.string.settings_main_screens_home_title) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(it)
+                    .padding(horizontal = 20.dp)
+                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
+            ) {
+                //Banner
+                item {
+                    SettingsScreenBanner(R.drawable.settings_home)
+                }
 
-                        //Divider
-                        GroupDivider()
+                //Grid
+                item {
+                    Group {
+                        //Title
+                        GroupTitle(R.string.settings_home_grid_title)
 
-                        //Share shortcut
-                        GroupItem {
-                            SettingsItem(
-                                title = R.string.settings_viewer_shortcuts_share_title,
-                                description = R.string.settings_viewer_shortcuts_share_description
-                            ) {
-                                //Value
-                                Switch(
-                                    checked = view.viewerShowShare,
-                                    onCheckedChange = { isChecked ->
-                                        view.updateViewerShowShare(isChecked)
-                                    }
-                                )
-                            }
-                        }
-
-                        //Divider
-                        GroupDivider()
-
-                        //Favourite shortcut
-                        GroupItem {
-                            SettingsItem(
-                                title = R.string.settings_viewer_shortcuts_favourite_title,
-                                description = R.string.settings_viewer_shortcuts_favourite_description
-                            ) {
-                                //Value
-                                Switch(
-                                    checked = view.viewerShowFavourite,
-                                    onCheckedChange = { isChecked ->
-                                        view.updateViewerShowFavourite(isChecked)
-                                    }
-                                )
+                        //Items
+                        GroupItems {
+                            //Items per row
+                            GroupItem {
+                                SettingsItem(
+                                    title = stringResource(
+                                        R.string.settings_home_grid_row_title,
+                                        view.homeItemsPerRow.toInt()
+                                    ),
+                                    description = stringResource(R.string.settings_home_grid_row_description)
+                                ) {
+                                    //Value
+                                    Slider(
+                                        value = view.homeItemsPerRow,
+                                        onValueChange = { newValue ->
+                                            view.homeItemsPerRow = newValue
+                                        },
+                                        onValueChangeFinished = { view.saveHomeItemsPerRow() },
+                                        valueRange = 1f..5f,
+                                        steps = 3,
+                                        modifier = Modifier
+                                            .weight(0.5f)
+                                    )
+                                }
                             }
                         }
                     }
@@ -790,129 +636,324 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     @Composable
-    private fun SettingsVideoPlayerLayout(paddingValues: PaddingValues) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(paddingValues)
-                .padding(horizontal = 20.dp)
-                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
-        ) {
-            //Player
-            item {
-                Group {
-                    //Title
-                    GroupTitle(R.string.settings_video_player_title)
+    private fun SettingsAlbumScreenLayout() {
+        Layout(R.string.settings_main_screens_album_title) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(it)
+                    .padding(horizontal = 20.dp)
+                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
+            ) {
+                //Banner
+                item {
+                    SettingsScreenBanner(R.drawable.settings_album)
+                }
 
-                    //Items
-                    GroupItems {
-                        //Skip backwards amount
-                        GroupItem {
-                            SettingsItem(
-                                title = stringResource(R.string.settings_video_player_skip_backwards_title, view.videoSkipBackwardsAmount.toLong()),
-                                description = stringResource(R.string.settings_video_player_skip_backwards_description)
-                            ) {
-                                //Value
-                                Slider(
-                                    value = view.videoSkipBackwardsAmount,
-                                    onValueChange = { newValue ->
-                                        view.videoSkipBackwardsAmount = newValue
-                                    },
-                                    onValueChangeFinished = { view.saveVideoSkipBackwardsAmount() },
-                                    valueRange = 5f..25f,
-                                    steps = 3,
-                                    modifier = Modifier
-                                        .weight(0.5f)
-                                )
+                //Grid
+                item {
+                    Group {
+                        //Title
+                        GroupTitle(R.string.settings_album_grid_title)
+
+                        //Items
+                        GroupItems {
+                            //Items per row
+                            GroupItem {
+                                SettingsItem(
+                                    title = stringResource(
+                                        R.string.settings_album_grid_row_title,
+                                        view.albumItemsPerRow.toInt()
+                                    ),
+                                    description = stringResource(R.string.settings_album_grid_row_description)
+                                ) {
+                                    //Value
+                                    Slider(
+                                        value = view.albumItemsPerRow,
+                                        onValueChange = { newValue ->
+                                            view.albumItemsPerRow = newValue
+                                        },
+                                        onValueChangeFinished = { view.saveAlbumItemsPerRow() },
+                                        valueRange = 1f..5f,
+                                        steps = 3,
+                                        modifier = Modifier
+                                            .weight(0.5f)
+                                    )
+                                }
                             }
                         }
+                    }
+                }
 
-                        //Divider
-                        GroupDivider()
+                //Advanced
+                item {
+                    Group {
+                        //Title
+                        GroupTitle(R.string.settings_album_advanced_title)
 
-                        //Skip forward amount
-                        GroupItem {
-                            SettingsItem(
-                                title = stringResource(R.string.settings_video_player_skip_forward_title, view.videoSkipForwardAmount.toLong()),
-                                description = stringResource(R.string.settings_video_player_skip_forward_description)
-                            ) {
-                                //Value
-                                Slider(
-                                    value = view.videoSkipForwardAmount,
-                                    onValueChange = { newValue ->
-                                        view.videoSkipForwardAmount = newValue
-                                    },
-                                    onValueChangeFinished = { view.saveVideoSkipForwardAmount() },
-                                    valueRange = 5f..25f,
-                                    steps = 3,
-                                    modifier = Modifier
-                                        .weight(0.5f)
-                                )
+                        //Items
+                        GroupItems {
+                            //Show missing metadata icon
+                            GroupItem {
+                                SettingsItem(
+                                    title = R.string.settings_album_advanced_metadata_title,
+                                    description = R.string.settings_album_advanced_metadata_description
+                                ) {
+                                    //Value
+                                    Switch(
+                                        checked = view.albumShowMissingMetadataIcon,
+                                        onCheckedChange = { isChecked ->
+                                            view.updateAlbumShowMissingMetadataIcon(isChecked)
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
                 }
             }
+        }
+    }
 
-            //Advanced
-            item {
-                Group {
-                    //Title
-                    GroupTitle(R.string.settings_video_advanced_title)
+    @Composable
+    private fun SettingsViewerScreenLayout() {
+        Layout(R.string.settings_main_screens_viewer_title) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(it)
+                    .padding(horizontal = 20.dp)
+                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
+            ) {
+                //Banner
+                item {
+                    SettingsScreenBanner(R.drawable.settings_viewer)
+                }
 
-                    //Items
-                    GroupItems {
-                        //Use internal player
-                        GroupItem {
-                            SettingsItem(
-                                title = R.string.settings_video_advanced_internal_player_title,
-                                description = R.string.settings_video_advanced_internal_player_description
-                            ) {
-                                //Value
-                                Switch(
-                                    checked = view.videoUseInternalPlayer,
-                                    onCheckedChange = { isChecked ->
-                                        view.updateVideoUseInternalPlayer(isChecked)
-                                    }
-                                )
+                //Shortcuts
+                item {
+                    Group {
+                        //Title
+                        GroupTitle(R.string.settings_viewer_shortcuts_title)
+
+                        //Items
+                        GroupItems {
+                            //Info shortcut
+                            GroupItem {
+                                SettingsItem(
+                                    title = R.string.settings_viewer_shortcuts_info_title,
+                                    description = R.string.settings_viewer_shortcuts_info_description
+                                ) {
+                                    //Value
+                                    Switch(
+                                        checked = view.viewerShowInfo,
+                                        onCheckedChange = { isChecked ->
+                                            view.updateViewerShowInfo(isChecked)
+                                        }
+                                    )
+                                }
+                            }
+
+                            //Divider
+                            GroupDivider()
+
+                            //Edit shortcut
+                            GroupItem {
+                                SettingsItem(
+                                    title = R.string.settings_viewer_shortcuts_edit_title,
+                                    description = R.string.settings_viewer_shortcuts_edit_description
+                                ) {
+                                    //Value
+                                    Switch(
+                                        checked = view.viewerShowEdit,
+                                        onCheckedChange = { isChecked ->
+                                            view.updateViewerShowEdit(isChecked)
+                                        }
+                                    )
+                                }
+                            }
+
+                            //Divider
+                            GroupDivider()
+
+                            //Share shortcut
+                            GroupItem {
+                                SettingsItem(
+                                    title = R.string.settings_viewer_shortcuts_share_title,
+                                    description = R.string.settings_viewer_shortcuts_share_description
+                                ) {
+                                    //Value
+                                    Switch(
+                                        checked = view.viewerShowShare,
+                                        onCheckedChange = { isChecked ->
+                                            view.updateViewerShowShare(isChecked)
+                                        }
+                                    )
+                                }
+                            }
+
+                            //Divider
+                            GroupDivider()
+
+                            //Favourite shortcut
+                            GroupItem {
+                                SettingsItem(
+                                    title = R.string.settings_viewer_shortcuts_favourite_title,
+                                    description = R.string.settings_viewer_shortcuts_favourite_description
+                                ) {
+                                    //Value
+                                    Switch(
+                                        checked = view.viewerShowFavourite,
+                                        onCheckedChange = { isChecked ->
+                                            view.updateViewerShowFavourite(isChecked)
+                                        }
+                                    )
+                                }
                             }
                         }
+                    }
+                }
+            }
+        }
+    }
 
-                        //Divider
-                        GroupDivider()
+    @Composable
+    private fun SettingsVideoPlayerLayout() {
+        Layout(R.string.settings_main_screens_video_title) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(it)
+                    .padding(horizontal = 20.dp)
+                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
+            ) {
+                //Banner
+                item {
+                    SettingsScreenBanner(R.drawable.settings_video)
+                }
 
-                        //Ignore audio focus
-                        GroupItem {
-                            SettingsItem(
-                                title = R.string.settings_video_advanced_focus_title,
-                                description = R.string.settings_video_advanced_focus_description
-                            ) {
-                                //Value
-                                Switch(
-                                    checked = view.videoIgnoreAudioFocus,
-                                    onCheckedChange = { isChecked ->
-                                        view.updateVideoIgnoreAudioFocus(isChecked)
-                                    }
-                                )
+                //Player
+                item {
+                    Group {
+                        //Title
+                        GroupTitle(R.string.settings_video_player_title)
+
+                        //Items
+                        GroupItems {
+                            //Skip backwards amount
+                            GroupItem {
+                                SettingsItem(
+                                    title = stringResource(
+                                        R.string.settings_video_player_skip_backwards_title,
+                                        view.videoSkipBackwardsAmount.toLong()
+                                    ),
+                                    description = stringResource(R.string.settings_video_player_skip_backwards_description)
+                                ) {
+                                    //Value
+                                    Slider(
+                                        value = view.videoSkipBackwardsAmount,
+                                        onValueChange = { newValue ->
+                                            view.videoSkipBackwardsAmount = newValue
+                                        },
+                                        onValueChangeFinished = { view.saveVideoSkipBackwardsAmount() },
+                                        valueRange = 5f..25f,
+                                        steps = 3,
+                                        modifier = Modifier
+                                            .weight(0.5f)
+                                    )
+                                }
+                            }
+
+                            //Divider
+                            GroupDivider()
+
+                            //Skip forward amount
+                            GroupItem {
+                                SettingsItem(
+                                    title = stringResource(
+                                        R.string.settings_video_player_skip_forward_title,
+                                        view.videoSkipForwardAmount.toLong()
+                                    ),
+                                    description = stringResource(R.string.settings_video_player_skip_forward_description)
+                                ) {
+                                    //Value
+                                    Slider(
+                                        value = view.videoSkipForwardAmount,
+                                        onValueChange = { newValue ->
+                                            view.videoSkipForwardAmount = newValue
+                                        },
+                                        onValueChangeFinished = { view.saveVideoSkipForwardAmount() },
+                                        valueRange = 5f..25f,
+                                        steps = 3,
+                                        modifier = Modifier
+                                            .weight(0.5f)
+                                    )
+                                }
                             }
                         }
+                    }
+                }
 
-                        //Divider
-                        GroupDivider()
+                //Advanced
+                item {
+                    Group {
+                        //Title
+                        GroupTitle(R.string.settings_video_advanced_title)
 
-                        //Show controller on start
-                        GroupItem {
-                            SettingsItem(
-                                title = R.string.settings_video_advanced_show_controls_title,
-                                description = R.string.settings_video_advanced_show_controls_description
-                            ) {
-                                //Value
-                                Switch(
-                                    checked = view.videoShowControlsOnStart,
-                                    onCheckedChange = { isChecked ->
-                                        view.updateVideoShowControlsOnStart(isChecked)
-                                    }
-                                )
+                        //Items
+                        GroupItems {
+                            //Use internal player
+                            GroupItem {
+                                SettingsItem(
+                                    title = R.string.settings_video_advanced_internal_player_title,
+                                    description = R.string.settings_video_advanced_internal_player_description
+                                ) {
+                                    //Value
+                                    Switch(
+                                        checked = view.videoUseInternalPlayer,
+                                        onCheckedChange = { isChecked ->
+                                            view.updateVideoUseInternalPlayer(isChecked)
+                                        }
+                                    )
+                                }
+                            }
+
+                            //Divider
+                            GroupDivider()
+
+                            //Ignore audio focus
+                            GroupItem {
+                                SettingsItem(
+                                    title = R.string.settings_video_advanced_focus_title,
+                                    description = R.string.settings_video_advanced_focus_description
+                                ) {
+                                    //Value
+                                    Switch(
+                                        checked = view.videoIgnoreAudioFocus,
+                                        onCheckedChange = { isChecked ->
+                                            view.updateVideoIgnoreAudioFocus(isChecked)
+                                        }
+                                    )
+                                }
+                            }
+
+                            //Divider
+                            GroupDivider()
+
+                            //Show controller on start
+                            GroupItem {
+                                SettingsItem(
+                                    title = R.string.settings_video_advanced_show_controls_title,
+                                    description = R.string.settings_video_advanced_show_controls_description
+                                ) {
+                                    //Value
+                                    Switch(
+                                        checked = view.videoShowControlsOnStart,
+                                        onCheckedChange = { isChecked ->
+                                            view.updateVideoShowControlsOnStart(isChecked)
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
