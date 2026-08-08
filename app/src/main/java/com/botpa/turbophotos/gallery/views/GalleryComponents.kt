@@ -94,7 +94,8 @@ fun GroupTitle(title: String, modifier: Modifier = Modifier) {
     Text(
         text = title,
         fontFamily = FONT_OPIFICIO,
-        fontSize = 18.sp,
+        fontSize = 16.sp,
+        color = MaterialTheme.colorScheme.primary,
         modifier = modifier
             .padding(bottom = 10.dp)
     )
