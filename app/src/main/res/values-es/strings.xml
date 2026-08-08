@@ -162,6 +162,7 @@
     <string name="sync_connect_action_connect">Conectarse</string>
     <string name="sync_users_title">Usuarios</string>
     <string name="sync_users_message_empty">No hay usuarios guardados.</string>
+    <string name="sync_logs_action_disconnect">Disconnect</string>
     <string name="sync_logs_started">Servicio iniciado</string>
     <string name="sync_logs_status_offline">Desconectado</string>
     <string name="sync_logs_status_connecting">Conectando…</string>

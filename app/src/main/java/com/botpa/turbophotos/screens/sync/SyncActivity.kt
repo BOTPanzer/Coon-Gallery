@@ -12,12 +12,16 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
@@ -34,6 +38,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -43,6 +48,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Observer
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.StoragePairs
@@ -71,6 +79,13 @@ class SyncActivity : AppCompatActivity() {
 
     //Logs
     private val logsMax = 500
+
+    //Routes
+    object SyncRoutes {
+        const val PERMISSIONS = "permissions"
+        const val CONNECT = "connect"
+        const val LOGS = "logs"
+    }
 
 
     //App
@@ -105,23 +120,112 @@ class SyncActivity : AppCompatActivity() {
     //Layout
     @Composable
     private fun SyncLayout() {
+        //Get useful stuff
+        val activity = this
+
+        //Navigation
+        val navController = rememberNavController()
+
+        //Observe status changes for screen navigation
+        LaunchedEffect(view.connectionStatus) {
+            when (view.connectionStatus) {
+                //Not connected
+                SyncService.STATUS_OFFLINE, SyncService.STATUS_CONNECTING -> {
+                    //Close logs
+                    if (navController.currentDestination?.route == SyncRoutes.LOGS) {
+                        navController.popBackStack(SyncRoutes.LOGS, true)
+                    }
+                }
+                //Connected
+                SyncService.STATUS_ONLINE -> {
+                    //Open logs
+                    if (navController.currentDestination?.route != SyncRoutes.LOGS) {
+                        navController.navigate(SyncRoutes.LOGS)
+                    }
+                }
+            }
+        }
+
+        //Layout
         Layout(R.string.sync_title) {
-            if (!view.hasPermissions) {
-                //Ask for permissions
-                RequestPermissions()
-            } else {
-                //Show sync screen
-                when (view.connectionStatus) {
-                    SyncService.STATUS_OFFLINE -> ConnectLayout(it, this, false)
-                    SyncService.STATUS_CONNECTING -> ConnectLayout(it, this, true)
-                    SyncService.STATUS_ONLINE -> LogsLayout(it)
+            NavHost(
+                navController = navController,
+                startDestination = SyncRoutes.PERMISSIONS,
+                enterTransition = {
+                    slideIntoContainer(
+                        towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                        animationSpec = tween(500)
+                    )
+                },
+                exitTransition = {
+                    slideOutOfContainer(
+                        towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                        animationSpec = tween(500)
+                    )
+                },
+                popEnterTransition = {
+                    slideIntoContainer(
+                        towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                        animationSpec = tween(500)
+                    )
+                },
+                popExitTransition = {
+                    slideOutOfContainer(
+                        towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                        animationSpec = tween(500)
+                    )
+                }
+            ) {
+                //Get padding
+                val paddingValues = it
+
+                //Screen selection
+                composable(SyncRoutes.PERMISSIONS) {
+                    SyncPermissionsLayout(
+                        onPermissionsGranted = {
+                            navController.popBackStack()
+                            navController.navigate(SyncRoutes.CONNECT)
+                        }
+                    )
+                }
+                composable(SyncRoutes.CONNECT) {
+                    SyncConnectLayout(
+                        paddingValues,
+                        activity,
+                        view.connectionStatus != SyncService.STATUS_OFFLINE
+                    )
+                }
+                composable(SyncRoutes.LOGS) { backStackEntry ->
+                    DisposableEffect(backStackEntry) {
+                        onDispose {
+                            if (view.connectionStatus == SyncService.STATUS_ONLINE) sendDisconnect()
+                        }
+                    }
+                    SyncLogsLayout(paddingValues)
                 }
             }
         }
     }
 
     @Composable
-    private fun RequestPermissions() {
+    private fun SyncPermissionsLayout(onPermissionsGranted: () -> Unit) {
+        //Layout
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
+            CircularProgressIndicator(
+                color = MaterialTheme.colorScheme.secondary,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                strokeWidth = 4.dp,
+                modifier = Modifier
+                    .padding(start = 10.dp)
+                    .size(40.dp)
+            )
+        }
+
         //Create permission granted events
         var permissionManager: PermissionManager? = null
         val requestPermissionNotifications = rememberLauncherForActivityResult(
@@ -163,10 +267,8 @@ class SyncActivity : AppCompatActivity() {
         permissionManager = PermissionManager(this, listOf(PermissionType.Notifications, PermissionType.LocalAreaNetwork), onRequestPermission)
         if (permissionManager.hasAllPermissions) {
             //Mark permissions as granted
-            LaunchedEffect(Unit) {
-                //Use launched effect cause updating the var while composing doesn't recompose in older androids
-                view.updatePermissions(permissionManager)
-            }
+            view.updatePermissions(permissionManager)
+            onPermissionsGranted.invoke()
         } else {
             //Ask for permissions
             permissionManager.showDialog(this)
@@ -174,7 +276,7 @@ class SyncActivity : AppCompatActivity() {
     }
 
     @Composable
-    private fun ConnectLayout(it: PaddingValues, activity: Activity, connecting: Boolean) {
+    private fun SyncConnectLayout(it: PaddingValues, activity: Activity, connecting: Boolean) {
         //Layout
         Column(
             modifier = Modifier
@@ -365,10 +467,11 @@ class SyncActivity : AppCompatActivity() {
     }
 
     @Composable
-    private fun LogsLayout(it: PaddingValues) {
+    private fun SyncLogsLayout(it: PaddingValues) {
         //List stuff
         val listState = rememberLazyListState()
 
+        //Scroll to first
         LaunchedEffect(Unit) {
             view.scrollRequest.collect {
                 listState.animateScrollToItem(0)
@@ -405,8 +508,10 @@ class SyncActivity : AppCompatActivity() {
 
             //Exit button
             SimpleButton(
-                text = "Exit",
-                onClick = { finish() },
+                text = R.string.sync_logs_action_disconnect,
+                onClick = {
+                    sendDisconnect()
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 10.dp)
@@ -539,6 +644,12 @@ class SyncActivity : AppCompatActivity() {
     private fun sendStop() {
         val intent = Intent(this, SyncService::class.java)
         intent.putExtra("command", "stop")
+        startService(intent)
+    }
+
+    private fun sendDisconnect() {
+        val intent = Intent(this, SyncService::class.java)
+        intent.putExtra("command", "disconnect")
         startService(intent)
     }
 

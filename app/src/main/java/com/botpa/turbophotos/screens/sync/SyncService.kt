@@ -348,7 +348,6 @@ class SyncService : Service() {
                     //Send message
                     sendThroughWebSocket(obj.toString())
                 }
-
             }
         } catch (e: Exception) {
             //Error
@@ -448,6 +447,12 @@ class SyncService : Service() {
             "connect" -> {
                 val address = intent.getStringExtra("value")
                 if (address != null) connect(address)
+            }
+
+            //Disconnect
+            "disconnect" -> {
+                webSocketClient?.close(1000, 1001, "User disconnected")
+                sendStatus(STATUS_OFFLINE)
             }
 
             //Stop service

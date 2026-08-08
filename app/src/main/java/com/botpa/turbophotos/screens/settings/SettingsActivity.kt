@@ -59,6 +59,17 @@ class SettingsActivity : AppCompatActivity() {
     //View model
     private val view: SettingsViewModel by viewModels()
 
+    //Routes
+    object SettingsRoutes {
+        const val MAIN = "main"
+        const val APP = "app"
+        const val METADATA = "metadata"
+        const val HOME_SCREEN = "home_screen"
+        const val ALBUM_SCREEN = "about_screen"
+        const val VIEWER_SCREEN = "viewer_screen"
+        const val VIDEO_SCREEN = "video_screen"
+    }
+
 
     //App
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -78,17 +89,6 @@ class SettingsActivity : AppCompatActivity() {
 
         //Check if library needs to be reset
         if (view.reloadLibraryOnExit) Library.loadLibrary(this, true)
-    }
-
-    //Routes
-    object SettingsRoutes {
-        const val MAIN = "main"
-        const val APP = "app"
-        const val METADATA = "metadata"
-        const val HOME_SCREEN = "home_screen"
-        const val ALBUM_SCREEN = "about_screen"
-        const val VIEWER_SCREEN = "viewer_screen"
-        const val VIDEO_SCREEN = "video_screen"
     }
 
     //Layout
