@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.view.KeyEvent
 import android.view.View
+import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -14,9 +15,9 @@ import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Album
 import com.botpa.turbophotos.gallery.BaseActivity
@@ -34,13 +35,17 @@ import com.botpa.turbophotos.gallery.options.OptionsGroup
 import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.options.OptionsManager
 import com.botpa.turbophotos.gallery.permissions.PermissionType
+import com.botpa.turbophotos.gallery.views.CustomRefreshHeader
 import com.botpa.turbophotos.gallery.views.GridListSeparator
 import com.botpa.turbophotos.screens.album.search.SearchDialog
 import com.botpa.turbophotos.screens.viewer.ViewerActivity
 import com.botpa.turbophotos.util.BackAnimationEvent
 import com.botpa.turbophotos.util.Ease
 import com.botpa.turbophotos.util.Orion
+import com.botpa.turbophotos.util.Orion.dpToPx
+import com.botpa.turbophotos.util.Orion.pxToDp
 import com.botpa.turbophotos.util.Storage
+import com.scwang.smart.refresh.layout.SmartRefreshLayout
 
 @SuppressLint("SetTextI18n", "NotifyDataSetChanged")
 class AlbumActivity : BaseActivity() {
@@ -59,6 +64,7 @@ class AlbumActivity : BaseActivity() {
     override val askForPermissions: Boolean = false
     override val contentViewResource: Int = R.layout.album_screen
 
+    private var isLibraryLoading = false
     private var isMetadataLoaded = false
     private var isSearching = false
     private var isInit = false
@@ -82,7 +88,7 @@ class AlbumActivity : BaseActivity() {
     private lateinit var currentAlbum: Album
     private var inTrash = false
 
-    private lateinit var albumRefreshLayout: SwipeRefreshLayout
+    private lateinit var albumRefreshLayout: SmartRefreshLayout
     private lateinit var albumList: RecyclerView
     private lateinit var albumFastScroller: FastScroller
 
@@ -242,7 +248,7 @@ class AlbumActivity : BaseActivity() {
             intArrayOf(WindowInsetsCompat.Type.systemBars())
         ) { view: View, insets: Insets, duration: Float ->
             //Swipe refresh top margin
-            albumRefreshLayout.setProgressViewOffset(false, 0, insets.top + 50)
+            albumRefreshLayout.setHeaderInsetStart(insets.top.pxToDp.toFloat())
 
             //Album list search layout + keyboard margin
             albumList.setPadding(0, 0, 0, listMinBottomPadding + insets.bottom)
@@ -309,15 +315,38 @@ class AlbumActivity : BaseActivity() {
         //Navbar
         navbarSearch.setOnClickListener { view: View -> showSearchLayout(true) }
 
-        navbarOptions.setOnClickListener { view: View -> optionsManager.toggle(true) }
+        navbarOptions.setOnClickListener { view: View ->
+            //Not available
+            if (isLibraryLoading) return@setOnClickListener
+
+            //Open options
+            optionsManager.toggle(true)
+        }
 
         //List
-        albumRefreshLayout.setOnRefreshListener {
-            //Refresh library
-            Library.loadLibrary(this, false)
+        (albumRefreshLayout.refreshHeader as CustomRefreshHeader).onMoved = { percent ->
+            albumList.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                topMargin = -(percent * 60.dpToPx).toInt()
+            }
+        }
 
-            //Stop refreshing
-            albumRefreshLayout.isRefreshing = false
+        albumRefreshLayout.setOnRefreshListener {
+            //Mark as loading
+            isLibraryLoading = true
+
+            //Refresh
+            Thread {
+                //Load library
+                Library.loadLibrary(this, true)
+
+                //Stop refreshing
+                runOnUiThread {
+                    albumRefreshLayout.finishRefresh()
+
+                    //Mark as loaded
+                    isLibraryLoading = false
+                }
+            }.start()
         }
 
         albumList.addOnItemTouchListener(DragSelectTouchListener(
@@ -333,6 +362,10 @@ class AlbumActivity : BaseActivity() {
                 if (max > to) deselectRange((to + 1)..max)
             },
             onSingleTap = { index ->
+                //Not available
+                if (isLibraryLoading) return@DragSelectTouchListener
+
+                //Perform action
                 if (selectedIndexes.isNotEmpty()) {
                     //Toggle item
                     toggleSelected(index)
@@ -354,10 +387,11 @@ class AlbumActivity : BaseActivity() {
         }
 
         searchSearch.setOnClickListener { view ->
-            //Get search text
-            val search = searchInput.text.toString()
+            //Not available
+            if (isLibraryLoading) return@setOnClickListener
 
             //Filter items with search
+            val search = searchInput.text.toString()
             filterItems(search)
         }
 

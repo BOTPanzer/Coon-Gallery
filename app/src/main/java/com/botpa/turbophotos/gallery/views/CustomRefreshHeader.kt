@@ -28,6 +28,8 @@ class CustomRefreshHeader @JvmOverloads constructor(
     private lateinit var textReleaseToRefresh: String
     private lateinit var textRefreshing: String
 
+    var onMoved: (percent: Float) -> Unit = {}
+
     init {
         val view = LayoutInflater.from(context).inflate(R.layout.refresh_header, this, true)
         refreshText = view.findViewById(R.id.refreshStatus)
@@ -74,6 +76,7 @@ class CustomRefreshHeader @JvmOverloads constructor(
 
     override fun onMoving(isDragging: Boolean, percent: Float, offset: Int, height: Int, maxDragHeight: Int) {
         alpha = percent
+        onMoved.invoke(percent)
     }
 
     override fun setPrimaryColors(vararg colors: Int) {}

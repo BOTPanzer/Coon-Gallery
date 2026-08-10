@@ -12,11 +12,20 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        <com.scwang.smart.refresh.layout.SmartRefreshLayout
             android:id="@+id/refreshLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:clipToPadding="false">
+            app:srlEnableOverScrollBounce="false">
+
+            <com.botpa.turbophotos.gallery.views.CustomRefreshHeader
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:textPullToRefresh="@string/home_refresh_pull"
+                app:textReleaseToRefresh="@string/home_refresh_release"
+                app:textRefreshing="@string/home_refresh_refreshing">
+
+            </com.botpa.turbophotos.gallery.views.CustomRefreshHeader>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/list"
@@ -27,8 +36,7 @@
 
             </androidx.recyclerview.widget.RecyclerView>
 
-        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-
+        </com.scwang.smart.refresh.layout.SmartRefreshLayout>
 
     </LinearLayout>
 
