@@ -12,12 +12,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Item
+import com.botpa.turbophotos.gallery.ItemMetadataInfo
 import com.botpa.turbophotos.gallery.LocalGeocoder
 import com.botpa.turbophotos.gallery.modals.core.CustomDrawer
 import com.botpa.turbophotos.gallery.views.ListSeparator
 import com.botpa.turbophotos.util.Orion
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.ObjectNode
 import java.io.FileInputStream
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -235,60 +235,17 @@ class InfoDrawer(
         initList(infoCameraLayout, infoCameraList, infoCameraItems)
 
         //Get info (search metadata)
-        var caption = ""
-        var labels = ""
-        var text = ""
-        try {
-            //Get metadata
-            val metadata: ObjectNode = item.getMetadata() ?: throw Exception()
-
-            //Load caption
-            caption = metadata.path("caption").asText()
-
-            //Add labels
-            var info = StringBuilder()
-            if (metadata.has("labels")) {
-                //Get labels array
-                val array = metadata.path("labels")
-
-                //Get array max & append all labels to info
-                val arrayMax = array.size() - 1
-                if (arrayMax >= 0 && info.isNotEmpty()) info.append("\n\n")
-                for (i in 0..arrayMax) {
-                    info.append(array.get(i).asText())
-                    if (i != arrayMax) info.append(", ")
-                }
-            }
-            labels = info.toString()
-
-            //Add text
-            info = StringBuilder()
-            if (metadata.has("text")) {
-                //Get labels array
-                val array = metadata.path("text")
-
-                //Get array max & append all labels to info
-                val arrayMax = array.size() - 1
-                if (arrayMax >= 0 && info.isNotEmpty()) info.append("\n\n")
-                for (i in 0..arrayMax) {
-                    info.append(array.get(i).asText())
-                    if (i != arrayMax) info.append(", ")
-                }
-            }
-            text = info.toString()
-        } catch (_: Exception) {
-            //Error while parsing JSON
-        }
+        val metadata = item.getMetadataInfo() ?: ItemMetadataInfo("", emptyList(), emptyList())
 
         //Create items list (search metadata)
-        if (caption.isNotEmpty()) {
-            infoSearchItems.add(Info(R.string.drawer_info_search_caption, caption))
+        if (metadata.caption.isNotEmpty()) {
+            infoSearchItems.add(Info(R.string.drawer_info_search_caption, metadata.caption))
         }
-        if (labels.isNotEmpty()) {
-            infoSearchItems.add(Info(R.string.drawer_info_search_labels, labels))
+        if (metadata.labels.isNotEmpty()) {
+            infoSearchItems.add(Info(R.string.drawer_info_search_labels, metadata.labels.joinToString(", ")))
         }
-        if (text.isNotEmpty()) {
-            infoSearchItems.add(Info(R.string.drawer_info_search_text, text))
+        if (metadata.text.isNotEmpty()) {
+            infoSearchItems.add(Info(R.string.drawer_info_search_text, metadata.text.joinToString(", ")))
         }
 
         //Init list (search metadata)

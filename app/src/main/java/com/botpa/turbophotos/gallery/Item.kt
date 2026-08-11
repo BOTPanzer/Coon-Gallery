@@ -15,6 +15,7 @@ import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.signature.ObjectKey
 import com.fasterxml.jackson.databind.node.ObjectNode
 import java.io.File
+import java.util.Locale
 
 class Item(
     @JvmField var file: File,               //The file in storage
@@ -38,6 +39,35 @@ class Item(
 
     fun getMetadata(): ObjectNode? {
         return album.getMetadataKey(name)
+    }
+
+    fun getMetadataInfo(): ItemMetadataInfo? {
+        //Get metadata
+        val metadata = getMetadata() ?: return null
+
+        //Get caption
+        val caption: String = (metadata.get("caption")?.asText() ?: "").lowercase(Locale.getDefault())
+
+        //Get labels
+        val labels: MutableList<String> = ArrayList()
+        if (metadata.has("labels")) {
+            val value = metadata.get("labels")
+            for (i in 0..<value.size()) {
+                labels.add(value.get(i).asText().lowercase(Locale.getDefault()))
+            }
+        }
+
+        //Get text
+        val text: MutableList<String> = ArrayList()
+        if (metadata.has("text")) {
+            val value = metadata.path("text")
+            for (i in 0..<value.size()) {
+                text.add(value.get(i).asText().lowercase(Locale.getDefault()))
+            }
+        }
+
+        //Return info
+        return ItemMetadataInfo(caption, labels, text)
     }
 
     //Helpers
@@ -97,12 +127,12 @@ class Item(
             val size = file.length()
 
             //Create item
-            return Item(file, album, lastModified, mimeType, size, false, false)
+            return Item(file, album, lastModified, mimeType, size, isTrashed = false, isFavourite = false)
         }
 
         fun createFromUri(context: Context, uri: Uri, album: Album): Item {
             //Prepare item info
-            val path = Orion.getFilePathFromMediaUri(context, uri)
+            val path = Orion.getFilePathFromMediaUri(context, uri) ?: throw Exception("Failed to get path from media URI")
             val file = File(path)
 
             //Create item

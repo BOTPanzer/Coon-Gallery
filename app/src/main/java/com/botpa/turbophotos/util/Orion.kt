@@ -61,6 +61,7 @@ import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
+import java.text.Normalizer
 import java.util.Locale
 import kotlin.math.max
 import kotlin.math.min
@@ -234,6 +235,8 @@ object Orion {
         snack.show()
     }
 
+
+
       /*$$$$$            /$$                           /$$     /$$
      /$$__  $$          |__/                          | $$    |__/
     | $$  \ $$ /$$$$$$$  /$$ /$$$$$$/$$$$   /$$$$$$  /$$$$$$   /$$  /$$$$$$  /$$$$$$$   /$$$$$$$
@@ -323,6 +326,8 @@ object Orion {
         animateMoveY(view, destination, DEFAULT_ANIMATION_DURATION, onFinish)
     }
 
+
+
      /*$$$$$                                 /$$
     |_  $$_/                                | $$
       | $$   /$$$$$$$   /$$$$$$$  /$$$$$$  /$$$$$$   /$$$$$$$
@@ -395,6 +400,8 @@ object Orion {
         addInsetsChangedListener(view, types, 0f, onInsetsChanged)
     }
 
+
+
       /*$$$$$            /$$
      /$$__  $$          | $$
     | $$  \__/  /$$$$$$ | $$  /$$$$$$   /$$$$$$   /$$$$$$$
@@ -431,6 +438,8 @@ object Orion {
     private fun lightenColorValue(color: Int, fraction: Double): Int {
         return min(color + (color * fraction), 255.0).toInt()
     }
+
+
 
      /*$$$$$$$ /$$ /$$
     | $$_____/|__/| $$
@@ -929,6 +938,8 @@ object Orion {
         return BitmapFactory.decodeFile(path, options)
     }
 
+
+
       /*$$$$$    /$$     /$$
      /$$__  $$  | $$    | $$
     | $$  \ $$ /$$$$$$  | $$$$$$$   /$$$$$$   /$$$$$$
@@ -983,6 +994,22 @@ object Orion {
             controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             controller.hide(WindowInsetsCompat.Type.systemBars())
         }
+    }
+
+    //Text
+    private val REGEX_MARKS = Regex("\\p{M}")
+    private val REGEX_NON_ALPHANUMERIC = Regex("[^a-z0-9]+")
+
+    fun normalizeText(text: String): String {
+        return Normalizer.normalize(text, Normalizer.Form.NFD)
+            .replace(REGEX_MARKS, "")
+            .lowercase()
+    }
+
+    fun tokenizeText(text: String): List<String> {
+        return normalizeText(text)
+            .split(REGEX_NON_ALPHANUMERIC)
+            .filter { it.isNotEmpty() }
     }
 
 }

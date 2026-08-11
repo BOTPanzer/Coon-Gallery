@@ -24,7 +24,6 @@ import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage.getBool
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.io.File
-import java.util.Locale
 import kotlin.Array
 import kotlin.Boolean
 import kotlin.Exception
@@ -402,108 +401,84 @@ object Library {
     }
 
     //Gallery
-    private fun filterItemText(caption: String, labels: List<String>, texts: List<String>, filter: String): Boolean {
-        //Check caption
-        if (caption.contains(filter)) return true
-
-        //Check labels
-        for (label in labels) {
-            if (label.contains(filter)) return true
-        }
-
-        //Check text
-        for (text in texts) {
-            if (text.contains(filter)) return true
-        }
-
-        //Not found
-        return false
-    }
-
-    private fun filterItemWords(caption: String, labels: List<String>, texts: List<String>, filter: String): Boolean {
-        //Get filter words
-        val words = filter.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
-
-        //Check if all words are contained
-        return words.all { word ->
-            //Check caption
-            val inCaption = caption.trim().split(" ").any {
-                it.equals(word, ignoreCase = true)
-            }
-
-            //Check labels
-            val inLabels = labels.any {
-                it.equals(word, ignoreCase = true)
-            }
-
-            //Check text
-            val inTexts = texts.any { text ->
-                text.trim().split(" ").any {
-                    it.equals(word, ignoreCase = true)
-                }
-            }
-
-            //Contained in any
-            inCaption || inLabels || inTexts
-        }
-    }
-
-    private fun filterItem(item: Item, filter: String, method: SearchMethod): Boolean {
-        //Check item name
-        if (item.name.lowercase(Locale.getDefault()).contains(filter)) return true
-
-        //Get metadata
-        val metadata = item.getMetadata() ?: return false
-
-        //Get caption
-        val caption: String = (metadata.get("caption")?.asText() ?: "").lowercase(Locale.getDefault())
-
-        //Get labels
-        val labels: MutableList<String> = ArrayList()
-        if (metadata.has("labels")) {
-            val value = metadata.get("labels")
-            for (i in 0..<value.size()) {
-                labels.add(value.get(i).asText().lowercase(Locale.getDefault()))
-            }
-        }
-
-        //Get text
-        val text: MutableList<String> = ArrayList()
-        if (metadata.has("text")) {
-            val value = metadata.path("text")
-            for (i in 0..<value.size()) {
-                text.add(value.get(i).asText().lowercase(Locale.getDefault()))
-            }
-        }
-
-        //Filter
-        return if (method == SearchMethod.ContainsText) {
-            //Contains whole text
-            filterItemText(caption, labels, text, filter)
-        } else {
-            //Contains all words
-            filterItemWords(caption, labels, text, filter)
-        }
-    }
-
-    fun filterAlbum(filter: String, album: Album, method: SearchMethod): MutableList<Item> {
-        //Check if filtering
-        val isFiltering = !filter.isEmpty()
-
-        //Create empty list
+    fun filterAlbumWords(query: String, queryTokens: List<String>, album: Album): MutableList<Item> {
+        //Create new list
         val filteredAlbum = ArrayList<Item>()
 
-        //Look for items that contain the filter
+        //Look for items that match the filter
         for (item in album.items) {
-            //Filtering & not valid -> Skip item
-            if (isFiltering && !filterItem(item, filter.lowercase(Locale.getDefault()), method)) continue
+            //Check item name
+            if (Orion.normalizeText(item.name).contains(query)) {
+                filteredAlbum.add(item)
+                continue
+            }
 
-            //Add item
-            filteredAlbum.add(item)
+            //Get metadata
+            val metadata = item.getMetadataInfo() ?: continue
+
+            //Check if query tokens are contained
+            if (queryTokens.all { qToken ->
+                    Orion.tokenizeText(metadata.caption).contains(qToken) ||
+                    metadata.labels.any { Orion.tokenizeText(it).contains(qToken) } ||
+                    metadata.text.any { Orion.tokenizeText(it).contains(qToken) }
+            }) {
+                filteredAlbum.add(item)
+            }
         }
 
         //Return list
         return filteredAlbum
+    }
+
+    fun filterAlbumText(normalizedQuery: String, album: Album): MutableList<Item> {
+        //Create new list
+        val filteredAlbum = ArrayList<Item>()
+
+        //Look for items that match the filter
+        for (item in album.items) {
+            //Check item name
+            if (Orion.normalizeText(item.name).contains(normalizedQuery)) {
+                filteredAlbum.add(item)
+                continue
+            }
+
+            //Get metadata
+            val metadata = item.getMetadataInfo() ?: continue
+
+            //Check if query is contained
+            if (Orion.normalizeText(metadata.caption).contains(normalizedQuery) ||
+                metadata.labels.any { Orion.normalizeText(it).contains(normalizedQuery) } ||
+                metadata.text.any { Orion.normalizeText(it).contains(normalizedQuery) }
+            ) {
+                filteredAlbum.add(item)
+            }
+        }
+
+        return filteredAlbum
+    }
+
+    fun filterAlbum(query: String, album: Album, method: SearchMethod): MutableList<Item> {
+        //Check if filtering
+        val trimmedQuery = query.trim()
+        val isFiltering = !trimmedQuery.isEmpty()
+
+        //Check if filtering
+        if (!isFiltering) {
+            //Create new list with all items
+            val filteredAlbum = ArrayList<Item>()
+            filteredAlbum.addAll(album.items)
+            return filteredAlbum
+        } else {
+            //Check filter method
+            return when (method) {
+                SearchMethod.ContainsWords -> {
+                    filterAlbumWords(trimmedQuery, Orion.tokenizeText(trimmedQuery), album)
+                }
+                SearchMethod.ContainsText -> {
+                    filterAlbumText(Orion.normalizeText(query), album)
+                }
+            }
+        }
     }
 
     fun setGalleryInfo(album: Album?, items: MutableList<Item>) {
