@@ -43,9 +43,6 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
 
     var onPointersChanged: Runnable? = null
 
-    //Drag
-    private val minDragAmount: Float = 5f
-
     //Zoom
     val zoom get() = transformHandler.zoom
 
@@ -93,8 +90,8 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
             MotionEvent.ACTION_MOVE -> {
                 //Intercept if zoomed & dragged beyond swipe distance
                 if (transformHandler.isZoomedIn) {
-                    val diff = PointF(event.x - startTouch.x, event.y - startTouch.y)
-                    if (diff.x > swipeDistance || diff.y > swipeDistance) {
+                    val deltaFromStart = PointF(event.x - startTouch.x, event.y - startTouch.y)
+                    if (deltaFromStart.length() >= swipeDistance) {
                         //Start dragging
                         mode = DRAG
                         return true
@@ -173,18 +170,10 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
                 onPointersChanged?.run()
             }
             MotionEvent.ACTION_MOVE -> {
-                //Calculate movement delta
-                val delta = PointF(currentPosition.x - lastTouch.x, currentPosition.y - lastTouch.y)
-
-                //Check if changing from tap to drag or already zooming/dragging
-                if (mode == TAP && delta.length() >= minDragAmount) {
-                    //Start dragging
-                    mode = DRAG
-
-                    //Update last touch
-                    lastTouch.set(currentPosition)
-                } else if (mode == ZOOM || (mode == DRAG && transformHandler.isZoomedIn)) {
-                    //Process move delta
+                //Check if zooming/dragging or changing from tap to drag
+                if (mode == ZOOM || (mode == DRAG && transformHandler.isZoomedIn)) {
+                    //Calculate & process movement delta
+                    val delta = PointF(currentPosition.x - lastTouch.x, currentPosition.y - lastTouch.y)
                     val clampedDelta = transformHandler.constrainDragDelta(delta)
 
                     //Update & apply matrix
@@ -193,6 +182,16 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
 
                     //Update last touch
                     lastTouch.set(currentPosition)
+                } else if (mode == TAP) {
+                    //Calculate movement delta
+                    val deltaFromStart = PointF(currentPosition.x - startTouch.x, currentPosition.y - startTouch.y)
+                    if (deltaFromStart.length() >= swipeDistance) {
+                        //Start dragging
+                        mode = DRAG
+
+                        //Update last touch
+                        lastTouch.set(currentPosition)
+                    }
                 }
             }
         }
