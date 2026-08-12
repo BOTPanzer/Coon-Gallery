@@ -107,6 +107,8 @@ class VideoActivity : BaseActivity() {
     private var isSeeking: Boolean = false
     private var isInPiP: Boolean = false
 
+    private var automaticPiP = true
+
     private var ignoreAudioFocus = true
     private var hasAudioFocus = false
     private var resumeOnAudioFocusGain = false
@@ -451,8 +453,16 @@ class VideoActivity : BaseActivity() {
     override fun onPause() {
         super.onPause()
 
-        //Pause video
-        if (!isInPiP) player.pause()
+        //Not in PiP & playing
+        if (!isInPiP && player.isPlaying) {
+            if (automaticPiP) {
+                //Enable PiP
+                optionPiP.action.invoke()
+            } else {
+                //Pause video
+                player.pause()
+            }
+        }
     }
 
     override fun onResume() {
@@ -471,6 +481,7 @@ class VideoActivity : BaseActivity() {
         playerZoom.skipBackwardsAmount = Storage.getLong(StoragePairs.VIDEO_SKIP_BACKWARDS)
         playerZoom.skipForwardAmount = Storage.getLong(StoragePairs.VIDEO_SKIP_FORWARD)
         ignoreAudioFocus = Storage.getBool(StoragePairs.VIDEO_IGNORE_AUDIO_FOCUS)
+        automaticPiP = Storage.getBool(StoragePairs.VIDEO_AUTOMATIC_PIP)
     }
 
     override fun onNewIntent(intent: Intent, caller: ComponentCaller) {

@@ -45,6 +45,7 @@ class SettingsViewModel : ViewModel() {
     var videoUseInternalPlayer by  mutableStateOf(Storage.getBool(StoragePairs.VIDEO_USE_INTERNAL_PLAYER))
     var videoIgnoreAudioFocus by  mutableStateOf(Storage.getBool(StoragePairs.VIDEO_IGNORE_AUDIO_FOCUS))
     var videoShowControlsOnStart by  mutableStateOf(Storage.getBool(StoragePairs.VIDEO_SHOW_CONTROLS_ON_START))
+    var videoAutomaticPiP by  mutableStateOf(Storage.getBool(StoragePairs.VIDEO_AUTOMATIC_PIP))
 
 
     //App
@@ -246,6 +247,11 @@ class SettingsViewModel : ViewModel() {
     fun updateVideoShowControlsOnStart(isChecked: Boolean) {
         videoShowControlsOnStart = isChecked
         Storage.putBool(StoragePairs.VIDEO_SHOW_CONTROLS_ON_START, isChecked)
+    }
+
+    fun updateVideoAutomaticPiP(isChecked: Boolean) {
+        videoAutomaticPiP = isChecked
+        Storage.putBool(StoragePairs.VIDEO_AUTOMATIC_PIP, isChecked)
     }
 
     //Links

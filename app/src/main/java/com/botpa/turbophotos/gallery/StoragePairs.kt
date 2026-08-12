@@ -27,6 +27,7 @@ object StoragePairs {
     @JvmField val VIDEO_SKIP_BACKWARDS: Storage.StoragePair<Long> = Storage.StoragePair("Video.skipBackwards", 10)
     @JvmField val VIDEO_SKIP_FORWARD: Storage.StoragePair<Long> = Storage.StoragePair("Video.skipForward", 10)
     @JvmField val VIDEO_USE_INTERNAL_PLAYER: Storage.StoragePair<Boolean> = Storage.StoragePair("Video.useInternalPlayer", true)
+    @JvmField val VIDEO_AUTOMATIC_PIP: Storage.StoragePair<Boolean> = Storage.StoragePair("Video.automaticPiP", true)
     @JvmField val VIDEO_IGNORE_AUDIO_FOCUS: Storage.StoragePair<Boolean> = Storage.StoragePair("Video.ignoreAudioFocus", true)
     @JvmField val VIDEO_SHOW_CONTROLS_ON_START: Storage.StoragePair<Boolean> = Storage.StoragePair("Video.showControlsOnStart", true)
 

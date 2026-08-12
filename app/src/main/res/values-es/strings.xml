@@ -141,6 +141,8 @@
     <string name="settings_video_advanced_title">Avanzado</string>
     <string name="settings_video_advanced_internal_player_title">Usar el reproductor de vídeo interno</string>
     <string name="settings_video_advanced_internal_player_description">Usa el reproductor de vídeo interno en lugar de preguntar por uno externo al abrir vídeos.</string>
+    <string name="settings_video_advanced_automatic_pip_title">PiP automático</string>
+    <string name="settings_video_advanced_automatic_pip_description">Activar el modo PiP automáticamente al salir del reproductor de vídeo.</string>
     <string name="settings_video_advanced_focus_title">Ignorar el enfoque de audio</string>
     <string name="settings_video_advanced_focus_description">No pausa el contenido si otras aplicaciones están reproduciendo audio.</string>
     <string name="settings_video_advanced_show_controls_title">Mostrar controles al iniciar</string>

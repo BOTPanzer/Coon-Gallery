@@ -921,6 +921,25 @@ class SettingsActivity : AppCompatActivity() {
                             //Divider
                             GroupDivider()
 
+                            //Automatic PiP
+                            GroupItem {
+                                SettingsItem(
+                                    title = R.string.settings_video_advanced_automatic_pip_title,
+                                    description = R.string.settings_video_advanced_automatic_pip_description
+                                ) {
+                                    //Value
+                                    Switch(
+                                        checked = view.videoAutomaticPiP,
+                                        onCheckedChange = { isChecked ->
+                                            view.updateVideoAutomaticPiP(isChecked)
+                                        }
+                                    )
+                                }
+                            }
+
+                            //Divider
+                            GroupDivider()
+
                             //Ignore audio focus
                             GroupItem {
                                 SettingsItem(

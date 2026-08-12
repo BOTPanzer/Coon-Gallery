@@ -141,6 +141,8 @@
     <string name="settings_video_advanced_title">Advanced</string>
     <string name="settings_video_advanced_internal_player_title">Use internal video player</string>
     <string name="settings_video_advanced_internal_player_description">Use internal video player instead of asking to use an external one when opening videos.</string>
+    <string name="settings_video_advanced_automatic_pip_title">Automatic PiP</string>
+    <string name="settings_video_advanced_automatic_pip_description">Toggle PiP automatically after exiting the video player.</string>
     <string name="settings_video_advanced_focus_title">Ignore audio focus</string>
     <string name="settings_video_advanced_focus_description">Don\'t pause content if other apps are playing audio.</string>
     <string name="settings_video_advanced_show_controls_title">Show controls on start</string>
