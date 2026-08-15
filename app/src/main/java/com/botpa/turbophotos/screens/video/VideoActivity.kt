@@ -895,6 +895,15 @@ class VideoActivity : BaseActivity() {
     }
 
     //Playback
+    override fun onPictureInPictureUiStateChanged(pipState: android.app.PictureInPictureUiState) {
+        super.onPictureInPictureUiStateChanged(pipState)
+
+        //Hide controller before entering PiP
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM && pipState.isTransitioningToPip) {
+            toggleController(false)
+        }
+    }
+
     override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: Configuration) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
 
