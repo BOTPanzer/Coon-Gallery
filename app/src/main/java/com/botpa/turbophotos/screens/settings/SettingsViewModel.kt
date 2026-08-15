@@ -110,7 +110,7 @@ class SettingsViewModel : ViewModel() {
 
     private fun loadLongSettingFromJson(json: ObjectNode, key: String, onValue: (Long) -> Unit) {
         val value = json.get(key) ?: return
-        if (value.isLong) onValue(value.asLong())
+        if (value.isInt || value.isLong) onValue(value.asLong())
     }
 
     private fun loadSettingsFromJson(json: ObjectNode) {
