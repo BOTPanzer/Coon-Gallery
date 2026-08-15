@@ -15,6 +15,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.res.Configuration
+import android.graphics.Rect
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
@@ -47,6 +48,7 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.TrackSelectionOverride
 import androidx.media3.common.Tracks
+import androidx.media3.common.VideoSize
 import androidx.media3.common.text.CueGroup
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
@@ -334,18 +336,8 @@ class VideoActivity : BaseActivity() {
 
         //Options
         optionPiP = OptionsItem(R.drawable.pip, R.string.context_option_pip) {
-            //Create params
-            val p = PictureInPictureParams.Builder()
-            try {
-                val size = player.videoSize
-                if (size.width <= 0 || size.height <= 0) throw Exception()
-                p.setAspectRatio(Rational(size.width, size.height))
-            } catch (_: Exception) {
-                p.setAspectRatio(Rational(16, 9))
-            }
-
             //Enter PiP
-            isInPiP = enterPictureInPictureMode(p.build())
+            isInPiP = enterPictureInPictureMode(getParamsForPiP())
         }
 
         optionSpeed = OptionsItem(R.drawable.speed, R.string.video_option_speed) {
@@ -443,25 +435,20 @@ class VideoActivity : BaseActivity() {
         mediaSession.isActive = false
         mediaSession.release()
 
-        //Cancel notification
-        notificationManager.cancel(NOTIFICATION_ID)
-
         //Stop video
         player.stop()
+        player.release()
+
+        //Cancel notification
+        notificationManager.cancel(NOTIFICATION_ID)
     }
 
     override fun onPause() {
         super.onPause()
 
-        //Not in PiP & playing
-        if (!isInPiP && player.isPlaying) {
-            if (automaticPiP) {
-                //Enable PiP
-                optionPiP.action.invoke()
-            } else {
-                //Pause video
-                player.pause()
-            }
+        //Pause video
+        if (!isInPiP && !automaticPiP && player.isPlaying) {
+            player.pause()
         }
     }
 
@@ -482,6 +469,7 @@ class VideoActivity : BaseActivity() {
         playerZoom.skipForwardAmount = Storage.getLong(StoragePairs.VIDEO_SKIP_FORWARD)
         ignoreAudioFocus = Storage.getBool(StoragePairs.VIDEO_IGNORE_AUDIO_FOCUS)
         automaticPiP = Storage.getBool(StoragePairs.VIDEO_AUTOMATIC_PIP)
+        updateParamsForPiP()
     }
 
     override fun onNewIntent(intent: Intent, caller: ComponentCaller) {
@@ -575,6 +563,13 @@ class VideoActivity : BaseActivity() {
 
                 //Update media state
                 updateMediaSessionState(isPlaying, player.contentPosition)
+            }
+
+            override fun onVideoSizeChanged(videoSize: VideoSize) {
+                super.onVideoSizeChanged(videoSize)
+
+                //Update PiP information
+                updateParamsForPiP()
             }
 
             override fun onPlayerError(error: PlaybackException) {
@@ -939,6 +934,33 @@ class VideoActivity : BaseActivity() {
             toggleController(!isInPiP)
             updatePlayerTime()
         }
+    }
+
+    private fun getParamsForPiP(): PictureInPictureParams {
+        //Get info
+        val sourceRect = Rect()
+        playerView.getGlobalVisibleRect(sourceRect)
+        val size = player.videoSize
+
+        //Get PiP params
+        return PictureInPictureParams.Builder()
+            .setAspectRatio(
+                if (size.width > 0 && size.height > 0)
+                    Rational(size.width, size.height)
+                else
+                    Rational(16, 9)
+            )
+            .setSourceRectHint(sourceRect)
+            .setAutoEnterEnabled(automaticPiP)
+            .build()
+    }
+
+    private fun updateParamsForPiP() {
+        //App is closing
+        if (isFinishing || isDestroyed) return
+
+        //Update PiP params
+        setPictureInPictureParams(getParamsForPiP())
     }
 
     private fun setLooping(looping: Boolean) {
