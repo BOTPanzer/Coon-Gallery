@@ -53,14 +53,12 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.lifecycle.livedata.ktx)
 
-    //Glide
-    implementation(libs.glide)
-
     //Media
+    implementation(libs.glide)
     implementation(libs.media3.exoplayer)
     implementation(libs.media3.ui)
     implementation(libs.media3.common)
-    implementation(libs.media)
+    implementation(libs.media3.session)
     implementation(libs.exifinterface)
 
     //Layout

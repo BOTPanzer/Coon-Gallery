@@ -19,14 +19,10 @@ import android.graphics.Rect
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
-import android.media.MediaMetadata
 import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
-import android.support.v4.media.MediaMetadataCompat
-import android.support.v4.media.session.MediaSessionCompat
-import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Rational
 import android.util.TypedValue
 import android.view.View
@@ -43,6 +39,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.media3.common.C
+import androidx.media3.common.ForwardingPlayer
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
@@ -51,9 +48,12 @@ import androidx.media3.common.Tracks
 import androidx.media3.common.VideoSize
 import androidx.media3.common.text.CueGroup
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.common.MediaMetadata
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import androidx.media3.ui.SubtitleView
+import androidx.media3.session.MediaSession
+import androidx.media3.session.MediaStyleNotificationHelper
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.BaseActivity
 import com.botpa.turbophotos.gallery.StoragePairs
@@ -135,8 +135,7 @@ class VideoActivity : BaseActivity() {
     private val playerSubtitleTracks = mutableListOf<MediaTrackInfo>()
 
     //Notification
-    private lateinit var mediaSession: MediaSessionCompat
-    private lateinit var playbackState: PlaybackStateCompat.Builder
+    private lateinit var mediaSession: MediaSession
     private lateinit var notificationManager: NotificationManager
     private lateinit var notification: Notification
 
@@ -430,14 +429,12 @@ class VideoActivity : BaseActivity() {
     override fun onDestroy() {
         super.onDestroy()
 
-        //Release media session
-        updateMediaSessionState(false, 0)
-        mediaSession.isActive = false
-        mediaSession.release()
-
         //Stop video
         player.stop()
         player.release()
+
+        //Release media session
+        mediaSession.release()
 
         //Cancel notification
         notificationManager.cancel(NOTIFICATION_ID)
@@ -519,9 +516,6 @@ class VideoActivity : BaseActivity() {
                     ExoPlayer.STATE_READY -> {
                         //Hide loading animation
                         showLoadingIndicator(false)
-
-                        //Update metadata
-                        updateMediaSessionMetadata()
                     }
 
                     //Finished playing media
@@ -560,9 +554,6 @@ class VideoActivity : BaseActivity() {
                     //Disable keeping screen on
                     window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 }
-
-                //Update media state
-                updateMediaSessionState(isPlaying, player.contentPosition)
             }
 
             override fun onVideoSizeChanged(videoSize: VideoSize) {
@@ -645,31 +636,31 @@ class VideoActivity : BaseActivity() {
     }
 
     private fun initMediaSession() {
-        //Create media session & playback state
-        mediaSession = MediaSessionCompat(this, NOTIFICATION_CHANNEL_ID)
-        playbackState = PlaybackStateCompat.Builder()
-            .setActions(PlaybackStateCompat.ACTION_PLAY or PlaybackStateCompat.ACTION_PLAY_PAUSE or PlaybackStateCompat.ACTION_PAUSE or PlaybackStateCompat.ACTION_SEEK_TO)
-
-        //Init media session
-        updateMediaSessionState(false, 0)
-        mediaSession.setCallback(object : MediaSessionCompat.Callback() {
-            override fun onPause() {
-                player.pause()
+        //Create forwarding player
+        val forwardingPlayer = object : ForwardingPlayer(player) {
+            override fun isCommandAvailable(command: Int): Boolean {
+                return when (command) {
+                    COMMAND_SEEK_TO_NEXT,
+                    COMMAND_SEEK_TO_NEXT_MEDIA_ITEM,
+                    COMMAND_SEEK_TO_PREVIOUS,
+                    COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM -> false
+                    else -> super.isCommandAvailable(command)
+                }
             }
 
-            override fun onPlay() {
-                player.play()
+            override fun getAvailableCommands(): Player.Commands {
+                return super.getAvailableCommands().buildUpon()
+                    .remove(COMMAND_SEEK_TO_NEXT)
+                    .remove(COMMAND_SEEK_TO_NEXT_MEDIA_ITEM)
+                    .remove(COMMAND_SEEK_TO_PREVIOUS)
+                    .remove(COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM)
+                    .build()
             }
+        }
 
-            override fun onSeekTo(position: Long) {
-                //Update media session
-                updateMediaSessionState(player.isPlaying, position)
-
-                //Seek to position
-                player.seekTo(position)
-            }
-        })
-        mediaSession.isActive = true
+        //Create media session
+        mediaSession = MediaSession.Builder(this, forwardingPlayer)
+            .build()
     }
 
     private fun initNotification() {
@@ -686,9 +677,8 @@ class VideoActivity : BaseActivity() {
         val pauseIntent = Intent(NOTIFICATION_BROADCAST_ID).putExtra("command", "play/pause")
 
         //Create style
-        val style = androidx.media.app.NotificationCompat.MediaStyle()
-            .setShowActionsInCompactView(0, 1)
-            .setMediaSession(mediaSession.sessionToken)
+        val style = MediaStyleNotificationHelper.MediaStyle(mediaSession)
+            .setShowActionsInCompactView(0)
 
         //Create notification
         val builder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
@@ -755,8 +745,16 @@ class VideoActivity : BaseActivity() {
         mediaTitle = name
         overlayTitle.text = name
 
+        //Create media item
+        val mediaMetadata = MediaMetadata.Builder()
+            .setTitle(name)
+            .build()
+        val mediaItem = MediaItem.Builder()
+            .setUri(uri)
+            .setMediaMetadata(mediaMetadata)
+            .build()
+
         //Play media
-        val mediaItem = MediaItem.fromUri(uri)
         player.setMediaItem(mediaItem)
         player.prepare()
         player.play()
@@ -866,28 +864,6 @@ class VideoActivity : BaseActivity() {
             //Stop loading animation
             loadingIndicator.visibility = View.GONE
         }
-    }
-
-    private fun updateMediaSessionState(isPlaying: Boolean, position: Long) {
-        //Update media session
-        if (isPlaying)
-            playbackState.setState(PlaybackStateCompat.STATE_PLAYING, position, 1f)
-        else
-            playbackState.setState(PlaybackStateCompat.STATE_PAUSED, position, 1f)
-        mediaSession.setPlaybackState(playbackState.build())
-
-        //Update notification
-        if (isNotificationInit) notificationManager.notify(NOTIFICATION_ID, notification)
-    }
-
-    private fun updateMediaSessionMetadata() {
-        //Create media in metadata
-        val mediaMetadata = MediaMetadataCompat.Builder()
-            .putString(MediaMetadata.METADATA_KEY_TITLE, mediaTitle)
-            .putLong(MediaMetadata.METADATA_KEY_DURATION, player.duration)
-
-        //Build
-        mediaSession.setMetadata(mediaMetadata.build())
     }
 
     private fun selectTrack(trackInfo: MediaTrackInfo) {
