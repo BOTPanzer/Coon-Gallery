@@ -135,6 +135,11 @@ class InfoDrawer(
             //Hide info & show edit
             Orion.animateHide(infoLayout, animationDuration) {
                 Orion.animateShow(editLayout, animationDuration)
+
+                //Scroll to top
+                scroll.post {
+                    scroll.fullScroll(View.FOCUS_UP)
+                }
             }
         }
 
@@ -176,16 +181,16 @@ class InfoDrawer(
             Orion.animateHide(editLayout, animationDuration) {
                 Orion.animateShow(infoLayout, animationDuration)
 
-                //Scroll to bottom
+                //Scroll to top
                 scroll.post {
-                    scroll.fullScroll(View.FOCUS_DOWN)
+                    scroll.fullScroll(View.FOCUS_UP)
                 }
             }
         }
 
         editSave.setOnClickListener { view: View ->
             //Get new caption & labels
-            val caption = editCaption.text.toString()
+            val caption = editCaption.text.toString().trim()
             val labels = editLabelsItems
                 .map { label -> label.trim() }
                 .filter { label -> label.isNotEmpty() }
