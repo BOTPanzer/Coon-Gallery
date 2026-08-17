@@ -9,7 +9,8 @@
         android:id="@+id/infoLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        tools:visibility="gone">
 
         <LinearLayout
             android:id="@+id/infoFileLayout"
@@ -138,7 +139,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:visibility="gone">
+        android:visibility="gone"
+        tools:visibility="visible">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -200,8 +202,7 @@
                                 android:textColorHighlight="?attr/colorPrimary"
                                 android:textColorHint="#757575"
                                 android:textColorLink="?attr/colorOnSurface"
-                                android:textSize="14sp"
-                                android:theme="@style/EditTextStyle" />
+                                android:textSize="14sp" />
                         </LinearLayout>
                     </androidx.cardview.widget.CardView>
 
@@ -228,18 +229,29 @@
                                 android:textSize="16sp"
                                 android:textStyle="bold" />
 
-                            <EditText
-                                android:id="@+id/editLabels"
+                            <TextView
+                                android:id="@+id/editLabelsEmpty"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:backgroundTint="?attr/colorOnSurface"
-                                android:hint="@string/drawer_edit_labels_hint"
+                                android:text="@string/drawer_edit_labels_empty"
                                 android:textColor="?attr/colorOnSurface"
-                                android:textColorHighlight="?attr/colorPrimary"
-                                android:textColorHint="#757575"
-                                android:textColorLink="?attr/colorOnSurface"
-                                android:textSize="14sp"
-                                android:theme="@style/EditTextStyle" />
+                                android:textColorHint="?attr/colorOnSurface"
+                                android:textSize="14sp" />
+
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/editLabels"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:overScrollMode="never" />
+
+                            <Button
+                                android:id="@+id/editLabelsAdd"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="10dp"
+                                android:layout_weight="1"
+                                android:text="@string/drawer_edit_labels_add" />
+
                         </LinearLayout>
                     </androidx.cardview.widget.CardView>
                 </LinearLayout>

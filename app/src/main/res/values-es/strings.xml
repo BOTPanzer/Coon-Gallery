@@ -263,10 +263,13 @@
     <string name="drawer_info_search_text">Texto</string>
     <string name="drawer_info_actions_close">Cerrar</string>
     <string name="drawer_info_actions_edit">Editar metadatos de busqueda</string>
-    <string name="drawer_edit_labels_hint">Etiquetas (separadas por comas)</string>
+    <string name="drawer_edit_labels_hint">Etiqueta</string>
+    <string name="drawer_edit_labels_empty">No hay etiquetas</string>
+    <string name="drawer_edit_labels_add">Añadir</string>
     <string name="drawer_edit_actions_close">Cerrar</string>
     <string name="drawer_edit_actions_save">Guardar</string>
     <string name="drawer_edit_message_save">Guardado correctamente.</string>
     <string name="drawer_edit_error_save">Ha ocurrido un error al guardar.</string>
     <string name="drawer_edit_error_missing_metadata">El álbum de este item no tiene un archivo de metadatos conectado.</string>
+    <string name="drawer_edit_error_empty_labels">Por favor, no dejes etiquetas vacías.</string>
 </resources>

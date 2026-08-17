@@ -43,17 +43,23 @@ class InfoDrawer(
     //Views (edit)
     private lateinit var editLayout: View
     private lateinit var editCaption: TextView
-    private lateinit var editLabels: TextView
+    private lateinit var editLabels: RecyclerView
+    private lateinit var editLabelsEmpty: View
+    private lateinit var editLabelsAdd: View
     private lateinit var editCancel: View
     private lateinit var editSave: View
 
     //Info
-    private val infoFileItems = ArrayList<Info>()
-    private val infoCameraItems = ArrayList<Info>()
-    private val infoSearchItems = ArrayList<Info>()
+    private val infoFileItems: MutableList<Info> = ArrayList()
+    private val infoCameraItems: MutableList<Info> = ArrayList()
+    private val infoSearchItems: MutableList<Info> = ArrayList()
+
+    //Edit
+    private val editLabelsItems: MutableList<String> = ArrayList()
+    private lateinit var editLabelsAdapter: EditAdapter
 
     //Animations
-    private val animationDuration = 450
+    private val animationDuration: Int = 450
 
 
     //Init
@@ -79,6 +85,8 @@ class InfoDrawer(
         editLayout = root.findViewById(R.id.editLayout)
         editCaption = root.findViewById(R.id.editCaption)
         editLabels = root.findViewById(R.id.editLabels)
+        editLabelsEmpty = root.findViewById(R.id.editLabelsEmpty)
+        editLabelsAdd = root.findViewById(R.id.editLabelsAdd)
         editCancel = root.findViewById(R.id.editCancel)
         editSave = root.findViewById(R.id.editSave)
     }
@@ -95,16 +103,19 @@ class InfoDrawer(
             }
 
             //Update edit info
-            for (i in infoSearchItems.indices) {
-                val item = infoSearchItems[i]
-                when (item.name) {
-                    R.string.drawer_info_search_caption -> {
-                        editCaption.text = item.info
-                    }
-                    R.string.drawer_info_search_labels -> {
-                        editLabels.text = item.info
-                    }
-                }
+            val metadata = item.getMetadataInfo()
+            if (metadata != null) {
+                //Update caption
+                editCaption.text = metadata.caption
+
+                //Update labels
+                editLabelsItems.clear()
+                editLabelsItems.addAll(metadata.labels)
+                editLabelsAdapter.notifyDataSetChanged()
+
+                //Toggle UI
+                editLabelsEmpty.visibility = if (editLabelsItems.isEmpty()) View.VISIBLE else View.GONE
+                editLabels.visibility = if (editLabelsItems.isEmpty()) View.GONE else View.VISIBLE
             }
 
             //Hide info & show edit
@@ -114,6 +125,22 @@ class InfoDrawer(
         }
 
         //Edit
+        editLabelsAdd.setOnClickListener {
+            //Check for empty labels
+            if (editLabelsItems.any { label -> label.trim().isEmpty() }) {
+                Toast.makeText(context, R.string.drawer_edit_error_empty_labels, Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            //Add new label
+            editLabelsItems.add("")
+            editLabelsAdapter.notifyItemInserted(editLabelsItems.size - 1)
+
+            //Toggle UI
+            editLabelsEmpty.visibility = if (editLabelsItems.isEmpty()) View.VISIBLE else View.GONE
+            editLabels.visibility = if (editLabelsItems.isEmpty()) View.GONE else View.VISIBLE
+        }
+
         editCancel.setOnClickListener { view ->
             //Show info & hide edit
             Orion.animateHide(editLayout, animationDuration) {
@@ -129,19 +156,19 @@ class InfoDrawer(
         editSave.setOnClickListener { view: View ->
             //Get new caption & labels
             val caption = editCaption.text.toString()
-            val labels = editLabels.text.toString()
-            val labelsArray: Array<String> = labels.split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-            for (i in labelsArray.indices) labelsArray[i] = labelsArray[i].trim { it <= ' ' }
+            val labels = editLabelsItems
+                .map { label -> label.trim() }
+                .filter { label -> label.isNotEmpty() }
+                .distinct()
 
             //Get metadata info
             val key = item.name
             val metadata = item.getMetadata() ?: Orion.emptyJson
-            val hasMetadata = item.hasMetadata()
 
             //Update metadata key
             metadata.put("caption", caption)
-            metadata.set<JsonNode>("labels", Orion.arrayToJson(labelsArray))
-            if (!hasMetadata) item.album.metadata!!.set<JsonNode>(key, metadata)
+            metadata.set<JsonNode>("labels", Orion.arrayToJson(labels.toTypedArray()))
+            item.album.setMetadataKey(key, metadata)
 
             //Save
             val saved = item.album.saveMetadata()
@@ -162,6 +189,10 @@ class InfoDrawer(
 
         //Load info
         loadInfo(ExifInterface(item.file.absolutePath))
+
+        //Init adapters
+        editLabelsAdapter = EditAdapter(context, editLabelsItems, R.string.drawer_edit_labels_hint)
+        initEditList(editLabels, editLabelsAdapter, editLabelsEmpty, editLabelsItems)
     }
 
     //Helpers
@@ -205,7 +236,7 @@ class InfoDrawer(
         }
 
         //Init list (file)
-        initList(infoFileLayout, infoFileList, infoFileItems)
+        initInfoList(infoFileLayout, infoFileList, infoFileItems)
 
         //Get info (camera)
         val cameraBrand = exif.getAttribute(ExifInterface.TAG_MAKE)
@@ -232,27 +263,21 @@ class InfoDrawer(
         }
 
         //Init list (camera)
-        initList(infoCameraLayout, infoCameraList, infoCameraItems)
+        initInfoList(infoCameraLayout, infoCameraList, infoCameraItems)
 
         //Get info (search metadata)
         val metadata = item.getMetadataInfo() ?: ItemMetadataInfo("", emptyList(), emptyList())
 
         //Create items list (search metadata)
-        if (metadata.caption.isNotEmpty()) {
-            infoSearchItems.add(Info(R.string.drawer_info_search_caption, metadata.caption))
-        }
-        if (metadata.labels.isNotEmpty()) {
-            infoSearchItems.add(Info(R.string.drawer_info_search_labels, metadata.labels.joinToString(", ")))
-        }
-        if (metadata.text.isNotEmpty()) {
-            infoSearchItems.add(Info(R.string.drawer_info_search_text, metadata.text.joinToString(", ")))
-        }
+        infoSearchItems.add(Info(R.string.drawer_info_search_caption, metadata.caption))
+        infoSearchItems.add(Info(R.string.drawer_info_search_labels, metadata.labels.joinToString(", ")))
+        infoSearchItems.add(Info(R.string.drawer_info_search_text, metadata.text.joinToString(", ")))
 
         //Init list (search metadata)
-        initList(infoSearchLayout, infoSearchList, infoSearchItems)
+        initInfoList(infoSearchLayout, infoSearchList, infoSearchItems)
     }
 
-    fun initList(layout: View, list: RecyclerView, items: List<Info>) {
+    fun initInfoList(layout: View, list: RecyclerView, items: List<Info>) {
         synchronized(this) {
             if (items.isEmpty()) {
                 //Empty -> Hide list
@@ -318,6 +343,22 @@ class InfoDrawer(
             retriever.release()
         }
         return Pair(0, 0)
+    }
+
+    fun initEditList(list: RecyclerView, adapter: EditAdapter, empty: View, items: MutableList<String>) {
+        list.layoutManager = LinearLayoutManager(context)
+        list.adapter = adapter
+        list.itemAnimator = null
+        adapter.onRemove = { label, position ->
+            //Remove label
+            list.clearFocus()
+            items.removeAt(position)
+            adapter.notifyItemRemoved(position)
+
+            //Toggle UI
+            empty.visibility = if (items.isEmpty()) View.VISIBLE else View.GONE
+            list.visibility = if (items.isEmpty()) View.GONE else View.VISIBLE
+        }
     }
 
 }

@@ -263,10 +263,13 @@
     <string name="drawer_info_search_text">Text</string>
     <string name="drawer_info_actions_close">Close</string>
     <string name="drawer_info_actions_edit">Edit search metadata</string>
-    <string name="drawer_edit_labels_hint">Labels (coma separated)</string>
+    <string name="drawer_edit_labels_hint">Label</string>
+    <string name="drawer_edit_labels_empty">No labels</string>
+    <string name="drawer_edit_labels_add">Add</string>
     <string name="drawer_edit_actions_close">Close</string>
     <string name="drawer_edit_actions_save">Save</string>
     <string name="drawer_edit_message_save">Saved successfully.</string>
     <string name="drawer_edit_error_save">An error occurred while saving.</string>
     <string name="drawer_edit_error_missing_metadata">This item\'s album does not have a metadata file linked to it.</string>
+    <string name="drawer_edit_error_empty_labels">Please, leave no empty labels.</string>
 </resources>
