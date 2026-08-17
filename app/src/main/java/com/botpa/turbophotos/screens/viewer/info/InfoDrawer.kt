@@ -43,9 +43,12 @@ class InfoDrawer(
     //Views (edit)
     private lateinit var editLayout: View
     private lateinit var editCaption: TextView
-    private lateinit var editLabels: RecyclerView
+    private lateinit var editLabelsList: RecyclerView
     private lateinit var editLabelsEmpty: View
     private lateinit var editLabelsAdd: View
+    private lateinit var editTextList: RecyclerView
+    private lateinit var editTextEmpty: View
+    private lateinit var editTextAdd: View
     private lateinit var editCancel: View
     private lateinit var editSave: View
 
@@ -56,7 +59,10 @@ class InfoDrawer(
 
     //Edit
     private val editLabelsItems: MutableList<String> = ArrayList()
+    private val editTextItems: MutableList<String> = ArrayList()
+
     private lateinit var editLabelsAdapter: EditAdapter
+    private lateinit var editTextAdapter: EditAdapter
 
     //Animations
     private val animationDuration: Int = 450
@@ -84,9 +90,12 @@ class InfoDrawer(
         //Edit
         editLayout = root.findViewById(R.id.editLayout)
         editCaption = root.findViewById(R.id.editCaption)
-        editLabels = root.findViewById(R.id.editLabels)
+        editLabelsList = root.findViewById(R.id.editLabelsList)
         editLabelsEmpty = root.findViewById(R.id.editLabelsEmpty)
         editLabelsAdd = root.findViewById(R.id.editLabelsAdd)
+        editTextList = root.findViewById(R.id.editTextList)
+        editTextEmpty = root.findViewById(R.id.editTextEmpty)
+        editTextAdd = root.findViewById(R.id.editTextAdd)
         editCancel = root.findViewById(R.id.editCancel)
         editSave = root.findViewById(R.id.editSave)
     }
@@ -112,10 +121,15 @@ class InfoDrawer(
                 editLabelsItems.clear()
                 editLabelsItems.addAll(metadata.labels)
                 editLabelsAdapter.notifyDataSetChanged()
-
-                //Toggle UI
                 editLabelsEmpty.visibility = if (editLabelsItems.isEmpty()) View.VISIBLE else View.GONE
-                editLabels.visibility = if (editLabelsItems.isEmpty()) View.GONE else View.VISIBLE
+                editLabelsList.visibility = if (editLabelsItems.isEmpty()) View.GONE else View.VISIBLE
+
+                //Update text
+                editTextItems.clear()
+                editTextItems.addAll(metadata.text)
+                editTextAdapter.notifyDataSetChanged()
+                editTextEmpty.visibility = if (editTextItems.isEmpty()) View.VISIBLE else View.GONE
+                editTextList.visibility = if (editTextItems.isEmpty()) View.GONE else View.VISIBLE
             }
 
             //Hide info & show edit
@@ -138,7 +152,23 @@ class InfoDrawer(
 
             //Toggle UI
             editLabelsEmpty.visibility = if (editLabelsItems.isEmpty()) View.VISIBLE else View.GONE
-            editLabels.visibility = if (editLabelsItems.isEmpty()) View.GONE else View.VISIBLE
+            editLabelsList.visibility = if (editLabelsItems.isEmpty()) View.GONE else View.VISIBLE
+        }
+
+        editTextAdd.setOnClickListener {
+            //Check for empty text
+            if (editTextItems.any { label -> label.trim().isEmpty() }) {
+                Toast.makeText(context, R.string.drawer_edit_error_empty_text, Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            //Add new text
+            editTextItems.add("")
+            editTextAdapter.notifyItemInserted(editTextItems.size - 1)
+
+            //Toggle UI
+            editTextEmpty.visibility = if (editTextItems.isEmpty()) View.VISIBLE else View.GONE
+            editTextList.visibility = if (editTextItems.isEmpty()) View.GONE else View.VISIBLE
         }
 
         editCancel.setOnClickListener { view ->
@@ -160,6 +190,9 @@ class InfoDrawer(
                 .map { label -> label.trim() }
                 .filter { label -> label.isNotEmpty() }
                 .distinct()
+            val text = editTextItems
+                .map { text -> text.trim() }
+                .filter { text -> text.isNotEmpty() }
 
             //Get metadata info
             val key = item.name
@@ -168,6 +201,7 @@ class InfoDrawer(
             //Update metadata key
             metadata.put("caption", caption)
             metadata.set<JsonNode>("labels", Orion.arrayToJson(labels.toTypedArray()))
+            metadata.set<JsonNode>("text", Orion.arrayToJson(text.toTypedArray()))
             item.album.setMetadataKey(key, metadata)
 
             //Save
@@ -192,7 +226,9 @@ class InfoDrawer(
 
         //Init adapters
         editLabelsAdapter = EditAdapter(context, editLabelsItems, R.string.drawer_edit_labels_hint)
-        initEditList(editLabels, editLabelsAdapter, editLabelsEmpty, editLabelsItems)
+        initEditList(editLabelsList, editLabelsAdapter, editLabelsEmpty, editLabelsItems)
+        editTextAdapter = EditAdapter(context, editTextItems, R.string.drawer_edit_text_hint)
+        initEditList(editTextList, editTextAdapter, editTextEmpty, editTextItems)
     }
 
     //Helpers
