@@ -68,9 +68,9 @@ open class BaseActivity : AppCompatActivity() {
 
         //Init components
         backManager = BackManager(this, onBackPressedDispatcher)
-        permissionManager = PermissionManager(this, permissions) { permission ->
+        permissionManager = PermissionManager(this, permissions, { permission ->
             onRequestPermission(permission)
-        }
+        })
         Storage.init(this)
 
         //Init views

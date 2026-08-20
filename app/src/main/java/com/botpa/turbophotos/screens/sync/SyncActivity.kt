@@ -230,15 +230,15 @@ class SyncActivity : AppCompatActivity() {
         var permissionManager: PermissionManager? = null
         val requestPermissionNotifications = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.RequestPermission()
-        ) { isGranted ->
+        ) {
             permissionManager!!.notifyPermissionChanged(PermissionType.Notifications)
-            view.updatePermissions(permissionManager!!)
+            view.updatePermissions(permissionManager)
         }
         val requestLocalNetworkPermission = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.RequestPermission()
-        ) { isGranted ->
+        ) {
             permissionManager!!.notifyPermissionChanged(PermissionType.LocalAreaNetwork)
-            view.updatePermissions(permissionManager!!)
+            view.updatePermissions(permissionManager)
         }
 
         //Create request permission event
@@ -263,14 +263,19 @@ class SyncActivity : AppCompatActivity() {
             }
         }
 
+        //Create permissions granted event
+        val onPermissionsGranted = remember {
+            {
+                //Mark permissions as granted
+                view.updatePermissions(permissionManager)
+                onPermissionsGranted.invoke()
+            }
+        }
+
         //Create permission manager & check for permissions
-        permissionManager = PermissionManager(this, listOf(PermissionType.Notifications, PermissionType.LocalAreaNetwork), onRequestPermission)
-        if (permissionManager.hasAllPermissions) {
-            //Mark permissions as granted
-            view.updatePermissions(permissionManager)
-            onPermissionsGranted.invoke()
-        } else {
-            //Ask for permissions
+        permissionManager = PermissionManager(this, listOf(PermissionType.Notifications, PermissionType.LocalAreaNetwork), onRequestPermission, onPermissionsGranted)
+        if (!permissionManager.hasAllPermissions) {
+            //No permissions -> Ask for them
             permissionManager.showDialog(this)
         }
     }

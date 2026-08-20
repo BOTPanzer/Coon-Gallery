@@ -18,9 +18,9 @@ class SyncViewModel : ViewModel() {
     var hasPermissions by mutableStateOf(false)
         private set
 
-    fun updatePermissions(permissionManager: PermissionManager) {
+    fun updatePermissions(permissionManager: PermissionManager?) {
         //All
-        hasPermissions = permissionManager.hasAllPermissions
+        hasPermissions = permissionManager?.hasAllPermissions ?: true
     }
 
     //Sync

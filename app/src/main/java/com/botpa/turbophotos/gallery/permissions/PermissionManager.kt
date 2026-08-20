@@ -11,7 +11,11 @@ import androidx.core.content.ContextCompat
 import com.botpa.turbophotos.gallery.modals.PermissionsDialog
 import java.util.EnumMap
 
-class PermissionManager(val context: Context, managedPermissions: List<PermissionType>, private val onRequestPermission: (PermissionType) -> Unit) {
+class PermissionManager(
+    val context: Context, managedPermissions: List<PermissionType>,
+    private val onRequestPermission: (PermissionType) -> Unit,
+    private val onPermissionsGranted: (() -> Unit)? = null
+) {
 
     private val _permissions: MutableMap<PermissionType, Boolean> = EnumMap(PermissionType::class.java)
 
@@ -68,6 +72,7 @@ class PermissionManager(val context: Context, managedPermissions: List<Permissio
         if (hasAllPermissions) {
             permissionsDialog?.hide()
             permissionsDialog = null
+            onPermissionsGranted?.invoke()
         } else {
             permissionsDialog?.refreshPermissions()
         }
