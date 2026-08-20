@@ -6,13 +6,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.RelativeLayout
 import android.widget.TextView
+import androidx.core.content.withStyledAttributes
 import com.botpa.turbophotos.R
 import com.scwang.smart.refresh.layout.api.RefreshHeader
 import com.scwang.smart.refresh.layout.api.RefreshKernel
 import com.scwang.smart.refresh.layout.api.RefreshLayout
 import com.scwang.smart.refresh.layout.constant.RefreshState
 import com.scwang.smart.refresh.layout.constant.SpinnerStyle
-import androidx.core.content.withStyledAttributes
 
 @Suppress("RestrictedApi")
 class InformativeRefreshHeader @JvmOverloads constructor(
@@ -36,10 +36,10 @@ class InformativeRefreshHeader @JvmOverloads constructor(
         refreshIndicator = view.findViewById(R.id.refreshIndicator)
 
         //Get attributes
-        context.withStyledAttributes(attrs, R.styleable.CustomRefreshHeader, defStyleAttr, 0) {
-            textPullToRefresh = getString(R.styleable.CustomRefreshHeader_textPullToRefresh) ?: "Pull to refresh"
-            textReleaseToRefresh = getString(R.styleable.CustomRefreshHeader_textReleaseToRefresh) ?: "Release to refresh"
-            textRefreshing = getString(R.styleable.CustomRefreshHeader_textRefreshing) ?: "Refreshing..."
+        context.withStyledAttributes(attrs, R.styleable.InformativeRefreshHeader, defStyleAttr, 0) {
+            textPullToRefresh = getString(R.styleable.InformativeRefreshHeader_textPullToRefresh) ?: "Pull to refresh"
+            textReleaseToRefresh = getString(R.styleable.InformativeRefreshHeader_textReleaseToRefresh) ?: "Release to refresh"
+            textRefreshing = getString(R.styleable.InformativeRefreshHeader_textRefreshing) ?: "Refreshing..."
         }
     }
 

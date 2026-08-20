@@ -7,7 +7,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
-import com.botpa.turbophotos.gallery.Item
+import com.botpa.turbophotos.gallery.data.Item
 import com.botpa.turbophotos.gallery.modals.core.CustomAdapter
 import com.botpa.turbophotos.gallery.views.ZoomableLayout
 import com.botpa.turbophotos.util.Orion

@@ -1,6 +1,8 @@
-package com.botpa.turbophotos.gallery
+package com.botpa.turbophotos.gallery.data
 
 import androidx.compose.runtime.mutableStateListOf
+import com.botpa.turbophotos.gallery.Library
+import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.util.Storage
 import java.io.File
 

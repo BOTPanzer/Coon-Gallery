@@ -8,6 +8,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.botpa.turbophotos.gallery.permissions.PermissionManager
+import com.botpa.turbophotos.screens.sync.service.SyncService
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
@@ -34,7 +35,7 @@ class SyncViewModel : ViewModel() {
     var connectCode by mutableStateOf("")
 
     //Users
-    val users = mutableStateListOf<User>()
+    val users = mutableStateListOf<SyncUser>()
 
     //Logs
     val logs = mutableStateListOf<String>()

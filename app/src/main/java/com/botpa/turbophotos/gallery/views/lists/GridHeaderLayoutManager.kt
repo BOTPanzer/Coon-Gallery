@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.gallery.views
+package com.botpa.turbophotos.gallery.views.lists
 
 import android.content.Context
 import androidx.recyclerview.widget.GridLayoutManager

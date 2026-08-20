@@ -31,11 +31,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.botpa.turbophotos.R
-import com.botpa.turbophotos.gallery.Link
-import com.botpa.turbophotos.gallery.views.IconButton
-import com.botpa.turbophotos.gallery.views.groupItemPaddingHorizontal
-import com.botpa.turbophotos.gallery.views.groupItemPaddingVertical
-import com.botpa.turbophotos.theme.FONT_OUTFIT
+import com.botpa.turbophotos.gallery.data.Link
+import com.botpa.turbophotos.gallery.jetpack.FONT_OUTFIT
+import com.botpa.turbophotos.gallery.jetpack.IconButton
+import com.botpa.turbophotos.gallery.jetpack.groupItemPaddingHorizontal
+import com.botpa.turbophotos.gallery.jetpack.groupItemPaddingVertical
 
 //Settings
 @Composable

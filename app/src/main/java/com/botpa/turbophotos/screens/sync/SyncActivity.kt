@@ -56,18 +56,20 @@ import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.gallery.permissions.PermissionManager
 import com.botpa.turbophotos.gallery.permissions.PermissionType
-import com.botpa.turbophotos.gallery.views.Group
-import com.botpa.turbophotos.gallery.views.GroupDivider
-import com.botpa.turbophotos.gallery.views.GroupItem
-import com.botpa.turbophotos.gallery.views.GroupItems
-import com.botpa.turbophotos.gallery.views.GroupTitle
-import com.botpa.turbophotos.gallery.views.Layout
-import com.botpa.turbophotos.gallery.views.SimpleButton
-import com.botpa.turbophotos.gallery.views.groupItemPaddingHorizontal
-import com.botpa.turbophotos.gallery.views.groupItemPaddingVertical
-import com.botpa.turbophotos.screens.sync.SyncEventBus.Companion.instance
-import com.botpa.turbophotos.theme.CoonTheme
-import com.botpa.turbophotos.theme.FONT_OUTFIT
+import com.botpa.turbophotos.gallery.jetpack.CoonTheme
+import com.botpa.turbophotos.gallery.jetpack.FONT_OUTFIT
+import com.botpa.turbophotos.gallery.jetpack.Group
+import com.botpa.turbophotos.gallery.jetpack.GroupDivider
+import com.botpa.turbophotos.gallery.jetpack.GroupItem
+import com.botpa.turbophotos.gallery.jetpack.GroupItems
+import com.botpa.turbophotos.gallery.jetpack.GroupTitle
+import com.botpa.turbophotos.gallery.jetpack.Layout
+import com.botpa.turbophotos.gallery.jetpack.SimpleButton
+import com.botpa.turbophotos.gallery.jetpack.groupItemPaddingHorizontal
+import com.botpa.turbophotos.gallery.jetpack.groupItemPaddingVertical
+import com.botpa.turbophotos.screens.sync.service.SyncEventBus.Companion.instance
+import com.botpa.turbophotos.screens.sync.service.SyncEvent
+import com.botpa.turbophotos.screens.sync.service.SyncService
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
 import java.util.Locale
@@ -381,7 +383,7 @@ class SyncActivity : AppCompatActivity() {
 
                                 //Add new user
                                 if (!isSaved) {
-                                    view.users.add(0, User(view.connectName, view.connectCode))
+                                    view.users.add(0, SyncUser(view.connectName, view.connectCode))
                                     saveUsers()
                                 }
                             }
@@ -541,7 +543,7 @@ class SyncActivity : AppCompatActivity() {
 
             //Add user
             view.users.add(
-                User(
+                SyncUser(
                     userString.substring(0, separatorIndex),
                     userString.substring(separatorIndex + 1)
                 )

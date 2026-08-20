@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.gallery.views
+package com.botpa.turbophotos.gallery.jetpack
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
@@ -34,9 +34,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.botpa.turbophotos.theme.FONT_FRAUNCES
-import com.botpa.turbophotos.theme.FONT_OPIFICIO
-import com.botpa.turbophotos.theme.FONT_OUTFIT
 
 //General
 @OptIn(ExperimentalMaterial3Api::class)

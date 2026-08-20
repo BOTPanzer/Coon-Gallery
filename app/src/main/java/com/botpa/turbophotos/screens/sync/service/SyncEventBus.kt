@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.screens.sync
+package com.botpa.turbophotos.screens.sync.service
 
 import androidx.lifecycle.MutableLiveData
 import java.util.concurrent.ConcurrentLinkedQueue

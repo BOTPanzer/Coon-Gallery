@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.screens.viewer.info
+package com.botpa.turbophotos.screens.viewer.properties
 
 import android.app.Activity
 import android.graphics.BitmapFactory
@@ -11,11 +11,11 @@ import androidx.exifinterface.media.ExifInterface
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
-import com.botpa.turbophotos.gallery.Item
-import com.botpa.turbophotos.gallery.ItemMetadataInfo
 import com.botpa.turbophotos.gallery.LocalGeocoder
+import com.botpa.turbophotos.gallery.data.Item
+import com.botpa.turbophotos.gallery.data.ItemMetadataInfo
 import com.botpa.turbophotos.gallery.modals.core.CustomDrawer
-import com.botpa.turbophotos.gallery.views.ListSeparator
+import com.botpa.turbophotos.gallery.views.lists.ListSeparator
 import com.botpa.turbophotos.util.Orion
 import com.fasterxml.jackson.databind.JsonNode
 import java.io.FileInputStream
@@ -24,10 +24,10 @@ import java.util.Date
 import java.util.Locale
 import kotlin.math.round
 
-class InfoDrawer(
+class PropertiesDrawer(
     private val activity: Activity,
     private val item: Item
-) : CustomDrawer(activity, R.layout.drawer_viewer_info) {
+) : CustomDrawer(activity, R.layout.drawer_properties) {
 
     //Views (info)
     private lateinit var infoLayout: View
@@ -53,16 +53,16 @@ class InfoDrawer(
     private lateinit var editSave: View
 
     //Info
-    private val infoFileItems: MutableList<Info> = ArrayList()
-    private val infoCameraItems: MutableList<Info> = ArrayList()
-    private val infoSearchItems: MutableList<Info> = ArrayList()
+    private val infoFileItems: MutableList<PropertiesInfo> = ArrayList()
+    private val infoCameraItems: MutableList<PropertiesInfo> = ArrayList()
+    private val infoSearchItems: MutableList<PropertiesInfo> = ArrayList()
 
     //Edit
     private val editLabelsItems: MutableList<String> = ArrayList()
     private val editTextItems: MutableList<String> = ArrayList()
 
-    private lateinit var editLabelsAdapter: EditAdapter
-    private lateinit var editTextAdapter: EditAdapter
+    private lateinit var editLabelsAdapter: PropertiesEditAdapter
+    private lateinit var editTextAdapter: PropertiesEditAdapter
 
     //Animations
     private val animationDuration: Int = 450
@@ -107,7 +107,7 @@ class InfoDrawer(
         infoEdit.setOnClickListener { view: View ->
             //No metadata file
             if (!item.album.hasMetadata()) {
-                Toast.makeText(context, R.string.drawer_edit_error_missing_metadata, Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, R.string.drawer_properties_edit_error_missing_metadata, Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -147,7 +147,7 @@ class InfoDrawer(
         editLabelsAdd.setOnClickListener {
             //Check for empty labels
             if (editLabelsItems.any { label -> label.trim().isEmpty() }) {
-                Toast.makeText(context, R.string.drawer_edit_error_empty_labels, Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, R.string.drawer_properties_edit_error_empty_labels, Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -163,7 +163,7 @@ class InfoDrawer(
         editTextAdd.setOnClickListener {
             //Check for empty text
             if (editTextItems.any { label -> label.trim().isEmpty() }) {
-                Toast.makeText(context, R.string.drawer_edit_error_empty_text, Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, R.string.drawer_properties_edit_error_empty_text, Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -213,7 +213,7 @@ class InfoDrawer(
             val saved = item.album.saveMetadata()
             Toast.makeText(
                 context,
-                if (saved) R.string.drawer_edit_message_save else R.string.drawer_edit_error_save,
+                if (saved) R.string.drawer_properties_edit_message_save else R.string.drawer_properties_edit_error_save,
                 Toast.LENGTH_SHORT
             ).show()
 
@@ -230,9 +230,9 @@ class InfoDrawer(
         loadInfo(ExifInterface(item.file.absolutePath))
 
         //Init adapters
-        editLabelsAdapter = EditAdapter(context, editLabelsItems, R.string.drawer_edit_labels_hint)
+        editLabelsAdapter = PropertiesEditAdapter(context, editLabelsItems, R.string.drawer_properties_edit_labels_hint)
         initEditList(editLabelsList, editLabelsAdapter, editLabelsEmpty, editLabelsItems)
-        editTextAdapter = EditAdapter(context, editTextItems, R.string.drawer_edit_text_hint)
+        editTextAdapter = PropertiesEditAdapter(context, editTextItems, R.string.drawer_properties_edit_text_hint)
         initEditList(editTextList, editTextAdapter, editTextEmpty, editTextItems)
     }
 
@@ -247,12 +247,12 @@ class InfoDrawer(
         val location = exif.latLong
 
         //Create items list (file)
-        infoFileItems.add(Info(R.string.drawer_info_file_name, item.name))
-        infoFileItems.add(Info(R.string.drawer_info_file_path, path))
-        infoFileItems.add(Info(R.string.drawer_info_file_date, dateFormatter.format(date)))
-        infoFileItems.add(Info(R.string.drawer_info_file_size, if (size > 1000) "${round(size / 10) / 100} MB" else "$size KB"))
+        infoFileItems.add(PropertiesInfo(R.string.drawer_properties_info_file_name, item.name))
+        infoFileItems.add(PropertiesInfo(R.string.drawer_properties_info_file_path, path))
+        infoFileItems.add(PropertiesInfo(R.string.drawer_properties_info_file_date, dateFormatter.format(date)))
+        infoFileItems.add(PropertiesInfo(R.string.drawer_properties_info_file_size, if (size > 1000) "${round(size / 10) / 100} MB" else "$size KB"))
         if (resolution.first > 0 && resolution.second > 0) {
-            infoFileItems.add(Info(R.string.drawer_info_file_resolution, "${resolution.first}x${resolution.second}"))
+            infoFileItems.add(PropertiesInfo(R.string.drawer_properties_info_file_resolution, "${resolution.first}x${resolution.second}"))
         }
         if (location != null) {
             //Get location info
@@ -261,7 +261,7 @@ class InfoDrawer(
             val longitude = location[1]
             val longitudeText = String.format(Locale.getDefault(), "%.4f", longitude)
             val locationCoordinates = "${latitudeText}º N, ${longitudeText}º W"
-            val item = Info(R.string.drawer_info_file_location, "${context.getString(R.string.drawer_info_file_location_finding)}\n$locationCoordinates")
+            val item = PropertiesInfo(R.string.drawer_properties_info_file_location, "${context.getString(R.string.drawer_properties_info_file_location_finding)}\n$locationCoordinates")
             infoFileItems.add(item)
 
             //Async load location name
@@ -288,19 +288,19 @@ class InfoDrawer(
 
         //Create items list (camera)
         if (cameraBrand != null) {
-            infoCameraItems.add(Info(R.string.drawer_info_camera_brand, cameraBrand))
+            infoCameraItems.add(PropertiesInfo(R.string.drawer_properties_info_camera_brand, cameraBrand))
         }
         if (cameraModel != null) {
-            infoCameraItems.add(Info(R.string.drawer_info_camera_model, cameraModel))
+            infoCameraItems.add(PropertiesInfo(R.string.drawer_properties_info_camera_model, cameraModel))
         }
         if (iso != null) {
-            infoCameraItems.add(Info(R.string.drawer_info_camera_iso, iso))
+            infoCameraItems.add(PropertiesInfo(R.string.drawer_properties_info_camera_iso, iso))
         }
         if (aperture != null) {
-            infoCameraItems.add(Info(R.string.drawer_info_camera_aperture, aperture))
+            infoCameraItems.add(PropertiesInfo(R.string.drawer_properties_info_camera_aperture, aperture))
         }
         if (shutterSpeed != null) {
-            infoCameraItems.add(Info(R.string.drawer_info_camera_shutter, shutterSpeed))
+            infoCameraItems.add(PropertiesInfo(R.string.drawer_properties_info_camera_shutter, shutterSpeed))
         }
 
         //Init list (camera)
@@ -310,22 +310,28 @@ class InfoDrawer(
         val metadata = item.getMetadataInfo() ?: ItemMetadataInfo("", emptyList(), emptyList())
 
         //Create items list (search metadata)
-        infoSearchItems.add(Info(R.string.drawer_info_search_caption, metadata.caption))
-        infoSearchItems.add(Info(R.string.drawer_info_search_labels, metadata.labels.joinToString(", ")))
-        infoSearchItems.add(Info(R.string.drawer_info_search_text, metadata.text.joinToString(", ")))
+        if (metadata.caption.isNotEmpty()) {
+            infoSearchItems.add(PropertiesInfo(R.string.drawer_properties_info_search_caption, metadata.caption))
+        }
+        if (metadata.labels.isNotEmpty()) {
+            infoSearchItems.add(PropertiesInfo(R.string.drawer_properties_info_search_labels, metadata.labels.joinToString(", ")))
+        }
+        if (metadata.text.isNotEmpty()) {
+            infoSearchItems.add(PropertiesInfo(R.string.drawer_properties_info_search_text, metadata.text.joinToString(", ")))
+        }
 
         //Init list (search metadata)
         initInfoList(infoSearchLayout, infoSearchList, infoSearchItems)
     }
 
-    fun initInfoList(layout: View, list: RecyclerView, items: List<Info>) {
+    fun initInfoList(layout: View, list: RecyclerView, items: List<PropertiesInfo>) {
         synchronized(this) {
             if (items.isEmpty()) {
                 //Empty -> Hide list
                 layout.visibility = View.GONE
             } else {
                 //Has items -> Init list
-                list.adapter = InfoAdapter(context, items)
+                list.adapter = PropertiesInfoAdapter(context, items)
                 list.layoutManager = LinearLayoutManager(context)
                 list.addItemDecoration(ListSeparator(3))
             }
@@ -386,7 +392,7 @@ class InfoDrawer(
         return Pair(0, 0)
     }
 
-    fun initEditList(list: RecyclerView, adapter: EditAdapter, empty: View, items: MutableList<String>) {
+    fun initEditList(list: RecyclerView, adapter: PropertiesEditAdapter, empty: View, items: MutableList<String>) {
         list.layoutManager = LinearLayoutManager(context)
         list.adapter = adapter
         list.itemAnimator = null

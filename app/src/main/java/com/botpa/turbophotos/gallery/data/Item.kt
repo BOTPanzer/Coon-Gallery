@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.gallery
+package com.botpa.turbophotos.gallery.data
 
 import android.content.Context
 import android.graphics.drawable.Drawable

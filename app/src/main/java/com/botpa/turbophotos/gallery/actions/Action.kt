@@ -1,8 +1,8 @@
 package com.botpa.turbophotos.gallery.actions
 
 import android.net.Uri
-import com.botpa.turbophotos.gallery.Album
-import com.botpa.turbophotos.gallery.Item
+import com.botpa.turbophotos.gallery.data.Album
+import com.botpa.turbophotos.gallery.data.Item
 
 class Action(val type: Int, @JvmField val items: Array<Item>) {
 

@@ -1,8 +1,8 @@
-package com.botpa.turbophotos.screens.video
+package com.botpa.turbophotos.screens.video.tracks
 
 import androidx.media3.common.Tracks
 
-data class MediaTrackInfo(
+data class TrackInfo(
     val name: String,
     val language: String? = null,
     val trackGroup: Tracks.Group? = null,

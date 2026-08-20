@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.gallery.views
+package com.botpa.turbophotos.gallery.views.lists
 
 import android.graphics.Rect
 import android.view.View

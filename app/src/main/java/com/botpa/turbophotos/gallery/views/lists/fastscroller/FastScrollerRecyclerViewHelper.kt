@@ -1,15 +1,15 @@
-package com.botpa.turbophotos.gallery.fastscroller
+package com.botpa.turbophotos.gallery.views.lists.fastscroller
 
 import android.graphics.Canvas
 import android.graphics.Rect
 import android.view.MotionEvent
+import androidx.core.view.isEmpty
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ItemDecoration
 import androidx.recyclerview.widget.RecyclerView.SimpleOnItemTouchListener
-import com.botpa.turbophotos.gallery.fastscroller.FastScroller.ViewHelper
-import androidx.core.view.isEmpty
+import com.botpa.turbophotos.gallery.views.lists.fastscroller.FastScroller.ViewHelper
 
 internal class FastScrollerRecyclerViewHelper(private val view: RecyclerView) : ViewHelper {
 

@@ -7,7 +7,7 @@ import androidx.activity.BackEventCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
-import com.botpa.turbophotos.gallery.views.ListSeparator
+import com.botpa.turbophotos.gallery.views.lists.ListSeparator
 import com.botpa.turbophotos.util.BackAnimationEvent
 import com.botpa.turbophotos.util.BackManager
 import com.botpa.turbophotos.util.Ease

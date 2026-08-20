@@ -13,10 +13,13 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.core.content.MimeTypeFilter
 import com.botpa.turbophotos.R
-import com.botpa.turbophotos.gallery.Link.Companion.loadLinks
-import com.botpa.turbophotos.gallery.Link.Companion.relinkWithAlbum
 import com.botpa.turbophotos.gallery.actions.Action
 import com.botpa.turbophotos.gallery.actions.ActionError
+import com.botpa.turbophotos.gallery.data.Album
+import com.botpa.turbophotos.gallery.data.Item
+import com.botpa.turbophotos.gallery.data.Link
+import com.botpa.turbophotos.gallery.data.Link.Companion.loadLinks
+import com.botpa.turbophotos.gallery.data.Link.Companion.relinkWithAlbum
 import com.botpa.turbophotos.gallery.modals.AlbumsDialog
 import com.botpa.turbophotos.gallery.modals.ErrorsDialog
 import com.botpa.turbophotos.gallery.modals.InputDialog
@@ -24,13 +27,6 @@ import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage.getBool
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.io.File
-import kotlin.Array
-import kotlin.Boolean
-import kotlin.Exception
-import kotlin.Int
-import kotlin.String
-import kotlin.arrayOf
-import kotlin.checkNotNull
 
 enum class SearchMethod { ContainsWords, ContainsText }
 
@@ -223,13 +219,29 @@ object Library {
                         val album = getOrCreateAlbumFromItemFile(file)
                         if (isTrashed) {
                             //Trashed -> Create item with trash as album
-                            val item = Item(file, trash, lastModified, mimeType!!, size, true, isFavourite)
+                            val item = Item(
+                                file,
+                                trash,
+                                lastModified,
+                                mimeType!!,
+                                size,
+                                true,
+                                isFavourite
+                            )
 
                             //Add to trash
                             addItemToTrash(item, album)
                         } else {
                             //Not trashed -> Create item with normal album
-                            val item = Item(file, album, lastModified, mimeType!!, size, false, isFavourite)
+                            val item = Item(
+                                file,
+                                album,
+                                lastModified,
+                                mimeType!!,
+                                size,
+                                false,
+                                isFavourite
+                            )
 
                             //Add to all items list & its album
                             all.add(item)
@@ -865,7 +877,15 @@ object Library {
             recentlyAddedFiles.add(newFile) //Mark file as recently added to prevent duplicates on refresh
 
             //Create new item
-            val newItem = Item(newFile, newAlbum, item.lastModified, item.mimeType, item.size, item.isTrashed, false)
+            val newItem = Item(
+                newFile,
+                newAlbum,
+                item.lastModified,
+                item.mimeType,
+                item.size,
+                item.isTrashed,
+                false
+            )
 
             //Add item to new album
             val indexInAlbum = performAddToAlbum(action, newItem, newAlbum)

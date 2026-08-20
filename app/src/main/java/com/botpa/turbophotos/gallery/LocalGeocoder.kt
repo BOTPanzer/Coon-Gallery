@@ -5,7 +5,11 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.util.Locale
 import java.util.zip.GZIPInputStream
-import kotlin.math.*
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.pow
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 data class CityRecord(
     val name: String,

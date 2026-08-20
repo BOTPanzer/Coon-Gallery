@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.screens.sync
+package com.botpa.turbophotos.screens.sync.service
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -10,8 +10,9 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.botpa.turbophotos.R
-import com.botpa.turbophotos.gallery.Item
-import com.botpa.turbophotos.gallery.Link
+import com.botpa.turbophotos.gallery.data.Item
+import com.botpa.turbophotos.gallery.data.Link
+import com.botpa.turbophotos.screens.sync.SyncActivity
 import com.botpa.turbophotos.util.Orion
 import com.fasterxml.jackson.databind.JsonNode
 import dev.gustavoavila.websocketclient.WebSocketClient

@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.gallery
+package com.botpa.turbophotos.gallery.data
 
 import com.botpa.turbophotos.util.Orion
 import com.fasterxml.jackson.databind.node.ObjectNode

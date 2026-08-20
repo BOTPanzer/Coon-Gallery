@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.screens.viewer.info
+package com.botpa.turbophotos.screens.viewer.properties
 
 import android.content.Context
 import android.text.Editable
@@ -10,11 +10,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.modals.core.SimpleCustomAdapter
 
-class EditAdapter(context: Context, private val labels: MutableList<String>, private val hint: Int) : SimpleCustomAdapter<String, EditAdapter.ItemHolder>(context, labels) {
+class PropertiesEditAdapter(context: Context, private val labels: MutableList<String>, private val hint: Int) : SimpleCustomAdapter<String, PropertiesEditAdapter.ItemHolder>(context, labels) {
 
     //Adapter
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ItemHolder {
-        return ItemHolder(inflateView(context, R.layout.drawer_viewer_edit_item, viewGroup))
+        return ItemHolder(inflateView(context, R.layout.drawer_properties_edit_item, viewGroup))
     }
 
     override fun onInitItemHolder(holder: ItemHolder, item: String) {

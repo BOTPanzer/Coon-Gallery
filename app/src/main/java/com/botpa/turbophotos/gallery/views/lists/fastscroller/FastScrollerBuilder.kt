@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.gallery.fastscroller
+package com.botpa.turbophotos.gallery.views.lists.fastscroller
 
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
@@ -6,8 +6,8 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
-import com.botpa.turbophotos.gallery.fastscroller.FastScroller.AnimationHelper
-import com.botpa.turbophotos.gallery.fastscroller.FastScroller.ViewHelper
+import com.botpa.turbophotos.gallery.views.lists.fastscroller.FastScroller.AnimationHelper
+import com.botpa.turbophotos.gallery.views.lists.fastscroller.FastScroller.ViewHelper
 
 class FastScrollerBuilder(private val view: ViewGroup) {
 

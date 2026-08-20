@@ -1,10 +1,10 @@
-package com.botpa.turbophotos.gallery.fastscroller
+package com.botpa.turbophotos.gallery.views.lists.fastscroller
 
 import android.view.View
 import android.view.animation.Interpolator
 import androidx.interpolator.view.animation.FastOutLinearInInterpolator
 import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
-import com.botpa.turbophotos.gallery.fastscroller.FastScroller.AnimationHelper
+import com.botpa.turbophotos.gallery.views.lists.fastscroller.FastScroller.AnimationHelper
 import kotlin.math.max
 
 class FastScrollerAnimationHelper(private val mView: View) : AnimationHelper {

@@ -23,20 +23,20 @@ import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SnapHelper
 import com.botpa.turbophotos.R
-import com.botpa.turbophotos.gallery.Album
 import com.botpa.turbophotos.gallery.BaseActivity
-import com.botpa.turbophotos.gallery.Item
 import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.Library.ActionEvent
 import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.gallery.actions.Action
+import com.botpa.turbophotos.gallery.data.Album
+import com.botpa.turbophotos.gallery.data.Item
 import com.botpa.turbophotos.gallery.options.OptionsGroup
 import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.options.OptionsManager
 import com.botpa.turbophotos.gallery.permissions.PermissionType
 import com.botpa.turbophotos.gallery.views.ZoomableLayout
-import com.botpa.turbophotos.screens.viewer.info.InfoDrawer
 import com.botpa.turbophotos.screens.video.VideoActivity
+import com.botpa.turbophotos.screens.viewer.properties.PropertiesDrawer
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
 
@@ -80,7 +80,7 @@ class ViewerActivity : BaseActivity() {
     private var currentIndexInViewer = -1
 
     private var useInternalVideoPlayer: Boolean = true
-    private var showInfo: Boolean = true
+    private var showProperties: Boolean = true
     private var showEdit: Boolean = false
     private var showShare: Boolean = false
     private var showFavourite: Boolean = false
@@ -104,7 +104,7 @@ class ViewerActivity : BaseActivity() {
     private val options: MutableList<OptionsGroup> = ArrayList()
     private lateinit var optionsManager: OptionsManager
 
-    private lateinit var optionInfo: OptionsItem
+    private lateinit var optionProperties: OptionsItem
     private lateinit var optionRename: OptionsItem
     private lateinit var optionEdit: OptionsItem
     private lateinit var optionShare: OptionsItem
@@ -132,7 +132,7 @@ class ViewerActivity : BaseActivity() {
     private lateinit var overlayTitle: TextView
     private lateinit var overlayIsFavourite: View
 
-    //Views (overlay options)
+    //Views (overlay shortcuts & options)
     private lateinit var overlayInfoContainer: View
     private lateinit var overlayInfo: View
     private lateinit var overlayEditContainer: View
@@ -215,7 +215,7 @@ class ViewerActivity : BaseActivity() {
 
     override fun onInitListeners() {
         //Overlay
-        overlayInfo.setOnClickListener { optionInfo.action.invoke() }
+        overlayInfo.setOnClickListener { optionProperties.action.invoke() }
 
         overlayEdit.setOnClickListener { optionEdit.action.invoke() }
 
@@ -260,9 +260,9 @@ class ViewerActivity : BaseActivity() {
             isInPiP = enterPictureInPictureMode(p.build())
         }
 
-        optionInfo = OptionsItem(R.drawable.info, R.string.viewer_option_info) {
-            //Toggle info
-            InfoDrawer(this, currentItem).buildAndShow()
+        optionProperties = OptionsItem(R.drawable.info, R.string.viewer_option_properties) {
+            //Toggle properties
+            PropertiesDrawer(this, currentItem).buildAndShow()
         }
 
         optionFavourite = OptionsItem(R.drawable.favourite_on, R.string.context_option_favourite) {
@@ -363,7 +363,7 @@ class ViewerActivity : BaseActivity() {
 
         //Update settings
         useInternalVideoPlayer = Storage.getBool(StoragePairs.VIDEO_USE_INTERNAL_PLAYER)
-        showInfo = Storage.getBool(StoragePairs.VIEWER_SHOW_INFO)
+        showProperties = Storage.getBool(StoragePairs.VIEWER_SHOW_PROPERTIES)
         showEdit = Storage.getBool(StoragePairs.VIEWER_SHOW_EDIT)
         showShare = Storage.getBool(StoragePairs.VIEWER_SHOW_SHARE)
         showFavourite = Storage.getBool(StoragePairs.VIEWER_SHOW_FAVOURITE)
@@ -531,7 +531,7 @@ class ViewerActivity : BaseActivity() {
     }
 
     private fun updateOverlayButtons() {
-        overlayInfoContainer.visibility = if (showInfo) View.VISIBLE else View.GONE
+        overlayInfoContainer.visibility = if (showProperties) View.VISIBLE else View.GONE
         overlayEditContainer.visibility = if (showEdit) View.VISIBLE else View.GONE
         overlayShareContainer.visibility = if (showShare) View.VISIBLE else View.GONE
         overlayFavouriteContainer.visibility = if (showFavourite) View.VISIBLE else View.GONE
@@ -622,7 +622,7 @@ class ViewerActivity : BaseActivity() {
             //Viewing external file
             if (!isTrashed) {
                 options.add(OptionsGroup(mutableListOf<OptionsItem>().apply {
-                    if (!showInfo) add(optionInfo)
+                    if (!showProperties) add(optionProperties)
                     if (!showEdit) add(optionEdit)
                     if (!showShare) add(optionShare)
                     add(optionSetAs)
@@ -633,7 +633,7 @@ class ViewerActivity : BaseActivity() {
             //Viewing gallery items
             if (!isTrashed) {
                 options.add(OptionsGroup(mutableListOf<OptionsItem>().apply {
-                    if (!showInfo) add(optionInfo)
+                    if (!showProperties) add(optionProperties)
                     add(optionRename)
                     if (!showEdit) add(optionEdit)
                     if (!showShare) add(optionShare)

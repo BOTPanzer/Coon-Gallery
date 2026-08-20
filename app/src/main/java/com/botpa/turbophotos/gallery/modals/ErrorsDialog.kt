@@ -6,7 +6,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.actions.ActionError
 import com.botpa.turbophotos.gallery.modals.core.CustomDialog
-import com.botpa.turbophotos.gallery.views.ListSeparator
+import com.botpa.turbophotos.gallery.views.lists.ListSeparator
 import com.botpa.turbophotos.util.Orion
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 

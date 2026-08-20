@@ -17,7 +17,7 @@ object StoragePairs {
     @JvmField val ALBUM_SEARCH_METHOD: Storage.StoragePair<String> = Storage.StoragePair("Album.searchMethod", SearchMethod.ContainsWords.name)
 
     //Viewer screen
-    @JvmField val VIEWER_SHOW_INFO: Storage.StoragePair<Boolean> = Storage.StoragePair("Viewer.showInfo", true)
+    @JvmField val VIEWER_SHOW_PROPERTIES: Storage.StoragePair<Boolean> = Storage.StoragePair("Viewer.showProperties", true)
     @JvmField val VIEWER_SHOW_EDIT: Storage.StoragePair<Boolean> = Storage.StoragePair("Viewer.showEdit", true)
     @JvmField val VIEWER_SHOW_SHARE: Storage.StoragePair<Boolean> = Storage.StoragePair("Viewer.showShare", true)
     @JvmField val VIEWER_SHOW_FAVOURITE: Storage.StoragePair<Boolean> = Storage.StoragePair("Viewer.showFavourite", false)

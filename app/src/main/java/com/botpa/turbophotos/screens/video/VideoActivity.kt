@@ -41,6 +41,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.media3.common.C
 import androidx.media3.common.ForwardingPlayer
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.TrackSelectionOverride
@@ -48,12 +49,11 @@ import androidx.media3.common.Tracks
 import androidx.media3.common.VideoSize
 import androidx.media3.common.text.CueGroup
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.common.MediaMetadata
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.ui.PlayerView
-import androidx.media3.ui.SubtitleView
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaStyleNotificationHelper
+import androidx.media3.ui.PlayerView
+import androidx.media3.ui.SubtitleView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.BaseActivity
 import com.botpa.turbophotos.gallery.StoragePairs
@@ -62,6 +62,7 @@ import com.botpa.turbophotos.gallery.options.OptionsGroup
 import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.options.OptionsManager
 import com.botpa.turbophotos.gallery.permissions.PermissionType
+import com.botpa.turbophotos.screens.video.tracks.TrackInfo
 import com.botpa.turbophotos.screens.video.tracks.TracksDialog
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
@@ -131,8 +132,8 @@ class VideoActivity : BaseActivity() {
     private lateinit var playerView: PlayerView
     private lateinit var playerSubtitles: SubtitleView
 
-    private val playerAudioTracks = mutableListOf<MediaTrackInfo>()
-    private val playerSubtitleTracks = mutableListOf<MediaTrackInfo>()
+    private val playerAudioTracks = mutableListOf<TrackInfo>()
+    private val playerSubtitleTracks = mutableListOf<TrackInfo>()
 
     //Notification
     private lateinit var mediaSession: MediaSession
@@ -598,7 +599,7 @@ class VideoActivity : BaseActivity() {
                             val label = format.label ?: readableLanguage ?: getString(R.string.video_state_track, i + 1)
 
                             //Create track
-                            val trackInfo = MediaTrackInfo(
+                            val trackInfo = TrackInfo(
                                 name = label,
                                 language = langCode,
                                 trackGroup = group,
@@ -617,8 +618,16 @@ class VideoActivity : BaseActivity() {
                 }
 
                 //Add "disabled" tracks
-                playerSubtitleTracks.add(0, MediaTrackInfo(getString(R.string.video_state_track_disabled), isSelected = !playerSubtitleTracks.any { it.isSelected }))
-                playerAudioTracks.add(0, MediaTrackInfo(getString(R.string.video_state_track_disabled), isSelected = !playerAudioTracks.any { it.isSelected }))
+                playerSubtitleTracks.add(0,
+                    TrackInfo(
+                        getString(R.string.video_state_track_disabled),
+                        isSelected = !playerSubtitleTracks.any { it.isSelected })
+                )
+                playerAudioTracks.add(0,
+                    TrackInfo(
+                        getString(R.string.video_state_track_disabled),
+                        isSelected = !playerAudioTracks.any { it.isSelected })
+                )
             }
 
             override fun onCues(cueGroup: CueGroup) {
@@ -866,7 +875,7 @@ class VideoActivity : BaseActivity() {
         }
     }
 
-    private fun selectTrack(trackInfo: MediaTrackInfo) {
+    private fun selectTrack(trackInfo: TrackInfo) {
         //Ignore if missing group
         if (trackInfo.trackGroup == null) return
 

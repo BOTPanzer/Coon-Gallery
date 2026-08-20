@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.screens.sync
+package com.botpa.turbophotos.screens.sync.service
 
 class SyncEvent {
 

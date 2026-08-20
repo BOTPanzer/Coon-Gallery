@@ -1,7 +1,8 @@
-package com.botpa.turbophotos.theme
+package com.botpa.turbophotos.gallery.jetpack
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Typography
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
@@ -32,13 +33,13 @@ fun CoonTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable (
     val colorScheme = if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
 
     //Create typography
-    val appTypography = androidx.compose.material3.Typography(
-        headlineLarge = androidx.compose.material3.Typography().headlineLarge.copy(fontFamily = FONT_FRAUNCES),
-        headlineMedium = androidx.compose.material3.Typography().headlineMedium.copy(fontFamily = FONT_FRAUNCES),
-        headlineSmall = androidx.compose.material3.Typography().headlineSmall.copy(fontFamily = FONT_FRAUNCES),
-        bodyLarge = androidx.compose.material3.Typography().bodyLarge.copy(fontFamily = FONT_OUTFIT),
-        bodyMedium = androidx.compose.material3.Typography().bodyMedium.copy(fontFamily = FONT_OUTFIT),
-        bodySmall = androidx.compose.material3.Typography().bodySmall.copy(fontFamily = FONT_OUTFIT)
+    val appTypography = Typography(
+        headlineLarge = Typography().headlineLarge.copy(fontFamily = FONT_FRAUNCES),
+        headlineMedium = Typography().headlineMedium.copy(fontFamily = FONT_FRAUNCES),
+        headlineSmall = Typography().headlineSmall.copy(fontFamily = FONT_FRAUNCES),
+        bodyLarge = Typography().bodyLarge.copy(fontFamily = FONT_OUTFIT),
+        bodyMedium = Typography().bodyMedium.copy(fontFamily = FONT_OUTFIT),
+        bodySmall = Typography().bodySmall.copy(fontFamily = FONT_OUTFIT)
     )
 
     //Material theme

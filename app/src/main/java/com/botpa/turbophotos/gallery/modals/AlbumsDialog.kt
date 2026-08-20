@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
-import com.botpa.turbophotos.gallery.Album
+import com.botpa.turbophotos.gallery.data.Album
 import com.botpa.turbophotos.gallery.modals.core.CustomDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.io.File

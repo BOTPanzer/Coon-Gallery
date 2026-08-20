@@ -7,16 +7,15 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.modals.core.SimpleCustomAdapter
-import com.botpa.turbophotos.screens.video.MediaTrackInfo
 
-class TracksDialogAdapter(context: Context, items: List<MediaTrackInfo>) : SimpleCustomAdapter<MediaTrackInfo, TracksDialogAdapter.TrackHolder>(context, items) {
+class TracksDialogAdapter(context: Context, items: List<TrackInfo>) : SimpleCustomAdapter<TrackInfo, TracksDialogAdapter.TrackHolder>(context, items) {
 
     //Adapter
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): TrackHolder {
         return TrackHolder(inflateView(context, R.layout.dialog_tracks_item, viewGroup))
     }
 
-    override fun onInitItemHolder(holder: TrackHolder, item: MediaTrackInfo) {
+    override fun onInitItemHolder(holder: TrackHolder, item: TrackInfo) {
         //Update info
         holder.selected.visibility = if (item.isSelected) View.VISIBLE else View.GONE
         holder.name.text = item.name

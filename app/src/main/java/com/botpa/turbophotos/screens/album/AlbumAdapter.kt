@@ -10,7 +10,7 @@ import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
-import com.botpa.turbophotos.gallery.Item
+import com.botpa.turbophotos.gallery.data.Item
 import com.botpa.turbophotos.gallery.modals.core.CustomHeaderAdapter
 import com.bumptech.glide.Glide
 import com.google.android.material.card.MaterialCardView

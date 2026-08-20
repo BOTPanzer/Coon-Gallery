@@ -39,18 +39,18 @@ import androidx.navigation.compose.rememberNavController
 import com.botpa.turbophotos.BuildConfig
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Library
-import com.botpa.turbophotos.gallery.Link
+import com.botpa.turbophotos.gallery.data.Link
 import com.botpa.turbophotos.gallery.modals.AlbumsDialog
-import com.botpa.turbophotos.gallery.modals.ExplorerDialog
 import com.botpa.turbophotos.gallery.modals.BulletPointsDialog
-import com.botpa.turbophotos.gallery.views.Group
-import com.botpa.turbophotos.gallery.views.GroupDivider
-import com.botpa.turbophotos.gallery.views.GroupItem
-import com.botpa.turbophotos.gallery.views.GroupItems
-import com.botpa.turbophotos.gallery.views.GroupTitle
-import com.botpa.turbophotos.gallery.views.Layout
-import com.botpa.turbophotos.gallery.views.SimpleButton
-import com.botpa.turbophotos.theme.CoonTheme
+import com.botpa.turbophotos.gallery.modals.ExplorerDialog
+import com.botpa.turbophotos.gallery.jetpack.CoonTheme
+import com.botpa.turbophotos.gallery.jetpack.Group
+import com.botpa.turbophotos.gallery.jetpack.GroupDivider
+import com.botpa.turbophotos.gallery.jetpack.GroupItem
+import com.botpa.turbophotos.gallery.jetpack.GroupItems
+import com.botpa.turbophotos.gallery.jetpack.GroupTitle
+import com.botpa.turbophotos.gallery.jetpack.Layout
+import com.botpa.turbophotos.gallery.jetpack.SimpleButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 class SettingsActivity : AppCompatActivity() {
@@ -741,8 +741,8 @@ class SettingsActivity : AppCompatActivity() {
                             //Info shortcut
                             GroupItem {
                                 SettingsItem(
-                                    title = R.string.settings_viewer_shortcuts_info_title,
-                                    description = R.string.settings_viewer_shortcuts_info_description
+                                    title = R.string.settings_viewer_shortcuts_properties_title,
+                                    description = R.string.settings_viewer_shortcuts_properties_description
                                 ) {
                                     //Value
                                     Switch(

@@ -9,8 +9,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.botpa.turbophotos.R
-import com.botpa.turbophotos.gallery.Link
 import com.botpa.turbophotos.gallery.StoragePairs
+import com.botpa.turbophotos.gallery.data.Link
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
 import com.fasterxml.jackson.databind.node.ObjectNode
@@ -34,7 +34,7 @@ class SettingsViewModel : ViewModel() {
     var albumShowMissingMetadataIcon by  mutableStateOf(Storage.getBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON))
 
     //Viewer screen
-    var viewerShowInfo by mutableStateOf(Storage.getBool(StoragePairs.VIEWER_SHOW_INFO))
+    var viewerShowInfo by mutableStateOf(Storage.getBool(StoragePairs.VIEWER_SHOW_PROPERTIES))
     var viewerShowEdit by mutableStateOf(Storage.getBool(StoragePairs.VIEWER_SHOW_EDIT))
     var viewerShowShare by mutableStateOf(Storage.getBool(StoragePairs.VIEWER_SHOW_SHARE))
     var viewerShowFavourite by mutableStateOf(Storage.getBool(StoragePairs.VIEWER_SHOW_FAVOURITE))
@@ -207,7 +207,7 @@ class SettingsViewModel : ViewModel() {
     //Viewer screen
     fun updateViewerShowInfo(isChecked: Boolean) {
         viewerShowInfo = isChecked
-        Storage.putBool(StoragePairs.VIEWER_SHOW_INFO, isChecked)
+        Storage.putBool(StoragePairs.VIEWER_SHOW_PROPERTIES, isChecked)
     }
 
     fun updateViewerShowEdit(isChecked: Boolean) {

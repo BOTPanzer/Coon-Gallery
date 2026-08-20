@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.screens.viewer.info
+package com.botpa.turbophotos.screens.viewer.properties
 
 import android.content.Context
 import android.view.View
@@ -8,14 +8,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.modals.core.SimpleCustomAdapter
 
-class InfoAdapter(context: Context, items: List<Info>) : SimpleCustomAdapter<Info, InfoAdapter.ItemHolder>(context, items) {
+class PropertiesInfoAdapter(context: Context, items: List<PropertiesInfo>) : SimpleCustomAdapter<PropertiesInfo, PropertiesInfoAdapter.ItemHolder>(context, items) {
 
     //Adapter
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ItemHolder {
-        return ItemHolder(inflateView(context, R.layout.drawer_viewer_info_item, viewGroup))
+        return ItemHolder(inflateView(context, R.layout.drawer_properties_info_item, viewGroup))
     }
 
-    override fun onInitItemHolder(holder: ItemHolder, item: Info) {
+    override fun onInitItemHolder(holder: ItemHolder, item: PropertiesInfo) {
         //Update info
         holder.name.text = context.getString(item.name)
         holder.info.text = item.info

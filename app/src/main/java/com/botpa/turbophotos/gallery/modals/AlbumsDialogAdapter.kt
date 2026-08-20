@@ -7,8 +7,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
-import com.botpa.turbophotos.gallery.Album
-import com.botpa.turbophotos.gallery.Item
+import com.botpa.turbophotos.gallery.data.Album
+import com.botpa.turbophotos.gallery.data.Item
 import com.botpa.turbophotos.gallery.modals.core.SimpleCustomAdapter
 
 class AlbumsDialogAdapter(context: Context, albums: List<Album>) : SimpleCustomAdapter<Album, AlbumsDialogAdapter.AlbumHolder>(context, albums) {

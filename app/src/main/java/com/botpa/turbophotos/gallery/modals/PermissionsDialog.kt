@@ -8,7 +8,7 @@ import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.modals.core.CustomDialog
 import com.botpa.turbophotos.gallery.permissions.PermissionManager
 import com.botpa.turbophotos.gallery.permissions.PermissionType
-import com.botpa.turbophotos.gallery.views.ListSeparator
+import com.botpa.turbophotos.gallery.views.lists.ListSeparator
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 @SuppressLint("NotifyDataSetChanged")

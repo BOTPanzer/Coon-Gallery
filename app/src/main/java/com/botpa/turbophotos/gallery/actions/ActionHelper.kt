@@ -1,7 +1,7 @@
 package com.botpa.turbophotos.gallery.actions
 
-import com.botpa.turbophotos.gallery.Item
 import com.botpa.turbophotos.gallery.Library
+import com.botpa.turbophotos.gallery.data.Item
 
 class ActionHelper(item: Item) {
 

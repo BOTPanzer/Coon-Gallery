@@ -10,10 +10,10 @@ import android.view.ScaleGestureDetector
 import android.view.View
 import android.view.ViewConfiguration
 import android.widget.FrameLayout
+import androidx.core.view.isNotEmpty
 import com.botpa.turbophotos.util.Orion
 import kotlin.math.max
 import kotlin.math.min
-import androidx.core.view.isNotEmpty
 import kotlin.math.roundToInt
 
 open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(context, attrs) {

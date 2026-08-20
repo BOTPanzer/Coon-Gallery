@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.gallery.fastscroller
+package com.botpa.turbophotos.gallery.views.lists.fastscroller
 
 import android.graphics.Rect
 import android.graphics.drawable.Drawable

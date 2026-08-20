@@ -15,4 +15,8 @@ class ViewerLayoutManager(context: Context) : LinearLayoutManager(context) {
         return isScrollEnabled && super.canScrollHorizontally()
     }
 
+    override fun canScrollVertically(): Boolean {
+        return isScrollEnabled && return super.canScrollVertically()
+    }
+
 }

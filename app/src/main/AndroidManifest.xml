@@ -117,7 +117,7 @@
             android:exported="false">
         </activity>
         <service
-            android:name=".screens.sync.SyncService"
+            android:name=".screens.sync.service.SyncService"
             android:foregroundServiceType="dataSync"
             android:exported="false">
         </service>

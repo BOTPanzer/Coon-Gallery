@@ -18,17 +18,17 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.botpa.turbophotos.R
-import com.botpa.turbophotos.gallery.views.IconButton
-import com.botpa.turbophotos.gallery.views.groupItemPaddingHorizontal
-import com.botpa.turbophotos.gallery.views.groupItemPaddingVertical
+import com.botpa.turbophotos.gallery.jetpack.IconButton
+import com.botpa.turbophotos.gallery.jetpack.groupItemPaddingHorizontal
+import com.botpa.turbophotos.gallery.jetpack.groupItemPaddingVertical
 
 //Users
 @Composable
 fun UserItem(
     index: Int,
-    user: User,
-    onConnect: (Int, User) -> Unit,
-    onSelect: (Int, User) -> Unit,
+    user: SyncUser,
+    onConnect: (Int, SyncUser) -> Unit,
+    onSelect: (Int, SyncUser) -> Unit,
     onDelete: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {

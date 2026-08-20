@@ -24,7 +24,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/opificio_bold_rounded"
                 android:paddingBottom="10dp"
-                android:text="@string/drawer_info_file_title"
+                android:text="@string/drawer_properties_info_file_title"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="16sp" />
 
@@ -57,7 +57,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/opificio_bold_rounded"
                 android:paddingBottom="10dp"
-                android:text="@string/drawer_info_camera_title"
+                android:text="@string/drawer_properties_info_camera_title"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="16sp" />
 
@@ -89,7 +89,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/opificio_bold_rounded"
                 android:paddingBottom="10dp"
-                android:text="@string/drawer_info_search_title"
+                android:text="@string/drawer_properties_info_search_title"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="16sp" />
 
@@ -120,7 +120,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/drawer_info_actions_close" />
+                android:text="@string/drawer_properties_info_actions_close" />
 
             <Button
                 android:id="@+id/infoEdit"
@@ -128,7 +128,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
                 android:layout_weight="1"
-                android:text="@string/drawer_info_actions_edit" />
+                android:text="@string/drawer_properties_info_actions_edit" />
 
         </LinearLayout>
 
@@ -153,7 +153,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/opificio_bold_rounded"
                 android:paddingBottom="10dp"
-                android:text="@string/drawer_info_search_title"
+                android:text="@string/drawer_properties_info_search_title"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="16sp" />
 
@@ -187,7 +187,7 @@
                             <TextView
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="@string/drawer_info_search_caption"
+                                android:text="@string/drawer_properties_info_search_caption"
                                 android:textColor="?attr/colorOnSurface"
                                 android:textSize="16sp"
                                 android:textStyle="bold" />
@@ -197,7 +197,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:backgroundTint="?attr/colorOnSurface"
-                                android:hint="@string/drawer_info_search_caption"
+                                android:hint="@string/drawer_properties_info_search_caption"
                                 android:textColor="?attr/colorOnSurface"
                                 android:textColorHighlight="?attr/colorPrimary"
                                 android:textColorHint="#757575"
@@ -225,7 +225,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="10dp"
-                                android:text="@string/drawer_info_search_labels"
+                                android:text="@string/drawer_properties_info_search_labels"
                                 android:textColor="?attr/colorOnSurface"
                                 android:textSize="16sp"
                                 android:textStyle="bold" />
@@ -234,7 +234,7 @@
                                 android:id="@+id/editLabelsEmpty"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="@string/drawer_edit_labels_empty"
+                                android:text="@string/drawer_properties_edit_labels_empty"
                                 android:textColor="?attr/colorOnSurface"
                                 android:textColorHint="?attr/colorOnSurface"
                                 android:textSize="14sp" />
@@ -250,7 +250,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="10dp"
-                                android:text="@string/drawer_edit_labels_add" />
+                                android:text="@string/drawer_properties_edit_labels_add" />
 
                         </LinearLayout>
                     </androidx.cardview.widget.CardView>
@@ -273,7 +273,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="10dp"
-                                android:text="@string/drawer_info_search_text"
+                                android:text="@string/drawer_properties_info_search_text"
                                 android:textColor="?attr/colorOnSurface"
                                 android:textSize="16sp"
                                 android:textStyle="bold" />
@@ -282,7 +282,7 @@
                                 android:id="@+id/editTextEmpty"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="@string/drawer_edit_text_empty"
+                                android:text="@string/drawer_properties_edit_text_empty"
                                 android:textColor="?attr/colorOnSurface"
                                 android:textColorHint="?attr/colorOnSurface"
                                 android:textSize="14sp" />
@@ -298,7 +298,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="10dp"
-                                android:text="@string/drawer_edit_text_add" />
+                                android:text="@string/drawer_properties_edit_text_add" />
 
                         </LinearLayout>
                     </androidx.cardview.widget.CardView>
@@ -317,7 +317,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/drawer_edit_actions_close" />
+                android:text="@string/drawer_properties_edit_actions_cancel" />
 
             <Button
                 android:id="@+id/editSave"
@@ -325,7 +325,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
                 android:layout_weight="1"
-                android:text="@string/drawer_edit_actions_save" />
+                android:text="@string/drawer_properties_edit_actions_save" />
 
         </LinearLayout>
 

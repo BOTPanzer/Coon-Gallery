@@ -1,11 +1,11 @@
-package com.botpa.turbophotos.gallery.views
+package com.botpa.turbophotos.screens.album
 
 import android.content.Context
 import android.util.AttributeSet
 import android.util.TypedValue
 import androidx.appcompat.widget.AppCompatTextView
 
-class WidthFitTextView @JvmOverloads constructor(
+class AlbumTitleTextView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
