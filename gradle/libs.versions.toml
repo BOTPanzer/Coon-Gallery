@@ -2,27 +2,25 @@
 activityCompose = "1.13.0"
 agp = "9.3.1"
 exifinterface = "1.4.2"
-jacksonCore = "2.22.1"
+jacksonCore = "2.22.2"
 jacksonAnnotations = "2.22"
-jacksonDatabind = "2.22.1"
-jacksonModuleKotlin = "2.22.1"
+jacksonDatabind = "2.22.2"
+jacksonModuleKotlin = "2.22.2"
 javaAndroidWebsocketClient = "2.0.2"
-appcompat = "1.7.1"
+appcompat = "1.8.0"
 lifecycleLivedataKtx = "2.11.0"
 material = "1.14.0"
 activity = "1.13.0"
 constraintlayout = "2.2.2"
 glide = "5.0.9"
 material3 = "1.4.0"
-media = "1.8.0"
 media3Exoplayer = "1.11.0"
 navigationCompose = "2.9.8"
 recyclerview = "1.4.0"
 kotlin = "2.4.10"
 coreKtx = "1.19.0"
 refreshLayoutKernel = "3.0.0-alpha"
-swiperefreshlayout = "1.2.0"
-uiToolingPreview = "1.11.4"
+uiToolingPreview = "1.12.0"
 cardview = "1.0.0"
 
 [libraries]
@@ -40,7 +38,6 @@ activity = { group = "androidx.activity", name = "activity", version.ref = "acti
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
 material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
-media = { module = "androidx.media:media", version.ref = "media" }
 media3-common = { module = "androidx.media3:media3-common", version.ref = "media3Exoplayer" }
 media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = "media3Exoplayer" }
 media3-session = { module = "androidx.media3:media3-session", version.ref = "media3Exoplayer" }
@@ -49,7 +46,6 @@ navigation-compose = { module = "androidx.navigation:navigation-compose", versio
 recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 refresh-layout-kernel = { module = "io.github.scwang90:refresh-layout-kernel", version.ref = "refreshLayoutKernel" }
-swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefreshlayout" }
 ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "uiToolingPreview" }
 ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "uiToolingPreview" }
 cardview = { group = "androidx.cardview", name = "cardview", version.ref = "cardview" }
