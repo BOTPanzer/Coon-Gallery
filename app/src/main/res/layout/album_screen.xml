@@ -18,14 +18,9 @@
             android:layout_height="match_parent"
             app:srlEnableOverScrollBounce="false">
 
-            <com.botpa.turbophotos.gallery.views.CustomRefreshHeader
+            <com.botpa.turbophotos.gallery.views.refresh.SimpleRefreshHeader
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:textPullToRefresh="@string/home_refresh_pull"
-                app:textReleaseToRefresh="@string/home_refresh_release"
-                app:textRefreshing="@string/home_refresh_refreshing">
-
-            </com.botpa.turbophotos.gallery.views.CustomRefreshHeader>
+                android:layout_height="wrap_content" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/list"

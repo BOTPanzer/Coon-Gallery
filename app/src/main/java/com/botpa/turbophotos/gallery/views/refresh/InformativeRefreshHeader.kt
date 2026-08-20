@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.gallery.views
+package com.botpa.turbophotos.gallery.views.refresh
 
 import android.content.Context
 import android.util.AttributeSet
@@ -15,7 +15,7 @@ import com.scwang.smart.refresh.layout.constant.SpinnerStyle
 import androidx.core.content.withStyledAttributes
 
 @Suppress("RestrictedApi")
-class CustomRefreshHeader @JvmOverloads constructor(
+class InformativeRefreshHeader @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
@@ -28,10 +28,10 @@ class CustomRefreshHeader @JvmOverloads constructor(
     private lateinit var textReleaseToRefresh: String
     private lateinit var textRefreshing: String
 
-    var onMoved: (percent: Float) -> Unit = {}
+    var onMoved: ((view: View, percent: Float) -> Unit)? = null
 
     init {
-        val view = LayoutInflater.from(context).inflate(R.layout.refresh_header, this, true)
+        val view = LayoutInflater.from(context).inflate(R.layout.refresh_informative_header, this, true)
         refreshText = view.findViewById(R.id.refreshStatus)
         refreshIndicator = view.findViewById(R.id.refreshIndicator)
 
@@ -76,7 +76,7 @@ class CustomRefreshHeader @JvmOverloads constructor(
 
     override fun onMoving(isDragging: Boolean, percent: Float, offset: Int, height: Int, maxDragHeight: Int) {
         alpha = percent
-        onMoved.invoke(percent)
+        onMoved?.invoke(this, percent)
     }
 
     override fun setPrimaryColors(vararg colors: Int) {}

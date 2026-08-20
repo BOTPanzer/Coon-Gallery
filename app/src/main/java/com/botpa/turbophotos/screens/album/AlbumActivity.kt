@@ -35,7 +35,7 @@ import com.botpa.turbophotos.gallery.options.OptionsGroup
 import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.options.OptionsManager
 import com.botpa.turbophotos.gallery.permissions.PermissionType
-import com.botpa.turbophotos.gallery.views.CustomRefreshHeader
+import com.botpa.turbophotos.gallery.views.refresh.SimpleRefreshHeader
 import com.botpa.turbophotos.gallery.views.GridHeaderLayoutManager
 import com.botpa.turbophotos.gallery.views.GridListSeparator
 import com.botpa.turbophotos.screens.album.search.SearchDialog
@@ -43,7 +43,6 @@ import com.botpa.turbophotos.screens.viewer.ViewerActivity
 import com.botpa.turbophotos.util.BackAnimationEvent
 import com.botpa.turbophotos.util.Ease
 import com.botpa.turbophotos.util.Orion
-import com.botpa.turbophotos.util.Orion.dpToPx
 import com.botpa.turbophotos.util.Orion.pxToDp
 import com.botpa.turbophotos.util.Storage
 import com.scwang.smart.refresh.layout.SmartRefreshLayout
@@ -249,7 +248,7 @@ class AlbumActivity : BaseActivity() {
             intArrayOf(WindowInsetsCompat.Type.systemBars())
         ) { view: View, insets: Insets, duration: Float ->
             //Swipe refresh top margin
-            albumRefreshLayout.setHeaderInsetStart(insets.top.pxToDp.toFloat())
+            albumRefreshLayout.setHeaderInsetStart(insets.top.pxToDp.toFloat() + 16)
 
             //Album list search layout + keyboard margin
             albumList.setPadding(0, 0, 0, listMinBottomPadding + insets.bottom)
@@ -325,9 +324,9 @@ class AlbumActivity : BaseActivity() {
         }
 
         //List
-        (albumRefreshLayout.refreshHeader as CustomRefreshHeader).onMoved = { percent ->
+        (albumRefreshLayout.refreshHeader as SimpleRefreshHeader).onMoved = { view, percent ->
             albumList.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                topMargin = -(percent * 60.dpToPx).toInt()
+                topMargin = -(percent * view.height).toInt()
             }
         }
 
