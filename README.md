@@ -11,39 +11,25 @@ Privacy-focused Android gallery with smart search support powered by metadata fi
 
 ## Features
 
-- Enable **smart search** with the power of **metadata files**.
-  
-  - Is there a cat in a photo? Just search for "cat" to find it!
+| **What it does**                                 | **How it helps**                                                                                                       |
+|--------------------------------------------------|------------------------------------------------------------------------------------------------------------------------|
+| **Smart search** powered by **metadata files**.  | Is there a cat in a photo? Just search "cat" to find it!                                                               |
+| **Wireless album backups** to **your computer**. | Use the [PC app](https://github.com/BOTPanzer/Coon-Gallery-PC) to make manual album backups while in the same network. |
+| **Multiple album management actions**.           | Everything you can find in other galleries: edit, share, move, copy, delete...                                         |
+| **Multi-item selection** support.                | Hold an item to select it, hold and drag to select multiple at once.                                                   |
+| **Trash & favourites API** support.              | Trashed or favourited an item in another app? It will appear here too!                                                 |
+| **Powerful video player**.                       | Internal video player with zoom, multi-tap to seek and PiP that supports changing speed, subtitles & audio tracks.     |
+| **Modern Material You design**.                  | A gallery with special focus on looking pretty for you.                                                                |
 
-- Wirelessly **backup your albums** to your computer.
-  
-  - Tired of relying on the cloud? Make local backups with the [PC app](https://github.com/BOTPanzer/Coon-Gallery-PC)!
+## How to run
 
-- Multiple actions to **manage your albums**.
-  
-  - Everything you can find in other galleries: edit, share, move, copy, delete...
+Choose a version from the [releases page](https://github.com/BOTPanzer/Coon-Gallery/releases) and download the APK or clone the repository and build it yourself using Android Studio.
 
-- Multiple **item selection** support.
-  
-  - Want to manage multiple files at a time? You can hold to select them!
+## How to use
 
-- Android **trash & favourites API** support.
-  
-  - Trashed or favourited a file from another app? It will appear here too!
+Excluding the normal gallery features, there are some original features unique to *Coon Gallery*, these being **backing up your albums** to your PC and **enabling smart search** in the gallery. For these to work, you will need to set up *links* in the settings menu.
 
-- Internal **video player** with **PiP, playback speed, subtitles & audio track** support.
-  
-  - Want a simple and useful video player? No need to download other apps!
-
-## How to Run
-
-Choose whichever version you want from the [releases page](https://github.com/BOTPanzer/Coon-Gallery/releases) and download the apk or clone the repository and build it yourself using Android Studio.
-
-## How to Use
-
-Excluding the normal gallery features, there are some original features unique to Coon Gallery, these being **backing up your albums** to your PC and **enabling smart search** in the gallery. For these to work, you will need to set up *links* in the settings menu.
-
-### Setup Links
+### Setting up links
 
 *Links* are connections between an *album folder* and a *metadata file*.
 
@@ -51,7 +37,7 @@ Excluding the normal gallery features, there are some original features unique t
 
 - Adding an *album folder* and a *metadata file* will **improve the search** on those albums with the information inside the metadata file.
 
-### Sync Albums & Metadata
+### Sync albums & metadata
 
 To create **backups of your albums** and generate **metadata for their images**, you will need to connect to the [PC app](https://github.com/BOTPanzer/Coon-Gallery-PC) by following these steps:
 
@@ -68,5 +54,5 @@ To create **backups of your albums** and generate **metadata for their images**,
    Once connected, you can manage what you want to sync from the PC app.
 
 ## License
-Copyright © 2026 Alejandro Paniagua Moreno / @BOTPanzer on GitHub  
+Copyright © 2026 Alejandro Paniagua Moreno / @BOTPanzer on GitHub.  
 Licensed under the GNU General Public License v3.0.
