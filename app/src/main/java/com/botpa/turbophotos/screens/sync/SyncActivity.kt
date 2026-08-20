@@ -54,8 +54,8 @@ import androidx.navigation.compose.rememberNavController
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.StoragePairs
-import com.botpa.turbophotos.gallery.permissions.PermissionManager
-import com.botpa.turbophotos.gallery.permissions.PermissionType
+import com.botpa.turbophotos.gallery.PermissionManager
+import com.botpa.turbophotos.gallery.PermissionType
 import com.botpa.turbophotos.gallery.jetpack.CoonTheme
 import com.botpa.turbophotos.gallery.jetpack.FONT_OUTFIT
 import com.botpa.turbophotos.gallery.jetpack.Group

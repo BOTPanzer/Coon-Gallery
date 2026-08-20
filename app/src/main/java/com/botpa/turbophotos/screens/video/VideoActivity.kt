@@ -61,7 +61,7 @@ import com.botpa.turbophotos.gallery.modals.SliderDialog
 import com.botpa.turbophotos.gallery.options.OptionsGroup
 import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.options.OptionsManager
-import com.botpa.turbophotos.gallery.permissions.PermissionType
+import com.botpa.turbophotos.gallery.PermissionType
 import com.botpa.turbophotos.screens.video.tracks.TrackInfo
 import com.botpa.turbophotos.screens.video.tracks.TracksDialog
 import com.botpa.turbophotos.util.Orion
@@ -335,12 +335,12 @@ class VideoActivity : BaseActivity() {
         })
 
         //Options
-        optionPiP = OptionsItem(R.drawable.pip, R.string.context_option_pip) {
+        optionPiP = OptionsItem(R.drawable.icon_action_pip, R.string.context_option_pip) {
             //Enter PiP
             isInPiP = enterPictureInPictureMode(getParamsForPiP())
         }
 
-        optionSpeed = OptionsItem(R.drawable.speed, R.string.video_option_speed) {
+        optionSpeed = OptionsItem(R.drawable.icon_action_speed, R.string.video_option_speed) {
             //Create speed slider dialog
             SliderDialog(this@VideoActivity, R.string.video_option_speed, player.playbackParameters.speed, 0.25f, 2f, 0.25f) { speed ->
                 //Update speed
@@ -348,7 +348,7 @@ class VideoActivity : BaseActivity() {
             }.buildAndShow()
         }
 
-        optionSubtitles = OptionsItem(R.drawable.track_subtitles, R.string.video_option_subtitles) {
+        optionSubtitles = OptionsItem(R.drawable.icon_video_track_subtitles, R.string.video_option_subtitles) {
             //Create subtitles track dialog
             TracksDialog(this@VideoActivity, playerSubtitleTracks, getString(R.string.video_option_subtitles)) { track ->
                 //Check track
@@ -362,7 +362,7 @@ class VideoActivity : BaseActivity() {
             }.buildAndShow()
         }
 
-        optionAudio = OptionsItem(R.drawable.track_audio, R.string.video_option_audio) {
+        optionAudio = OptionsItem(R.drawable.icon_video_track_audio, R.string.video_option_audio) {
             //Create audio track dialog
             TracksDialog(this@VideoActivity, playerAudioTracks, getString(R.string.video_option_audio)) { track ->
                 //Check track
@@ -536,7 +536,7 @@ class VideoActivity : BaseActivity() {
                     requestAudioFocus()
 
                     //Update play button
-                    overlayPlay.setIconResource(R.drawable.pause)
+                    overlayPlay.setIconResource(R.drawable.icon_video_pause)
                     overlayPlay.text = getString(R.string.video_state_pause)
 
                     //Start time update loop
@@ -546,7 +546,7 @@ class VideoActivity : BaseActivity() {
                     window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 } else {
                     //Update play button
-                    overlayPlay.setIconResource(R.drawable.play)
+                    overlayPlay.setIconResource(R.drawable.icon_video_play)
                     overlayPlay.text = getString(R.string.video_state_play)
 
                     //Stop time update loop
@@ -697,7 +697,7 @@ class VideoActivity : BaseActivity() {
             .setSilent(true)
             .setStyle(style)
             .addAction(NotificationCompat.Action(
-                if (player.isPlaying) R.drawable.pause else R.drawable.play,
+                if (player.isPlaying) R.drawable.icon_video_pause else R.drawable.icon_video_play,
                 getString(if (player.isPlaying) R.string.video_state_pause else R.string.video_state_play),
                 PendingIntent.getBroadcast(this, 0, pauseIntent, PendingIntent.FLAG_IMMUTABLE)
             ))
@@ -964,7 +964,7 @@ class VideoActivity : BaseActivity() {
         Storage.putBool(StoragePairs.VIDEO_LOOP, isLooping)
 
         //Update loop button
-        overlayLoop.setIconResource(if (isLooping) R.drawable.repeat_on else R.drawable.repeat)
+        overlayLoop.setIconResource(if (isLooping) R.drawable.icon_video_repeat_on else R.drawable.icon_video_repeat_off)
     }
 
       /*$$$$$              /$$     /$$

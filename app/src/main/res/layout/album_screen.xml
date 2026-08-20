@@ -93,7 +93,7 @@
                                 android:layout_height="match_parent"
                                 android:background="?attr/selectableItemBackground"
                                 android:padding="8dp"
-                                app:srcCompat="@drawable/more"
+                                app:srcCompat="@drawable/icon_more"
                                 app:tint="?attr/colorOnSurface" />
 
                         </androidx.cardview.widget.CardView>
@@ -111,7 +111,7 @@
                                 android:layout_height="match_parent"
                                 android:background="?attr/selectableItemBackground"
                                 android:padding="8dp"
-                                app:srcCompat="@drawable/search"
+                                app:srcCompat="@drawable/icon_search"
                                 app:tint="?attr/colorOnSurface" />
 
                         </androidx.cardview.widget.CardView>
@@ -160,7 +160,7 @@
                                     android:background="?attr/selectableItemBackground"
                                     android:padding="8dp"
                                     android:rotation="180"
-                                    app:srcCompat="@drawable/back"
+                                    app:srcCompat="@drawable/icon_back"
                                     app:tint="?attr/colorOnSurface" />
 
                             </androidx.cardview.widget.CardView>
@@ -204,7 +204,7 @@
                                     android:layout_height="match_parent"
                                     android:background="?attr/selectableItemBackground"
                                     android:padding="8dp"
-                                    app:srcCompat="@drawable/more"
+                                    app:srcCompat="@drawable/icon_more"
                                     app:tint="?attr/colorOnSurface" />
 
                             </androidx.cardview.widget.CardView>
@@ -224,7 +224,7 @@
                                     android:background="?attr/selectableItemBackground"
                                     android:padding="8dp"
                                     android:rotation="90"
-                                    app:srcCompat="@drawable/chevron_right"
+                                    app:srcCompat="@drawable/icon_chevron_right"
                                     app:tint="?attr/colorOnSurface" />
 
                             </androidx.cardview.widget.CardView>

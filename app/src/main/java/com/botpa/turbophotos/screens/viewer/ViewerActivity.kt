@@ -33,7 +33,7 @@ import com.botpa.turbophotos.gallery.data.Item
 import com.botpa.turbophotos.gallery.options.OptionsGroup
 import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.options.OptionsManager
-import com.botpa.turbophotos.gallery.permissions.PermissionType
+import com.botpa.turbophotos.gallery.PermissionType
 import com.botpa.turbophotos.gallery.views.ZoomableLayout
 import com.botpa.turbophotos.screens.video.VideoActivity
 import com.botpa.turbophotos.screens.viewer.properties.PropertiesDrawer
@@ -226,27 +226,27 @@ class ViewerActivity : BaseActivity() {
         overlayOptions.setOnClickListener { optionsManager.toggle(true) }
 
         //Options
-        optionRename = OptionsItem(R.drawable.rename, R.string.context_option_rename) {
+        optionRename = OptionsItem(R.drawable.icon_action_rename, R.string.context_option_rename) {
             //Rename
             Library.renameItem(this, currentItem)
         }
 
-        optionEdit = OptionsItem(R.drawable.edit, R.string.context_option_edit) {
+        optionEdit = OptionsItem(R.drawable.icon_action_edit, R.string.context_option_edit) {
             //Edit
             Library.editItem(this, currentItem)
         }
 
-        optionShare = OptionsItem(R.drawable.share, R.string.context_option_share) {
+        optionShare = OptionsItem(R.drawable.icon_action_share, R.string.context_option_share) {
             //Share
             Library.shareItems(this, arrayOf(currentItem))
         }
 
-        optionSetAs = OptionsItem(R.drawable.wallpaper, R.string.context_option_set) {
+        optionSetAs = OptionsItem(R.drawable.icon_action_wallpaper, R.string.context_option_set) {
             //Set as
             Library.setItemAs(this, currentItem)
         }
 
-        optionPiP = OptionsItem(R.drawable.pip, R.string.context_option_pip) {
+        optionPiP = OptionsItem(R.drawable.icon_action_pip, R.string.context_option_pip) {
             //Create params
             val p = PictureInPictureParams.Builder()
             try {
@@ -260,42 +260,42 @@ class ViewerActivity : BaseActivity() {
             isInPiP = enterPictureInPictureMode(p.build())
         }
 
-        optionProperties = OptionsItem(R.drawable.info, R.string.viewer_option_properties) {
+        optionProperties = OptionsItem(R.drawable.icon_action_properties, R.string.viewer_option_properties) {
             //Toggle properties
             PropertiesDrawer(this, currentItem).buildAndShow()
         }
 
-        optionFavourite = OptionsItem(R.drawable.favourite_on, R.string.context_option_favourite) {
+        optionFavourite = OptionsItem(R.drawable.icon_action_favourite_on, R.string.context_option_favourite) {
             //Add to favourites
             favouriteItems(arrayOf(currentItem))
         }
 
-        optionUnfavourite = OptionsItem(R.drawable.favourite_off, R.string.context_option_unfavourite) {
+        optionUnfavourite = OptionsItem(R.drawable.icon_action_favourite_off, R.string.context_option_unfavourite) {
             //Remove from favourites
             unfavouriteItems(arrayOf(currentItem))
         }
 
-        optionMove = OptionsItem(R.drawable.move, R.string.context_option_move) {
+        optionMove = OptionsItem(R.drawable.icon_action_move, R.string.context_option_move) {
             //Move items
             Library.moveItems(this, arrayOf(currentItem))
         }
 
-        optionCopy = OptionsItem(R.drawable.copy, R.string.context_option_copy) {
+        optionCopy = OptionsItem(R.drawable.icon_action_copy, R.string.context_option_copy) {
             //Copy items
             Library.copyItems(this, arrayOf(currentItem))
         }
 
-        optionTrash = OptionsItem(R.drawable.trash, R.string.context_option_trash) {
+        optionTrash = OptionsItem(R.drawable.icon_action_trash, R.string.context_option_trash) {
             //Move to trash
             trashItems(arrayOf(currentItem))
         }
 
-        optionRestore = OptionsItem(R.drawable.restore, R.string.context_option_restore) {
+        optionRestore = OptionsItem(R.drawable.icon_action_restore, R.string.context_option_restore) {
             //Restore from trash
             restoreItems(arrayOf(currentItem))
         }
 
-        optionDelete = OptionsItem(R.drawable.delete, R.string.context_option_rename) {
+        optionDelete = OptionsItem(R.drawable.icon_action_delete, R.string.context_option_rename) {
             //Delete item
             Library.deleteItems(this, arrayOf(currentItem))
         }
@@ -580,7 +580,7 @@ class ViewerActivity : BaseActivity() {
         //Change image name & favourite state
         overlayTitle.text = currentItem.name
         overlayIsFavourite.visibility = if (currentItem.isFavourite) View.VISIBLE else View.GONE
-        overlayFavouriteImage.setImageResource(if (currentItem.isFavourite) R.drawable.favourite_off else R.drawable.favourite_on)
+        overlayFavouriteImage.setImageResource(if (currentItem.isFavourite) R.drawable.icon_action_favourite_off else R.drawable.icon_action_favourite_on)
     }
 
     //PiP

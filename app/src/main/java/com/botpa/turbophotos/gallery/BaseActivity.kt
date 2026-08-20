@@ -11,8 +11,6 @@ import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.actions.Action
 import com.botpa.turbophotos.gallery.actions.ActionError
 import com.botpa.turbophotos.gallery.data.Item
-import com.botpa.turbophotos.gallery.permissions.PermissionManager
-import com.botpa.turbophotos.gallery.permissions.PermissionType
 import com.botpa.turbophotos.util.BackManager
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage

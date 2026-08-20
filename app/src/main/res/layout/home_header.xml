@@ -70,7 +70,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:layout_gravity="center"
-                            app:srcCompat="@drawable/gallery_all"
+                            app:srcCompat="@drawable/icon_filter_all"
                             app:tint="?attr/colorPrimary" />
 
                     </com.google.android.material.card.MaterialCardView>
@@ -140,7 +140,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:layout_gravity="center"
-                            app:srcCompat="@drawable/trash"
+                            app:srcCompat="@drawable/icon_action_trash"
                             app:tint="?attr/colorPrimary" />
 
                     </com.google.android.material.card.MaterialCardView>
@@ -220,7 +220,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:layout_gravity="center"
-                            app:srcCompat="@drawable/favourite_off"
+                            app:srcCompat="@drawable/icon_action_favourite_off"
                             app:tint="?attr/colorPrimary" />
 
                     </com.google.android.material.card.MaterialCardView>

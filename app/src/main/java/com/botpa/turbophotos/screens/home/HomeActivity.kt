@@ -32,7 +32,7 @@ import com.botpa.turbophotos.gallery.views.lists.fastscroller.FastScrollerBuilde
 import com.botpa.turbophotos.gallery.options.OptionsGroup
 import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.options.OptionsManager
-import com.botpa.turbophotos.gallery.permissions.PermissionType
+import com.botpa.turbophotos.gallery.PermissionType
 import com.botpa.turbophotos.gallery.views.lists.GridHeaderLayoutManager
 import com.botpa.turbophotos.gallery.views.lists.GridListSeparator
 import com.botpa.turbophotos.screens.album.AlbumActivity
@@ -260,7 +260,7 @@ class HomeActivity : BaseActivity() {
         }
 
         //Options
-        optionSync = OptionsItem(R.drawable.sync, R.string.sync_title) {
+        optionSync = OptionsItem(R.drawable.icon_sync, R.string.sync_title) {
             //Block action if library is filtered
             if (Library.isLibraryFiltered) {
                 Orion.snack(this@HomeActivity, R.string.home_error_remove_filters)
@@ -271,17 +271,17 @@ class HomeActivity : BaseActivity() {
             startActivity(Intent(this, SyncActivity::class.java))
         }
 
-        optionSettings = OptionsItem(R.drawable.settings, R.string.settings_title) {
+        optionSettings = OptionsItem(R.drawable.icon_settings, R.string.settings_title) {
             //Open sync
             startActivity(Intent(this, SettingsActivity::class.java))
         }
 
-        optionFilters = OptionsItem(R.drawable.filter, R.string.dialog_filters_title) {
+        optionFilters = OptionsItem(R.drawable.icon_filter, R.string.dialog_filters_title) {
             //Create filters list
             val filters = listOf(
-                Filter(R.drawable.gallery_all, R.string.dialog_filters_option_all, "*/*"),
-                Filter(R.drawable.gallery_image, R.string.dialog_filters_option_images, "image/*"),
-                Filter(R.drawable.gallery_video, R.string.dialog_filters_option_videos, "video/*")
+                Filter(R.drawable.icon_filter_all, R.string.dialog_filters_option_all, "*/*"),
+                Filter(R.drawable.icon_filter_image, R.string.dialog_filters_option_images, "image/*"),
+                Filter(R.drawable.icon_filter_video, R.string.dialog_filters_option_videos, "video/*")
             )
 
             //Create dialog

@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.gallery.permissions
+package com.botpa.turbophotos.gallery
 
 import android.Manifest
 import android.app.Activity

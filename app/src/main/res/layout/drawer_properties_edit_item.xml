@@ -27,7 +27,7 @@
         android:clickable="true"
         android:paddingLeft="12dp"
         android:paddingRight="12dp"
-        app:icon="@drawable/clear"
+        app:icon="@drawable/icon_clear"
         app:iconTint="?attr/colorOnPrimary" />
 
 </LinearLayout>

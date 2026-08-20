@@ -36,7 +36,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="4dp"
-                    android:divider="@drawable/viewer_item_info_divider"
                     android:orientation="horizontal"
                     android:showDividers="middle">
 
@@ -60,21 +59,21 @@
                                 android:layout_width="14dp"
                                 android:layout_height="14dp"
                                 android:layout_marginEnd="5dp"
-                                app:srcCompat="@drawable/favourite_on" />
+                                app:srcCompat="@drawable/icon_action_favourite_on" />
 
                             <ImageView
                                 android:id="@+id/isVideo"
                                 android:layout_width="14dp"
                                 android:layout_height="14dp"
                                 android:layout_marginEnd="5dp"
-                                app:srcCompat="@drawable/play" />
+                                app:srcCompat="@drawable/icon_video_play" />
 
                             <ImageView
                                 android:id="@+id/isMissingInfo"
                                 android:layout_width="14dp"
                                 android:layout_height="14dp"
                                 android:layout_marginEnd="5dp"
-                                app:srcCompat="@drawable/no_info" />
+                                app:srcCompat="@drawable/icon_missing_metadata" />
                         </LinearLayout>
 
                     </androidx.cardview.widget.CardView>

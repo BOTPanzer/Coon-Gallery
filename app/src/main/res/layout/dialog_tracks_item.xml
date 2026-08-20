@@ -26,7 +26,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:layout_marginEnd="10dp"
-                android:src="@drawable/check"
+                android:src="@drawable/icon_check"
                 app:tint="?attr/colorPrimary" />
 
             <TextView

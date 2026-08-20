@@ -8,7 +8,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.modals.core.SimpleCustomAdapter
-import com.botpa.turbophotos.gallery.permissions.PermissionType
+import com.botpa.turbophotos.gallery.PermissionType
 
 class PermissionsDialogAdapter(
     context: Context,

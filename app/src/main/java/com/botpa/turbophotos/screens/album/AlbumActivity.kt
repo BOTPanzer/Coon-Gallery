@@ -34,7 +34,7 @@ import com.botpa.turbophotos.gallery.views.lists.fastscroller.FastScrollerBuilde
 import com.botpa.turbophotos.gallery.options.OptionsGroup
 import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.options.OptionsManager
-import com.botpa.turbophotos.gallery.permissions.PermissionType
+import com.botpa.turbophotos.gallery.PermissionType
 import com.botpa.turbophotos.gallery.views.lists.GridHeaderLayoutManager
 import com.botpa.turbophotos.gallery.views.lists.GridListSeparator
 import com.botpa.turbophotos.gallery.views.refresh.SimpleRefreshHeader
@@ -410,7 +410,7 @@ class AlbumActivity : BaseActivity() {
         searchClose.setOnClickListener { view: View -> showSearchLayout(false) }
 
         //Options
-        optionRename = OptionsItem(R.drawable.rename, R.string.context_option_rename) {
+        optionRename = OptionsItem(R.drawable.icon_action_rename, R.string.context_option_rename) {
             //Only allow 1 selection
             if (selectedIndexes.size != 1) return@OptionsItem
 
@@ -418,7 +418,7 @@ class AlbumActivity : BaseActivity() {
             Library.renameItem(this, gallery[selectedIndexes.iterator().next()])
         }
 
-        optionEdit = OptionsItem(R.drawable.edit, R.string.context_option_edit) {
+        optionEdit = OptionsItem(R.drawable.icon_action_edit, R.string.context_option_edit) {
             //Only allow 1 selection
             if (selectedIndexes.size != 1) return@OptionsItem
 
@@ -426,12 +426,12 @@ class AlbumActivity : BaseActivity() {
             Library.editItem(this, gallery[selectedIndexes.iterator().next()])
         }
 
-        optionShare = OptionsItem(R.drawable.share, R.string.context_option_share) {
+        optionShare = OptionsItem(R.drawable.icon_action_share, R.string.context_option_share) {
             //Share
             Library.shareItems(this, getSelectedItems())
         }
 
-        optionSetAs = OptionsItem(R.drawable.wallpaper, R.string.context_option_set) {
+        optionSetAs = OptionsItem(R.drawable.icon_action_wallpaper, R.string.context_option_set) {
             //Only allow 1 selection
             if (selectedIndexes.size != 1) return@OptionsItem
 
@@ -439,47 +439,47 @@ class AlbumActivity : BaseActivity() {
             Library.setItemAs(this, gallery[selectedIndexes.iterator().next()])
         }
 
-        optionFavourite = OptionsItem(R.drawable.favourite_on, R.string.context_option_favourite) {
+        optionFavourite = OptionsItem(R.drawable.icon_action_favourite_on, R.string.context_option_favourite) {
             //Add to favourites
             favouriteItems(getSelectedItems())
         }
 
-        optionUnfavourite = OptionsItem(R.drawable.favourite_off, R.string.context_option_unfavourite) {
+        optionUnfavourite = OptionsItem(R.drawable.icon_action_favourite_off, R.string.context_option_unfavourite) {
             //Remove from favourites
             unfavouriteItems(getSelectedItems())
         }
 
-        optionMove = OptionsItem(R.drawable.move, R.string.context_option_move) {
+        optionMove = OptionsItem(R.drawable.icon_action_move, R.string.context_option_move) {
             //Move items
             Library.moveItems(this, getSelectedItems())
         }
 
-        optionCopy = OptionsItem(R.drawable.copy, R.string.context_option_copy) {
+        optionCopy = OptionsItem(R.drawable.icon_action_copy, R.string.context_option_copy) {
             //Copy items
             Library.copyItems(this, getSelectedItems())
         }
 
-        optionTrash = OptionsItem(R.drawable.trash, R.string.context_option_trash) {
+        optionTrash = OptionsItem(R.drawable.icon_action_trash, R.string.context_option_trash) {
             //Move items to trash
             trashItems(getSelectedItems())
         }
 
-        optionRestore = OptionsItem(R.drawable.restore, R.string.context_option_restore) {
+        optionRestore = OptionsItem(R.drawable.icon_action_restore, R.string.context_option_restore) {
             //Restore items from trash
             restoreItems(getSelectedItems())
         }
 
-        optionRestoreAll = OptionsItem(R.drawable.restore, R.string.context_option_restore_all) {
+        optionRestoreAll = OptionsItem(R.drawable.icon_action_restore, R.string.context_option_restore_all) {
             //Restore all items from trash
             restoreItems(currentAlbum.items.toTypedArray<Item>())
         }
 
-        optionDelete = OptionsItem(R.drawable.delete, R.string.context_option_delete) {
+        optionDelete = OptionsItem(R.drawable.icon_action_delete, R.string.context_option_delete) {
             //Delete item
             Library.deleteItems(this, getSelectedItems())
         }
 
-        optionDeleteAll = OptionsItem(R.drawable.delete, R.string.context_option_delete_all) {
+        optionDeleteAll = OptionsItem(R.drawable.icon_action_delete, R.string.context_option_delete_all) {
             //Delete all items
             Library.deleteItems(this, currentAlbum.items.toTypedArray<Item>())
         }

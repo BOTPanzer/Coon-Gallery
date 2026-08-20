@@ -34,7 +34,7 @@
                     android:id="@+id/itemIcon"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:src="@drawable/folder"
+                    android:src="@drawable/icon_storage_folder"
                     app:tint="?attr/colorPrimary" />
 
                 <TextView
@@ -57,7 +57,7 @@
                 android:clickable="true"
                 android:paddingLeft="12dp"
                 android:paddingRight="12dp"
-                app:icon="@drawable/check"
+                app:icon="@drawable/icon_check"
                 app:iconTint="?attr/colorOnPrimary" />
 
         </LinearLayout>

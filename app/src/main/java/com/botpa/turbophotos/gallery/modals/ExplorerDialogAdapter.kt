@@ -31,13 +31,13 @@ class ExplorerDialogAdapter(
         //Check if back button
         if (position < 0) {
             //Back button
-            holder.icon.setImageResource(R.drawable.back)
+            holder.icon.setImageResource(R.drawable.icon_back)
             holder.name.text = context.getString(R.string.dialog_explorer_previous_folder)
             holder.select.visibility = View.GONE
         } else {
             //Item
             val item = items[position]
-            holder.icon.setImageResource(if (item.isFile) R.drawable.file else R.drawable.folder)
+            holder.icon.setImageResource(if (item.isFile) R.drawable.icon_storage_file else R.drawable.icon_storage_folder)
             holder.name.text = item.name
             holder.select.visibility = if (isSelectingFiles && item.isDirectory) View.GONE else View.VISIBLE
         }

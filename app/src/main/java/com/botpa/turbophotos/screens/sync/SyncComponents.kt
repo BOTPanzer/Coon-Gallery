@@ -74,7 +74,7 @@ fun UserItem(
         //Delete button
         IconButton(
             onClick = { onDelete(index) },
-            painter = painterResource(R.drawable.clear),
+            painter = painterResource(R.drawable.icon_clear),
             contentDescription = "Delete user",
             modifier = Modifier
                 .fillMaxHeight()

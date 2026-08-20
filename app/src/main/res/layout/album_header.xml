@@ -54,7 +54,7 @@
                     android:layout_alignTop="@id/content"
                     android:layout_alignBottom="@id/content"
                     android:alpha="0.8"
-                    android:background="@drawable/bg_gradient_bottom_to_top" />
+                    android:background="@drawable/gradient_bottom_to_top" />
 
                 <LinearLayout
                     android:id="@+id/content"

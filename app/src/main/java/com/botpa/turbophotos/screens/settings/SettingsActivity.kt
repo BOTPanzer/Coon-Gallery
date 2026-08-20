@@ -445,7 +445,7 @@ class SettingsActivity : AppCompatActivity() {
                                     description = R.string.settings_app_about_developer_description
                                 ) {
                                     Image(
-                                        painter = painterResource(R.drawable.open),
+                                        painter = painterResource(R.drawable.icon_open),
                                         contentDescription = "Portfolio",
                                         contentScale = ContentScale.Fit,
                                         colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
@@ -467,7 +467,7 @@ class SettingsActivity : AppCompatActivity() {
                                     description = R.string.settings_app_about_repo_description
                                 ) {
                                     Image(
-                                        painter = painterResource(R.drawable.open),
+                                        painter = painterResource(R.drawable.icon_open),
                                         contentDescription = "GitHub",
                                         contentScale = ContentScale.Fit,
                                         colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
@@ -594,7 +594,7 @@ class SettingsActivity : AppCompatActivity() {
             ) {
                 //Banner
                 item {
-                    SettingsScreenBanner(R.drawable.settings_home)
+                    SettingsScreenBanner(R.drawable.settings_banner_home)
                 }
 
                 //Grid
@@ -647,7 +647,7 @@ class SettingsActivity : AppCompatActivity() {
             ) {
                 //Banner
                 item {
-                    SettingsScreenBanner(R.drawable.settings_album)
+                    SettingsScreenBanner(R.drawable.settings_banner_album)
                 }
 
                 //Grid
@@ -727,7 +727,7 @@ class SettingsActivity : AppCompatActivity() {
             ) {
                 //Banner
                 item {
-                    SettingsScreenBanner(R.drawable.settings_viewer)
+                    SettingsScreenBanner(R.drawable.settings_banner_viewer)
                 }
 
                 //Shortcuts
@@ -829,7 +829,7 @@ class SettingsActivity : AppCompatActivity() {
             ) {
                 //Banner
                 item {
-                    SettingsScreenBanner(R.drawable.settings_video)
+                    SettingsScreenBanner(R.drawable.settings_banner_video)
                 }
 
                 //Player

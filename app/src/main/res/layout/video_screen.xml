@@ -118,7 +118,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:alpha="0.8"
-                            android:background="@drawable/bg_gradient_top_to_bottom" />
+                            android:background="@drawable/gradient_top_to_bottom" />
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -157,7 +157,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:alpha="0.8"
-                            android:background="@drawable/bg_gradient_bottom_to_top" />
+                            android:background="@drawable/gradient_bottom_to_top" />
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -175,7 +175,7 @@
                                     style="@style/Widget.Material3Expressive.Button.IconButton"
                                     android:layout_width="wrap_content"
                                     android:layout_height="match_parent"
-                                    app:icon="@drawable/repeat"
+                                    app:icon="@drawable/icon_video_repeat_off"
                                     app:iconTint="?attr/colorOnPrimary"
                                     app:materialSizeOverlay="@style/SizeOverlay.Material3Expressive.Button.IconButton.Small.Square" />
 
@@ -186,7 +186,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_weight="1"
                                     android:text="@string/video_state_play"
-                                    app:icon="@drawable/play"
+                                    app:icon="@drawable/icon_video_play"
                                     app:iconGravity="textStart"
                                     app:iconTint="?attr/colorOnPrimary"
                                     app:materialSizeOverlay="@style/SizeOverlay.Material3Expressive.Button.Small.Square" />
@@ -196,7 +196,7 @@
                                     style="@style/Widget.Material3Expressive.Button.IconButton"
                                     android:layout_width="wrap_content"
                                     android:layout_height="match_parent"
-                                    app:icon="@drawable/more"
+                                    app:icon="@drawable/icon_more"
                                     app:iconTint="?attr/colorOnPrimary"
                                     app:materialSizeOverlay="@style/SizeOverlay.Material3Expressive.Button.IconButton.Small.Square" />
 

@@ -96,7 +96,7 @@
                             android:layout_height="match_parent"
                             android:background="?attr/selectableItemBackground"
                             android:padding="8dp"
-                            app:srcCompat="@drawable/more"
+                            app:srcCompat="@drawable/icon_more"
                             app:tint="?attr/colorOnSurface" />
 
                     </androidx.cardview.widget.CardView>

@@ -141,7 +141,7 @@ fun LinkItem(
                 //Select button
                 IconButton(
                     onClick = { onChooseAlbum(index) },
-                    painter = painterResource(R.drawable.folder),
+                    painter = painterResource(R.drawable.icon_storage_folder),
                     contentDescription = "Select album folder"
                 )
 
@@ -170,7 +170,7 @@ fun LinkItem(
                 //Select button
                 IconButton(
                     onClick = { onChooseMetadata(index, link) },
-                    painter = painterResource(R.drawable.file),
+                    painter = painterResource(R.drawable.icon_storage_file),
                     contentDescription = "Select metadata file"
                 )
 
@@ -193,7 +193,7 @@ fun LinkItem(
         //Delete button
         IconButton(
             onClick = { onDelete(index) },
-            painter = painterResource(R.drawable.clear),
+            painter = painterResource(R.drawable.icon_clear),
             contentDescription = "Delete link",
             modifier = Modifier
                 .fillMaxHeight()

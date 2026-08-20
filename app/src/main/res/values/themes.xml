@@ -14,16 +14,6 @@
         <item name="android:fontFamily">@font/outfit</item>
     </style>
 
-    <!-- EditText -->
-    <style name="EditTextStyle" parent="Widget.AppCompat.EditText">
-        <item name="android:textCursorDrawable">@drawable/custom_cursor</item>
-        <item name="android:textColorPrimary">?attr/colorOnPrimary</item>
-        <item name="android:textColor">?attr/colorOnPrimary</item>
-        <item name="android:textColorSecondary">?attr/colorOnSecondary</item>
-        <item name="android:textColorHint">?attr/colorOnSecondary</item>
-        <item name="android:textColorHighlight">?attr/colorOnSecondary</item>
-    </style>
-
     <!-- Modals -->
     <style name="Widget.TurboPhotos.AlertDialog.Title" parent="MaterialAlertDialog.Material3.Title.Text">
         <item name="android:textStyle">bold</item>
