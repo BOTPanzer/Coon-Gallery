@@ -1,7 +1,6 @@
 package com.botpa.turbophotos.gallery.modals
 
 import android.content.Context
-import android.widget.ListView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R

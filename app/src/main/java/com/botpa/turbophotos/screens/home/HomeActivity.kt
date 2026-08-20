@@ -33,6 +33,7 @@ import com.botpa.turbophotos.gallery.options.OptionsGroup
 import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.options.OptionsManager
 import com.botpa.turbophotos.gallery.permissions.PermissionType
+import com.botpa.turbophotos.gallery.views.GridHeaderLayoutManager
 import com.botpa.turbophotos.gallery.views.GridListSeparator
 import com.botpa.turbophotos.screens.album.AlbumActivity
 import com.botpa.turbophotos.screens.home.filters.Filter
@@ -457,11 +458,8 @@ class HomeActivity : BaseActivity() {
     //Home
     private fun initHomeList() {
         //Init home layout manager
-        homeLayoutManager = GridLayoutManager(this, listItemsPerRow)
-        homeLayoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
-            override fun getSpanSize(position: Int): Int {
-                return if (homeAdapter.getItemViewType(position) == 0) homeLayoutManager.spanCount else 1
-            }
+        homeLayoutManager = GridHeaderLayoutManager(this, listItemsPerRow) { position ->
+            homeAdapter.getItemViewType(position) == 0
         }
         homeList.setLayoutManager(homeLayoutManager)
         homeDecorator = GridListSeparator(20, homeLayoutManager.spanCount, 1)

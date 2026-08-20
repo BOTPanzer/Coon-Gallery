@@ -12,8 +12,8 @@ class GridListSeparator(private val space: Int, var spanCount: Int, private val 
         val gapSize = (space * density).toInt()
 
         //Get position (skip the header)
-        val position = parent.getChildAdapterPosition(view)
-        if (position < headerCount) {
+        val position = parent.getChildLayoutPosition(view)
+        if (position == RecyclerView.NO_POSITION || position < headerCount) {
             outRect.set(0, 0, 0, 0)
             return
         }

@@ -36,6 +36,7 @@ import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.options.OptionsManager
 import com.botpa.turbophotos.gallery.permissions.PermissionType
 import com.botpa.turbophotos.gallery.views.CustomRefreshHeader
+import com.botpa.turbophotos.gallery.views.GridHeaderLayoutManager
 import com.botpa.turbophotos.gallery.views.GridListSeparator
 import com.botpa.turbophotos.screens.album.search.SearchDialog
 import com.botpa.turbophotos.screens.viewer.ViewerActivity
@@ -612,11 +613,8 @@ class AlbumActivity : BaseActivity() {
     //Album
     private fun initAlbumList() {
         //Init album layout manager
-        albumLayoutManager = GridLayoutManager(this, listItemsPerRow)
-        albumLayoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
-            override fun getSpanSize(position: Int): Int {
-                return if (albumAdapter.getItemViewType(position) == 0) albumLayoutManager.spanCount else 1
-            }
+        albumLayoutManager = GridHeaderLayoutManager(this, listItemsPerRow) { position ->
+            albumAdapter.getItemViewType(position) == 0
         }
         albumList.setLayoutManager(albumLayoutManager)
         albumDecorator = GridListSeparator(2, albumLayoutManager.spanCount, 1)
