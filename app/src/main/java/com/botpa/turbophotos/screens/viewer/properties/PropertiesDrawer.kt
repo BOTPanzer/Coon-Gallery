@@ -19,7 +19,9 @@ import com.botpa.turbophotos.gallery.views.lists.ListSeparator
 import com.botpa.turbophotos.util.Orion
 import com.fasterxml.jackson.databind.JsonNode
 import java.io.FileInputStream
-import java.text.SimpleDateFormat
+import java.text.NumberFormat
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 import kotlin.math.round
@@ -238,29 +240,39 @@ class PropertiesDrawer(
 
     //Helpers
     fun loadInfo(exif: ExifInterface) {
+        //Get locale
+        val locale = Locale.getDefault()
+
         //Get info (file)
         val path = item.file.parent ?: ""
-        val date = Date(item.lastModified * 1000)
-        val dateFormatter = SimpleDateFormat(if (DateFormat.is24HourFormat(context)) "dd/MM/yyyy, HH:mm.ss" else "dd/MM/yyyy, hh:mm.ss a", Locale.ENGLISH)
+        val date = Date(item.lastModified * 1000).toInstant()
+        val datePattern = DateFormat.getBestDateTimePattern(locale, "EEEyMMMd")
+        val timePattern = DateFormat.getBestDateTimePattern(locale, if (DateFormat.is24HourFormat(context)) "HHmmss" else "hhmmss a")
+        val dateFormatter = DateTimeFormatter.ofPattern(datePattern, locale).withZone(ZoneId.systemDefault())
+        val timeFormatter = DateTimeFormatter.ofPattern(timePattern, locale).withZone(ZoneId.systemDefault())
         val size = round(item.size.toFloat() / 10) / 100
+        val sizeFormatter = NumberFormat.getNumberInstance(locale).apply {
+            minimumFractionDigits = 0
+            maximumFractionDigits = 2
+        }
         val resolution = getItemResolution(item, exif)
         val location = exif.latLong
 
         //Create items list (file)
         infoFileItems.add(PropertiesInfo(R.string.drawer_properties_info_file_name, item.name))
         infoFileItems.add(PropertiesInfo(R.string.drawer_properties_info_file_path, path))
-        infoFileItems.add(PropertiesInfo(R.string.drawer_properties_info_file_date, dateFormatter.format(date)))
-        infoFileItems.add(PropertiesInfo(R.string.drawer_properties_info_file_size, if (size > 1000) "${round(size / 10) / 100} MB" else "$size KB"))
+        infoFileItems.add(PropertiesInfo(R.string.drawer_properties_info_file_date, "${dateFormatter.format(date)} · ${timeFormatter.format(date)}"))
+        infoFileItems.add(PropertiesInfo(R.string.drawer_properties_info_file_size, if (size > 1000) "${sizeFormatter.format(size / 1000)} MB" else "${sizeFormatter.format(size)} KB"))
         if (resolution.first > 0 && resolution.second > 0) {
             infoFileItems.add(PropertiesInfo(R.string.drawer_properties_info_file_resolution, "${resolution.first}x${resolution.second}"))
         }
         if (location != null) {
             //Get location info
             val latitude = location[0]
-            val latitudeText = String.format(Locale.getDefault(), "%.4f", latitude)
+            val latitudeText = String.format(locale, "%.4f", latitude)
             val longitude = location[1]
-            val longitudeText = String.format(Locale.getDefault(), "%.4f", longitude)
-            val locationCoordinates = "${latitudeText}º N, ${longitudeText}º W"
+            val longitudeText = String.format(locale, "%.4f", longitude)
+            val locationCoordinates = "${latitudeText}º N · ${longitudeText}º W"
             val item = PropertiesInfo(R.string.drawer_properties_info_file_location, "${context.getString(R.string.drawer_properties_info_file_location_finding)}\n$locationCoordinates")
             infoFileItems.add(item)
 
