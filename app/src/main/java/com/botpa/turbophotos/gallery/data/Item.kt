@@ -46,14 +46,14 @@ class Item(
         val metadata = getMetadata() ?: return null
 
         //Get caption
-        val caption: String = (metadata.get("caption")?.asText() ?: "").lowercase(Locale.getDefault())
+        val caption: String = (metadata.get("caption")?.asText() ?: "")
 
         //Get labels
         val labels: MutableList<String> = ArrayList()
         if (metadata.has("labels")) {
             val value = metadata.get("labels")
             for (i in 0..<value.size()) {
-                labels.add(value.get(i).asText().lowercase(Locale.getDefault()))
+                labels.add(value.get(i).asText())
             }
         }
 
@@ -62,7 +62,7 @@ class Item(
         if (metadata.has("text")) {
             val value = metadata.path("text")
             for (i in 0..<value.size()) {
-                text.add(value.get(i).asText().lowercase(Locale.getDefault()))
+                text.add(value.get(i).asText())
             }
         }
 
