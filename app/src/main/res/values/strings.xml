@@ -214,7 +214,7 @@
     <string name="dialog_search_method_text_description">Checks if the whole text is contained.</string>
     <string name="dialog_search_method_text_use">· Finding a whole sentence.\n· Finding part of a word.</string>
     <string name="dialog_search_method_natural_description">Finds items using natural language.</string>
-    <string name="dialog_search_method_natural_use">· Searches in different languages.\n· Concepts or contexts.</string>
+    <string name="dialog_search_method_natural_use">· Searching in different languages.</string>
     <!-- Dialog: Albums -->
     <string name="dialog_albums_title">Select an album</string>
     <string name="dialog_albums_folder">Select from folder</string>

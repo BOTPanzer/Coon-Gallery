@@ -428,7 +428,7 @@ object Library {
                     SearchHelper.filterAlbumText(Orion.normalizeText(query), album)
                 }
                 SearchMethod.NaturalLanguage -> {
-                    SearchHelper.filterAlbumVectors(Orion.normalizeText(query), album, context)
+                    SearchHelper.filterAlbumNatural(Orion.normalizeText(trimmedQuery), album, context)
                 }
             }
         }

@@ -80,13 +80,13 @@ object SearchHelper {
         return filteredAlbum
     }
 
-    //Vectors
+    //Natural
     private const val MODEL_URL = "https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/resolve/main/onnx/model.onnx"
     private const val MODEL_FILE_NAME = "model.onnx"
     private const val TOKENIZER_URL = "https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/resolve/main/tokenizer.json"
     private const val TOKENIZER_FILE_NAME = "tokenizer.json"
 
-    fun filterAlbumVectors(normalizedQuery: String, album: Album, context: Context): MutableList<Item> {
+    fun filterAlbumNatural(query: String, album: Album, context: Context): MutableList<Item> {
         //Create new list
         val filteredAlbum = ArrayList<Item>()
 
@@ -98,10 +98,10 @@ object SearchHelper {
         //Prepare search query
         val modelFile = ensureDownloaded(context, MODEL_URL, MODEL_FILE_NAME) ?: return filteredAlbum
         val tokenizerFile = ensureDownloaded(context, TOKENIZER_URL, TOKENIZER_FILE_NAME) ?: return filteredAlbum
-        val queryVector = generateTextVector(normalizedQuery, modelFile, tokenizerFile)
+        val queryVector = getEmbedding(query, modelFile, tokenizerFile)
 
         //Search vectors
-        val vectorSearchResults = searchVectors(vectorsFile, queryVector)
+        val vectorSearchResults = searchVectors(vectorsFile, queryVector, 0.55f)
 
         //Look for items in search results
         for (item in album.items) {
@@ -114,7 +114,6 @@ object SearchHelper {
         return filteredAlbum
     }
 
-    //Vectors util
     private fun ensureDownloaded(context: Context, downloadUrl: String, fileName: String): File? {
         //Check if parent folder exists
         val parentFolder = File(context.filesDir, "models/text_embeddings")
@@ -213,7 +212,7 @@ object SearchHelper {
         return floatArray
     }
 
-    private fun generateTextVector(text: String, modelFile: File, tokenizerFile: File): FloatArray {
+    private fun getEmbedding(text: String, modelFile: File, tokenizerFile: File): FloatArray {
         val env = OrtEnvironment.getEnvironment()
         val sessionOptions = OrtSession.SessionOptions()
 
@@ -291,26 +290,27 @@ object SearchHelper {
         init {
             val jsonString = tokenizerFile.bufferedReader().use { it.readText() }
             val root = JSONObject(jsonString)
-            val modelObj = root.getJSONObject("model")
 
-            if (modelObj.has("vocab") && modelObj.get("vocab") is JSONObject) {
-                val vocabObj = modelObj.getJSONObject("vocab")
-                vocabObj.keys().forEach { key ->
-                    vocabMap[key] = vocabObj.getLong(key)
-                }
-            } else if (modelObj.has("vocab")) {
-                val vocabArray = modelObj.getJSONArray("vocab")
-                for (i in 0 until vocabArray.length()) {
-                    val entry = vocabArray.getJSONArray(i)
-                    vocabMap[entry.getString(0)] = i.toLong()
+            if (root.has("model")) {
+                val modelObj = root.getJSONObject("model")
+                if (modelObj.has("vocab") && modelObj.get("vocab") is JSONObject) {
+                    val vocabObj = modelObj.getJSONObject("vocab")
+                    vocabObj.keys().forEach { key ->
+                        vocabMap[key] = vocabObj.getLong(key)
+                    }
+                } else if (modelObj.has("vocab")) {
+                    val vocabArray = modelObj.getJSONArray("vocab")
+                    for (i in 0 until vocabArray.length()) {
+                        val entry = vocabArray.getJSONArray(i)
+                        vocabMap[entry.getString(0)] = i.toLong()
+                    }
                 }
             }
 
-            // MiniLM-L12 explicit special token mapping
-            clsId = vocabMap["<s>"] ?: 0L
-            padId = vocabMap["<pad>"] ?: 1L
-            sepId = vocabMap["</s>"] ?: 2L
-            unkId = vocabMap["<unk>"] ?: 3L
+            clsId = vocabMap["<s>"] ?: vocabMap["[CLS]"] ?: 0L
+            padId = vocabMap["<pad>"] ?: vocabMap["[PAD]"] ?: 1L
+            sepId = vocabMap["</s>"] ?: vocabMap["[SEP]"] ?: 2L
+            unkId = vocabMap["<unk>"] ?: vocabMap["[UNK]"] ?: 3L
         }
 
         fun tokenize(text: String, maxLength: Int = 128): Pair<LongArray, LongArray> {
@@ -320,16 +320,13 @@ object SearchHelper {
             val words = text.lowercase().trim().split(Regex("\\s+"))
             for (word in words) {
                 if (tokens.size >= maxLength - 1) break
+                tokens.addAll(tokenizeWord(word))
+            }
 
-                // SentencePiece U+2581 tokenization symbol
-                val prefixedWord = "\u2581$word"
-                if (vocabMap.containsKey(prefixedWord)) {
-                    tokens.add(vocabMap[prefixedWord]!!)
-                } else if (vocabMap.containsKey(word)) {
-                    tokens.add(vocabMap[word]!!)
-                } else {
-                    tokens.add(unkId)
-                }
+            if (tokens.size > maxLength - 1) {
+                val truncated = tokens.subList(0, maxLength - 1)
+                tokens.clear()
+                tokens.addAll(truncated)
             }
 
             tokens.add(sepId)
@@ -338,12 +335,46 @@ object SearchHelper {
             val attentionMask = LongArray(maxLength) { 0L }
 
             for (i in tokens.indices) {
-                if (i >= maxLength) break
                 inputIds[i] = tokens[i]
                 attentionMask[i] = 1L
             }
 
             return Pair(inputIds, attentionMask)
+        }
+
+        private fun tokenizeWord(word: String): List<Long> {
+            val subwords = mutableListOf<Long>()
+            var start = 0
+
+            // Handle SentencePiece whitespace prefix representation
+            val prepended = "\u2581$word"
+            if (vocabMap.containsKey(prepended)) {
+                return listOf(vocabMap[prepended]!!)
+            }
+
+            while (start < word.length) {
+                var end = word.length
+                var curSubwordId: Long? = null
+
+                while (start < end) {
+                    val sub = word.substring(start, end)
+                    val candidate = if (start == 0) "\u2581$sub" else sub
+                    if (vocabMap.containsKey(candidate)) {
+                        curSubwordId = vocabMap[candidate]
+                        break
+                    }
+                    end--
+                }
+
+                if (curSubwordId == null) {
+                    subwords.add(unkId)
+                    start++
+                } else {
+                    subwords.add(curSubwordId)
+                    start = end
+                }
+            }
+            return subwords
         }
     }
 

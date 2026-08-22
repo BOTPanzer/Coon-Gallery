@@ -214,7 +214,7 @@
     <string name="dialog_search_method_text_description">Comprueba que el texto de la busqueda está contenido.</string>
     <string name="dialog_search_method_text_use">· Encontrar una frase completa.\n· Encontrar parte de una palabra.</string>
     <string name="dialog_search_method_natural_description">Encuentra elementos mediante lenguaje natural.</string>
-    <string name="dialog_search_method_natural_use">· Busquedas en otros idiomas.\n· Conceptos o contextos.</string>
+    <string name="dialog_search_method_natural_use">· Buscar en diferentes idiomas.</string>
     <!-- Dialog: Albums -->
     <string name="dialog_albums_title">Selecciona un álbum</string>
     <string name="dialog_albums_folder">Seleccionar carpeta</string>
