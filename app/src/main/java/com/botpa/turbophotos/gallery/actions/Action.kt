@@ -7,17 +7,17 @@ import com.botpa.turbophotos.gallery.data.Item
 class Action(val type: Int, @JvmField val items: Array<Item>) {
 
     //Errors
-    @JvmField var errors: MutableList<ActionError> = ArrayList()
+    var errors: MutableList<ActionError> = ArrayList()
 
     //Results (async actions)
-    @JvmField var pending: MutableMap<Uri, Item> = HashMap()
+    var pending: MutableMap<Uri, Item> = HashMap()
 
     //Results (albums & gallery)
-    @JvmField var hasSortedAlbumsList: Boolean = false
-    @JvmField var modifiedAlbums: MutableSet<Album> = HashSet()
-    @JvmField var removedIndexesInAlbums: MutableList<Int> = ArrayList()
-    @JvmField var removedIndexesInGallery: MutableList<Int> = ArrayList()
-    @JvmField var modifiedIndexesInGallery: MutableList<Int> = ArrayList()
+    var hasSortedAlbumsList: Boolean = false
+    var modifiedAlbums: MutableSet<Album> = HashSet()
+    var removedIndexesInAlbums: MutableList<Int> = ArrayList()
+    var removedIndexesInGallery: MutableList<Int> = ArrayList()
+    var modifiedIndexesInGallery: MutableList<Int> = ArrayList()
 
 
     //Action

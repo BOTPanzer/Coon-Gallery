@@ -255,26 +255,25 @@ class SettingsViewModel : ViewModel() {
     }
 
     //Links
-    fun updateLinkAlbumFolder(activity: Activity, index: Int, folder: File) {
-        //Update link folder
-        val updated = Link.updateLinkFolder(index, folder)
+    fun updateLinkAlbumFolder(activity: Activity, index: Int, albumFolder: File) {
+        //Update link album folder
+        val success = Link.updateLinkAlbumFolder(index, albumFolder)
 
-        //Check if update was successful
-        if (!updated) {
+        //Check if update failed
+        if (!success) {
             //Failed -> There is another link with the same album
             Orion.snack(activity, R.string.settings_error_link_album_exists)
-        } else {
-            //Success -> Reload library on exit
-            reloadLibraryOnExit = true
         }
     }
 
-    fun updateLinkMetadataFile(index: Int, file: File) {
+    fun updateLinkMetadataFile(index: Int, metadataFile: File) {
         //Update link with selected file
-        Link.updateLinkFile(index, file)
+        Link.updateLinkMetadataFile(index, metadataFile)
+    }
 
-        //Reload library on exit
-        reloadLibraryOnExit = true
+    fun updateLinkVectorsFile(index: Int, vectorsFile: File) {
+        //Update link with selected file
+        Link.updateLinkVectorsFile(index, vectorsFile)
     }
 
     fun removeLink(index: Int) {
@@ -283,14 +282,11 @@ class SettingsViewModel : ViewModel() {
 
         //Save links
         Link.saveLinks()
-
-        //Reload library on exit
-        reloadLibraryOnExit = true
     }
 
     fun addLink(activity: Activity) {
         //Try to add new empty link
-        if (!Link.addLink(Link("", ""))) {
+        if (!Link.addLink(Link("", "", ""))) {
             //Not added -> There is another link with the same album
             Orion.snack(activity, R.string.settings_error_link_album_exists)
             return
@@ -298,9 +294,6 @@ class SettingsViewModel : ViewModel() {
 
         //Save links
         Link.saveLinks()
-
-        //Reload library on exit
-        reloadLibraryOnExit = true
     }
 
 }

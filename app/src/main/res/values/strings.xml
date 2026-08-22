@@ -115,6 +115,7 @@
     <string name="settings_metadata_links_item_name">Link %d</string>
     <string name="settings_metadata_links_placeholder_album">Album folder</string>
     <string name="settings_metadata_links_placeholder_metadata">Metadata file</string>
+    <string name="settings_metadata_links_placeholder_vectors">Vectors file</string>
     <string name="settings_home_grid_title">Items grid</string>
     <string name="settings_home_grid_row_title">Items per row · %d</string>
     <string name="settings_home_grid_row_description">The amount of albums to show per home screen row.</string>
@@ -152,7 +153,8 @@
     <string name="settings_message_backup_restore_select">Select a backup file to restore.</string>
     <string name="settings_message_backup_restore_success">Backup restored.</string>
     <string name="settings_message_link_album_select">Select an album to link it.</string>
-    <string name="settings_message_link_metadata_select">Select a file to link it.</string>
+    <string name="settings_message_link_metadata_select">Select a metadata file to link it.</string>
+    <string name="settings_message_link_vectors_select">Select a vectors file to link it.</string>
     <string name="settings_error_backup_create">Error creating backup file.</string>
     <string name="settings_error_link_album_exists">A link with that album already exists.</string>
     <string name="settings_error_link_add_first">Add an album first.</string>

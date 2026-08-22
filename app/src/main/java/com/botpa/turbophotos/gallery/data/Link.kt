@@ -6,15 +6,18 @@ import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.util.Storage
 import java.io.File
 
-class Link(albumPath: String, metadataPath: String) {
+class Link(albumPath: String, metadataPath: String, vectorsPath: String) {
 
-    @JvmField val albumFolder: File = File(albumPath)
-    @JvmField val metadataFile: File = File(metadataPath)
-    @JvmField var album: Album? = null
+    //Link info
+    var album: Album? = null
 
-    //Getters
+    val albumFolder: File = File(albumPath)
+    val metadataFile: File = File(metadataPath)
+    val vectorsFile: File = File(vectorsPath)
+
     val albumPath: String get() = albumFolder.absolutePath
     val metadataPath: String get() = metadataFile.absolutePath
+    val vectorsPath: String get() = vectorsFile.absolutePath
 
 
     //Override toString to be able to save albums in a string
@@ -27,27 +30,26 @@ class Link(albumPath: String, metadataPath: String) {
     companion object {
 
         //Links
-        var linksLoaded: Boolean = false
-
-        @JvmField val links = mutableStateListOf<Link>()
-        @JvmField val linksMap: MutableMap<String, Link?> = HashMap<String, Link?>()
+        private var areLinksLoaded: Boolean = false
+        private val linksMap: MutableMap<String, Link?> = HashMap()
+        val links = mutableStateListOf<Link>()
 
 
         //Loading & saving list
         fun loadLinks(reset: Boolean) {
             //Already loaded
-            if (!reset && linksLoaded) return
-            linksLoaded = true
+            if (!reset && areLinksLoaded) return
+            areLinksLoaded = true
 
             //Clear links
             links.clear()
             linksMap.clear()
 
             //Get links from storage (as strings)
-            val linksUnparsed = Storage.getStringList(StoragePairs.LIBRARY_LINKS_KEY)
+            val unparsedLinks = Storage.getStringList(StoragePairs.LIBRARY_LINKS_KEY)
 
             //Parse links
-            for (string in linksUnparsed) addLink(parse(string))
+            for (unparsedLink in unparsedLinks) addLink(parse(unparsedLink))
         }
 
         fun saveLinks() {
@@ -57,19 +59,23 @@ class Link(albumPath: String, metadataPath: String) {
             Storage.putStringList(StoragePairs.LIBRARY_LINKS_KEY, list)
         }
 
-        //Updating list
-        fun addLink(link: Link): Boolean {
+        //List management
+        private fun addLinkAtIndex(index: Int, link: Link): Boolean {
             //Check if link exists
             val key = link.albumPath
             if (linksMap.containsKey(key)) return false
 
             //Add link
-            links.add(link)
+            links.add(index, link)
             linksMap[key] = link
 
             //Relink with album
             relinkWithAlbum(link)
             return true
+        }
+
+        fun addLink(link: Link): Boolean {
+            return addLinkAtIndex(links.size, link)
         }
 
         fun removeLink(index: Int): Boolean {
@@ -80,50 +86,68 @@ class Link(albumPath: String, metadataPath: String) {
             val link = links.removeAt(index)
             linksMap.remove(link.albumPath)
 
-            //Update album
-            if (link.album != null) link.album!!.updateMetadataFile(null)
+            //Notify album
+            link.album?.setLink(null)
             return true
         }
 
-        fun updateLinkFolder(index: Int, newFolder: File): Boolean {
+        fun getLink(albumPath: String): Link? {
+            return linksMap.getOrDefault(albumPath, null)
+        }
+
+        //Link management
+        fun relinkWithAlbum(link: Link) {
+            //Update link album
+            link.album = Library.albumsMap.getOrDefault(link.albumPath, null)
+
+            //Notify album of link change
+            link.album?.setLink(link)
+        }
+
+        fun updateLinkAlbumFolder(index: Int, newAlbumFolder: File): Boolean {
             //Get old link
             val oldLink = links[index]
+            val oldKey = oldLink.albumPath
+            val keyNew = newAlbumFolder.absolutePath
 
             //Check if new folder is the same
-            if (newFolder == oldLink.albumFolder) return true
+            if (oldKey == keyNew) return true
 
             //Check if album is already in a link
-            val keyNew = newFolder.absolutePath
             if (linksMap.containsKey(keyNew)) return false
 
-            //Update it
-            val link = Link(newFolder.absolutePath, oldLink.metadataPath)
-            links[index] = link
-            linksMap[keyNew] = link
-            linksMap.remove(oldLink.albumPath)
+            //Remove old link
+            removeLink(index)
+
+            //Add new link with updated album folder
+            val newLink = Link(newAlbumFolder.absolutePath, oldLink.metadataPath, oldLink.vectorsPath)
+            addLinkAtIndex(index, newLink)
 
             //Relink with album
-            relinkWithAlbum(link)
+            relinkWithAlbum(newLink)
             return true
         }
 
-        fun updateLinkFile(index: Int, newFile: File) {
+        fun updateLinkMetadataFile(index: Int, newFile: File) {
             //Get link
             val link = links[index]
 
-            //Update it
-            links[index] = Link(link.albumPath, newFile.absolutePath)
+            //Update link metadata file
+            links[index] = Link(link.albumPath, link.metadataPath, newFile.absolutePath)
 
             //Relink with album
             relinkWithAlbum(link)
         }
 
-        fun relinkWithAlbum(link: Link) {
-            //Update link album reference
-            link.album = Library.albumsMap.getOrDefault(link.albumPath, null)
+        fun updateLinkVectorsFile(index: Int, newFile: File) {
+            //Get link
+            val link = links[index]
 
-            //Update link album metadata file
-            if (link.album != null) link.album!!.updateMetadataFile(link.metadataFile)
+            //Update link vectors file
+            links[index] = Link(link.albumPath, newFile.absolutePath, link.vectorsPath)
+
+            //Relink with album
+            relinkWithAlbum(link)
         }
 
         //Parsing
@@ -135,6 +159,7 @@ class Link(albumPath: String, metadataPath: String) {
             return Link(
                 parts[0],
                 if (parts.size >= 2) parts[1] else "",
+                if (parts.size >= 3) parts[2] else ""
             )
         }
 

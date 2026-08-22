@@ -43,7 +43,7 @@ class AlbumsDialog(
             .setNegativeButton(R.string.dialog_cancel, null)
             .setNeutralButton(R.string.dialog_albums_folder,{ dialogInterface, which ->
                 //Select from folder
-                ExplorerDialog(context, false, onSelectFolder).buildAndShow()
+                ExplorerDialog(context, isSelectingFiles = false, allowCreation = true, onSelect = onSelectFolder).buildAndShow()
             })
     }
 

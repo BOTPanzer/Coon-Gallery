@@ -45,20 +45,14 @@ object Library {
 
     var libraryFilter: String = "*/*" //Mime type used to filter the library
         private set
-    val isLibraryFiltered: Boolean
-        get() = libraryFilter != "*/*"
+    val isLibraryFiltered: Boolean get() = libraryFilter != "*/*"
 
     //Albums
-    private val _albumsMap: MutableMap<String, Album> = HashMap() //Uses album path as key for easy finding
-    private val _albums: MutableList<Album> = ArrayList()
+    val albumsMap: Map<String, Album> field: MutableMap<String, Album> = HashMap() //Uses album path as key for easy finding
+    val albums: List<Album> field: MutableList<Album> = ArrayList()
 
     val all: Album = Album("All")
     val favourites: Album = Album("Favourites")
-
-    val albumsMap: Map<String, Album>
-        get() = _albumsMap
-    val albums: List<Album>
-        get() = _albums
 
     //Trash
     private val trashMap: MutableMap<Album, Int> = HashMap() //Stores the amount of trashed items in each album
@@ -67,11 +61,8 @@ object Library {
 
     //Gallery
     private var galleryAlbum: Album? = null
-    private val _gallery: MutableList<Item> = ArrayList() //Currently open album items (could be filtered)
 
-    val gallery: List<Item>
-        get() = _gallery
-
+    val gallery: List<Item> field: MutableList<Item> = ArrayList() //Currently open album items (could be filtered)
 
 
     //Library (events)
@@ -258,8 +249,8 @@ object Library {
             }
 
             //Remove unused albums & populate albums list
-            _albums.clear()
-            val iterator = _albumsMap.entries.iterator()
+            albums.clear()
+            val iterator = albumsMap.entries.iterator()
             while (iterator.hasNext()) {
                 //Get album
                 val album = iterator.next().value
@@ -267,7 +258,7 @@ object Library {
                 //Check what to do with album
                 if (!album.isEmpty()) {
                     //Not empty -> Add it to albums list
-                    _albums.add(album)
+                    albums.add(album)
                 } else if (!isAlbumInUse(album)) {
                     //Not in use -> Remove it
                     iterator.remove()
@@ -289,18 +280,16 @@ object Library {
     }
 
     //Albums
-    private fun createAlbum(imagesFolder: File, name: String): Album {
-        //Get folder path
-        val folderPath = imagesFolder.absolutePath
+    private fun createAlbum(albumFolder: File, name: String): Album {
+        //Get album path
+        val albumPath = albumFolder.absolutePath
 
         //Create new album
-        val album = Album(name, imagesFolder, null)
+        val album = Album(name, albumFolder)
+        albumsMap[albumPath] = album
 
-        //Add album to albums map
-        _albumsMap[album.imagesPath] = album
-
-        //Get album link
-        val link = Link.linksMap.getOrDefault(folderPath, null)
+        //Update link
+        val link = Link.getLink(albumPath)
         if (link != null) relinkWithAlbum(link)
 
         //Return album
@@ -338,14 +327,14 @@ object Library {
 
     private fun removeAlbum(index: Int) {
         //Remove album from albums list
-        val album = _albums.removeAt(index)
+        val album = albums.removeAt(index)
 
         //Remove album completely if not being used
         removeAlbumFromMapIfSafe(album)
     }
 
     private fun sortAlbumsList() {
-        _albums.sortByDescending { it.get(0).lastModified }
+        albums.sortByDescending { it.get(0).lastModified }
     }
 
     private fun isAlbumInUse(album: Album): Boolean {
@@ -356,8 +345,13 @@ object Library {
         //Album is in use
         if (isAlbumInUse(album)) return
 
-        //Delete album
-        _albumsMap.remove(album.imagesPath)
+        //Remove album
+        val albumPath = album.albumPath
+        albumsMap.remove(albumPath)
+
+        //Update link
+        val link = Link.getLink(albumPath)
+        if (link != null) relinkWithAlbum(link)
     }
 
     //Trash
@@ -370,7 +364,7 @@ object Library {
 
     private fun removeItemFromTrash(itemIndex: Int, originalAlbum: Album) {
         //Remove from trash
-        trash.remove(itemIndex)
+        trash.removeAt(itemIndex)
 
         //Calculate new trash amount
         val newTrashAmount = trashMap.getOrDefault(originalAlbum, 0) - 1
@@ -392,7 +386,7 @@ object Library {
         if (album.hasMetadata()) return
 
         //Check if images folder & metadata file exist
-        if (!album.exists()) return
+        if (!album.canLoadMetadata()) return
 
         //Update load indicator
         indicator?.metadata(album.name)
@@ -498,8 +492,8 @@ object Library {
         galleryAlbum = album
 
         //Clear gallery & add new items
-        _gallery.clear()
-        _gallery.addAll(items)
+        gallery.clear()
+        gallery.addAll(items)
     }
 
     //Actions (events)
@@ -531,7 +525,7 @@ object Library {
         if (indexInAll == -1) return
 
         //Remove item
-        all.remove(indexInAll)
+        all.removeAt(indexInAll)
         action.modifiedAlbums.add(all)
     }
 
@@ -540,7 +534,7 @@ object Library {
         if (indexInFavourites == -1) return
 
         //Remove item
-        favourites.remove(indexInFavourites)
+        favourites.removeAt(indexInFavourites)
         action.modifiedAlbums.add(favourites)
     }
 
@@ -557,7 +551,7 @@ object Library {
         if (indexInAlbum == -1) return
 
         //Remove item
-        album.remove(indexInAlbum)
+        album.removeAt(indexInAlbum)
         action.modifiedAlbums.add(album)
 
         //Check if album needs to be deleted or sorted
@@ -588,7 +582,7 @@ object Library {
             //Check if album is in albums list
             if (!albums.contains(album)) {
                 //Not in albums list -> Add it
-                _albums.add(album)
+                albums.add(album)
             }
         }
     }
@@ -617,7 +611,7 @@ object Library {
             action.removedIndexesInGallery.sortByDescending { it } //Sort from last to first to allow using a foreach
 
             //Remove items
-            for (indexInGallery in action.removedIndexesInGallery) _gallery.removeAt(indexInGallery)
+            for (indexInGallery in action.removedIndexesInGallery) gallery.removeAt(indexInGallery)
         }
 
         //Check if albums were marked as removed
@@ -685,7 +679,7 @@ object Library {
 
                 //Get new name & file
                 val newName = "$newNameNoExtension.$extension"
-                val newFile = File(item.album.imagesFolder, newName)
+                val newFile = File(item.album.albumFolder, newName)
 
                 //Check if new file already exists
                 if (newFile.exists()) {
@@ -704,7 +698,7 @@ object Library {
 
                 //Get new name & file
                 val newName = "$newNameNoExtension.$extension"
-                val newFile = File(item.album.imagesFolder, newName)
+                val newFile = File(item.album.albumFolder, newName)
 
                 //Rename file
                 val renamed = item.file.renameTo(newFile)
@@ -806,7 +800,7 @@ object Library {
             }
 
             //Move item file
-            val newFile = File(newAlbum.imagesPath, item.name)
+            val newFile = File(newAlbum.albumPath, item.name)
             if (!item.file.renameTo(newFile)) {
                 //Failed to move file -> Error
                 action.errors.add(ActionError(item, context.getString(R.string.library_error_move)))
@@ -868,7 +862,7 @@ object Library {
             }
 
             //Copy item file
-            val newFile = File(newAlbum.imagesPath, item.name)
+            val newFile = File(newAlbum.albumPath, item.name)
             if (!Orion.cloneFile(context, item.file, newFile)) {
                 //Failed to copy file -> Error
                 action.errors.add(ActionError(item, context.getString(R.string.library_error_copy)))

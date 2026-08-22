@@ -21,6 +21,7 @@ import java.io.File
 class ExplorerDialog(
     context: Context,
     private val isSelectingFiles: Boolean = false,
+    private val allowCreation: Boolean = false,
     private val onSelect: (File) -> Unit,
     private val startingFolder: File? = null,
     private val fileExtension: String = "",
@@ -77,7 +78,7 @@ class ExplorerDialog(
         //Init dialog
         return builder.apply {
             setTitle(if (isSelectingFiles) R.string.dialog_explorer_file_title else R.string.dialog_explorer_folder_title)
-            setNeutralButton(buttonCreate, null)
+            if (allowCreation) setNeutralButton(buttonCreate, null)
             setNegativeButton(R.string.dialog_cancel, null)
         }
     }

@@ -105,6 +105,7 @@ class SettingsActivity : AppCompatActivity() {
                 ExplorerDialog(
                     context = activity,
                     isSelectingFiles = false,
+                    allowCreation = true,
                     onSelect = { folder ->
                         view.createSettingsBackup(context, folder)
                     }
@@ -120,6 +121,7 @@ class SettingsActivity : AppCompatActivity() {
                 ExplorerDialog(
                     context = activity,
                     isSelectingFiles = true,
+                    allowCreation = false,
                     fileExtension = "json",
                     onSelect = { file ->
                         view.restoreSettingsBackup(context, activity, file)
@@ -154,7 +156,7 @@ class SettingsActivity : AppCompatActivity() {
                     albums = Library.albums,
                     onSelectAlbum = { album ->
                         //Choose album folder
-                        val folder = album.imagesFolder ?: return@AlbumsDialog
+                        val folder = album.albumFolder ?: return@AlbumsDialog
                         view.updateLinkAlbumFolder(activity, index, folder)
                     },
                     onSelectFolder = { folder ->
@@ -178,6 +180,7 @@ class SettingsActivity : AppCompatActivity() {
                     ExplorerDialog(
                         context = context,
                         isSelectingFiles = true,
+                        allowCreation = true,
                         fileExtension = "json",
                         onSelect = { file ->
                             //Choose file
@@ -187,6 +190,30 @@ class SettingsActivity : AppCompatActivity() {
 
                     //Feedback toast
                     Toast.makeText(activity, R.string.settings_message_link_metadata_select, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+        val onChooseLinkVectors = remember<(Int, Link) -> Unit> {
+            { index, link ->
+                //Check if album folder exists
+                if (!link.albumFolder.exists()) {
+                    //Feedback toast
+                    Toast.makeText(activity, R.string.settings_error_link_add_first, Toast.LENGTH_SHORT).show()
+                } else {
+                    //Show select file dialog
+                    ExplorerDialog(
+                        context = context,
+                        isSelectingFiles = true,
+                        allowCreation = false,
+                        fileExtension = "db",
+                        onSelect = { file ->
+                            //Choose file
+                            view.updateLinkVectorsFile(index, file)
+                        }
+                    ).buildAndShow()
+
+                    //Feedback toast
+                    Toast.makeText(activity, R.string.settings_message_link_vectors_select, Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -245,6 +272,7 @@ class SettingsActivity : AppCompatActivity() {
                     onShowLinksInfo,
                     onChooseLinkAlbum,
                     onChooseLinkMetadata,
+                    onChooseLinkVectors,
                     onAddLink
                 )
             }
@@ -495,7 +523,7 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     @Composable
-    private fun SettingsMetadataLayout(onShowLinksInfo: () -> Unit, onChooseLinkAlbum: (Int) -> Unit, onChooseLinkMetadata: (Int, Link) -> Unit, onAddLink: () -> Unit) {
+    private fun SettingsMetadataLayout(onShowLinksInfo: () -> Unit, onChooseLinkAlbum: (Int) -> Unit, onChooseLinkMetadata: (Int, Link) -> Unit, onChooseLinkVectors: (Int, Link) -> Unit, onAddLink: () -> Unit) {
         Layout(R.string.settings_main_general_metadata_title) {
             LazyColumn(
                 modifier = Modifier
@@ -559,6 +587,7 @@ class SettingsActivity : AppCompatActivity() {
                                         link = link,
                                         onChooseAlbum = onChooseLinkAlbum,
                                         onChooseMetadata = onChooseLinkMetadata,
+                                        onChooseVectors = onChooseLinkVectors,
                                         onDelete = { index -> view.removeLink(index) }
                                     )
                                 }

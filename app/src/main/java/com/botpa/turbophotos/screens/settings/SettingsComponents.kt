@@ -103,6 +103,7 @@ fun LinkItem(
     link: Link,
     onChooseAlbum: (Int) -> Unit,
     onChooseMetadata: (Int, Link) -> Unit,
+    onChooseVectors: (Int, Link) -> Unit,
     onDelete: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -188,6 +189,35 @@ fun LinkItem(
                         .alpha(if (hasMetadata) 1f else 0.5f)
                 )
             }
+
+            //Vectors file
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 5.dp)
+            ) {
+                //Select button
+                IconButton(
+                    onClick = { onChooseVectors(index, link) },
+                    painter = painterResource(R.drawable.icon_storage_file),
+                    contentDescription = "Select vectors file"
+                )
+
+                //Name
+                val hasVectors = link.vectorsFile.name != ""
+                Text(
+                    text = if (hasVectors) link.vectorsFile.name else stringResource(R.string.settings_metadata_links_placeholder_vectors),
+                    fontFamily = FONT_OUTFIT,
+                    fontSize = 14.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 10.dp)
+                        .alpha(if (hasVectors) 1f else 0.5f)
+                )
+            }
         }
 
         //Delete button
@@ -206,9 +236,10 @@ fun LinkItem(
 fun LinkItemPreview() {
     LinkItem(
         index = 0,
-        link = Link("Camera", "camera.json"),
+        link = Link("Camera", "camera.json", "camera.db"),
         onChooseAlbum = { i -> },
         onChooseMetadata = { i, l -> },
+        onChooseVectors = { i, l -> },
         onDelete = { i -> }
     )
 }

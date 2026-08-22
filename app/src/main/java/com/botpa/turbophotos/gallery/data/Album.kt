@@ -4,26 +4,22 @@ import com.botpa.turbophotos.util.Orion
 import com.fasterxml.jackson.databind.node.ObjectNode
 import java.io.File
 
-class Album(val name: String, val imagesFolder: File?, var metadataFile: File?) {
-
-    constructor(name: String) : this(name, null, null)
+class Album(val name: String, val albumFolder: File? = null, private var link: Link? = null) {
 
     //Album info
-    @JvmField val items: MutableList<Item> = ArrayList()
-    @JvmField var metadata: ObjectNode? = null
+    val items: List<Item> field: MutableList<Item> = ArrayList()
+    val isSpecial: Boolean = albumFolder == null
+    var metadata: ObjectNode? = null
 
-    val isSpecial: Boolean = imagesFolder == null
+    //Files info
+    val albumPath: String = albumFolder?.absolutePath ?: ""
+    val metadataFile: File? get() = link?.metadataFile
+    val metadataPath: String get() = link?.metadataPath ?: ""
+    val vectorsFile: File? get() = link?.vectorsFile
+    val vectorsPath: String get() = link?.vectorsPath ?: ""
 
-    val imagesPath: String = imagesFolder?.absolutePath ?: ""
-    val metadataPath: String = metadataFile?.absolutePath ?: ""
 
-
-    //Util
-    fun exists(): Boolean {
-        return imagesFolder != null && metadataFile != null && imagesFolder.exists() && metadataFile!!.exists()
-    }
-
-    //Files
+    //Items
     fun sort() {
         items.sortByDescending { it }
     }
@@ -59,7 +55,7 @@ class Album(val name: String, val imagesFolder: File?, var metadataFile: File?) 
         return index
     }
 
-    fun remove(index: Int): Item {
+    fun removeAt(index: Int): Item {
         return items.removeAt(index)
     }
 
@@ -67,24 +63,39 @@ class Album(val name: String, val imagesFolder: File?, var metadataFile: File?) 
         return items.indexOf(item)
     }
 
-    //Load & save metadata
-    fun updateMetadataFile(newFile: File?) {
-        metadataFile = newFile
+    //Link management
+    fun setLink(newLink: Link?) {
+        //Check if link changes
+        if (newLink == link) return
+
+        //Update link
+        link = newLink
+        onMetadataFileChanged()
+    }
+
+    //Metadata management
+    fun onMetadataFileChanged() {
         metadata = null
     }
 
+    fun canLoadMetadata(): Boolean {
+        return metadataFile != null && metadataFile!!.exists()
+    }
+
     fun loadMetadata() {
-        metadata = if (metadataFile != null)
+        metadata = if (metadataFile != null) {
             Orion.loadJson(metadataFile!!)
-        else
+        } else {
             Orion.emptyJson
+        }
     }
 
     fun saveMetadata(): Boolean {
-        return if (hasMetadata() && metadataFile != null)
+        return if (hasMetadata() && metadataFile != null) {
             Orion.writeJson(metadataFile!!, metadata!!)
-        else
+        } else {
             false
+        }
     }
 
     //Metadata actions
@@ -93,32 +104,31 @@ class Album(val name: String, val imagesFolder: File?, var metadataFile: File?) 
     }
 
     fun hasMetadataKey(key: String): Boolean {
-        return if (hasMetadata())
+        return if (hasMetadata()) {
             metadata!!.has(key)
-        else
+        } else {
             false
+        }
     }
 
     fun getMetadataKey(key: String): ObjectNode? {
-        return if (hasMetadata())
+        return if (hasMetadata()) {
             metadata!!.get(key) as ObjectNode?
-        else
+        } else {
             null
+        }
     }
 
     fun removeMetadataKey(key: String) {
-        if (hasMetadata())
+        if (hasMetadata()) {
             metadata!!.remove(key)
+        }
     }
 
     fun setMetadataKey(key: String, node: ObjectNode?) {
-        if (hasMetadata())
+        if (hasMetadata()) {
             metadata!!.replace(key, node)
-    }
-
-    //Override toString to be able to save albums in a string
-    override fun toString(): String {
-        return "$imagesPath\n$metadataPath"
+        }
     }
 
 }
