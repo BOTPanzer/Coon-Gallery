@@ -259,8 +259,11 @@ class SettingsViewModel : ViewModel() {
         //Update link album folder
         val success = Link.updateLinkAlbumFolder(index, albumFolder)
 
-        //Check if update failed
-        if (!success) {
+        //Check if update was successful
+        if (success) {
+            //Success -> Save links
+            Link.saveLinks()
+        } else {
             //Failed -> There is another link with the same album
             Orion.snack(activity, R.string.settings_error_link_album_exists)
         }
@@ -269,11 +272,17 @@ class SettingsViewModel : ViewModel() {
     fun updateLinkMetadataFile(index: Int, metadataFile: File) {
         //Update link with selected file
         Link.updateLinkMetadataFile(index, metadataFile)
+
+        //Save links
+        Link.saveLinks()
     }
 
     fun updateLinkVectorsFile(index: Int, vectorsFile: File) {
         //Update link with selected file
         Link.updateLinkVectorsFile(index, vectorsFile)
+
+        //Save links
+        Link.saveLinks()
     }
 
     fun removeLink(index: Int) {

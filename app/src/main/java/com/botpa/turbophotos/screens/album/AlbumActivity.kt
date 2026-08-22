@@ -24,7 +24,6 @@ import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.Library.ActionEvent
 import com.botpa.turbophotos.gallery.Library.RefreshEvent
 import com.botpa.turbophotos.gallery.LoadingIndicator
-import com.botpa.turbophotos.gallery.SearchMethod
 import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.gallery.actions.Action
 import com.botpa.turbophotos.gallery.data.Album
@@ -35,10 +34,11 @@ import com.botpa.turbophotos.gallery.options.OptionsGroup
 import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.options.OptionsManager
 import com.botpa.turbophotos.gallery.PermissionType
+import com.botpa.turbophotos.gallery.search.SearchMethod
 import com.botpa.turbophotos.gallery.views.lists.GridHeaderLayoutManager
 import com.botpa.turbophotos.gallery.views.lists.GridListSeparator
 import com.botpa.turbophotos.gallery.views.refresh.SimpleRefreshHeader
-import com.botpa.turbophotos.screens.album.search.SearchDialog
+import com.botpa.turbophotos.gallery.search.SearchDialog
 import com.botpa.turbophotos.screens.viewer.ViewerActivity
 import com.botpa.turbophotos.util.BackAnimationEvent
 import com.botpa.turbophotos.util.Ease
@@ -890,17 +890,17 @@ class AlbumActivity : BaseActivity() {
     }
 
     //Items & search
-    private fun filterItems(filter: String = "") {
+    private fun filterItems(query: String = "") {
         //Check if filtering
-        val isFiltering = !filter.isEmpty()
+        val isFiltering = !query.isEmpty()
 
         //Loading or searching
         if (isSearching || (!isMetadataLoaded && isFiltering)) return
 
         //Start search
         isSearching = true
-        currentSearch = filter
-        searchInput.setText(filter)
+        currentSearch = query
+        searchInput.setText(query)
         searchMethodName.text = getSearchMethodName(currentSearchMethod)
         if (isFiltering) loadingIndicatorManager.search()
         showSearchLayout(false)
@@ -935,7 +935,7 @@ class AlbumActivity : BaseActivity() {
         //Filter items
         Thread {
             //Filter album list
-            val filteredAlbumItems = Library.filterAlbum(filter, currentAlbum, currentSearchMethod)
+            val filteredAlbumItems = Library.filterAlbum(this@AlbumActivity, query, currentAlbum, currentSearchMethod)
 
             //Update items
             runOnUiThread {
@@ -989,6 +989,7 @@ class AlbumActivity : BaseActivity() {
         return getString(when (searchMethod) {
             SearchMethod.ContainsWords -> R.string.library_search_method_words
             SearchMethod.ContainsText -> R.string.library_search_method_text
+            SearchMethod.NaturalLanguage -> R.string.library_search_method_natural
         })
     }
 

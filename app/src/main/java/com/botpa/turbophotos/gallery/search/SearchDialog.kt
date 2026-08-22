@@ -1,10 +1,9 @@
-package com.botpa.turbophotos.screens.album.search
+package com.botpa.turbophotos.gallery.search
 
 import android.content.Context
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
-import com.botpa.turbophotos.gallery.SearchMethod
 import com.botpa.turbophotos.gallery.modals.core.CustomDialog
 import com.botpa.turbophotos.gallery.views.lists.ListSeparator
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -16,7 +15,7 @@ class SearchDialog(context: Context, private val onSelect: (SearchMethod) -> Uni
 
     //Adapter
     private lateinit var adapter: SearchDialogAdapter
-    private val methods: List<SearchMethod> = listOf(SearchMethod.ContainsWords, SearchMethod.ContainsText)
+    private val methods: List<SearchMethod> = listOf(SearchMethod.ContainsWords, SearchMethod.ContainsText, SearchMethod.NaturalLanguage)
 
 
     //Init

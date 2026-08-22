@@ -11,6 +11,7 @@
     <string name="library_album_favourites">Favourites</string>
     <string name="library_search_method_words">Contains words</string>
     <string name="library_search_method_text">Contains text</string>
+    <string name="library_search_method_natural">Natural language</string>
     <string name="library_error_delete">Error while deleting file.</string>
     <string name="library_error_move">Error while moving file.</string>
     <string name="library_error_copy">Error while copying file.</string>
@@ -212,6 +213,8 @@
     <string name="dialog_search_method_words_use">· Finding whole words like \"cat\", \"pink\"…</string>
     <string name="dialog_search_method_text_description">Checks if the whole text is contained.</string>
     <string name="dialog_search_method_text_use">· Finding a whole sentence.\n· Finding part of a word.</string>
+    <string name="dialog_search_method_natural_description">Finds items using natural language.</string>
+    <string name="dialog_search_method_natural_use">· Searches in different languages.\n· Concepts or contexts.</string>
     <!-- Dialog: Albums -->
     <string name="dialog_albums_title">Select an album</string>
     <string name="dialog_albums_folder">Select from folder</string>

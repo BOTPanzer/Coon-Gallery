@@ -1,5 +1,6 @@
 package com.botpa.turbophotos.gallery
 
+import com.botpa.turbophotos.gallery.search.SearchMethod
 import com.botpa.turbophotos.util.Storage
 
 object StoragePairs {

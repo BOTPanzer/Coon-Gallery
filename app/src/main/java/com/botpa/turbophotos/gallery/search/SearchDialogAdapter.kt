@@ -1,4 +1,4 @@
-package com.botpa.turbophotos.screens.album.search
+package com.botpa.turbophotos.gallery.search
 
 import android.content.Context
 import android.view.View
@@ -6,7 +6,6 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
-import com.botpa.turbophotos.gallery.SearchMethod
 import com.botpa.turbophotos.gallery.modals.core.SimpleCustomAdapter
 
 class SearchDialogAdapter(context: Context, items: List<SearchMethod>) : SimpleCustomAdapter<SearchMethod, SearchDialogAdapter.SearchHolder>(context, items) {
@@ -28,6 +27,11 @@ class SearchDialogAdapter(context: Context, items: List<SearchMethod>) : SimpleC
                 holder.name.text = context.getString(R.string.library_search_method_text)
                 holder.description.text = context.getString(R.string.dialog_search_method_text_description)
                 holder.use.text = context.getString(R.string.dialog_search_method_text_use)
+            }
+            SearchMethod.NaturalLanguage -> {
+                holder.name.text = context.getString(R.string.library_search_method_natural)
+                holder.description.text = context.getString(R.string.dialog_search_method_natural_description)
+                holder.use.text = context.getString(R.string.dialog_search_method_natural_use)
             }
         }
 

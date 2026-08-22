@@ -12,17 +12,16 @@ class Link(albumPath: String, metadataPath: String, vectorsPath: String) {
     var album: Album? = null
 
     val albumFolder: File = File(albumPath)
+    val albumPath: String = albumFolder.absolutePath
     val metadataFile: File = File(metadataPath)
+    val metadataPath: String = metadataFile.absolutePath
     val vectorsFile: File = File(vectorsPath)
-
-    val albumPath: String get() = albumFolder.absolutePath
-    val metadataPath: String get() = metadataFile.absolutePath
-    val vectorsPath: String get() = vectorsFile.absolutePath
+    val vectorsPath: String = vectorsFile.absolutePath
 
 
-    //Override toString to be able to save albums in a string
+    //Override toString to be able to save links in a string
     override fun toString(): String {
-        return "$albumPath\n$metadataPath"
+        return "$albumPath\n$metadataPath\n$vectorsPath"
     }
 
 
@@ -133,7 +132,7 @@ class Link(albumPath: String, metadataPath: String, vectorsPath: String) {
             val link = links[index]
 
             //Update link metadata file
-            links[index] = Link(link.albumPath, link.metadataPath, newFile.absolutePath)
+            links[index] = Link(link.albumPath, newFile.absolutePath, link.vectorsPath)
 
             //Relink with album
             relinkWithAlbum(link)
@@ -144,23 +143,24 @@ class Link(albumPath: String, metadataPath: String, vectorsPath: String) {
             val link = links[index]
 
             //Update link vectors file
-            links[index] = Link(link.albumPath, newFile.absolutePath, link.vectorsPath)
+            links[index] = Link(link.albumPath, link.metadataPath, newFile.absolutePath)
 
             //Relink with album
             relinkWithAlbum(link)
         }
 
         //Parsing
-        fun parse(string: String): Link {
+        fun parse(unparsedLink: String): Link {
             //Split string into parts
-            val parts = string.split("\n")
+            val parts = unparsedLink.split("\n")
+
+            //Parse parts
+            val albumPath = parts[0]
+            val metadataPath = if (parts.size >= 2) parts[1] else ""
+            val vectorsPath = if (parts.size >= 3) parts[2] else ""
 
             //Create link with parts
-            return Link(
-                parts[0],
-                if (parts.size >= 2) parts[1] else "",
-                if (parts.size >= 3) parts[2] else ""
-            )
+            return Link(albumPath, metadataPath, vectorsPath)
         }
 
     }

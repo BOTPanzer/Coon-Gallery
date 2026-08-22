@@ -85,4 +85,7 @@ dependencies {
     implementation(libs.jackson.databind)
     implementation(libs.jackson.annotations)
     implementation(libs.jackson.module.kotlin)
+
+    //Inference
+    implementation(libs.onnxruntime.android)
 }

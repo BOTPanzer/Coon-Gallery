@@ -23,12 +23,12 @@ import com.botpa.turbophotos.gallery.data.Link.Companion.relinkWithAlbum
 import com.botpa.turbophotos.gallery.modals.AlbumsDialog
 import com.botpa.turbophotos.gallery.modals.ErrorsDialog
 import com.botpa.turbophotos.gallery.modals.InputDialog
+import com.botpa.turbophotos.gallery.search.SearchHelper
+import com.botpa.turbophotos.gallery.search.SearchMethod
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage.getBool
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.io.File
-
-enum class SearchMethod { ContainsWords, ContainsText }
 
 object Library {
 
@@ -407,63 +407,7 @@ object Library {
     }
 
     //Gallery
-    fun filterAlbumWords(query: String, queryTokens: List<String>, album: Album): MutableList<Item> {
-        //Create new list
-        val filteredAlbum = ArrayList<Item>()
-
-        //Look for items that match the filter
-        for (item in album.items) {
-            //Check item name
-            if (Orion.normalizeText(item.name).contains(query)) {
-                filteredAlbum.add(item)
-                continue
-            }
-
-            //Get metadata
-            val metadata = item.getMetadataInfo() ?: continue
-
-            //Check if query tokens are contained
-            if (queryTokens.all { qToken ->
-                    Orion.tokenizeText(metadata.caption).contains(qToken) ||
-                    metadata.labels.any { Orion.tokenizeText(it).contains(qToken) } ||
-                    metadata.text.any { Orion.tokenizeText(it).contains(qToken) }
-            }) {
-                filteredAlbum.add(item)
-            }
-        }
-
-        //Return list
-        return filteredAlbum
-    }
-
-    fun filterAlbumText(normalizedQuery: String, album: Album): MutableList<Item> {
-        //Create new list
-        val filteredAlbum = ArrayList<Item>()
-
-        //Look for items that match the filter
-        for (item in album.items) {
-            //Check item name
-            if (Orion.normalizeText(item.name).contains(normalizedQuery)) {
-                filteredAlbum.add(item)
-                continue
-            }
-
-            //Get metadata
-            val metadata = item.getMetadataInfo() ?: continue
-
-            //Check if query is contained
-            if (Orion.normalizeText(metadata.caption).contains(normalizedQuery) ||
-                metadata.labels.any { Orion.normalizeText(it).contains(normalizedQuery) } ||
-                metadata.text.any { Orion.normalizeText(it).contains(normalizedQuery) }
-            ) {
-                filteredAlbum.add(item)
-            }
-        }
-
-        return filteredAlbum
-    }
-
-    fun filterAlbum(query: String, album: Album, method: SearchMethod): MutableList<Item> {
+    fun filterAlbum(context: Context, query: String, album: Album, method: SearchMethod): MutableList<Item> {
         //Check if filtering
         val trimmedQuery = query.trim()
         val isFiltering = !trimmedQuery.isEmpty()
@@ -478,10 +422,13 @@ object Library {
             //Check filter method
             return when (method) {
                 SearchMethod.ContainsWords -> {
-                    filterAlbumWords(trimmedQuery, Orion.tokenizeText(trimmedQuery), album)
+                    SearchHelper.filterAlbumWords(trimmedQuery, Orion.tokenizeText(trimmedQuery), album)
                 }
                 SearchMethod.ContainsText -> {
-                    filterAlbumText(Orion.normalizeText(query), album)
+                    SearchHelper.filterAlbumText(Orion.normalizeText(query), album)
+                }
+                SearchMethod.NaturalLanguage -> {
+                    SearchHelper.filterAlbumVectors(Orion.normalizeText(query), album, context)
                 }
             }
         }

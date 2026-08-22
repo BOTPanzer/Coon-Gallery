@@ -11,6 +11,7 @@
     <string name="library_album_favourites">Favoritos</string>
     <string name="library_search_method_words">Contiene palabras</string>
     <string name="library_search_method_text">Contiene texto</string>
+    <string name="library_search_method_natural">Lenguaje natural</string>
     <string name="library_error_delete">Error al borrar el archivo.</string>
     <string name="library_error_move">Error al mover el archivo.</string>
     <string name="library_error_copy">Error al copiar el archivo.</string>
@@ -212,6 +213,8 @@
     <string name="dialog_search_method_words_use">· Encontrar palabras como \"gato\" o \"rosa\"…</string>
     <string name="dialog_search_method_text_description">Comprueba que el texto de la busqueda está contenido.</string>
     <string name="dialog_search_method_text_use">· Encontrar una frase completa.\n· Encontrar parte de una palabra.</string>
+    <string name="dialog_search_method_natural_description">Encuentra elementos mediante lenguaje natural.</string>
+    <string name="dialog_search_method_natural_use">· Busquedas en otros idiomas.\n· Conceptos o contextos.</string>
     <!-- Dialog: Albums -->
     <string name="dialog_albums_title">Selecciona un álbum</string>
     <string name="dialog_albums_folder">Seleccionar carpeta</string>
