@@ -125,7 +125,7 @@
     <string name="settings_metadata_natural_manage_action_download">Download</string>
     <string name="settings_metadata_natural_manage_action_cancel">Cancel</string>
     <string name="settings_metadata_natural_manage_action_delete">Delete</string>
-    <string name="settings_metadata_links_title">Links management</string>
+    <string name="settings_metadata_links_title">Link management</string>
     <string name="settings_metadata_links_info_title">What are links?</string>
     <string name="settings_metadata_links_info_description">Click to see what links are and how they work.</string>
     <string name="settings_metadata_links_info_dialog_title">Links</string>
@@ -168,7 +168,7 @@
     <string name="settings_video_advanced_focus_title">Ignore audio focus</string>
     <string name="settings_video_advanced_focus_description">Don\'t pause content if other apps are playing audio.</string>
     <string name="settings_video_advanced_show_controls_title">Show controls on start</string>
-    <string name="settings_video_advanced_show_controls_description">Show video player controls after opening a video.</string>
+    <string name="settings_video_advanced_show_controls_description">Show player controls automatically when opening a video.</string>
     <string name="settings_message_backup_create_select">Select a folder to create the backup.</string>
     <string name="settings_message_backup_create_success">Backup saved to selected folder.</string>
     <string name="settings_message_backup_restore_select">Select a backup file to restore.</string>

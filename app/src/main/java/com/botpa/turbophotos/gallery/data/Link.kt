@@ -59,7 +59,25 @@ class Link(albumPath: String, metadataPath: String, vectorsPath: String) {
         }
 
         //List management
+        private fun replaceLinkAtIndex(index: Int, link: Link) {
+            //Check index
+            if (index < 0 || index >= links.size) return
+
+            //Get album key
+            val key = link.albumPath
+
+            //Add link
+            links[index] = link
+            linksMap[key] = link
+
+            //Relink with album
+            relinkWithAlbum(link)
+        }
+
         private fun addLinkAtIndex(index: Int, link: Link): Boolean {
+            //Check index
+            if (index < 0 || index > links.size) return false
+
             //Check if link exists
             val key = link.albumPath
             if (linksMap.containsKey(key)) return false
@@ -78,7 +96,7 @@ class Link(albumPath: String, metadataPath: String, vectorsPath: String) {
         }
 
         fun removeLink(index: Int): Boolean {
-            //Check if link exists
+            //Check index
             if (index < 0 || index >= links.size) return false
 
             //Remove link
@@ -92,6 +110,10 @@ class Link(albumPath: String, metadataPath: String, vectorsPath: String) {
 
         fun getLink(albumPath: String): Link? {
             return linksMap.getOrDefault(albumPath, null)
+        }
+
+        fun getLink(album: Album): Link? {
+            return getLink(album.albumPath)
         }
 
         //Link management
@@ -132,10 +154,7 @@ class Link(albumPath: String, metadataPath: String, vectorsPath: String) {
             val link = links[index]
 
             //Update link metadata file
-            links[index] = Link(link.albumPath, newFile.absolutePath, link.vectorsPath)
-
-            //Relink with album
-            relinkWithAlbum(link)
+            replaceLinkAtIndex(index, Link(link.albumPath, newFile.absolutePath, link.vectorsPath))
         }
 
         fun updateLinkVectorsFile(index: Int, newFile: File) {
@@ -143,10 +162,7 @@ class Link(albumPath: String, metadataPath: String, vectorsPath: String) {
             val link = links[index]
 
             //Update link vectors file
-            links[index] = Link(link.albumPath, link.metadataPath, newFile.absolutePath)
-
-            //Relink with album
-            relinkWithAlbum(link)
+            replaceLinkAtIndex(index, Link(link.albumPath, link.metadataPath, newFile.absolutePath))
         }
 
         //Parsing

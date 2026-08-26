@@ -80,7 +80,7 @@ object SearchHelper {
         val filteredAlbum = ArrayList<Item>()
 
         //Prepare vectors database
-        val link = Link.getLink(album.albumPath)
+        val link = Link.getLink(album)
         val vectorsFile = link?.vectorsFile ?: return filteredAlbum
         if (!vectorsFile.exists() || !vectorsFile.isFile) {
             Handler(Looper.getMainLooper()).post {

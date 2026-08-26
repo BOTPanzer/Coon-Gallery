@@ -168,7 +168,7 @@
     <string name="settings_video_advanced_focus_title">Ignorar el enfoque de audio</string>
     <string name="settings_video_advanced_focus_description">No pausa el contenido si otras aplicaciones están reproduciendo audio.</string>
     <string name="settings_video_advanced_show_controls_title">Mostrar controles al iniciar</string>
-    <string name="settings_video_advanced_show_controls_description">Muestra los controles del reproductor tras abrir un vídeo.</string>
+    <string name="settings_video_advanced_show_controls_description">Mostrar los controles del reproductor automáticamente al abrir un vídeo.</string>
     <string name="settings_message_backup_create_select">Selecciona una carpeta para crear la copia.</string>
     <string name="settings_message_backup_create_success">Copia guardada a la carpeta seleccionada.</string>
     <string name="settings_message_backup_restore_select">Selecciona una copia de seguridad para restaurarla.</string>
