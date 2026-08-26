@@ -1,5 +1,6 @@
 package com.botpa.turbophotos.screens.settings
 
+import android.database.sqlite.SQLiteDatabase
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.compose.setContent
@@ -55,6 +56,7 @@ import com.botpa.turbophotos.gallery.modals.BulletPointsDialog
 import com.botpa.turbophotos.gallery.modals.FileExplorerDialog
 import com.botpa.turbophotos.gallery.modals.FolderExplorerDialog
 import com.botpa.turbophotos.gallery.search.models.DownloadState
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 class SettingsActivity : AppCompatActivity() {
@@ -225,6 +227,16 @@ class SettingsActivity : AppCompatActivity() {
                         onSelect = { file ->
                             //Choose file
                             view.updateLinkVectorsFile(index, file)
+                        },
+                        onCreate = { file ->
+                            //Create file
+                            try {
+                                SQLiteDatabase.openOrCreateDatabase(file, null).close()
+                                File(file.absolutePath + "-journal").delete()
+                                true
+                            } catch (_: Exception) {
+                                false
+                            }
                         }
                     ).buildAndShow()
 

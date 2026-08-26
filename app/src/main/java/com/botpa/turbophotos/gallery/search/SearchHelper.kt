@@ -121,7 +121,13 @@ object SearchHelper {
         //Open database
         val db = try {
             SQLiteDatabase.openDatabase(databaseFile.absolutePath, null, SQLiteDatabase.OPEN_READONLY)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
+            return results
+        }
+
+        //Check that table exists
+        if (!doesTableExist(db, "items")) {
+            db.close()
             return results
         }
 
@@ -147,6 +153,14 @@ object SearchHelper {
 
         //Return results
         return results
+    }
+
+    //Helpers
+    private fun doesTableExist(db: SQLiteDatabase, tableName: String): Boolean {
+        val cursor = db.rawQuery("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", arrayOf(tableName))
+        val exists = cursor.count > 0
+        cursor.close()
+        return exists
     }
 
 }
