@@ -18,13 +18,13 @@ import com.botpa.turbophotos.util.Orion
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.io.File
 
-class ExplorerDialog(
+abstract class ExplorerDialog(
     context: Context,
     private val isSelectingFiles: Boolean = false,
-    private val allowCreation: Boolean = false,
     private val onSelect: (File) -> Unit,
     private val startingFolder: File? = null,
     private val fileExtension: String = "",
+    private val onCreate: ((File) -> Boolean)? = null,
 ) : CustomDialog(context, R.layout.dialog_explorer) {
 
     //Views
@@ -78,7 +78,7 @@ class ExplorerDialog(
         //Init dialog
         return builder.apply {
             setTitle(if (isSelectingFiles) R.string.dialog_explorer_file_title else R.string.dialog_explorer_folder_title)
-            if (allowCreation) setNeutralButton(buttonCreate, null)
+            if (onCreate != null) setNeutralButton(buttonCreate, null)
             setNegativeButton(R.string.dialog_cancel, null)
         }
     }
@@ -149,7 +149,7 @@ class ExplorerDialog(
                 }
 
                 //Create file
-                if (!item.createNewFile()) {
+                if (!onCreate!!(item)) {
                     //Failed to create file
                     Toast.makeText(context, R.string.dialog_explorer_error_file_create_fail, Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
@@ -163,7 +163,7 @@ class ExplorerDialog(
                 }
 
                 //Create folder
-                if (!item.mkdir()) {
+                if (!onCreate!!(item)) {
                     //Failed to create folder
                     Toast.makeText(context, R.string.dialog_explorer_error_folder_create_fail, Toast.LENGTH_SHORT).show()
                     return@setOnClickListener

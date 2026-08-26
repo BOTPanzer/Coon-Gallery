@@ -52,7 +52,8 @@ import com.botpa.turbophotos.gallery.jetpack.Layout
 import com.botpa.turbophotos.gallery.jetpack.SimpleButton
 import com.botpa.turbophotos.gallery.modals.AlbumsDialog
 import com.botpa.turbophotos.gallery.modals.BulletPointsDialog
-import com.botpa.turbophotos.gallery.modals.ExplorerDialog
+import com.botpa.turbophotos.gallery.modals.FileExplorerDialog
+import com.botpa.turbophotos.gallery.modals.FolderExplorerDialog
 import com.botpa.turbophotos.gallery.search.models.DownloadState
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -105,9 +106,8 @@ class SettingsActivity : AppCompatActivity() {
         val onCreateBackup = remember {
             {
                 //Show select folder dialog
-                ExplorerDialog(
+                FolderExplorerDialog(
                     context = activity,
-                    isSelectingFiles = false,
                     allowCreation = true,
                     onSelect = { folder ->
                         view.createSettingsBackup(context, folder)
@@ -121,10 +121,8 @@ class SettingsActivity : AppCompatActivity() {
         val onChooseBackupFile = remember {
             {
                 //Show select file dialog
-                ExplorerDialog(
+                FileExplorerDialog(
                     context = activity,
-                    isSelectingFiles = true,
-                    allowCreation = false,
                     fileExtension = "json",
                     onSelect = { file ->
                         view.restoreSettingsBackup(context, activity, file)
@@ -195,14 +193,16 @@ class SettingsActivity : AppCompatActivity() {
                     Toast.makeText(activity, R.string.settings_error_link_add_first, Toast.LENGTH_SHORT).show()
                 } else {
                     //Show select file dialog
-                    ExplorerDialog(
+                    FileExplorerDialog(
                         context = context,
-                        isSelectingFiles = true,
-                        allowCreation = true,
                         fileExtension = "json",
                         onSelect = { file ->
                             //Choose file
                             view.updateLinkMetadataFile(index, file)
+                        },
+                        onCreate = { file ->
+                            //Create file
+                            file.createNewFile()
                         }
                     ).buildAndShow()
 
@@ -219,10 +219,8 @@ class SettingsActivity : AppCompatActivity() {
                     Toast.makeText(activity, R.string.settings_error_link_add_first, Toast.LENGTH_SHORT).show()
                 } else {
                     //Show select file dialog
-                    ExplorerDialog(
+                    FileExplorerDialog(
                         context = context,
-                        isSelectingFiles = true,
-                        allowCreation = false,
                         fileExtension = "db",
                         onSelect = { file ->
                             //Choose file
