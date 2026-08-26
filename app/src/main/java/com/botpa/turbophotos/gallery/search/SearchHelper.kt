@@ -8,7 +8,6 @@ import android.widget.Toast
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.data.Album
 import com.botpa.turbophotos.gallery.data.Item
-import com.botpa.turbophotos.gallery.data.Link
 import com.botpa.turbophotos.gallery.search.models.ModelManager
 import com.botpa.turbophotos.util.Orion
 import java.io.File
@@ -79,12 +78,11 @@ object SearchHelper {
         //Create new list
         val filteredAlbum = ArrayList<Item>()
 
-        //Prepare vectors database
-        val link = Link.getLink(album)
-        val vectorsFile = link?.vectorsFile ?: return filteredAlbum
-        if (!vectorsFile.exists() || !vectorsFile.isFile) {
+        //Prepare database
+        val embeddingsFile = album.embeddingsFile ?: return filteredAlbum
+        if (!embeddingsFile.exists() || !embeddingsFile.isFile) {
             Handler(Looper.getMainLooper()).post {
-                Toast.makeText(context, R.string.library_search_error_vectors, Toast.LENGTH_LONG).show()
+                Toast.makeText(context, R.string.library_search_error_embeddings, Toast.LENGTH_LONG).show()
             }
             return filteredAlbum
         }
@@ -99,13 +97,13 @@ object SearchHelper {
             return filteredAlbum
         }
 
-        //Search vectors
-        val vectorSearchResults = searchVectors(vectorsFile, query, modelFile, tokenizerFile, 0.55f)
-        if (vectorSearchResults.isEmpty()) return filteredAlbum
+        //Search database
+        val databaseSearchResults = searchDatabase(embeddingsFile, query, modelFile, tokenizerFile, 0.55f)
+        if (databaseSearchResults.isEmpty()) return filteredAlbum
 
         //Look for items in search results
         for (item in album.items) {
-            if (vectorSearchResults.contains(item.name)) {
+            if (databaseSearchResults.contains(item.name)) {
                 filteredAlbum.add(item)
             }
         }
@@ -114,7 +112,7 @@ object SearchHelper {
         return filteredAlbum
     }
 
-    private fun searchVectors(databaseFile: File, query: String, modelFile: File, tokenizerFile: File, threshold: Float): Set<String> {
+    private fun searchDatabase(databaseFile: File, query: String, modelFile: File, tokenizerFile: File, threshold: Float): Set<String> {
         //Create results list
         val results: MutableSet<String> = HashSet()
 
@@ -131,25 +129,30 @@ object SearchHelper {
             return results
         }
 
-        //Create query vector
-        val queryVector = ModelManager.getEmbedding(query, modelFile, tokenizerFile)
+        //Create query embedding
+        val queryEmbedding = ModelManager.getEmbedding(query, modelFile, tokenizerFile)
 
         //Read database
-        db.rawQuery("SELECT name, vector FROM items", null).use { cursor ->
-            val nameIdx = cursor.getColumnIndexOrThrow("name")
-            val vectorIdx = cursor.getColumnIndexOrThrow("vector")
+        try {
+            db.rawQuery("SELECT name, embedding FROM items", null).use { cursor ->
+                val nameIdx = cursor.getColumnIndexOrThrow("name")
+                val embeddingIdx = cursor.getColumnIndexOrThrow("embedding")
 
-            while (cursor.moveToNext()) {
-                val name = cursor.getString(nameIdx)
-                val blob = cursor.getBlob(vectorIdx)
-                val itemVector = ModelManager.bytesToFloatArray(blob)
+                while (cursor.moveToNext()) {
+                    val name = cursor.getString(nameIdx)
+                    val blob = cursor.getBlob(embeddingIdx)
+                    val itemVector = ModelManager.bytesToFloatArray(blob)
 
-                val similarity = ModelManager.cosineSimilarity(queryVector, itemVector)
-                if (similarity < threshold) continue
-                results.add(name)
+                    val similarity = ModelManager.cosineSimilarity(queryEmbedding, itemVector)
+                    if (similarity < threshold) continue
+                    results.add(name)
+                }
             }
+        } catch (_: Exception) {
+            return results
+        } finally {
+            db.close()
         }
-        db.close()
 
         //Return results
         return results

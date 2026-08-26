@@ -142,18 +142,18 @@ object ModelManager {
         }
     }
 
-    private fun normalizeL2(vector: FloatArray): FloatArray {
+    private fun normalizeL2(embedding: FloatArray): FloatArray {
         var sum = 0.0f
-        for (v in vector) {
+        for (v in embedding) {
             sum += v * v
         }
         val norm = sqrt(sum.toDouble()).toFloat()
         if (norm > 0) {
-            for (i in vector.indices) {
-                vector[i] /= norm
+            for (i in embedding.indices) {
+                embedding[i] /= norm
             }
         }
-        return vector
+        return embedding
     }
 
     fun getEmbedding(text: String, modelFile: File, tokenizerFile: File): FloatArray {

@@ -15,8 +15,8 @@ class Album(val name: String, val albumFolder: File? = null, private var link: L
     val albumPath: String = albumFolder?.absolutePath ?: ""
     val metadataFile: File? get() = link?.metadataFile
     val metadataPath: String get() = link?.metadataPath ?: ""
-    val vectorsFile: File? get() = link?.vectorsFile
-    val vectorsPath: String get() = link?.vectorsPath ?: ""
+    val embeddingsFile: File? get() = link?.embeddingsFile
+    val embeddingsPath: String get() = link?.embeddingsPath ?: ""
 
 
     //Items

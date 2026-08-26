@@ -226,7 +226,7 @@ class SettingsActivity : AppCompatActivity() {
                         fileExtension = "db",
                         onSelect = { file ->
                             //Choose file
-                            view.updateLinkVectorsFile(index, file)
+                            view.updateLinkEmbeddingsFile(index, file)
                         },
                         onCreate = { file ->
                             //Create file
@@ -241,7 +241,7 @@ class SettingsActivity : AppCompatActivity() {
                     ).buildAndShow()
 
                     //Feedback toast
-                    Toast.makeText(activity, R.string.settings_message_link_vectors_select, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(activity, R.string.settings_message_link_embeddings_select, Toast.LENGTH_SHORT).show()
                 }
             }
         }

@@ -201,13 +201,13 @@ fun LinkItem(
                 IconButton(
                     onClick = { onChooseVectors(index, link) },
                     painter = painterResource(R.drawable.icon_storage_file),
-                    contentDescription = "Select vectors file"
+                    contentDescription = "Select embeddings file"
                 )
 
                 //Name
-                val hasVectors = link.vectorsFile.name != ""
+                val hasVectors = link.embeddingsFile.name != ""
                 Text(
-                    text = if (hasVectors) link.vectorsFile.name else stringResource(R.string.settings_metadata_links_placeholder_vectors),
+                    text = if (hasVectors) link.embeddingsFile.name else stringResource(R.string.settings_metadata_links_placeholder_embeddings),
                     fontFamily = FONT_OUTFIT,
                     fontSize = 14.sp,
                     maxLines = 1,

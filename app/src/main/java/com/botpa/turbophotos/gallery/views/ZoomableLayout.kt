@@ -654,7 +654,7 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
                         val deltaDistance = (currDistance - lastFlingDistance).toFloat()
                         lastFlingDistance = currDistance
 
-                        // Scale distance delta along the direction vector
+                        //Scale distance delta along the direction vector
                         val deltaX = deltaDistance * dirX
                         val deltaY = deltaDistance * dirY
 

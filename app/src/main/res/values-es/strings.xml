@@ -12,7 +12,7 @@
     <string name="library_search_method_words">Contiene palabras</string>
     <string name="library_search_method_text">Contiene texto</string>
     <string name="library_search_method_natural">Lenguaje natural</string>
-    <string name="library_search_error_vectors">Añade un archivo de vectores al vínculo de este álbum en ajustes.</string>
+    <string name="library_search_error_embeddings">Añade un archivo de embedding al vínculo de este álbum en ajustes.</string>
     <string name="library_search_error_model">Descarga el modelo de búsqueda natural desde ajustes.</string>
     <string name="library_error_delete">Error al borrar el archivo.</string>
     <string name="library_error_move">Error al mover el archivo.</string>
@@ -136,7 +136,7 @@
     <string name="settings_metadata_links_item_name">Vínculo %d</string>
     <string name="settings_metadata_links_placeholder_album">Carpeta del álbum</string>
     <string name="settings_metadata_links_placeholder_metadata">Archivo de metadatos</string>
-    <string name="settings_metadata_links_placeholder_vectors">Archivo de vectores</string>
+    <string name="settings_metadata_links_placeholder_embeddings">Archivo de embeddings</string>
     <string name="settings_home_grid_title">Grid de elementos</string>
     <string name="settings_home_grid_row_title">Elementos por fila · %d</string>
     <string name="settings_home_grid_row_description">La cantidad de álbumes que se muestran por fila en la pantalla principal.</string>
@@ -175,7 +175,7 @@
     <string name="settings_message_backup_restore_success">Copia restaurada.</string>
     <string name="settings_message_link_album_select">Selecciona un álbum para vincularlo.</string>
     <string name="settings_message_link_metadata_select">Selecciona un archivo de metadatos para vincularlo.</string>
-    <string name="settings_message_link_vectors_select">Selecciona un archivo de vectores para vincularlo.</string>
+    <string name="settings_message_link_embeddings_select">Selecciona un archivo de embeddings para vincularlo.</string>
     <string name="settings_error_backup_create">Error al crear la copia de seguridad.</string>
     <string name="settings_error_link_album_exists">Un link con ese álbum ya existe.</string>
     <string name="settings_error_link_add_first">Añade un álbum primero.</string>

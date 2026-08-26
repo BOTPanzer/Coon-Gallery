@@ -6,7 +6,7 @@ import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.util.Storage
 import java.io.File
 
-class Link(albumPath: String, metadataPath: String, vectorsPath: String) {
+class Link(albumPath: String, metadataPath: String, embeddingsPath: String) {
 
     //Link info
     var album: Album? = null
@@ -15,13 +15,13 @@ class Link(albumPath: String, metadataPath: String, vectorsPath: String) {
     val albumPath: String = albumFolder.absolutePath
     val metadataFile: File = File(metadataPath)
     val metadataPath: String = metadataFile.absolutePath
-    val vectorsFile: File = File(vectorsPath)
-    val vectorsPath: String = vectorsFile.absolutePath
+    val embeddingsFile: File = File(embeddingsPath)
+    val embeddingsPath: String = embeddingsFile.absolutePath
 
 
     //Override toString to be able to save links in a string
     override fun toString(): String {
-        return "$albumPath\n$metadataPath\n$vectorsPath"
+        return "$albumPath\n$metadataPath\n${this@Link.embeddingsPath}"
     }
 
 
@@ -112,10 +112,6 @@ class Link(albumPath: String, metadataPath: String, vectorsPath: String) {
             return linksMap.getOrDefault(albumPath, null)
         }
 
-        fun getLink(album: Album): Link? {
-            return getLink(album.albumPath)
-        }
-
         //Link management
         fun relinkWithAlbum(link: Link) {
             //Update link album
@@ -141,7 +137,7 @@ class Link(albumPath: String, metadataPath: String, vectorsPath: String) {
             removeLink(index)
 
             //Add new link with updated album folder
-            val newLink = Link(newAlbumFolder.absolutePath, oldLink.metadataPath, oldLink.vectorsPath)
+            val newLink = Link(newAlbumFolder.absolutePath, oldLink.metadataPath, oldLink.embeddingsPath)
             addLinkAtIndex(index, newLink)
 
             //Relink with album
@@ -154,14 +150,14 @@ class Link(albumPath: String, metadataPath: String, vectorsPath: String) {
             val link = links[index]
 
             //Update link metadata file
-            replaceLinkAtIndex(index, Link(link.albumPath, newFile.absolutePath, link.vectorsPath))
+            replaceLinkAtIndex(index, Link(link.albumPath, newFile.absolutePath, link.embeddingsPath))
         }
 
-        fun updateLinkVectorsFile(index: Int, newFile: File) {
+        fun updateLinkEmbeddingsFile(index: Int, newFile: File) {
             //Get link
             val link = links[index]
 
-            //Update link vectors file
+            //Update link embeddings file
             replaceLinkAtIndex(index, Link(link.albumPath, link.metadataPath, newFile.absolutePath))
         }
 
@@ -173,10 +169,10 @@ class Link(albumPath: String, metadataPath: String, vectorsPath: String) {
             //Parse parts
             val albumPath = parts[0]
             val metadataPath = if (parts.size >= 2) parts[1] else ""
-            val vectorsPath = if (parts.size >= 3) parts[2] else ""
+            val embeddingsPath = if (parts.size >= 3) parts[2] else ""
 
             //Create link with parts
-            return Link(albumPath, metadataPath, vectorsPath)
+            return Link(albumPath, metadataPath, embeddingsPath)
         }
 
     }

@@ -324,9 +324,9 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         Link.saveLinks()
     }
 
-    fun updateLinkVectorsFile(index: Int, vectorsFile: File) {
+    fun updateLinkEmbeddingsFile(index: Int, embeddingsFile: File) {
         //Update link with selected file
-        Link.updateLinkVectorsFile(index, vectorsFile)
+        Link.updateLinkEmbeddingsFile(index, embeddingsFile)
 
         //Save links
         Link.saveLinks()
