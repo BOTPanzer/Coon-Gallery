@@ -52,6 +52,7 @@ dependencies {
     implementation(libs.appcompat)
     implementation(libs.activity)
     implementation(libs.lifecycle.livedata.ktx)
+    implementation(libs.work.runtime.ktx)
 
     //Media
     implementation(libs.glide)

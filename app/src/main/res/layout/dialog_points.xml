@@ -9,7 +9,7 @@
         android:id="@+id/pointsInfo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Info"
+        android:text="Text before"
         android:textColor="?attr/colorOnSurface" />
 
     <ListView
@@ -18,6 +18,15 @@
         android:layout_height="wrap_content"
         android:divider="@null"
         android:listSelector="@android:color/transparent"
-        android:overScrollMode="never" />
+        android:overScrollMode="never" >
+
+    </ListView>
+
+    <TextView
+        android:id="@+id/pointsInfoAfter"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Text after"
+        android:textColor="?attr/colorOnSurface" />
 
 </LinearLayout>

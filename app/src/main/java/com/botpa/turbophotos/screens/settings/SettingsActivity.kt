@@ -23,6 +23,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
@@ -39,11 +41,7 @@ import androidx.navigation.compose.rememberNavController
 import com.botpa.turbophotos.BuildConfig
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Library
-import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.gallery.data.Link
-import com.botpa.turbophotos.gallery.modals.AlbumsDialog
-import com.botpa.turbophotos.gallery.modals.BulletPointsDialog
-import com.botpa.turbophotos.gallery.modals.ExplorerDialog
 import com.botpa.turbophotos.gallery.jetpack.CoonTheme
 import com.botpa.turbophotos.gallery.jetpack.Group
 import com.botpa.turbophotos.gallery.jetpack.GroupDivider
@@ -52,8 +50,10 @@ import com.botpa.turbophotos.gallery.jetpack.GroupItems
 import com.botpa.turbophotos.gallery.jetpack.GroupTitle
 import com.botpa.turbophotos.gallery.jetpack.Layout
 import com.botpa.turbophotos.gallery.jetpack.SimpleButton
-import com.botpa.turbophotos.util.Orion
-import com.botpa.turbophotos.util.Storage
+import com.botpa.turbophotos.gallery.modals.AlbumsDialog
+import com.botpa.turbophotos.gallery.modals.BulletPointsDialog
+import com.botpa.turbophotos.gallery.modals.ExplorerDialog
+import com.botpa.turbophotos.gallery.search.models.DownloadState
 
 @OptIn(ExperimentalMaterial3Api::class)
 class SettingsActivity : AppCompatActivity() {
@@ -137,6 +137,21 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         //Links actions
+        val onShowSearchInfo = remember {
+            {
+                //Create info dialog
+                BulletPointsDialog(
+                    context,
+                    title = R.string.settings_metadata_natural_info_dialog_title,
+                    text = R.string.settings_metadata_natural_info_dialog_description,
+                    points = listOf(
+                        R.string.settings_metadata_natural_info_dialog_point1,
+                        R.string.settings_metadata_natural_info_dialog_point2
+                    ),
+                    textAfter = R.string.settings_metadata_natural_info_dialog_description_after,
+                ).buildAndShow()
+            }
+        }
         val onShowLinksInfo = remember {
             {
                 //Create info dialog
@@ -272,6 +287,7 @@ class SettingsActivity : AppCompatActivity() {
             }
             composable(SettingsRoutes.METADATA) {
                 SettingsMetadataLayout(
+                    onShowSearchInfo,
                     onShowLinksInfo,
                     onChooseLinkAlbum,
                     onChooseLinkMetadata,
@@ -526,7 +542,11 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     @Composable
-    private fun SettingsMetadataLayout(onShowLinksInfo: () -> Unit, onChooseLinkAlbum: (Int) -> Unit, onChooseLinkMetadata: (Int, Link) -> Unit, onChooseLinkVectors: (Int, Link) -> Unit, onAddLink: () -> Unit) {
+    private fun SettingsMetadataLayout(onShowSearchInfo: () -> Unit, onShowLinksInfo: () -> Unit, onChooseLinkAlbum: (Int) -> Unit, onChooseLinkMetadata: (Int, Link) -> Unit, onChooseLinkVectors: (Int, Link) -> Unit, onAddLink: () -> Unit) {
+        //Natural language model state
+        val state by view.searchModelDownloadState.collectAsState(initial = DownloadState.Checking)
+
+        //Layout
         Layout(R.string.settings_main_general_metadata_title) {
             LazyColumn(
                 modifier = Modifier
@@ -554,6 +574,63 @@ class SettingsActivity : AppCompatActivity() {
                                         checked = view.appModifyMetadata,
                                         onCheckedChange = { isChecked ->
                                             view.updateAppModifyMetadata(isChecked)
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    //Natural search
+                    Group {
+                        //Title
+                        GroupTitle(R.string.settings_metadata_natural_title)
+
+                        //Items
+                        GroupItems {
+                            //Info
+                            GroupItem(
+                                onClick = onShowSearchInfo
+                            ) {
+                                SettingsItem(
+                                    title = R.string.settings_metadata_natural_info_title,
+                                    description = R.string.settings_metadata_natural_info_description
+                                )
+                            }
+
+                            //Divider
+                            GroupDivider()
+
+                            //Management
+                            GroupItem {
+                                SettingsItem(
+                                    title = stringResource(R.string.settings_metadata_natural_manage_title),
+                                    description = when (val s = state) {
+                                        is DownloadState.Checking -> stringResource(R.string.settings_metadata_natural_manage_description_checking)
+                                        is DownloadState.Missing -> stringResource(R.string.settings_metadata_natural_manage_description_missing)
+                                        is DownloadState.Downloading -> stringResource(if (s.size <= 0L)
+                                            R.string.settings_metadata_natural_manage_description_preparing
+                                        else
+                                            R.string.settings_metadata_natural_manage_description_downloading,
+                                        s.size / 1000000L, s.progress)
+                                        is DownloadState.Failed -> stringResource(R.string.settings_metadata_natural_manage_description_failed)
+                                        is DownloadState.Downloaded -> stringResource(R.string.settings_metadata_natural_manage_description_ready)
+                                    }
+                                ) {
+                                    SimpleButton(
+                                        text = when (state) {
+                                            is DownloadState.Downloaded -> R.string.settings_metadata_natural_manage_action_delete
+                                            is DownloadState.Downloading -> R.string.settings_metadata_natural_manage_action_cancel
+                                            else -> R.string.settings_metadata_natural_manage_action_download
+                                        },
+                                        onClick = {
+                                            if (state is DownloadState.Downloaded || state is DownloadState.Downloading) {
+                                                //Delete
+                                                view.deleteSearchModel()
+                                            } else {
+                                                //Download
+                                                view.downloadSearchModel()
+                                            }
                                         }
                                     )
                                 }

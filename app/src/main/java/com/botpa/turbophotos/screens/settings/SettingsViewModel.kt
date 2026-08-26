@@ -1,30 +1,45 @@
 package com.botpa.turbophotos.screens.settings
 
 import android.app.Activity
+import android.app.Application
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.gallery.data.Link
+import com.botpa.turbophotos.gallery.search.models.DownloadState
+import com.botpa.turbophotos.gallery.search.models.ModelDownloadWorker
+import com.botpa.turbophotos.gallery.search.models.ModelManager
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
 import com.fasterxml.jackson.databind.node.ObjectNode
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class SettingsViewModel : ViewModel() {
+class SettingsViewModel(application: Application) : AndroidViewModel(application) {
 
     //Settings
     var reloadLibraryOnExit = false
 
+    val context: Context get() = getApplication<Application>().applicationContext
+
     //App
     var appModifyMetadata by mutableStateOf(Storage.getBool(StoragePairs.LIBRARY_AUTOMATIC_METADATA_MODIFICATION))
+
+    //Metadata
+    val workManager = WorkManager.getInstance(context)
 
     //Home screen
     var homeItemsPerRow by mutableFloatStateOf(Storage.getInt(StoragePairs.HOME_ITEMS_PER_ROW).toFloat())
@@ -187,6 +202,38 @@ class SettingsViewModel : ViewModel() {
     fun updateAppModifyMetadata(isChecked: Boolean) {
         appModifyMetadata = isChecked
         Storage.putBool(StoragePairs.LIBRARY_AUTOMATIC_METADATA_MODIFICATION, isChecked)
+    }
+
+    //Metadata
+    val searchModelDownloadState: Flow<DownloadState> = workManager
+        .getWorkInfosForUniqueWorkFlow(ModelDownloadWorker.WORK_NAME)
+        .map { workInfoList ->
+            val workInfo = workInfoList.firstOrNull() ?: return@map DownloadState.Missing
+            when (workInfo.state) {
+                WorkInfo.State.RUNNING -> {
+                    val progress = workInfo.progress.getFloat("PROGRESS", 0f)
+                    val size = workInfo.progress.getLong("SIZE", 0L)
+                    DownloadState.Downloading(progress, size)
+                }
+                WorkInfo.State.SUCCEEDED -> DownloadState.Downloaded
+                WorkInfo.State.FAILED -> DownloadState.Failed
+                else -> DownloadState.Missing
+            }
+        }
+
+    fun downloadSearchModel() {
+        val request = OneTimeWorkRequestBuilder<ModelDownloadWorker>().build()
+        workManager.enqueueUniqueWork(
+            ModelDownloadWorker.WORK_NAME,
+            ExistingWorkPolicy.KEEP,
+            request
+        )
+    }
+
+    fun deleteSearchModel() {
+        workManager.cancelUniqueWork(ModelDownloadWorker.WORK_NAME)
+        ModelManager.deleteFiles(context)
+        workManager.pruneWork()
     }
 
     //Home screen

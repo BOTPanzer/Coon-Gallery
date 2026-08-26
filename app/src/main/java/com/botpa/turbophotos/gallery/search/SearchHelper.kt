@@ -1,23 +1,17 @@
 package com.botpa.turbophotos.gallery.search
 
-import ai.onnxruntime.OnnxTensor
-import ai.onnxruntime.OrtEnvironment
-import ai.onnxruntime.OrtSession
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
+import android.os.Handler
+import android.os.Looper
+import android.widget.Toast
+import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.data.Album
 import com.botpa.turbophotos.gallery.data.Item
 import com.botpa.turbophotos.gallery.data.Link
+import com.botpa.turbophotos.gallery.search.models.ModelManager
 import com.botpa.turbophotos.util.Orion
-import org.json.JSONObject
 import java.io.File
-import java.io.FileOutputStream
-import java.net.HttpURLConnection
-import java.net.URL
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
-import java.nio.LongBuffer
-import kotlin.math.sqrt
 
 object SearchHelper {
 
@@ -81,27 +75,33 @@ object SearchHelper {
     }
 
     //Natural
-    private const val MODEL_URL = "https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/resolve/main/onnx/model.onnx"
-    private const val MODEL_FILE_NAME = "model.onnx"
-    private const val TOKENIZER_URL = "https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/resolve/main/tokenizer.json"
-    private const val TOKENIZER_FILE_NAME = "tokenizer.json"
-
-    fun filterAlbumNatural(query: String, album: Album, context: Context): MutableList<Item> {
+    fun filterAlbumNatural(context: Context, query: String, album: Album): MutableList<Item> {
         //Create new list
         val filteredAlbum = ArrayList<Item>()
 
         //Prepare vectors database
         val link = Link.getLink(album.albumPath)
         val vectorsFile = link?.vectorsFile ?: return filteredAlbum
-        if (!vectorsFile.exists()) return filteredAlbum
+        if (!vectorsFile.exists() || !vectorsFile.isFile) {
+            Handler(Looper.getMainLooper()).post {
+                Toast.makeText(context, R.string.library_search_error_vectors, Toast.LENGTH_LONG).show()
+            }
+            return filteredAlbum
+        }
 
         //Prepare search query
-        val modelFile = ensureDownloaded(context, MODEL_URL, MODEL_FILE_NAME) ?: return filteredAlbum
-        val tokenizerFile = ensureDownloaded(context, TOKENIZER_URL, TOKENIZER_FILE_NAME) ?: return filteredAlbum
-        val queryVector = getEmbedding(query, modelFile, tokenizerFile)
+        val modelFile = ModelManager.getFile(context, ModelManager.MODEL_FILE_NAME)
+        val tokenizerFile = ModelManager.getFile(context, ModelManager.TOKENIZER_FILE_NAME)
+        if (modelFile == null || tokenizerFile == null) {
+            Handler(Looper.getMainLooper()).post {
+                Toast.makeText(context, R.string.library_search_error_model, Toast.LENGTH_LONG).show()
+            }
+            return filteredAlbum
+        }
 
         //Search vectors
-        val vectorSearchResults = searchVectors(vectorsFile, queryVector, 0.55f)
+        val vectorSearchResults = searchVectors(vectorsFile, query, modelFile, tokenizerFile, 0.55f)
+        if (vectorSearchResults.isEmpty()) return filteredAlbum
 
         //Look for items in search results
         for (item in album.items) {
@@ -114,65 +114,21 @@ object SearchHelper {
         return filteredAlbum
     }
 
-    private fun ensureDownloaded(context: Context, downloadUrl: String, fileName: String): File? {
-        //Check if parent folder exists
-        val parentFolder = File(context.filesDir, "models/text_embeddings")
-        if (!parentFolder.exists()) {
-            //Doesn't exist -> Create it
-            parentFolder.mkdirs()
-        }
-
-        //Check if file exists
-        val targetFile = File(parentFolder, fileName)
-        if (targetFile.exists()) {
-            //File exists -> Return it
-            return targetFile
-        }
-
-        //Download file
-        val tempFile = File(parentFolder, "$fileName.tmp")
-        try {
-            //Start download
-            val url = URL(downloadUrl)
-            val connection = url.openConnection() as HttpURLConnection
-            connection.connectTimeout = 15000
-            connection.readTimeout = 30000
-            connection.connect()
-
-            //Failed to connect
-            if (connection.responseCode != HttpURLConnection.HTTP_OK) {
-                return null
-            }
-
-            //Write file to disk
-            connection.inputStream.use { input ->
-                FileOutputStream(tempFile).use { output ->
-                    input.copyTo(output)
-                }
-            }
-
-            //Rename temp file to target
-            if (tempFile.renameTo(targetFile)) {
-                return targetFile
-            }
-        } catch (e: Exception) {
-            //Delete temp file
-            if (tempFile.exists()) {
-                tempFile.delete()
-            }
-            return null
-        }
-
-        //Failed
-        return null
-    }
-
-    private fun searchVectors(databaseFile: File, queryVector: FloatArray, limit: Float = 0.5f): Set<String> {
+    private fun searchVectors(databaseFile: File, query: String, modelFile: File, tokenizerFile: File, threshold: Float): Set<String> {
         //Create results list
         val results: MutableSet<String> = HashSet()
 
+        //Open database
+        val db = try {
+            SQLiteDatabase.openDatabase(databaseFile.absolutePath, null, SQLiteDatabase.OPEN_READONLY)
+        } catch (e: Exception) {
+            return results
+        }
+
+        //Create query vector
+        val queryVector = ModelManager.getEmbedding(query, modelFile, tokenizerFile)
+
         //Read database
-        val db = SQLiteDatabase.openDatabase(databaseFile.absolutePath, null, SQLiteDatabase.OPEN_READONLY)
         db.rawQuery("SELECT name, vector FROM items", null).use { cursor ->
             val nameIdx = cursor.getColumnIndexOrThrow("name")
             val vectorIdx = cursor.getColumnIndexOrThrow("vector")
@@ -180,10 +136,10 @@ object SearchHelper {
             while (cursor.moveToNext()) {
                 val name = cursor.getString(nameIdx)
                 val blob = cursor.getBlob(vectorIdx)
-                val itemVector = bytesToFloatArray(blob)
+                val itemVector = ModelManager.bytesToFloatArray(blob)
 
-                val similarity = cosineSimilarity(queryVector, itemVector)
-                if (similarity < limit) continue
+                val similarity = ModelManager.cosineSimilarity(queryVector, itemVector)
+                if (similarity < threshold) continue
                 results.add(name)
             }
         }
@@ -191,191 +147,6 @@ object SearchHelper {
 
         //Return results
         return results
-    }
-
-    private fun cosineSimilarity(v1: FloatArray, v2: FloatArray): Float {
-        var dotProduct = 0.0f
-        var normA = 0.0f
-        var normB = 0.0f
-        for (i in v1.indices) {
-            dotProduct += v1[i] * v2[i]
-            normA += v1[i] * v1[i]
-            normB += v2[i] * v2[i]
-        }
-        return (dotProduct / (sqrt(normA.toDouble()) * sqrt(normB.toDouble()))).toFloat()
-    }
-
-    private fun bytesToFloatArray(bytes: ByteArray): FloatArray {
-        val buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN)
-        val floatArray = FloatArray(bytes.size / 4)
-        buffer.asFloatBuffer().get(floatArray)
-        return floatArray
-    }
-
-    private fun getEmbedding(text: String, modelFile: File, tokenizerFile: File): FloatArray {
-        val env = OrtEnvironment.getEnvironment()
-        val sessionOptions = OrtSession.SessionOptions()
-
-        val tokenizer = StandardSentencePieceTokenizer(tokenizerFile)
-        val (inputIds, attentionMask) = tokenizer.tokenize(text)
-        val tokenTypeIds = LongArray(inputIds.size) { 0L }
-
-        val shape = longArrayOf(1, inputIds.size.toLong())
-
-        val inputIdsTensor = OnnxTensor.createTensor(env, LongBuffer.wrap(inputIds), shape)
-        val attentionMaskTensor = OnnxTensor.createTensor(env, LongBuffer.wrap(attentionMask), shape)
-        val tokenTypeIdsTensor = OnnxTensor.createTensor(env, LongBuffer.wrap(tokenTypeIds), shape)
-
-        val inputs = mapOf(
-            "input_ids" to inputIdsTensor,
-            "attention_mask" to attentionMaskTensor,
-            "token_type_ids" to tokenTypeIdsTensor
-        )
-
-        env.createSession(modelFile.absolutePath, sessionOptions).use { ortSession ->
-            ortSession.run(inputs).use { result ->
-                @Suppress("UNCHECKED_CAST")
-                val outputTensor = result.get(0).value as Array<Array<FloatArray>>
-                val tokenEmbeddings = outputTensor[0]
-
-                val hiddenSize = tokenEmbeddings[0].size
-                val pooledEmbedding = FloatArray(hiddenSize)
-                var validTokenCount = 0f
-
-                for (i in tokenEmbeddings.indices) {
-                    if (attentionMask[i] == 1L) {
-                        validTokenCount += 1f
-                        for (j in 0 until hiddenSize) {
-                            pooledEmbedding[j] += tokenEmbeddings[i][j]
-                        }
-                    }
-                }
-
-                if (validTokenCount > 0f) {
-                    for (j in 0 until hiddenSize) {
-                        pooledEmbedding[j] /= validTokenCount
-                    }
-                }
-
-                inputIdsTensor.close()
-                attentionMaskTensor.close()
-                tokenTypeIdsTensor.close()
-
-                return normalizeL2(pooledEmbedding)
-            }
-        }
-    }
-
-    private fun normalizeL2(vector: FloatArray): FloatArray {
-        var sum = 0.0f
-        for (v in vector) {
-            sum += v * v
-        }
-        val norm = sqrt(sum.toDouble()).toFloat()
-        if (norm > 0) {
-            for (i in vector.indices) {
-                vector[i] /= norm
-            }
-        }
-        return vector
-    }
-
-    private class StandardSentencePieceTokenizer(tokenizerFile: File) {
-        private val vocabMap = mutableMapOf<String, Long>()
-        private val clsId: Long
-        private val sepId: Long
-        private val padId: Long
-        private val unkId: Long
-
-        init {
-            val jsonString = tokenizerFile.bufferedReader().use { it.readText() }
-            val root = JSONObject(jsonString)
-
-            if (root.has("model")) {
-                val modelObj = root.getJSONObject("model")
-                if (modelObj.has("vocab") && modelObj.get("vocab") is JSONObject) {
-                    val vocabObj = modelObj.getJSONObject("vocab")
-                    vocabObj.keys().forEach { key ->
-                        vocabMap[key] = vocabObj.getLong(key)
-                    }
-                } else if (modelObj.has("vocab")) {
-                    val vocabArray = modelObj.getJSONArray("vocab")
-                    for (i in 0 until vocabArray.length()) {
-                        val entry = vocabArray.getJSONArray(i)
-                        vocabMap[entry.getString(0)] = i.toLong()
-                    }
-                }
-            }
-
-            clsId = vocabMap["<s>"] ?: vocabMap["[CLS]"] ?: 0L
-            padId = vocabMap["<pad>"] ?: vocabMap["[PAD]"] ?: 1L
-            sepId = vocabMap["</s>"] ?: vocabMap["[SEP]"] ?: 2L
-            unkId = vocabMap["<unk>"] ?: vocabMap["[UNK]"] ?: 3L
-        }
-
-        fun tokenize(text: String, maxLength: Int = 128): Pair<LongArray, LongArray> {
-            val tokens = mutableListOf<Long>()
-            tokens.add(clsId)
-
-            val words = text.lowercase().trim().split(Regex("\\s+"))
-            for (word in words) {
-                if (tokens.size >= maxLength - 1) break
-                tokens.addAll(tokenizeWord(word))
-            }
-
-            if (tokens.size > maxLength - 1) {
-                val truncated = tokens.subList(0, maxLength - 1)
-                tokens.clear()
-                tokens.addAll(truncated)
-            }
-
-            tokens.add(sepId)
-
-            val inputIds = LongArray(maxLength) { padId }
-            val attentionMask = LongArray(maxLength) { 0L }
-
-            for (i in tokens.indices) {
-                inputIds[i] = tokens[i]
-                attentionMask[i] = 1L
-            }
-
-            return Pair(inputIds, attentionMask)
-        }
-
-        private fun tokenizeWord(word: String): List<Long> {
-            val subwords = mutableListOf<Long>()
-            var start = 0
-
-            // Handle SentencePiece whitespace prefix representation
-            val prepended = "\u2581$word"
-            if (vocabMap.containsKey(prepended)) {
-                return listOf(vocabMap[prepended]!!)
-            }
-
-            while (start < word.length) {
-                var end = word.length
-                var curSubwordId: Long? = null
-
-                while (start < end) {
-                    val sub = word.substring(start, end)
-                    val candidate = if (start == 0) "\u2581$sub" else sub
-                    if (vocabMap.containsKey(candidate)) {
-                        curSubwordId = vocabMap[candidate]
-                        break
-                    }
-                    end--
-                }
-
-                if (curSubwordId == null) {
-                    subwords.add(unkId)
-                    start++
-                } else {
-                    subwords.add(curSubwordId)
-                    start = end
-                }
-            }
-            return subwords
-        }
     }
 
 }
