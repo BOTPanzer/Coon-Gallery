@@ -1,3 +1,3 @@
 package com.botpa.turbophotos.gallery.data
 
-class ItemMetadataInfo(val caption: String, val labels: List<String>, val text: List<String>)
+class ItemMetadataInfo(var caption: String = "", var labels: List<String> = emptyList(), var text: List<String> = emptyList(), var embedding: FloatArray = FloatArray(0))

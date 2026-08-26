@@ -383,7 +383,7 @@ object Library {
     //Metadata
     private fun loadMetadataHelper(indicator: LoadingIndicator?, album: Album) {
         //Already loaded
-        if (album.hasMetadata()) return
+        if (album.isMetadataLoaded) return
 
         //Check if images folder & metadata file exist
         if (!album.canLoadMetadata()) return
@@ -410,6 +410,7 @@ object Library {
     fun filterAlbum(context: Context, query: String, album: Album, method: SearchMethod): MutableList<Item> {
         //Check if filtering
         val trimmedQuery = query.trim()
+        val normalizedQuery = Orion.normalizeText(query)
         val isFiltering = !trimmedQuery.isEmpty()
 
         //Check if filtering
@@ -422,13 +423,13 @@ object Library {
             //Check filter method
             return when (method) {
                 SearchMethod.ContainsWords -> {
-                    SearchHelper.filterAlbumWords(trimmedQuery, Orion.tokenizeText(trimmedQuery), album)
+                    SearchHelper.filterAlbumWords(normalizedQuery, Orion.tokenizeText(trimmedQuery), album)
                 }
                 SearchMethod.ContainsText -> {
-                    SearchHelper.filterAlbumText(Orion.normalizeText(query), album)
+                    SearchHelper.filterAlbumText(normalizedQuery, album)
                 }
                 SearchMethod.NaturalLanguage -> {
-                    SearchHelper.filterAlbumNatural(context, Orion.normalizeText(trimmedQuery), album)
+                    SearchHelper.filterAlbumNatural(context, normalizedQuery, album)
                 }
             }
         }

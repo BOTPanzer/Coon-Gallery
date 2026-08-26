@@ -324,14 +324,6 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         Link.saveLinks()
     }
 
-    fun updateLinkEmbeddingsFile(index: Int, embeddingsFile: File) {
-        //Update link with selected file
-        Link.updateLinkEmbeddingsFile(index, embeddingsFile)
-
-        //Save links
-        Link.saveLinks()
-    }
-
     fun removeLink(index: Int) {
         //Remove link
         if (!Link.removeLink(index)) return
@@ -342,7 +334,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     fun addLink(activity: Activity) {
         //Try to add new empty link
-        if (!Link.addLink(Link("", "", ""))) {
+        if (!Link.addLink(Link("", ""))) {
             //Not added -> There is another link with the same album
             Orion.snack(activity, R.string.settings_error_link_album_exists)
             return

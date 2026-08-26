@@ -17,7 +17,6 @@ import com.botpa.turbophotos.gallery.data.ItemMetadataInfo
 import com.botpa.turbophotos.gallery.modals.core.CustomDrawer
 import com.botpa.turbophotos.gallery.views.lists.ListSeparator
 import com.botpa.turbophotos.util.Orion
-import com.fasterxml.jackson.databind.JsonNode
 import java.io.FileInputStream
 import java.text.NumberFormat
 import java.time.ZoneId
@@ -108,13 +107,13 @@ class PropertiesDrawer(
 
         infoEdit.setOnClickListener { view: View ->
             //No metadata file
-            if (!item.album.hasMetadata()) {
+            if (!item.album.isMetadataLoaded) {
                 Toast.makeText(context, R.string.drawer_properties_edit_error_missing_metadata, Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
             //Update edit info
-            val metadata = item.getMetadataInfo()
+            val metadata = item.getMetadata()
             if (metadata != null) {
                 //Update caption
                 editCaption.text = metadata.caption
@@ -201,15 +200,12 @@ class PropertiesDrawer(
                 .map { text -> text.trim() }
                 .filter { text -> text.isNotEmpty() }
 
-            //Get metadata info
-            val key = item.name
-            val metadata = item.getMetadata() ?: Orion.emptyJson
-
             //Update metadata key
-            metadata.put("caption", caption)
-            metadata.set<JsonNode>("labels", Orion.arrayToJson(labels.toTypedArray()))
-            metadata.set<JsonNode>("text", Orion.arrayToJson(text.toTypedArray()))
-            item.album.setMetadataKey(key, metadata)
+            val metadata = item.getMetadata() ?: ItemMetadataInfo()
+            metadata.caption = caption
+            metadata.labels = labels
+            metadata.text = text
+            item.album.setMetadataKey(item.name, metadata)
 
             //Save
             val saved = item.album.saveMetadata()
@@ -226,7 +222,7 @@ class PropertiesDrawer(
 
     override fun onInitEnd() {
         //Toggle edit button
-        infoEdit.isEnabled = item.album.hasMetadata()
+        infoEdit.isEnabled = item.album.isMetadataLoaded
 
         //Load info
         loadInfo(ExifInterface(item.file.absolutePath))
@@ -319,7 +315,7 @@ class PropertiesDrawer(
         initInfoList(infoCameraLayout, infoCameraList, infoCameraItems)
 
         //Get info (search metadata)
-        val metadata = item.getMetadataInfo() ?: ItemMetadataInfo("", emptyList(), emptyList())
+        val metadata = item.getMetadata() ?: ItemMetadataInfo()
 
         //Create items list (search metadata)
         if (metadata.caption.isNotEmpty()) {

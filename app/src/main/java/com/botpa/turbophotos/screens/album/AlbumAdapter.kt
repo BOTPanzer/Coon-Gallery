@@ -60,7 +60,7 @@ class AlbumAdapter(
         //Toggle is video & missing info icons
         holder.isVideo.visibility = if (item.isVideo) View.VISIBLE else View.GONE
         holder.isFavourite.visibility = if (item.isFavourite) View.VISIBLE else View.GONE
-        holder.isMissingInfo.visibility = if (showMissingMetadataIcon && item.album.hasMetadata() && !item.album.hasMetadataKey(item.name)) View.VISIBLE else View.GONE
+        holder.isMissingInfo.visibility = if (showMissingMetadataIcon && item.album.isMetadataLoaded && !item.album.hasMetadataKey(item.name)) View.VISIBLE else View.GONE
         holder.badges.visibility = if (holder.isVideo.isVisible || holder.isFavourite.isVisible || holder.isMissingInfo.isVisible) View.VISIBLE else View.GONE
 
         //Toggle is selected

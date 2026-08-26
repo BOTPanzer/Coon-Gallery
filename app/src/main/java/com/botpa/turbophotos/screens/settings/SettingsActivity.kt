@@ -197,36 +197,10 @@ class SettingsActivity : AppCompatActivity() {
                     //Show select file dialog
                     FileExplorerDialog(
                         context = context,
-                        fileExtension = "json",
-                        onSelect = { file ->
-                            //Choose file
-                            view.updateLinkMetadataFile(index, file)
-                        },
-                        onCreate = { file ->
-                            //Create file
-                            file.createNewFile()
-                        }
-                    ).buildAndShow()
-
-                    //Feedback toast
-                    Toast.makeText(activity, R.string.settings_message_link_metadata_select, Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
-        val onChooseLinkVectors = remember<(Int, Link) -> Unit> {
-            { index, link ->
-                //Check if album folder exists
-                if (!link.albumFolder.exists()) {
-                    //Feedback toast
-                    Toast.makeText(activity, R.string.settings_error_link_add_first, Toast.LENGTH_SHORT).show()
-                } else {
-                    //Show select file dialog
-                    FileExplorerDialog(
-                        context = context,
                         fileExtension = "db",
                         onSelect = { file ->
                             //Choose file
-                            view.updateLinkEmbeddingsFile(index, file)
+                            view.updateLinkMetadataFile(index, file)
                         },
                         onCreate = { file ->
                             //Create file
@@ -301,7 +275,6 @@ class SettingsActivity : AppCompatActivity() {
                     onShowLinksInfo,
                     onChooseLinkAlbum,
                     onChooseLinkMetadata,
-                    onChooseLinkVectors,
                     onAddLink
                 )
             }
@@ -552,7 +525,7 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     @Composable
-    private fun SettingsMetadataLayout(onShowSearchInfo: () -> Unit, onShowLinksInfo: () -> Unit, onChooseLinkAlbum: (Int) -> Unit, onChooseLinkMetadata: (Int, Link) -> Unit, onChooseLinkVectors: (Int, Link) -> Unit, onAddLink: () -> Unit) {
+    private fun SettingsMetadataLayout(onShowSearchInfo: () -> Unit, onShowLinksInfo: () -> Unit, onChooseLinkAlbum: (Int) -> Unit, onChooseLinkMetadata: (Int, Link) -> Unit, onAddLink: () -> Unit) {
         //Natural language model state
         val state by view.searchModelDownloadState.collectAsState(initial = DownloadState.Checking)
 
@@ -677,7 +650,6 @@ class SettingsActivity : AppCompatActivity() {
                                         link = link,
                                         onChooseAlbum = onChooseLinkAlbum,
                                         onChooseMetadata = onChooseLinkMetadata,
-                                        onChooseVectors = onChooseLinkVectors,
                                         onDelete = { index -> view.removeLink(index) }
                                     )
                                 }

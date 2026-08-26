@@ -12,8 +12,7 @@
     <string name="library_search_method_words">Contains words</string>
     <string name="library_search_method_text">Contains text</string>
     <string name="library_search_method_natural">Natural language</string>
-    <string name="library_search_error_embeddings">Add an embeddings file to this album link in settings.</string>
-    <string name="library_search_error_model">Download the natural search model from settings.</string>
+    <string name="library_search_error_model">To use natural search, first download the search model from settings.</string>
     <string name="library_error_delete">Error while deleting file.</string>
     <string name="library_error_move">Error while moving file.</string>
     <string name="library_error_copy">Error while copying file.</string>

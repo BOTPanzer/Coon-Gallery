@@ -6,7 +6,7 @@ import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.util.Storage
 import java.io.File
 
-class Link(albumPath: String, metadataPath: String, embeddingsPath: String) {
+class Link(albumPath: String, metadataPath: String) {
 
     //Link info
     var album: Album? = null
@@ -15,13 +15,11 @@ class Link(albumPath: String, metadataPath: String, embeddingsPath: String) {
     val albumPath: String = albumFolder.absolutePath
     val metadataFile: File = File(metadataPath)
     val metadataPath: String = metadataFile.absolutePath
-    val embeddingsFile: File = File(embeddingsPath)
-    val embeddingsPath: String = embeddingsFile.absolutePath
 
 
     //Override toString to be able to save links in a string
     override fun toString(): String {
-        return "$albumPath\n$metadataPath\n${this@Link.embeddingsPath}"
+        return "$albumPath\n$metadataPath"
     }
 
 
@@ -137,7 +135,7 @@ class Link(albumPath: String, metadataPath: String, embeddingsPath: String) {
             removeLink(index)
 
             //Add new link with updated album folder
-            val newLink = Link(newAlbumFolder.absolutePath, oldLink.metadataPath, oldLink.embeddingsPath)
+            val newLink = Link(newAlbumFolder.absolutePath, oldLink.metadataPath)
             addLinkAtIndex(index, newLink)
 
             //Relink with album
@@ -150,15 +148,7 @@ class Link(albumPath: String, metadataPath: String, embeddingsPath: String) {
             val link = links[index]
 
             //Update link metadata file
-            replaceLinkAtIndex(index, Link(link.albumPath, newFile.absolutePath, link.embeddingsPath))
-        }
-
-        fun updateLinkEmbeddingsFile(index: Int, newFile: File) {
-            //Get link
-            val link = links[index]
-
-            //Update link embeddings file
-            replaceLinkAtIndex(index, Link(link.albumPath, link.metadataPath, newFile.absolutePath))
+            replaceLinkAtIndex(index, Link(link.albumPath, newFile.absolutePath))
         }
 
         //Parsing
@@ -169,10 +159,9 @@ class Link(albumPath: String, metadataPath: String, embeddingsPath: String) {
             //Parse parts
             val albumPath = parts[0]
             val metadataPath = if (parts.size >= 2) parts[1] else ""
-            val embeddingsPath = if (parts.size >= 3) parts[2] else ""
 
             //Create link with parts
-            return Link(albumPath, metadataPath, embeddingsPath)
+            return Link(albumPath, metadataPath)
         }
 
     }

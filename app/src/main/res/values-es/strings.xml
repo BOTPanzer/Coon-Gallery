@@ -12,8 +12,7 @@
     <string name="library_search_method_words">Contiene palabras</string>
     <string name="library_search_method_text">Contiene texto</string>
     <string name="library_search_method_natural">Lenguaje natural</string>
-    <string name="library_search_error_embeddings">Añade un archivo de embedding al vínculo de este álbum en ajustes.</string>
-    <string name="library_search_error_model">Descarga el modelo de búsqueda natural desde ajustes.</string>
+    <string name="library_search_error_model">Para usar la búsqueda natural, primero descarga el modelo de búsqueda desde ajustes.</string>
     <string name="library_error_delete">Error al borrar el archivo.</string>
     <string name="library_error_move">Error al mover el archivo.</string>
     <string name="library_error_copy">Error al copiar el archivo.</string>

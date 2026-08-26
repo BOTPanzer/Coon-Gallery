@@ -36,37 +36,8 @@ class Item(
         return album.hasMetadataKey(name)
     }
 
-    fun getMetadata(): ObjectNode? {
+    fun getMetadata(): ItemMetadataInfo? {
         return album.getMetadataKey(name)
-    }
-
-    fun getMetadataInfo(): ItemMetadataInfo? {
-        //Get metadata
-        val metadata = getMetadata() ?: return null
-
-        //Get caption
-        val caption: String = (metadata.get("caption")?.asText() ?: "")
-
-        //Get labels
-        val labels: MutableList<String> = ArrayList()
-        if (metadata.has("labels")) {
-            val value = metadata.get("labels")
-            for (i in 0..<value.size()) {
-                labels.add(value.get(i).asText())
-            }
-        }
-
-        //Get text
-        val text: MutableList<String> = ArrayList()
-        if (metadata.has("text")) {
-            val value = metadata.path("text")
-            for (i in 0..<value.size()) {
-                text.add(value.get(i).asText())
-            }
-        }
-
-        //Return info
-        return ItemMetadataInfo(caption, labels, text)
     }
 
     //Helpers

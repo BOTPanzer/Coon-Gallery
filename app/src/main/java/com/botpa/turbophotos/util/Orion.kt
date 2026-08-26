@@ -72,7 +72,7 @@ object Orion {
     private const val LOGGING_TAG = "ORION"
 
     //Files: JSON
-    private val objectMapper = ObjectMapper()
+    val objectMapper = ObjectMapper()
 
 
 
@@ -86,6 +86,7 @@ object Orion {
      \______/ |__/  |__/ \_______/ \_______/|__/  \__/|_______/  \_______/|_*/
 
     val snackDuration: Int get() = 3000
+    val snackDurationLong: Int get() = 6000
 
     @JvmOverloads
     fun snack(activity: Activity, message: String, button: String = "ok", runnable: Runnable? = null, duration: Int = snackDuration) {
@@ -639,7 +640,7 @@ object Orion {
             val rootNode = objectMapper.readTree(json)
 
             //Check if it's a valid json object
-            if (rootNode != null && rootNode.isObject()) {
+            if (rootNode != null && rootNode.isObject) {
                 //Cast and return
                 rootNode as ObjectNode
             } else {
@@ -649,6 +650,29 @@ object Orion {
         } catch (_: JsonProcessingException) {
             //Return empty on error
             objectMapper.createObjectNode()
+        }
+    }
+
+    fun loadStringList(json: String): List<String> {
+        //Basic check for null or empty string
+        if (json.trim { it <= ' ' }.isEmpty()) return emptyList()
+
+        //Parse value
+        return try {
+            //Get root node
+            val rootNode = objectMapper.readTree(json)
+
+            //Check if it's a valid json object
+            if (rootNode != null && rootNode.isArray) {
+                //Cast and return
+                rootNode.map { it.asText() }
+            } else {
+                //Not an object -> Return empty
+                emptyList()
+            }
+        } catch (_: JsonProcessingException) {
+            //Return empty on error
+            emptyList()
         }
     }
 

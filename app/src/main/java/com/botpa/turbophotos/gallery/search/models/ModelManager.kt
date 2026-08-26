@@ -211,14 +211,11 @@ object ModelManager {
     }
 
     //Embedding comparisons
-    fun bytesToFloatArray(bytes: ByteArray): FloatArray {
-        val buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN)
-        val floatArray = FloatArray(bytes.size / 4)
-        buffer.asFloatBuffer().get(floatArray)
-        return floatArray
-    }
-
     fun cosineSimilarity(v1: FloatArray, v2: FloatArray): Float {
+        //Ensure same vector size
+        if (v1.size != v2.size || v1.isEmpty()) return 0.0f
+
+        //Compute cosine similarity
         var dotProduct = 0.0f
         var normA = 0.0f
         var normB = 0.0f
