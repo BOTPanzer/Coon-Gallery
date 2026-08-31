@@ -6,15 +6,13 @@ import ai.onnxruntime.OrtSession
 import android.content.Context
 import org.json.JSONObject
 import java.io.File
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 import java.nio.LongBuffer
 import kotlin.math.sqrt
 import kotlin.use
 
 object ModelManager {
 
-    const val MODEL_URL = "https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/resolve/main/onnx/model.onnx"
+    const val MODEL_URL = "https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/resolve/main/onnx/model_O4.onnx"
     const val MODEL_FILE_NAME = "model.onnx"
     const val TOKENIZER_URL = "https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/resolve/main/tokenizer.json"
     const val TOKENIZER_FILE_NAME = "tokenizer.json"

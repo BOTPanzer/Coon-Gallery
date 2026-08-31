@@ -215,7 +215,7 @@ class SettingsActivity : AppCompatActivity() {
                     ).buildAndShow()
 
                     //Feedback toast
-                    Toast.makeText(activity, R.string.settings_message_link_embeddings_select, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(activity, R.string.settings_message_link_metadata_select, Toast.LENGTH_SHORT).show()
                 }
             }
         }

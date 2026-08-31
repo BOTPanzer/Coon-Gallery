@@ -1,5 +1,6 @@
 package com.botpa.turbophotos.screens.viewer.properties
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
@@ -101,6 +102,7 @@ class PropertiesDrawer(
         editSave = root.findViewById(R.id.editSave)
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     override fun initListeners() {
         //Info
         infoClose.setOnClickListener { view -> dialog.cancel() }
@@ -120,14 +122,14 @@ class PropertiesDrawer(
 
                 //Update labels
                 editLabelsItems.clear()
-                editLabelsItems.addAll(metadata.labels)
+                if (!metadata.labels.isNullOrEmpty()) editLabelsItems.addAll(metadata.labels!!)
                 editLabelsAdapter.notifyDataSetChanged()
                 editLabelsEmpty.visibility = if (editLabelsItems.isEmpty()) View.VISIBLE else View.GONE
                 editLabelsList.visibility = if (editLabelsItems.isEmpty()) View.GONE else View.VISIBLE
 
                 //Update text
                 editTextItems.clear()
-                editTextItems.addAll(metadata.text)
+                if (!metadata.text.isNullOrEmpty()) editTextItems.addAll(metadata.text!!)
                 editTextAdapter.notifyDataSetChanged()
                 editTextEmpty.visibility = if (editTextItems.isEmpty()) View.VISIBLE else View.GONE
                 editTextList.visibility = if (editTextItems.isEmpty()) View.GONE else View.VISIBLE
@@ -318,14 +320,17 @@ class PropertiesDrawer(
         val metadata = item.getMetadata() ?: ItemMetadataInfo()
 
         //Create items list (search metadata)
-        if (metadata.caption.isNotEmpty()) {
-            infoSearchItems.add(PropertiesInfo(R.string.drawer_properties_info_search_caption, metadata.caption))
+        if (!metadata.caption.isNullOrEmpty()) {
+            infoSearchItems.add(PropertiesInfo(R.string.drawer_properties_info_search_caption, metadata.caption!!))
         }
-        if (metadata.labels.isNotEmpty()) {
-            infoSearchItems.add(PropertiesInfo(R.string.drawer_properties_info_search_labels, metadata.labels.joinToString(", ")))
+        if (!metadata.labels.isNullOrEmpty()) {
+            infoSearchItems.add(PropertiesInfo(R.string.drawer_properties_info_search_labels, metadata.labels!!.joinToString(", ")))
         }
-        if (metadata.text.isNotEmpty()) {
-            infoSearchItems.add(PropertiesInfo(R.string.drawer_properties_info_search_text, metadata.text.joinToString(", ")))
+        if (!metadata.text.isNullOrEmpty()) {
+            infoSearchItems.add(PropertiesInfo(R.string.drawer_properties_info_search_text, metadata.text!!.joinToString(", ")))
+        }
+        if (metadata.embedding != null) {
+            infoSearchItems.add(PropertiesInfo(R.string.drawer_properties_info_search_embeddings, context.getString(R.string.drawer_properties_info_search_embeddings_good)))
         }
 
         //Init list (search metadata)

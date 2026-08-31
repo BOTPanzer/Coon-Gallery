@@ -28,12 +28,15 @@ object SearchHelper {
 
             //Get metadata
             val metadata = item.getMetadata() ?: continue
+            val caption: String = if (metadata.caption == null) "" else metadata.caption!!
+            val labels: List<String> = if (metadata.labels == null) emptyList() else metadata.labels!!
+            val text: List<String> = if (metadata.text == null) emptyList() else metadata.text!!
 
             //Check if query tokens are contained
             if (queryTokens.all { qToken ->
-                    Orion.tokenizeText(metadata.caption).contains(qToken) ||
-                            metadata.labels.any { Orion.tokenizeText(it).contains(qToken) } ||
-                            metadata.text.any { Orion.tokenizeText(it).contains(qToken) }
+                    Orion.tokenizeText(caption).contains(qToken) ||
+                            labels.any { Orion.tokenizeText(it).contains(qToken) } ||
+                            text.any { Orion.tokenizeText(it).contains(qToken) }
                 }) {
                 filteredAlbum.add(item)
             }
@@ -57,11 +60,14 @@ object SearchHelper {
 
             //Get metadata
             val metadata = item.getMetadata() ?: continue
+            val caption: String = if (metadata.caption == null) "" else metadata.caption!!
+            val labels: List<String> = if (metadata.labels == null) emptyList() else metadata.labels!!
+            val text: List<String> = if (metadata.text == null) emptyList() else metadata.text!!
 
             //Check if query is contained
-            if (Orion.normalizeText(metadata.caption).contains(normalizedQuery) ||
-                metadata.labels.any { Orion.normalizeText(it).contains(normalizedQuery) } ||
-                metadata.text.any { Orion.normalizeText(it).contains(normalizedQuery) }
+            if (Orion.normalizeText(caption).contains(normalizedQuery) ||
+                labels.any { Orion.normalizeText(it).contains(normalizedQuery) } ||
+                text.any { Orion.normalizeText(it).contains(normalizedQuery) }
             ) {
                 filteredAlbum.add(item)
             }
@@ -96,9 +102,10 @@ object SearchHelper {
 
             //Get item metadata
             val metadata = item.getMetadata() ?: continue
+            val embedding: FloatArray = if (metadata.embedding == null) continue else metadata.embedding!!
 
             //Check if item embedding matches the query
-            val similarity = ModelManager.cosineSimilarity(queryEmbedding, metadata.embedding)
+            val similarity = ModelManager.cosineSimilarity(queryEmbedding, embedding)
             if (similarity >= threshold) filteredAlbum.add(item)
         }
 

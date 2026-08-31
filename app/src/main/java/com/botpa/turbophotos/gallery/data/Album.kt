@@ -111,13 +111,26 @@ class Album(val name: String, val albumFolder: File? = null, private var link: L
                     while (cursor.moveToNext()) {
                         //Get info
                         val name = cursor.getString(nameIdx) ?: continue
-                        val caption = cursor.getString(captionIdx) ?: ""
-                        val labelsJson = cursor.getString(labelsIdx) ?: ""
-                        val labels = Orion.loadStringList(labelsJson)
-                        val textJson = cursor.getString(textIdx) ?: ""
-                        val text = Orion.loadStringList(textJson)
-                        val embeddingBlob = cursor.getBlob(embeddingIdx)
-                        val embedding = if (embeddingBlob != null) bytesToFloatArray(embeddingBlob) else FloatArray(0)
+                        val caption = if (cursor.isNull(captionIdx)) {
+                            null
+                        } else {
+                            cursor.getString(captionIdx)
+                        }
+                        val labels = if (cursor.isNull(labelsIdx)) {
+                            null
+                        } else {
+                            Orion.loadStringList(cursor.getString(labelsIdx))
+                        }
+                        val text = if (cursor.isNull(textIdx)) {
+                            null
+                        } else {
+                            Orion.loadStringList(cursor.getString(textIdx))
+                        }
+                        val embedding = if (cursor.isNull(embeddingIdx)) {
+                            null
+                        } else {
+                            bytesToFloatArray(cursor.getBlob(embeddingIdx))
+                        }
 
                         //Create metadata info
                         val metadataInfo = ItemMetadataInfo(caption, labels, text, embedding)
@@ -151,13 +164,18 @@ class Album(val name: String, val albumFolder: File? = null, private var link: L
                             //Key was removed
                             delete("items", "name = ?", arrayOf(key))
                         } else {
+                            //Prepare values
+                            val labels = if (info.labels == null) null else Orion.objectMapper.writeValueAsString(info.labels!!)
+                            val text = if (info.text == null) null else Orion.objectMapper.writeValueAsString(info.text!!)
+                            val embedding = floatArrayToByteArray(info.embedding)
+
                             //Key was modified
                             val values = ContentValues().apply {
                                 put("name", key)
                                 put("caption", info.caption)
-                                put("labels", Orion.objectMapper.writeValueAsString(info.labels))
-                                put("text", Orion.objectMapper.writeValueAsString(info.text))
-                                put("embedding", floatArrayToByteArray(info.embedding))
+                                put("labels", labels)
+                                put("text", text)
+                                put("embedding", embedding)
                             }
                             insertWithOnConflict("items", null, values, SQLiteDatabase.CONFLICT_REPLACE)
                         }
@@ -204,14 +222,22 @@ class Album(val name: String, val albumFolder: File? = null, private var link: L
     }
 
     //Metadata util
-    private fun bytesToFloatArray(bytes: ByteArray): FloatArray {
+    private fun bytesToFloatArray(bytes: ByteArray?): FloatArray? {
+        //Not valid
+        if (bytes == null) return null
+
+        //Convert
         val buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN)
         val floatArray = FloatArray(bytes.size / 4)
         buffer.asFloatBuffer().get(floatArray)
         return floatArray
     }
 
-    private fun floatArrayToByteArray(floats: FloatArray): ByteArray {
+    private fun floatArrayToByteArray(floats: FloatArray?): ByteArray? {
+        //Not valid
+        if (floats == null) return null
+
+        //Convert
         val buffer = ByteBuffer.allocate(floats.size * 4).order(ByteOrder.LITTLE_ENDIAN)
         for (f in floats) {
             buffer.putFloat(f)
