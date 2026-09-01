@@ -558,6 +558,13 @@ class AlbumActivity : BaseActivity() {
             //Nothing updated
             if (!updated) return@runOnUiThread
 
+            //Check if gallery is empty
+            if (currentAlbum.isEmpty()) {
+                //Is empty -> Close screen
+                finish()
+                return@runOnUiThread
+            }
+
             //Unselect all
             deselectAll()
 
@@ -572,7 +579,7 @@ class AlbumActivity : BaseActivity() {
 
         //Check if gallery is empty
         if (gallery.isEmpty()) {
-            //Is empty -> Close viewer
+            //Is empty -> Close screen
             finish()
             return
         }
