@@ -32,10 +32,8 @@
                     android:ellipsize="end"
                     android:gravity="center_vertical"
                     android:maxLines="2"
-                    android:paddingStart="5dp"
-                    android:paddingTop="15dp"
-                    android:paddingEnd="5dp"
-                    android:paddingBottom="15dp"
+                    android:paddingHorizontal="5dp"
+                    android:paddingVertical="15dp"
                     android:text="Que coño haces aqui"
                     android:textColor="?attr/colorOnPrimary" />
 
@@ -64,18 +62,26 @@
                         android:textSize="14sp"
                         android:textStyle="bold" />
                 </androidx.cardview.widget.CardView>
+
             </LinearLayout>
 
-            <ProgressBar
-                android:id="@+id/snackProgress"
-                style="?android:attr/progressBarStyleHorizontal"
+            <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="4dp"
-                android:max="1000"
-                android:min="0"
-                android:progress="500"
-                android:progressBackgroundTint="?attr/colorPrimaryContainer"
-                android:progressTint="?attr/colorOnPrimary" />
+                android:layout_marginHorizontal="15dp"
+                app:cardBackgroundColor="#00FFFFFF">
+
+                <ProgressBar
+                    android:id="@+id/snackProgress"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:max="1000"
+                    android:min="0"
+                    android:progress="500"
+                    android:progressBackgroundTint="?attr/colorPrimaryContainer"
+                    android:progressTint="?attr/colorOnPrimary" />
+            </androidx.cardview.widget.CardView>
 
         </LinearLayout>
 
