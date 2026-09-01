@@ -9,6 +9,7 @@
     <string name="library_album_all">All</string>
     <string name="library_album_trash">Trash</string>
     <string name="library_album_favourites">Favourites</string>
+    <string name="library_album_pinned">Pinned</string>
     <string name="library_search_method_words">Contains words</string>
     <string name="library_search_method_text">Contains text</string>
     <string name="library_search_method_natural">Natural language</string>
@@ -48,6 +49,9 @@
     <string name="home_filtered_images">Showing only images</string>
     <string name="home_filtered_videos">Showing only videos</string>
     <string name="home_filtered_custom">Showing only custom</string>
+    <string name="home_pinned_album">Album \"%s\" was pinned to the top.</string>
+    <string name="home_pinned_reset">The pinned album has been reset.</string>
+    <string name="home_pinned_tutorial">Tap and hold on an album to pin it.</string>
     <string name="home_refresh_pull">Pull to refresh</string>
     <string name="home_refresh_release">Release to refresh</string>
     <string name="home_refresh_refreshing">Refreshing…</string>

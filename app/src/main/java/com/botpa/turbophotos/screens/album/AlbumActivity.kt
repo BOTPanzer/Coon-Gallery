@@ -18,6 +18,7 @@ import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.SimpleItemAnimator
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.BaseActivity
 import com.botpa.turbophotos.gallery.Library
@@ -625,6 +626,7 @@ class AlbumActivity : BaseActivity() {
         albumList.setLayoutManager(albumLayoutManager)
         albumDecorator = GridListSeparator(2, albumLayoutManager.spanCount, 1)
         albumList.addItemDecoration(albumDecorator)
+        (albumList.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
 
         //Init album adapter
         albumAdapter = AlbumAdapter(this, gallery, "", "", 0, selectedIndexes, Storage.getBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON))

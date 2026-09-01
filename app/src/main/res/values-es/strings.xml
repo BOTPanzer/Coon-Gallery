@@ -9,6 +9,7 @@
     <string name="library_album_all">Todo</string>
     <string name="library_album_trash">Papelera</string>
     <string name="library_album_favourites">Favoritos</string>
+    <string name="library_album_pinned">Fijado</string>
     <string name="library_search_method_words">Contiene palabras</string>
     <string name="library_search_method_text">Contiene texto</string>
     <string name="library_search_method_natural">Lenguaje natural</string>
@@ -48,6 +49,9 @@
     <string name="home_filtered_images">Mostrando solo imágenes</string>
     <string name="home_filtered_videos">Mostrando solo videos</string>
     <string name="home_filtered_custom">Mostrando solo personalizado</string>
+    <string name="home_pinned_album">Se ha fijado el álbum "%s" en la parte superior.</string>
+    <string name="home_pinned_reset">El álbum fijado ha sido restablecido.</string>
+    <string name="home_pinned_tutorial">Mantén presionado en un álbum para fijarlo.</string>
     <string name="home_refresh_pull">Desliza para actualizar</string>
     <string name="home_refresh_release">Suelta para actualizar</string>
     <string name="home_refresh_refreshing">Actualizando…</string>

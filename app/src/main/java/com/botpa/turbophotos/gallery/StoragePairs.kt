@@ -11,6 +11,7 @@ object StoragePairs {
 
     //Home screen
     @JvmField val HOME_ITEMS_PER_ROW: Storage.StoragePair<Int> = Storage.StoragePair("Home.itemsPerRow", 2)
+    @JvmField val HOME_PINNED_ALBUM: Storage.StoragePair<String> = Storage.StoragePair("Home.pinnedAlbum", "")
 
     //Album screen
     @JvmField val ALBUM_ITEMS_PER_ROW: Storage.StoragePair<Int> = Storage.StoragePair("Album.itemsPerRow", 3)

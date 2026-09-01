@@ -19,6 +19,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.SimpleItemAnimator
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.BaseActivity
 import com.botpa.turbophotos.gallery.Library
@@ -464,6 +465,7 @@ class HomeActivity : BaseActivity() {
         homeList.setLayoutManager(homeLayoutManager)
         homeDecorator = GridListSeparator(20, homeLayoutManager.spanCount, 1)
         homeList.addItemDecoration(homeDecorator)
+        (homeList.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
 
         //Init home adapter
         homeAdapter = HomeAdapter(this, Library.albums)
@@ -505,6 +507,15 @@ class HomeActivity : BaseActivity() {
                 //Regular open
                 startActivity(intent, options.toBundle())
             }
+        }
+        homeAdapter.onLongClick = HomeAdapter.ClickListener { view: View, album: Album ->
+            //Not available
+            if (!isLibraryAvailable) return@ClickListener
+
+            //Pin album
+            Storage.putString(StoragePairs.HOME_PINNED_ALBUM, album.albumPath)
+            homeAdapter.notifyItemChanged(0)
+            Orion.snack(this, getString(R.string.home_pinned_album, album.name), duration = Orion.snackDurationLong)
         }
         homeList.setAdapter(homeAdapter)
 
