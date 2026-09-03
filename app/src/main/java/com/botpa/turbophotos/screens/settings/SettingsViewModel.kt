@@ -45,7 +45,10 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     val searchModelDownloadState: Flow<DownloadState> = workManager
         .getWorkInfosForUniqueWorkFlow(ModelDownloadWorker.WORK_NAME)
         .map { workInfoList ->
-            val workInfo = workInfoList.firstOrNull() ?: return@map DownloadState.Missing
+            val workInfo = workInfoList.firstOrNull() ?: run {
+                enqueueSearchModelDownloadWorker()
+                return@map DownloadState.Checking
+            }
             when (workInfo.state) {
                 WorkInfo.State.RUNNING -> {
                     val progress = workInfo.progress.getFloat("PROGRESS", 0f)
@@ -53,8 +56,8 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                     DownloadState.Downloading(progress, size)
                 }
                 WorkInfo.State.SUCCEEDED -> DownloadState.Downloaded
-                WorkInfo.State.FAILED -> DownloadState.Failed
-                else -> DownloadState.Missing
+                WorkInfo.State.FAILED, WorkInfo.State.CANCELLED -> DownloadState.Failed
+                WorkInfo.State.ENQUEUED, WorkInfo.State.BLOCKED -> DownloadState.Checking
             }
         }
 
@@ -235,9 +238,18 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     }
 
     //Metadata
-    fun updateMetadataModification(isChecked: Boolean) {
+    fun updateLibraryMetadataModification(isChecked: Boolean) {
         libraryMetadataModification = isChecked
         Storage.putBool(StoragePairs.LIBRARY_AUTOMATIC_METADATA_MODIFICATION, isChecked)
+    }
+
+    private fun enqueueSearchModelDownloadWorker() {
+        val workRequest = OneTimeWorkRequestBuilder<ModelDownloadWorker>().build()
+        workManager.enqueueUniqueWork(
+            ModelDownloadWorker.WORK_NAME,
+            ExistingWorkPolicy.KEEP,
+            workRequest
+        )
     }
 
     fun downloadSearchModel() {

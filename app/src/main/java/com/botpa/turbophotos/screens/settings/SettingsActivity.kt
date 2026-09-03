@@ -583,7 +583,7 @@ class SettingsActivity : AppCompatActivity() {
                                     Switch(
                                         checked = view.libraryMetadataModification,
                                         onCheckedChange = { isChecked ->
-                                            view.updateMetadataModification(isChecked)
+                                            view.updateLibraryMetadataModification(isChecked)
                                         }
                                     )
                                 }
@@ -627,22 +627,24 @@ class SettingsActivity : AppCompatActivity() {
                                         is DownloadState.Downloaded -> stringResource(R.string.settings_metadata_natural_manage_description_ready)
                                     }
                                 ) {
-                                    SimpleButton(
-                                        text = when (state) {
-                                            is DownloadState.Downloaded -> R.string.settings_metadata_natural_manage_action_delete
-                                            is DownloadState.Downloading -> R.string.settings_metadata_natural_manage_action_cancel
-                                            else -> R.string.settings_metadata_natural_manage_action_download
-                                        },
-                                        onClick = {
-                                            if (state is DownloadState.Downloaded || state is DownloadState.Downloading) {
-                                                //Delete
-                                                view.deleteSearchModel()
-                                            } else {
-                                                //Download
-                                                view.downloadSearchModel()
+                                    if (state !is DownloadState.Checking) {
+                                        SimpleButton(
+                                            text = when (state) {
+                                                is DownloadState.Downloaded -> R.string.settings_metadata_natural_manage_action_delete
+                                                is DownloadState.Downloading -> R.string.settings_metadata_natural_manage_action_cancel
+                                                else -> R.string.settings_metadata_natural_manage_action_download
+                                            },
+                                            onClick = {
+                                                if (state is DownloadState.Downloaded || state is DownloadState.Downloading) {
+                                                    //Delete
+                                                    view.deleteSearchModel()
+                                                } else {
+                                                    //Download
+                                                    view.downloadSearchModel()
+                                                }
                                             }
-                                        }
-                                    )
+                                        )
+                                    }
                                 }
                             }
                         }
