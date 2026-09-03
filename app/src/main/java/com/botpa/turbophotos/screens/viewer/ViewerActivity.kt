@@ -295,7 +295,7 @@ class ViewerActivity : BaseActivity() {
             restoreItems(arrayOf(currentItem))
         }
 
-        optionDelete = OptionsItem(R.drawable.icon_action_delete, R.string.context_option_rename) {
+        optionDelete = OptionsItem(R.drawable.icon_action_delete, R.string.context_option_delete) {
             //Delete item
             Library.deleteItems(this, arrayOf(currentItem))
         }

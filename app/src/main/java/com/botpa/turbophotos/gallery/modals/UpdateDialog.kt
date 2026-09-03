@@ -12,7 +12,6 @@ class UpdateDialog(val context: Context, val newestVersion: String) {
 
     fun buildAndShow() {
         MaterialAlertDialogBuilder(context)
-            .setTitle(R.string.app_update_dialog_title)
             .setMessage(context.getString(R.string.app_update_dialog_content, newestVersion))
             .setPositiveButton(R.string.app_update_dialog_action_download) { dialog, which ->
                 //Open release page

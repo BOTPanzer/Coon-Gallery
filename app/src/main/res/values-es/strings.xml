@@ -3,7 +3,6 @@
     <!-- App -->
     <string name="app_name">Galería</string>
     <string name="app_title">Galería Coon</string>
-    <string name="app_update_dialog_title">Actualización</string>
     <string name="app_update_dialog_content">Una nueva versión está disponible (%s).</string>
     <string name="app_update_dialog_action_download">Descargar</string>
     <string name="app_update_dialog_action_ignore">Ignorar</string>
@@ -142,6 +141,8 @@
     <string name="settings_metadata_links_info_dialog_description">Los vínculos te permiten crear copias de seguridad de tus álbumes y activar la busqueda inteligente.</string>
     <string name="settings_metadata_links_info_dialog_point1">Añade un álbum para habilitar crear copias de seguridad en el servicio de sincronización.</string>
     <string name="settings_metadata_links_info_dialog_point2">Añade un archivo de metadatos para mejorar la búsqueda y encontrar cosas en tus imágenes.</string>
+    <string name="settings_metadata_links_remove_content">¿Seguro que quieres eliminar el vínculo %d?</string>
+    <string name="settings_metadata_links_remove_action_remove">Eliminar</string>
     <string name="settings_metadata_links_add">Añadir vínculo</string>
     <string name="settings_metadata_links_item_name">Vínculo %d</string>
     <string name="settings_metadata_links_placeholder_album">Carpeta del álbum</string>

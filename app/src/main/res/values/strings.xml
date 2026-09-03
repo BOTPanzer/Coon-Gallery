@@ -3,7 +3,6 @@
     <!-- App -->
     <string name="app_name">Gallery</string>
     <string name="app_title">Coon Gallery</string>
-    <string name="app_update_dialog_title">Update</string>
     <string name="app_update_dialog_content">A new version is available (%s).</string>
     <string name="app_update_dialog_action_download">Download</string>
     <string name="app_update_dialog_action_ignore">Ignore</string>
@@ -142,6 +141,8 @@
     <string name="settings_metadata_links_info_dialog_description">Links let you to backup your albums and enable smart search.</string>
     <string name="settings_metadata_links_info_dialog_point1">Add an album to enable backing it up in the sync service.</string>
     <string name="settings_metadata_links_info_dialog_point2">Add a metadata file to improve search and find things in your images.</string>
+    <string name="settings_metadata_links_remove_content">Are you sure you want to delete link %d?</string>
+    <string name="settings_metadata_links_remove_action_remove">Delete</string>
     <string name="settings_metadata_links_add">Add link</string>
     <string name="settings_metadata_links_item_name">Link %d</string>
     <string name="settings_metadata_links_placeholder_album">Album folder</string>

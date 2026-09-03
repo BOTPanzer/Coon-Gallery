@@ -56,6 +56,7 @@ import com.botpa.turbophotos.gallery.modals.BulletPointsDialog
 import com.botpa.turbophotos.gallery.modals.FileExplorerDialog
 import com.botpa.turbophotos.gallery.modals.FolderExplorerDialog
 import com.botpa.turbophotos.gallery.search.models.DownloadState
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -219,6 +220,16 @@ class SettingsActivity : AppCompatActivity() {
                 }
             }
         }
+        val onRemoveLink = remember<(Int) -> Unit> {
+            { index ->
+                //Ask for confirmation
+                MaterialAlertDialogBuilder(context)
+                    .setMessage(activity.getString(R.string.settings_metadata_links_remove_content, index))
+                    .setPositiveButton(R.string.settings_metadata_links_remove_action_remove) { dialog, which -> view.removeLink(index)}
+                    .setNegativeButton(R.string.dialog_cancel, null)
+                    .show()
+            }
+        }
         val onAddLink = remember {
             {
                 view.addLink(activity)
@@ -275,6 +286,7 @@ class SettingsActivity : AppCompatActivity() {
                     onShowLinksInfo,
                     onChooseLinkAlbum,
                     onChooseLinkMetadata,
+                    onRemoveLink,
                     onAddLink
                 )
             }
@@ -552,7 +564,7 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     @Composable
-    private fun SettingsMetadataLayout(onShowSearchInfo: () -> Unit, onShowLinksInfo: () -> Unit, onChooseLinkAlbum: (Int) -> Unit, onChooseLinkMetadata: (Int, Link) -> Unit, onAddLink: () -> Unit) {
+    private fun SettingsMetadataLayout(onShowSearchInfo: () -> Unit, onShowLinksInfo: () -> Unit, onChooseLinkAlbum: (Int) -> Unit, onChooseLinkMetadata: (Int, Link) -> Unit, onRemoveLink: (Int) -> Unit, onAddLink: () -> Unit) {
         //Natural language model state
         val state by view.searchModelDownloadState.collectAsState(initial = DownloadState.Checking)
 
@@ -679,7 +691,7 @@ class SettingsActivity : AppCompatActivity() {
                                         link = link,
                                         onChooseAlbum = onChooseLinkAlbum,
                                         onChooseMetadata = onChooseLinkMetadata,
-                                        onDelete = { index -> view.removeLink(index) }
+                                        onDelete = onRemoveLink
                                     )
                                 }
 
