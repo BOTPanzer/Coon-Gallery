@@ -410,6 +410,33 @@ class SettingsActivity : AppCompatActivity() {
                     .padding(horizontal = 20.dp)
                     .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
             ) {
+                //Updates
+                item {
+                    Group {
+                        //Title
+                        GroupTitle(R.string.settings_app_update_title)
+
+                        //Items
+                        GroupItems {
+                            //Check for updates
+                            GroupItem {
+                                SettingsItem(
+                                    title = R.string.settings_app_backup_check_title,
+                                    description = R.string.settings_app_backup_check_description,
+                                ) {
+                                    //Value
+                                    Switch(
+                                        checked = view.appCheckForUpdates,
+                                        onCheckedChange = { isChecked ->
+                                            view.updateCheckForUpdates(isChecked)
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
                 //Backups
                 item {
                     Group {
@@ -554,9 +581,9 @@ class SettingsActivity : AppCompatActivity() {
                                 ) {
                                     //Value
                                     Switch(
-                                        checked = view.appModifyMetadata,
+                                        checked = view.libraryMetadataModification,
                                         onCheckedChange = { isChecked ->
-                                            view.updateAppModifyMetadata(isChecked)
+                                            view.updateMetadataModification(isChecked)
                                         }
                                     )
                                 }

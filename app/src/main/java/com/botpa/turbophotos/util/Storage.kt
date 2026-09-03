@@ -14,12 +14,12 @@ object Storage {
 
 
     //Init storage preferences
-    @JvmStatic fun init(activity: Activity) {
+    fun init(activity: Activity) {
         if (!isInit) preferences = activity.getSharedPreferences("preferences", Context.MODE_PRIVATE)
     }
 
     //String list
-    @JvmStatic fun getStringList(key: String): MutableList<String> {
+    fun getStringList(key: String): MutableList<String> {
         val list = ArrayList<String>()
         if (isInit) {
             val listString = preferences.getString(key, null)
@@ -28,92 +28,92 @@ object Storage {
         return list
     }
 
-    @JvmStatic fun putStringList(key: String, value: MutableList<String>) {
+    fun putStringList(key: String, value: MutableList<String>) {
         if (isInit) preferences.edit { putString(key, if (value.isEmpty()) null else value.joinToString(LIST_SPLIT)) }
     }
 
     //String
-    @JvmStatic fun getString(key: String, fallback: String): String? {
+    fun getString(key: String, fallback: String): String? {
         return if (isInit) preferences.getString(key, fallback) else fallback
     }
 
-    @JvmStatic fun getString(pair: StoragePair<String>): String? {
+    fun getString(pair: StoragePair<String>): String? {
         return getString(pair.key, pair.value)
     }
 
-    @JvmStatic fun putString(key: String, value: String) {
+    fun putString(key: String, value: String) {
         if (isInit) preferences.edit { putString(key, value) }
     }
 
-    @JvmStatic fun putString(pair: StoragePair<String>, value: String) {
+    fun putString(pair: StoragePair<String>, value: String) {
         putString(pair.key, value)
     }
 
     //Boolean
-    @JvmStatic fun getBool(key: String, fallback: Boolean): Boolean {
+    fun getBool(key: String, fallback: Boolean): Boolean {
         return if (isInit) preferences.getBoolean(key, fallback) else fallback
     }
 
-    @JvmStatic fun getBool(pair: StoragePair<Boolean>): Boolean {
+    fun getBool(pair: StoragePair<Boolean>): Boolean {
         return getBool(pair.key, pair.value)
     }
 
-    @JvmStatic fun putBool(key: String, value: Boolean) {
+    fun putBool(key: String, value: Boolean) {
         if (isInit) preferences.edit { putBoolean(key, value) }
     }
 
-    @JvmStatic fun putBool(pair: StoragePair<Boolean>, value: Boolean) {
+    fun putBool(pair: StoragePair<Boolean>, value: Boolean) {
         putBool(pair.key, value)
     }
 
     //Int
-    @JvmStatic fun getInt(key: String, fallback: Int): Int {
+    fun getInt(key: String, fallback: Int): Int {
         return if (isInit) preferences.getInt(key, fallback) else fallback
     }
 
-    @JvmStatic fun getInt(pair: StoragePair<Int>): Int {
+    fun getInt(pair: StoragePair<Int>): Int {
         return getInt(pair.key, pair.value)
     }
 
-    @JvmStatic fun putInt(key: String, value: Int) {
+    fun putInt(key: String, value: Int) {
         if (isInit) preferences.edit { putInt(key, value) }
     }
 
-    @JvmStatic fun putInt(pair: StoragePair<Int>, value: Int) {
+    fun putInt(pair: StoragePair<Int>, value: Int) {
         putInt(pair.key, value)
     }
 
     //Float
-    @JvmStatic fun getFloat(key: String, fallback: Float): Float {
+    fun getFloat(key: String, fallback: Float): Float {
         return if (isInit) preferences.getFloat(key, fallback) else fallback
     }
 
-    @JvmStatic fun getFloat(pair: StoragePair<Float>): Float {
+    fun getFloat(pair: StoragePair<Float>): Float {
         return getFloat(pair.key, pair.value)
     }
 
-    @JvmStatic fun putFloat(key: String, value: Float) {
+    fun putFloat(key: String, value: Float) {
         if (isInit) preferences.edit { putFloat(key, value) }
     }
 
-    @JvmStatic fun putFloat(pair: StoragePair<Float>, value: Float) {
+    fun putFloat(pair: StoragePair<Float>, value: Float) {
         putFloat(pair.key, value)
     }
 
     //Long
-    @JvmStatic fun getLong(key: String, fallback: Long): Long {
+    fun getLong(key: String, fallback: Long): Long {
         return if (isInit) preferences.getLong(key, fallback) else fallback
     }
 
-    @JvmStatic fun getLong(pair: StoragePair<Long>): Long {
+    fun getLong(pair: StoragePair<Long>): Long {
         return getLong(pair.key, pair.value)
     }
 
-    @JvmStatic fun putLong(key: String, value: Long) {
+    fun putLong(key: String, value: Long) {
         if (isInit) preferences.edit { putLong(key, value) }
     }
 
-    @JvmStatic fun putLong(pair: StoragePair<Long>, value: Long) {
+    fun putLong(pair: StoragePair<Long>, value: Long) {
         putLong(pair.key, value)
     }
 

@@ -34,12 +34,29 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     var reloadLibraryOnExit = false
 
     val context: Context get() = getApplication<Application>().applicationContext
+    val workManager = WorkManager.getInstance(context)
 
     //App
-    var appModifyMetadata by mutableStateOf(Storage.getBool(StoragePairs.LIBRARY_AUTOMATIC_METADATA_MODIFICATION))
+    var appCheckForUpdates by mutableStateOf(Storage.getBool(StoragePairs.APP_UPDATE_CHECK))
 
     //Metadata
-    val workManager = WorkManager.getInstance(context)
+    var libraryMetadataModification by mutableStateOf(Storage.getBool(StoragePairs.LIBRARY_AUTOMATIC_METADATA_MODIFICATION))
+
+    val searchModelDownloadState: Flow<DownloadState> = workManager
+        .getWorkInfosForUniqueWorkFlow(ModelDownloadWorker.WORK_NAME)
+        .map { workInfoList ->
+            val workInfo = workInfoList.firstOrNull() ?: return@map DownloadState.Missing
+            when (workInfo.state) {
+                WorkInfo.State.RUNNING -> {
+                    val progress = workInfo.progress.getFloat("PROGRESS", 0f)
+                    val size = workInfo.progress.getLong("SIZE", 0L)
+                    DownloadState.Downloading(progress, size)
+                }
+                WorkInfo.State.SUCCEEDED -> DownloadState.Downloaded
+                WorkInfo.State.FAILED -> DownloadState.Failed
+                else -> DownloadState.Missing
+            }
+        }
 
     //Home screen
     var homeItemsPerRow by mutableFloatStateOf(Storage.getInt(StoragePairs.HOME_ITEMS_PER_ROW).toFloat())
@@ -64,7 +81,16 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
 
     //App
+    fun updateCheckForUpdates(isChecked: Boolean) {
+        appCheckForUpdates = isChecked
+        Storage.putBool(StoragePairs.APP_UPDATE_CHECK, isChecked)
+    }
+
     private fun addSettingsToJson(json: ObjectNode) {
+        //App
+        json.put(StoragePairs.APP_UPDATE_CHECK.key, Storage.getBool(StoragePairs.APP_UPDATE_CHECK))
+        json.put(StoragePairs.APP_UPDATE_SKIPPED.key, Storage.getString(StoragePairs.APP_UPDATE_SKIPPED))
+
         //Library
         json.put(StoragePairs.LIBRARY_LINKS_KEY, Storage.getString(StoragePairs.LIBRARY_LINKS_KEY, ""))
         json.put(StoragePairs.LIBRARY_AUTOMATIC_METADATA_MODIFICATION.key, Storage.getBool(StoragePairs.LIBRARY_AUTOMATIC_METADATA_MODIFICATION))
@@ -129,13 +155,22 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     }
 
     private fun loadSettingsFromJson(json: ObjectNode) {
+        //App
+        loadBoolSettingFromJson(json, StoragePairs.APP_UPDATE_CHECK.key) { value ->
+            appCheckForUpdates = value
+            Storage.putBool(StoragePairs.APP_UPDATE_CHECK, value)
+        }
+        loadStringSettingFromJson(json, StoragePairs.APP_UPDATE_SKIPPED.key) { value ->
+            Storage.putString(StoragePairs.APP_UPDATE_SKIPPED, value)
+        }
+
         //Library
         loadStringSettingFromJson(json, StoragePairs.LIBRARY_LINKS_KEY) { value ->
             //Too lazy to recreate all links so the library gets reloaded on exit (✿◡‿◡)
             Storage.putString(StoragePairs.LIBRARY_LINKS_KEY, value)
         }
         loadBoolSettingFromJson(json, StoragePairs.LIBRARY_AUTOMATIC_METADATA_MODIFICATION.key) { value ->
-            appModifyMetadata = value
+            libraryMetadataModification = value
             Storage.putBool(StoragePairs.LIBRARY_AUTOMATIC_METADATA_MODIFICATION, value)
         }
 
@@ -199,27 +234,11 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         activity.finish()
     }
 
-    fun updateAppModifyMetadata(isChecked: Boolean) {
-        appModifyMetadata = isChecked
+    //Metadata
+    fun updateMetadataModification(isChecked: Boolean) {
+        libraryMetadataModification = isChecked
         Storage.putBool(StoragePairs.LIBRARY_AUTOMATIC_METADATA_MODIFICATION, isChecked)
     }
-
-    //Metadata
-    val searchModelDownloadState: Flow<DownloadState> = workManager
-        .getWorkInfosForUniqueWorkFlow(ModelDownloadWorker.WORK_NAME)
-        .map { workInfoList ->
-            val workInfo = workInfoList.firstOrNull() ?: return@map DownloadState.Missing
-            when (workInfo.state) {
-                WorkInfo.State.RUNNING -> {
-                    val progress = workInfo.progress.getFloat("PROGRESS", 0f)
-                    val size = workInfo.progress.getLong("SIZE", 0L)
-                    DownloadState.Downloading(progress, size)
-                }
-                WorkInfo.State.SUCCEEDED -> DownloadState.Downloaded
-                WorkInfo.State.FAILED -> DownloadState.Failed
-                else -> DownloadState.Missing
-            }
-        }
 
     fun downloadSearchModel() {
         val request = OneTimeWorkRequestBuilder<ModelDownloadWorker>().build()

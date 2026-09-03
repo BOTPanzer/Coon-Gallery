@@ -11,6 +11,7 @@ import android.provider.Settings
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
@@ -34,6 +35,8 @@ import com.botpa.turbophotos.gallery.options.OptionsGroup
 import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.options.OptionsManager
 import com.botpa.turbophotos.gallery.PermissionType
+import com.botpa.turbophotos.gallery.UpdateChecker
+import com.botpa.turbophotos.gallery.modals.UpdateDialog
 import com.botpa.turbophotos.gallery.views.lists.GridHeaderLayoutManager
 import com.botpa.turbophotos.gallery.views.lists.GridListSeparator
 import com.botpa.turbophotos.screens.album.AlbumActivity
@@ -297,6 +300,18 @@ class HomeActivity : BaseActivity() {
 
         //Init components
         initHomeList()
+
+        //Check for updates
+        if (Storage.getBool(StoragePairs.APP_UPDATE_CHECK)) {
+            Thread {
+                val latestUpdate = UpdateChecker.checkForUpdates()
+                if (latestUpdate != null) {
+                    runOnUiThread {
+                        UpdateDialog(this, latestUpdate).buildAndShow()
+                    }
+                }
+            }.start()
+        }
     }
 
     override fun onRequestPermission(permission: PermissionType) {

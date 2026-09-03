@@ -3,6 +3,10 @@
     <!-- App -->
     <string name="app_name">Galería</string>
     <string name="app_title">Galería Coon</string>
+    <string name="app_update_dialog_title">Actualización</string>
+    <string name="app_update_dialog_content">Una nueva versión está disponible (%s).</string>
+    <string name="app_update_dialog_action_download">Descargar</string>
+    <string name="app_update_dialog_action_ignore">Ignorar</string>
     <!-- General -->
     <string name="items">%d elementos</string>
     <!-- Library -->
@@ -81,7 +85,7 @@
     <string name="settings_title">Ajustes</string>
     <string name="settings_main_general_title">General</string>
     <string name="settings_main_general_app_title">Aplicación</string>
-    <string name="settings_main_general_app_description">Gestión de copias de seguridad de ajustes e información de la aplicación.</string>
+    <string name="settings_main_general_app_description">Actualizaciones, copias de seguridad de ajustes e información de la aplicación.</string>
     <string name="settings_main_general_metadata_title">Metadatos &amp; busqueda</string>
     <string name="settings_main_general_metadata_description">Reglas de metadatos, busqueda inteligente y gestión de vínculos.</string>
     <string name="settings_main_screens_title">Pantallas</string>
@@ -93,6 +97,9 @@
     <string name="settings_main_screens_viewer_description">Gestión de accesos directos visibles.</string>
     <string name="settings_main_screens_video_title">Reproductor de video</string>
     <string name="settings_main_screens_video_description">Gestión del reproductor y opciones avanzadas.</string>
+    <string name="settings_app_update_title">Actualizaciones</string>
+    <string name="settings_app_backup_check_title">Comprobar actualizaciones</string>
+    <string name="settings_app_backup_check_description">Comprobar si hay actualizaciones al abrir la aplicación.</string>
     <string name="settings_app_backup_title">Copia de seguridad de ajustes</string>
     <string name="settings_app_backup_create_title">Crear copia de seguridad</string>
     <string name="settings_app_backup_create_description">Crea una copia de seguridad de tus ajustes.</string>
