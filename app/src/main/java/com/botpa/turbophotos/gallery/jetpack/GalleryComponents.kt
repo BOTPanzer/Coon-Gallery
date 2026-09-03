@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -27,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
@@ -166,9 +168,11 @@ fun GroupDivider() {
 
 //Buttons
 @Composable
-fun IconButton(onClick: () -> Unit, painter: Painter, contentDescription: String, modifier: Modifier = Modifier) {
+fun IconButton(onClick: () -> Unit, painter: Painter, contentDescription: String, enabled: Boolean = true, shape: Shape = ButtonDefaults.shape, modifier: Modifier = Modifier) {
     Button(
         onClick = onClick,
+        enabled = enabled,
+        shape = shape,
         contentPadding = PaddingValues(0.dp),
         modifier = modifier
             .size(40.dp)

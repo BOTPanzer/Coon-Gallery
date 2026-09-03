@@ -5,6 +5,7 @@ import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.util.Storage
 import java.io.File
+import java.util.Collections
 
 class Link(albumPath: String, metadataPath: String) {
 
@@ -103,6 +104,26 @@ class Link(albumPath: String, metadataPath: String) {
 
             //Notify album
             link.album?.setLink(null)
+            return true
+        }
+
+        fun moveLinkUp(index: Int): Boolean {
+            //Check index
+            if (index < 1 || index >= links.size) return false
+
+            //Move link
+            Collections.swap(links, index, index - 1)
+
+            return true
+        }
+
+        fun moveLinkDown(index: Int): Boolean {
+            //Check index
+            if (index < 0 || index >= links.size - 1) return false
+
+            //Move link
+            Collections.swap(links, index, index + 1)
+
             return true
         }
 

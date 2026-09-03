@@ -31,7 +31,7 @@ class ExplorerDialogAdapter(
         //Check if back button
         if (position < 0) {
             //Back button
-            holder.icon.setImageResource(R.drawable.icon_back)
+            holder.icon.setImageResource(R.drawable.icon_arrow_back)
             holder.name.text = context.getString(R.string.dialog_explorer_previous_folder)
             holder.select.visibility = View.GONE
         } else {

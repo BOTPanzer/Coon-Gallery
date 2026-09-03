@@ -22,6 +22,7 @@ import com.botpa.turbophotos.gallery.search.models.ModelManager
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.io.File
@@ -355,12 +356,35 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         Link.saveLinks()
     }
 
-    fun removeLink(index: Int) {
-        //Remove link
-        if (!Link.removeLink(index)) return
+    fun moveLinkUp(index: Int) {
+        //Move link
+        if (!Link.moveLinkUp(index)) return
 
         //Save links
         Link.saveLinks()
+    }
+
+    fun moveLinkDown(index: Int) {
+        //Move link
+        if (!Link.moveLinkDown(index)) return
+
+        //Save links
+        Link.saveLinks()
+    }
+
+    fun removeLink(context: Context, index: Int) {
+        //Ask for confirmation
+        MaterialAlertDialogBuilder(context)
+            .setMessage(context.getString(R.string.settings_metadata_links_remove_content, index))
+            .setPositiveButton(R.string.settings_metadata_links_remove_action_remove) { dialog, which ->
+                //Remove link
+                if (!Link.removeLink(index)) return@setPositiveButton
+
+                //Save links
+                Link.saveLinks()
+            }
+            .setNegativeButton(R.string.dialog_cancel, null)
+            .show()
     }
 
     fun addLink(activity: Activity) {

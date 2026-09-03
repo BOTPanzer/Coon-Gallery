@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
@@ -103,7 +104,9 @@ fun LinkItem(
     link: Link,
     onChooseAlbum: (Int) -> Unit,
     onChooseMetadata: (Int, Link) -> Unit,
+    onMoveUp: (Int) -> Unit,
     onDelete: (Int) -> Unit,
+    onMoveDown: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row (
@@ -116,7 +119,6 @@ fun LinkItem(
         //Content
         Column(
             modifier = modifier
-                .padding(end = 10.dp)
                 .weight(1.0f)
         ) {
             //Name
@@ -190,14 +192,43 @@ fun LinkItem(
             }
         }
 
-        //Delete button
-        IconButton(
-            onClick = { onDelete(index) },
-            painter = painterResource(R.drawable.icon_clear),
-            contentDescription = "Delete link",
-            modifier = Modifier
-                .fillMaxHeight()
-        )
+        //Move arrows
+        Column(
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+            modifier = modifier
+                .padding(start = 10.dp)
+                .clip(RoundedCornerShape(50.dp))
+        ) {
+            IconButton(
+                onClick = { onMoveUp(index) },
+                enabled = (index != 0),
+                shape = RoundedCornerShape(8.dp),
+                painter = painterResource(R.drawable.icon_arrow_up),
+                contentDescription = "Move link up",
+                modifier = Modifier
+                    .weight(1.0f)
+            )
+
+            //Delete button
+            IconButton(
+                onClick = { onDelete(index) },
+                shape = RoundedCornerShape(8.dp),
+                painter = painterResource(R.drawable.icon_clear),
+                contentDescription = "Delete link",
+                modifier = Modifier
+                    .weight(1.0f)
+            )
+
+            IconButton(
+                onClick = { onMoveDown(index) },
+                enabled = (index != Link.links.size - 1),
+                shape = RoundedCornerShape(8.dp),
+                painter = painterResource(R.drawable.icon_arrow_down),
+                contentDescription = "Move link down",
+                modifier = Modifier
+                    .weight(1.0f)
+            )
+        }
     }
 }
 
@@ -209,7 +240,9 @@ fun LinkItemPreview() {
         link = Link("Camera", "camera.db"),
         onChooseAlbum = { i -> },
         onChooseMetadata = { i, l -> },
-        onDelete = { i -> }
+        onMoveUp = { i -> },
+        onDelete = { i -> },
+        onMoveDown = { i -> }
     )
 }
 

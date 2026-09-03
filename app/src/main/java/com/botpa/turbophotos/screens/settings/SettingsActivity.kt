@@ -1,5 +1,6 @@
 package com.botpa.turbophotos.screens.settings
 
+import android.app.Activity
 import android.database.sqlite.SQLiteDatabase
 import android.os.Bundle
 import android.widget.Toast
@@ -220,21 +221,6 @@ class SettingsActivity : AppCompatActivity() {
                 }
             }
         }
-        val onRemoveLink = remember<(Int) -> Unit> {
-            { index ->
-                //Ask for confirmation
-                MaterialAlertDialogBuilder(context)
-                    .setMessage(activity.getString(R.string.settings_metadata_links_remove_content, index))
-                    .setPositiveButton(R.string.settings_metadata_links_remove_action_remove) { dialog, which -> view.removeLink(index)}
-                    .setNegativeButton(R.string.dialog_cancel, null)
-                    .show()
-            }
-        }
-        val onAddLink = remember {
-            {
-                view.addLink(activity)
-            }
-        }
 
         //Navigation
         val navController = rememberNavController()
@@ -282,12 +268,11 @@ class SettingsActivity : AppCompatActivity() {
             }
             composable(SettingsRoutes.METADATA) {
                 SettingsMetadataLayout(
+                    activity,
                     onShowSearchInfo,
                     onShowLinksInfo,
                     onChooseLinkAlbum,
-                    onChooseLinkMetadata,
-                    onRemoveLink,
-                    onAddLink
+                    onChooseLinkMetadata
                 )
             }
             composable(SettingsRoutes.HOME_SCREEN) {
@@ -564,7 +549,7 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     @Composable
-    private fun SettingsMetadataLayout(onShowSearchInfo: () -> Unit, onShowLinksInfo: () -> Unit, onChooseLinkAlbum: (Int) -> Unit, onChooseLinkMetadata: (Int, Link) -> Unit, onRemoveLink: (Int) -> Unit, onAddLink: () -> Unit) {
+    private fun SettingsMetadataLayout(activity: Activity, onShowSearchInfo: () -> Unit, onShowLinksInfo: () -> Unit, onChooseLinkAlbum: (Int) -> Unit, onChooseLinkMetadata: (Int, Link) -> Unit) {
         //Natural language model state
         val state by view.searchModelDownloadState.collectAsState(initial = DownloadState.Checking)
 
@@ -691,7 +676,9 @@ class SettingsActivity : AppCompatActivity() {
                                         link = link,
                                         onChooseAlbum = onChooseLinkAlbum,
                                         onChooseMetadata = onChooseLinkMetadata,
-                                        onDelete = onRemoveLink
+                                        onMoveUp = { i -> view.moveLinkUp(i) },
+                                        onDelete = { i -> view.removeLink(activity, i) },
+                                        onMoveDown = { i -> view.moveLinkDown(i) }
                                     )
                                 }
 
@@ -703,7 +690,7 @@ class SettingsActivity : AppCompatActivity() {
                         //Add link button
                         SimpleButton(
                             text = R.string.settings_metadata_links_add,
-                            onClick = onAddLink,
+                            onClick = { view.addLink(activity) },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(top = 10.dp)
