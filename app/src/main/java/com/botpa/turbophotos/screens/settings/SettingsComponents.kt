@@ -109,6 +109,7 @@ fun LinkItem(
     onMoveDown: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val hasAlbum = link.albumFolder.name != ""
     Row (
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
@@ -123,7 +124,10 @@ fun LinkItem(
         ) {
             //Name
             Text(
-                text = stringResource(R.string.settings_metadata_links_item_name, index),
+                text = if (hasAlbum)
+                    stringResource(R.string.settings_metadata_links_item_name, index, link.albumFolder.name)
+                else
+                    stringResource(R.string.settings_metadata_links_item_name_empty, index),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
@@ -148,9 +152,11 @@ fun LinkItem(
                 )
 
                 //Name
-                val hasAlbum = link.albumFolder.name != ""
                 Text(
-                    text = if (hasAlbum) link.albumFolder.name else stringResource(R.string.settings_metadata_links_placeholder_album),
+                    text = if (hasAlbum)
+                        link.albumFolder.name
+                    else
+                        stringResource(R.string.settings_metadata_links_placeholder_album),
                     fontFamily = FONT_OUTFIT,
                     fontSize = 14.sp,
                     maxLines = 1,

@@ -141,10 +141,11 @@
     <string name="settings_metadata_links_info_dialog_description">Los vínculos te permiten crear copias de seguridad de tus álbumes y activar la busqueda inteligente.</string>
     <string name="settings_metadata_links_info_dialog_point1">Añade un álbum para habilitar crear copias de seguridad en el servicio de sincronización.</string>
     <string name="settings_metadata_links_info_dialog_point2">Añade un archivo de metadatos para mejorar la búsqueda y encontrar cosas en tus imágenes.</string>
-    <string name="settings_metadata_links_remove_content">¿Seguro que quieres eliminar el vínculo %d?</string>
+    <string name="settings_metadata_links_remove_content">¿Seguro que quieres eliminar el vínculo #%d?</string>
     <string name="settings_metadata_links_remove_action_remove">Eliminar</string>
     <string name="settings_metadata_links_add">Añadir vínculo</string>
-    <string name="settings_metadata_links_item_name">Vínculo %d</string>
+    <string name="settings_metadata_links_item_name">Vínculo #%d: %s</string>
+    <string name="settings_metadata_links_item_name_empty">Vínculo #%d</string>
     <string name="settings_metadata_links_placeholder_album">Carpeta del álbum</string>
     <string name="settings_metadata_links_placeholder_metadata">Archivo de metadatos</string>
     <string name="settings_home_grid_title">Grid de elementos</string>
