@@ -40,6 +40,12 @@ object ModelManager {
         return parentFolder.deleteRecursively()
     }
 
+    fun isDownloaded(context: Context): Boolean {
+        val model = getFile(context, MODEL_FILE_NAME)
+        val tokenizer = getFile(context, TOKENIZER_FILE_NAME)
+        return model != null && model.exists() && model.length() > 0 && tokenizer != null && tokenizer.exists() && tokenizer.length() > 0
+    }
+
     //Embedding generation
     private class StandardSentencePieceTokenizer(tokenizerFile: File) {
 

@@ -47,9 +47,10 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         .getWorkInfosForUniqueWorkFlow(ModelDownloadWorker.WORK_NAME)
         .map { workInfoList ->
             val workInfo = workInfoList.firstOrNull() ?: run {
-                enqueueSearchModelDownloadWorker()
-                return@map DownloadState.Checking
+                val isDownloaded = ModelManager.isDownloaded(context)
+                return@map if (isDownloaded) DownloadState.Downloaded else DownloadState.Missing
             }
+
             when (workInfo.state) {
                 WorkInfo.State.RUNNING -> {
                     val progress = workInfo.progress.getFloat("PROGRESS", 0f)
@@ -242,15 +243,6 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun updateLibraryMetadataModification(isChecked: Boolean) {
         libraryMetadataModification = isChecked
         Storage.putBool(StoragePairs.LIBRARY_AUTOMATIC_METADATA_MODIFICATION, isChecked)
-    }
-
-    private fun enqueueSearchModelDownloadWorker() {
-        val workRequest = OneTimeWorkRequestBuilder<ModelDownloadWorker>().build()
-        workManager.enqueueUniqueWork(
-            ModelDownloadWorker.WORK_NAME,
-            ExistingWorkPolicy.KEEP,
-            workRequest
-        )
     }
 
     fun downloadSearchModel() {
