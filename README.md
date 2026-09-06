@@ -12,7 +12,7 @@ Privacy-focused Android gallery with smart search support powered by metadata fi
 ## Features
 
 | **What it does**                                 | **How it helps**                                                                                                       |
-|--------------------------------------------------|------------------------------------------------------------------------------------------------------------------------|
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
 | **Smart search** powered by **metadata files**.  | Is there a cat in a photo? Just search "cat" to find it!                                                               |
 | **Wireless album backups** to **your computer**. | Use the [PC app](https://github.com/BOTPanzer/Coon-Gallery-PC) to make manual album backups while in the same network. |
 | **Multiple album management actions**.           | Everything you can find in other galleries: edit, share, move, copy, delete...                                         |
@@ -39,20 +39,21 @@ Excluding the normal gallery features, there are some original features unique t
 
 ### Sync albums & metadata
 
-To create **backups of your albums** and generate **metadata for their images**, you will need to connect to the [PC app](https://github.com/BOTPanzer/Coon-Gallery-PC) by following these steps:
+To create **backups of your albums** and generate **metadata for their images**, you will need to connect to the [Coon Bridge](https://github.com/BOTPanzer/Coon-Bridge) PC app by following these steps:
 
 1. **Find the connection code**
-   
-   To find the connection code, open the PC app and navigate to the sync menu.
+
+   To find the connection code, open the PC app and navigate to the sync screen.
 
 2. **Connect using the code**
-   
+
    Once you have the code, open the sync service in your gallery, type it into the "Code" input and press "Connect". From here, everything is managed by your computer.
 
 3. **Sync your files**
-   
-   Once connected, you can manage what you want to sync from the PC app.
+
+   Once connected, you can manage what you want to sync from the [Coon Bridge](https://github.com/BOTPanzer/Coon-Bridge) PC app.
 
 ## License
+
 Copyright © 2026 Alejandro Paniagua Moreno / @BOTPanzer on GitHub.  
 Licensed under the GNU General Public License v3.0.
