@@ -15,8 +15,12 @@ configure<ApplicationExtension> {
         applicationId = "com.botpa.turbophotos"
         minSdk = 31
         targetSdk = 37
-        versionCode = 13
-        versionName = "1.10.0"
+        versionCode = 14
+        versionName = "2.0.0"
+        ndk {
+            abiFilters.clear()
+            abiFilters.addAll(listOf("arm64-v8a", "x86_64"))
+        }
     }
 
     buildTypes {
