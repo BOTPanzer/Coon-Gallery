@@ -123,7 +123,7 @@
     <string name="settings_metadata_natural_info_dialog_description">Natural search lets you search items in different languages using natural sentences such as:</string>
     <string name="settings_metadata_natural_info_dialog_point1">A cat laying down.</string>
     <string name="settings_metadata_natural_info_dialog_point2">A blue car.</string>
-    <string name="settings_metadata_natural_info_dialog_description_after">\nNote: It is required to download a machine learning model and setup links first.</string>
+    <string name="settings_metadata_natural_info_dialog_description_after">\nNote: It is required to setup links and download a machine learning model first.</string>
     <string name="settings_metadata_natural_manage_title">Search model</string>
     <string name="settings_metadata_natural_manage_description_checking">Checking…</string>
     <string name="settings_metadata_natural_manage_description_missing">Not downloaded.</string>
@@ -240,7 +240,7 @@
     <string name="dialog_search_title">Search method</string>
     <string name="dialog_search_method_good_for">Good for:</string>
     <string name="dialog_search_method_words_description">Checks if all words in the search are contained.</string>
-    <string name="dialog_search_method_words_use">· Finding whole words like \"cat\", \"pink\"…</string>
+    <string name="dialog_search_method_words_use">· Finding whole words like \"cat\" or \"pink\".</string>
     <string name="dialog_search_method_text_description">Checks if the whole text is contained.</string>
     <string name="dialog_search_method_text_use">· Finding a whole sentence.\n· Finding part of a word.</string>
     <string name="dialog_search_method_natural_description">Finds items using natural language.</string>
