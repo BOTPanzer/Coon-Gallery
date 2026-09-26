@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.actions.Action
 import com.botpa.turbophotos.gallery.actions.ActionError
+import com.botpa.turbophotos.gallery.actions.ActionType
 import com.botpa.turbophotos.gallery.data.Item
 import com.botpa.turbophotos.util.BackManager
 import com.botpa.turbophotos.util.Orion
@@ -44,10 +45,10 @@ open class BaseActivity : AppCompatActivity() {
 
         //Check action type
         when {
-            action.isOfType(Action.TYPE_TRASH) -> Library.onTrashItemsResult(this, action)
-            action.isOfType(Action.TYPE_RESTORE) -> Library.onRestoreItemsResult(this, action)
-            action.isOfType(Action.TYPE_FAVOURITE) -> Library.onFavouriteItemsResult(this, action)
-            action.isOfType(Action.TYPE_UNFAVOURITE) -> Library.onUnfavouriteItemsResult(this, action)
+            action.isOfType(ActionType.TRASH) -> Library.onTrashItemsResult(this, action)
+            action.isOfType(ActionType.RESTORE) -> Library.onRestoreItemsResult(this, action)
+            action.isOfType(ActionType.FAVOURITE) -> Library.onFavouriteItemsResult(this, action)
+            action.isOfType(ActionType.UNFAVOURITE) -> Library.onUnfavouriteItemsResult(this, action)
             else -> Orion.snack(this, R.string.library_error_invalid_action_type)
         }
 

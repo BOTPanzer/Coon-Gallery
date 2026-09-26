@@ -26,7 +26,6 @@ import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.Library.ActionEvent
 import com.botpa.turbophotos.gallery.Library.RefreshEvent
 import com.botpa.turbophotos.gallery.StoragePairs
-import com.botpa.turbophotos.gallery.actions.Action
 import com.botpa.turbophotos.gallery.data.Album
 import com.botpa.turbophotos.gallery.views.lists.fastscroller.FastScroller
 import com.botpa.turbophotos.gallery.views.lists.fastscroller.FastScrollerBuilder
@@ -35,6 +34,7 @@ import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.options.OptionsManager
 import com.botpa.turbophotos.gallery.PermissionType
 import com.botpa.turbophotos.gallery.UpdateChecker
+import com.botpa.turbophotos.gallery.actions.ActionResult
 import com.botpa.turbophotos.gallery.data.SortDirection
 import com.botpa.turbophotos.gallery.data.SortMethod
 import com.botpa.turbophotos.gallery.modals.UpdateDialog
@@ -450,19 +450,16 @@ class HomeActivity : BaseActivity() {
         }
     }
 
-    private fun manageAction(action: Action) {
-        //No action
-        if (action.isOfType(Action.TYPE_NONE)) return
-
+    private fun manageAction(action: ActionResult) {
         //Check if albums list was changed
         if (action.hasSortedAlbumsList) {
             //Sorted albums list -> Notify all
             homeAdapter.notifyDataSetChanged()
         } else {
             //Check if albums were deleted
-            if (!action.albumIndexesRemoved.isEmpty()) {
+            if (!action.removedAlbumIndexes.isEmpty()) {
                 //Albums were deleted -> Notify items removed
-                for (albumIndex in action.albumIndexesRemoved) {
+                for (albumIndex in action.removedAlbumIndexes) {
                     //Notify position removed
                     homeAdapter.notifyItemRemoved(homeAdapter.getPositionFromIndex(albumIndex))
                 }
@@ -470,9 +467,9 @@ class HomeActivity : BaseActivity() {
 
             //Check if albums were sorted
             var specialAlbumWasModified = false
-            if (!action.albumsModified.isEmpty()) {
+            if (!action.modifiedAlbums.isEmpty()) {
                 //Albums were modified -> Notify items changed
-                for (album in action.albumsModified) {
+                for (album in action.modifiedAlbums) {
                     //Check if album is special
                     if (album.isSpecial) {
                         specialAlbumWasModified = true

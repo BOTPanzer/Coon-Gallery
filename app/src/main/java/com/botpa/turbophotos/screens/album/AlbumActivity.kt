@@ -25,21 +25,22 @@ import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.Library.ActionEvent
 import com.botpa.turbophotos.gallery.Library.RefreshEvent
 import com.botpa.turbophotos.gallery.LoadingIndicator
+import com.botpa.turbophotos.gallery.PermissionType
 import com.botpa.turbophotos.gallery.StoragePairs
-import com.botpa.turbophotos.gallery.actions.Action
+import com.botpa.turbophotos.gallery.actions.ActionResult
+import com.botpa.turbophotos.gallery.actions.ActionStepType
 import com.botpa.turbophotos.gallery.data.Album
 import com.botpa.turbophotos.gallery.data.Item
-import com.botpa.turbophotos.gallery.views.lists.fastscroller.FastScroller
-import com.botpa.turbophotos.gallery.views.lists.fastscroller.FastScrollerBuilder
 import com.botpa.turbophotos.gallery.options.OptionsGroup
 import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.options.OptionsManager
-import com.botpa.turbophotos.gallery.PermissionType
+import com.botpa.turbophotos.gallery.search.SearchDialog
 import com.botpa.turbophotos.gallery.search.SearchMethod
 import com.botpa.turbophotos.gallery.views.lists.GridHeaderLayoutManager
 import com.botpa.turbophotos.gallery.views.lists.GridListSeparator
+import com.botpa.turbophotos.gallery.views.lists.fastscroller.FastScroller
+import com.botpa.turbophotos.gallery.views.lists.fastscroller.FastScrollerBuilder
 import com.botpa.turbophotos.gallery.views.refresh.SimpleRefreshHeader
-import com.botpa.turbophotos.gallery.search.SearchDialog
 import com.botpa.turbophotos.screens.viewer.ViewerActivity
 import com.botpa.turbophotos.util.BackAnimationEvent
 import com.botpa.turbophotos.util.Ease
@@ -573,10 +574,7 @@ class AlbumActivity : BaseActivity() {
         }
     }
 
-    private fun manageAction(action: Action) {
-        //No action
-        if (action.isOfType(Action.TYPE_NONE)) return
-
+    private fun manageAction(action: ActionResult) {
         //Check if gallery is empty
         if (gallery.isEmpty()) {
             //Is empty -> Close screen
@@ -584,44 +582,38 @@ class AlbumActivity : BaseActivity() {
             return
         }
 
+        //Deselect items
+        deselectAll()
+
         //Update items
-        for (indexInGallery in action.itemIndexesModifiedInGallery) {
-            albumAdapter.notifyItemChanged(albumAdapter.getPositionFromIndex(indexInGallery))
+        for (step in action.itemStepsInGallery) {
+            //Get step position
+            val position = albumAdapter.getPositionFromIndex(step.index)
 
-            //Refresh banner
-            if (indexInGallery == 0) albumAdapter.notifyItemChanged(0)
-        }
-
-        //Remove items
-        if (action.itemIndexesRemovedFromGallery.isNotEmpty()) {
-            //Remove items
-            for (indexInGallery in action.itemIndexesRemovedFromGallery) {
-                selectedIndexes.remove(indexInGallery)
-                albumAdapter.notifyItemRemoved(albumAdapter.getPositionFromIndex(indexInGallery))
+            //Check type
+            when (step.type) {
+                //Add
+                ActionStepType.ADD -> {
+                    albumAdapter.notifyItemInserted(position)
+                }
+                //Remove
+                ActionStepType.REMOVE -> {
+                    albumAdapter.notifyItemRemoved(position)
+                }
+                //Modify
+                ActionStepType.MODIFY -> {
+                    albumAdapter.notifyItemChanged(position)
+                }
+                //Reorder
+                ActionStepType.REORDER -> {
+                    albumAdapter.notifyItemMoved(position, albumAdapter.getPositionFromIndex(step.index2))
+                }
             }
 
             //Refresh banner
             updateHeaderSubtitle()
             albumAdapter.notifyItemChanged(0)
         }
-
-        //Moved items
-        if (action.itemsReorderedInGallery.isNotEmpty()) {
-            //Add items
-            for (pair in action.itemsReorderedInGallery) {
-                selectedIndexes.remove(pair.first)
-                val newPosition = albumAdapter.getPositionFromIndex(gallery.indexOf(pair.second))
-                albumAdapter.notifyItemMoved(albumAdapter.getPositionFromIndex(pair.first), newPosition)
-                albumAdapter.notifyItemChanged(newPosition)
-            }
-
-            //Refresh banner
-            updateHeaderSubtitle()
-            albumAdapter.notifyItemChanged(0)
-        }
-
-        //Remove select back callback if no more items are selected or we performed a rename
-        if (selectedIndexes.isEmpty() || action.isOfType(Action.TYPE_RENAME)) deselectAll()
     }
 
     //Album

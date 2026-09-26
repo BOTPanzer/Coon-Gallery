@@ -27,13 +27,13 @@ import com.botpa.turbophotos.gallery.BaseActivity
 import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.Library.ActionEvent
 import com.botpa.turbophotos.gallery.StoragePairs
-import com.botpa.turbophotos.gallery.actions.Action
 import com.botpa.turbophotos.gallery.data.Album
 import com.botpa.turbophotos.gallery.data.Item
 import com.botpa.turbophotos.gallery.options.OptionsGroup
 import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.options.OptionsManager
 import com.botpa.turbophotos.gallery.PermissionType
+import com.botpa.turbophotos.gallery.actions.ActionResult
 import com.botpa.turbophotos.gallery.views.ZoomableLayout
 import com.botpa.turbophotos.screens.video.VideoActivity
 import com.botpa.turbophotos.screens.viewer.properties.PropertiesDrawer
@@ -73,7 +73,7 @@ class ViewerActivity : BaseActivity() {
     private lateinit var viewerLayoutManager: ViewerLayoutManager
     private lateinit var viewerAdapter: ViewerAdapter
 
-    private lateinit var viewerGallery: List<Item>
+    private lateinit var gallery: List<Item>
     private var currentIndexInGallery = -1
 
     private val viewerItems: MutableList<Item> = ArrayList()
@@ -407,7 +407,7 @@ class ViewerActivity : BaseActivity() {
 
             //Init gallery list
             val items: MutableList<Item> = ArrayList()
-            viewerGallery = items
+            gallery = items
 
             //Create item from uri & add it to list
             items.add(Item.createFromUri(this, uri, Album("Temp")))
@@ -419,7 +419,7 @@ class ViewerActivity : BaseActivity() {
             isViewingExternal = false
 
             //Init gallery list
-            viewerGallery = Library.gallery.items
+            gallery = Library.gallery.items
 
             //Check if intent has item index
             val index = intent.getIntExtra("index", -1)
@@ -432,19 +432,16 @@ class ViewerActivity : BaseActivity() {
     }
 
     //Events
-    private fun manageAction(action: Action) {
-        //No action
-        if (action.isOfType(Action.TYPE_NONE)) return
-
+    private fun manageAction(action: ActionResult) {
         //Check if gallery is empty
-        if (viewerGallery.isEmpty()) {
+        if (gallery.isEmpty()) {
             //Is empty -> Close viewer
             finish()
             return
         }
 
         //Check if current item was removed
-        val newSelectedItemIndex = viewerGallery.indexOf(viewerItems[currentIndexInViewer])
+        val newSelectedItemIndex = gallery.indexOf(viewerItems[currentIndexInViewer])
         if (newSelectedItemIndex == -1) {
             //Item was removed -> Close viewer
             finish()
@@ -543,14 +540,14 @@ class ViewerActivity : BaseActivity() {
     //Current item
     private fun selectItem(index: Int) {
         //Empty viewer gallery
-        if (viewerGallery.isEmpty()) {
+        if (gallery.isEmpty()) {
             finish()
             return
         }
 
         //Fix index overflow
         var index = index
-        index = Math.clamp(index.toLong(), 0, viewerGallery.size - 1)
+        index = Math.clamp(index.toLong(), 0, gallery.size - 1)
 
         //Create return intent (to scroll album list to current item on close)
         val returnIntent = Intent()
@@ -565,13 +562,13 @@ class ViewerActivity : BaseActivity() {
         //Add items to viewer list
         if (index > 0) {
             //Has item before -> Add it
-            viewerItems.add(viewerGallery[index - 1])
+            viewerItems.add(gallery[index - 1])
             currentIndexInViewer++
         }
-        viewerItems.add(viewerGallery[index])
-        if (index < viewerGallery.size - 1) {
+        viewerItems.add(gallery[index])
+        if (index < gallery.size - 1) {
             //Has item after -> Add it
-            viewerItems.add(viewerGallery[index + 1])
+            viewerItems.add(gallery[index + 1])
         }
 
         //Get current image, update adapter & select it

@@ -1,50 +1,17 @@
 package com.botpa.turbophotos.gallery.actions
 
 import android.net.Uri
-import com.botpa.turbophotos.gallery.data.Album
 import com.botpa.turbophotos.gallery.data.Item
 
-class Action(val type: Int, @JvmField val items: Array<Item>) {
-
-    //Errors
-    var errors: MutableList<ActionError> = ArrayList()
+class Action(type: ActionType, val items: Array<Item>) : ActionResult(type) {
 
     //Results (async actions)
     var pending: MutableMap<Uri, Item> = HashMap()
 
-    //Results (albums)
-    var hasSortedAlbumsList: Boolean = false
-    var albumsModified: MutableSet<Album> = HashSet()
-    var albumIndexesRemoved: MutableList<Int> = ArrayList()
 
-    //Results (items)
-    var itemsReorderedInGallery: MutableList<Pair<Int, Item>> = ArrayList()
-    var itemIndexesModifiedInGallery: MutableList<Int> = ArrayList()
-    var itemIndexesRemovedFromGallery: MutableList<Int> = ArrayList()
-
-
-    //Action
+    //Util
     fun getHelper(item: Item): ActionHelper {
         return ActionHelper(item)
-    }
-
-    fun isOfType(type: Int): Boolean {
-        return this.type == type
-    }
-
-    //Static
-    companion object {
-
-        const val TYPE_NONE:        Int = 0
-        const val TYPE_DELETE:      Int = 1
-        const val TYPE_TRASH:       Int = 2
-        const val TYPE_RESTORE:     Int = 3
-        const val TYPE_MOVE:        Int = 4
-        const val TYPE_COPY:        Int = 5
-        const val TYPE_RENAME:      Int = 6
-        const val TYPE_FAVOURITE:   Int = 7
-        const val TYPE_UNFAVOURITE: Int = 8
-
     }
 
 }

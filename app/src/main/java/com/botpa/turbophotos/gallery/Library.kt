@@ -15,6 +15,10 @@ import androidx.core.content.MimeTypeFilter
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.actions.Action
 import com.botpa.turbophotos.gallery.actions.ActionError
+import com.botpa.turbophotos.gallery.actions.ActionResult
+import com.botpa.turbophotos.gallery.actions.ActionStep
+import com.botpa.turbophotos.gallery.actions.ActionStepType
+import com.botpa.turbophotos.gallery.actions.ActionType
 import com.botpa.turbophotos.gallery.data.Album
 import com.botpa.turbophotos.gallery.data.Item
 import com.botpa.turbophotos.gallery.data.Link
@@ -51,7 +55,7 @@ object Library {
         private set
     val isFiltered: Boolean get() = filter != "*/*"
 
-    var sortRules: SortRules = SortRules(
+    private var sortRules: SortRules = SortRules(
         Storage.getEnum(StoragePairs.LIBRARY_SORT_METHOD, SortMethod.Date),
         Storage.getEnum(StoragePairs.LIBRARY_SORT_DIRECTION, SortDirection.Descending)
     )
@@ -489,12 +493,12 @@ object Library {
     }
 
     //Actions (events)
-    private fun invokeOnAction(action: Action) {
+    private fun invokeOnAction(action: ActionResult) {
         for (listener in onAction) listener.invoke(action)
     }
 
     fun interface ActionEvent {
-        fun invoke(action: Action)
+        fun invoke(action: ActionResult)
     }
 
     fun addOnActionEvent(listener: ActionEvent) {
@@ -518,42 +522,7 @@ object Library {
 
         //Remove item
         all.removeAt(indexInAll)
-        action.albumsModified.add(all)
-    }
-
-    private fun performRemoveFromFavourites(action: Action, indexInFavourites: Int) {
-        //Not in favourite items list
-        if (indexInFavourites == -1) return
-
-        //Remove item
-        favourites.removeAt(indexInFavourites)
-        action.albumsModified.add(favourites)
-    }
-
-    private fun performRemoveFromGallery(action: Action, indexInGallery: Int) {
-        //Not in gallery items list
-        if (indexInGallery == -1) return
-
-        //Mark it as removed (will get removed in evaluateAction())
-        action.itemIndexesRemovedFromGallery.add(indexInGallery)
-    }
-
-    private fun performRemoveFromAlbum(action: Action, indexInAlbum: Int, indexOfAlbum: Int, album: Album) {
-        //Not in album
-        if (indexInAlbum == -1) return
-
-        //Remove item
-        album.removeAt(indexInAlbum)
-        action.albumsModified.add(album)
-
-        //Check if album needs to be deleted or sorted
-        if (album.isEmpty()) {
-            //Album is empty -> Mark it as removed (will get removed in evaluateAction())
-            action.albumIndexesRemoved.add(indexOfAlbum)
-        } else if (indexInAlbum == 0) {
-            //Album isn't empty & first image was deleted -> Sort albums list in case the order changed
-            action.hasSortedAlbumsList = true
-        }
+        action.modifiedAlbums.add(all)
     }
 
     private fun performRemoveFromTrash(action: Action, indexInTrash: Int, originalAlbum: Album) {
@@ -562,7 +531,43 @@ object Library {
 
         //Remove item
         removeItemFromTrash(indexInTrash, originalAlbum)
-        action.albumsModified.add(trash)
+        action.modifiedAlbums.add(trash)
+    }
+
+    private fun performRemoveFromFavourites(action: Action, indexInFavourites: Int) {
+        //Not in favourite items list
+        if (indexInFavourites == -1) return
+
+        //Remove item
+        favourites.removeAt(indexInFavourites)
+        action.modifiedAlbums.add(favourites)
+    }
+
+    private fun performRemoveFromAlbum(action: Action, indexInAlbum: Int, indexOfAlbum: Int, album: Album) {
+        //Not in album
+        if (indexInAlbum == -1) return
+
+        //Remove item
+        album.removeAt(indexInAlbum)
+        action.modifiedAlbums.add(album)
+
+        //Check if album needs to be deleted or sorted
+        if (album.isEmpty()) {
+            //Album is empty -> Mark it as removed (will get removed in evaluateAction())
+            action.removedAlbumIndexes.add(indexOfAlbum)
+        } else if (indexInAlbum == 0) {
+            //Album isn't empty & first image was deleted -> Sort albums list in case the order changed
+            action.hasSortedAlbumsList = true
+        }
+    }
+
+    private fun performRemoveFromGallery(action: Action, indexInGallery: Int) {
+        //Not in gallery items list
+        if (indexInGallery == -1) return
+
+        //Remove item
+        gallery.removeAt(indexInGallery)
+        action.itemStepsInGallery.add(ActionStep(ActionStepType.REMOVE, indexInGallery))
     }
 
     private fun performCheckForAlbumChanges(action: Action, indexInAlbum: Int, album: Album) {
@@ -581,11 +586,11 @@ object Library {
 
     private fun performAddToAlbum(action: Action, item: Item, album: Album): Int {
         val indexInAlbum = album.addSorted(item, sortMethod, sortDirection)
-        action.albumsModified.add(album)
+        action.modifiedAlbums.add(album)
         return indexInAlbum
     }
 
-    private fun performAction(context: Context, type: Int, items: Array<Item>, onPerformAction: (Action, Item) -> Unit) {
+    private fun performAction(context: Context, type: ActionType, items: Array<Item>, onPerformAction: (Action, Item) -> Unit) {
         //Create action
         val action = Action(type, items)
 
@@ -597,27 +602,21 @@ object Library {
     }
 
     private fun evaluateAction(context: Context, action: Action) {
-        //Check if gallery items were marked as removed
-        if (!action.itemIndexesRemovedFromGallery.isEmpty()) {
-            //Marked as removed -> Sort indexes
-            action.itemIndexesRemovedFromGallery.sortByDescending { it } //Sort from last to first to allow using a foreach
-
-            //Remove items
-            for (indexInGallery in action.itemIndexesRemovedFromGallery) gallery.removeAt(indexInGallery)
-        }
+        //No action
+        if (action.isOfType(ActionType.NONE)) return
 
         //Check if albums were marked as removed
-        if (!action.albumIndexesRemoved.isEmpty()) {
+        if (!action.removedAlbumIndexes.isEmpty()) {
             //Marked as removed -> Sort indexes
-            action.albumIndexesRemoved.sortByDescending { it } //Sort from last to first to allow using a foreach
+            action.removedAlbumIndexes.sortByDescending { it } //Sort from last to first to allow using a foreach
 
             //Remove albums
-            for (indexInAlbums in action.albumIndexesRemoved) {
+            for (indexInAlbums in action.removedAlbumIndexes) {
                 //Remove album
                 removeAlbum(indexInAlbums)
 
                 //Album was the first -> Mark "all" as updated
-                if (indexInAlbums == 0) action.albumsModified.add(all)
+                if (indexInAlbums == 0) action.modifiedAlbums.add(all)
             }
         }
 
@@ -648,7 +647,7 @@ object Library {
         val oldNameNoExtension = if (extension.isEmpty()) oldName else oldName.dropLast(extension.length + 1)
 
         //Create action
-        val action = Action(Action.TYPE_RENAME, arrayOf(item))
+        val action = Action(ActionType.RENAME, arrayOf(item))
 
         //Ask for a new name
         val dialog = InputDialog(
@@ -720,7 +719,7 @@ object Library {
                 if (newIndexInAlbum != helper.indexInAlbum) {
                     //Position changed -> Sort gallery & notify of item movement
                     gallery.sort(sortMethod, sortDirection)
-                    action.itemsReorderedInGallery.add(Pair(helper.indexInGallery, item))
+                    action.itemStepsInGallery.add(ActionStep(ActionStepType.REORDER, helper.indexInGallery, gallery.indexOf(item)))
                 }
 
                 //Evaluate rename
@@ -783,7 +782,7 @@ object Library {
     }
 
     private fun moveItemsInternal(context: Context, items: Array<Item>, newAlbum: Album) {
-        performAction(context, Action.TYPE_MOVE, items) { action: Action, item: Item ->
+        performAction(context, ActionType.MOVE, items) { action: Action, item: Item ->
             //Check if item is in trash
             if (item.isTrashed) {
                 //Item is in trash -> Error
@@ -845,7 +844,7 @@ object Library {
     }
 
     private fun copyItemsInternal(context: Context, items: Array<Item>, newAlbum: Album) {
-        performAction(context, Action.TYPE_COPY, items) { action: Action, item: Item ->
+        performAction(context, ActionType.COPY, items) { action: Action, item: Item ->
             //Check if item is in trash
             if (item.isTrashed) {
                 //Item is in trash -> Error
@@ -910,34 +909,35 @@ object Library {
         for (item in action.items) {
             //Check if item is valid for action
             when (action.type) {
-                Action.TYPE_TRASH -> {
+                ActionType.TRASH -> {
                     //Item is trashed
                     if (item.isTrashed) {
                         action.errors.add(ActionError(item, context.getString(R.string.library_error_item_in_trash_already)))
                         continue
                     }
                 }
-                Action.TYPE_RESTORE -> {
+                ActionType.RESTORE -> {
                     //Item is not trashed
                     if (!item.isTrashed) {
                         action.errors.add(ActionError(item, context.getString(R.string.library_error_item_not_in_trash)))
                         continue
                     }
                 }
-                Action.TYPE_FAVOURITE -> {
+                ActionType.FAVOURITE -> {
                     //Item is favourited
                     if (item.isFavourite) {
                         action.errors.add(ActionError(item, context.getString(R.string.library_error_item_in_favourites_already)))
                         continue
                     }
                 }
-                Action.TYPE_UNFAVOURITE -> {
+                ActionType.UNFAVOURITE -> {
                     //Item is not favourited
                     if (!item.isFavourite) {
                         action.errors.add(ActionError(item, context.getString(R.string.library_error_item_not_in_favourites)))
                         continue
                     }
                 }
+                else -> {}
             }
 
             //Get item URI
@@ -958,7 +958,7 @@ object Library {
 
     fun favouriteItems(activity: BaseActivity, items: Array<Item>, launcher: ActivityResultLauncher<IntentSenderRequest>): Action? {
         //Create action
-        val action = Action(Action.TYPE_FAVOURITE, items)
+        val action = Action(ActionType.FAVOURITE, items)
 
         //Get item URIs
         action.pending = prepareItemURIs(activity, action)
@@ -993,7 +993,7 @@ object Library {
             helper.indexInFavourites = performAddToAlbum(action, item, favourites)
 
             //Mark as modified to update star icon
-            action.itemIndexesModifiedInGallery.add(helper.indexInGallery)
+            action.itemStepsInGallery.add(ActionStep(ActionStepType.MODIFY, helper.indexInGallery))
         }
 
         //Evaluate action
@@ -1002,7 +1002,7 @@ object Library {
 
     fun unfavouriteItems(activity: BaseActivity, items: Array<Item>, launcher: ActivityResultLauncher<IntentSenderRequest>): Action? {
         //Create action
-        val action = Action(Action.TYPE_UNFAVOURITE, items)
+        val action = Action(ActionType.UNFAVOURITE, items)
 
         //Get item URIs
         action.pending = prepareItemURIs(activity, action)
@@ -1042,7 +1042,7 @@ object Library {
                 performRemoveFromGallery(action, helper.indexInGallery)
             } else {
                 //Mark as modified to update star icon
-                action.itemIndexesModifiedInGallery.add(helper.indexInGallery)
+                action.itemStepsInGallery.add(ActionStep(ActionStepType.MODIFY, helper.indexInGallery))
             }
         }
 
@@ -1052,7 +1052,7 @@ object Library {
 
     fun trashItems(activity: BaseActivity, items: Array<Item>, launcher: ActivityResultLauncher<IntentSenderRequest>): Action? {
         //Create action
-        val action = Action(Action.TYPE_TRASH, items)
+        val action = Action(ActionType.TRASH, items)
 
         //Get item URIs
         action.pending = prepareItemURIs(activity, action)
@@ -1105,7 +1105,7 @@ object Library {
 
             //Add item to trash
             helper.indexInTrash = addItemToTrash(item, originalAlbum)
-            action.albumsModified.add(trash)
+            action.modifiedAlbums.add(trash)
 
             //Remove item from all, favourites, gallery & album
             performRemoveFromAll(action, helper.indexInAll)
@@ -1120,7 +1120,7 @@ object Library {
 
     fun restoreItems(activity: BaseActivity, items: Array<Item>, launcher: ActivityResultLauncher<IntentSenderRequest>): Action? {
         //Create action
-        val action = Action(Action.TYPE_RESTORE, items)
+        val action = Action(ActionType.RESTORE, items)
 
         //Get item URIs
         action.pending = prepareItemURIs(activity, action)
@@ -1189,7 +1189,7 @@ object Library {
     }
 
     private fun deleteItemsInternal(context: Context, items: Array<Item>) {
-        performAction(context, Action.TYPE_DELETE, items) { action: Action, item: Item ->
+        performAction(context, ActionType.DELETE, items) { action: Action, item: Item ->
             //Delete item file
             if (!item.file.delete()) {
                 //Failed to delete file -> Error
