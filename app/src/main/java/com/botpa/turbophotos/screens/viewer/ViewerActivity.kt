@@ -406,11 +406,11 @@ class ViewerActivity : BaseActivity() {
             isViewingExternal = true
 
             //Init gallery list
-            val gallery: MutableList<Item> = ArrayList()
-            viewerGallery = gallery
+            val items: MutableList<Item> = ArrayList()
+            viewerGallery = items
 
             //Create item from uri & add it to list
-            gallery.add(Item.createFromUri(this, uri, Album("Temp")))
+            items.add(Item.createFromUri(this, uri, Album("Temp")))
 
             //Select first item
             selectItem(0)
@@ -419,7 +419,7 @@ class ViewerActivity : BaseActivity() {
             isViewingExternal = false
 
             //Init gallery list
-            viewerGallery = Library.gallery
+            viewerGallery = Library.gallery.items
 
             //Check if intent has item index
             val index = intent.getIntExtra("index", -1)
@@ -443,13 +443,16 @@ class ViewerActivity : BaseActivity() {
             return
         }
 
-        //Update selected item
-        val originalCurrentIndex = currentIndexInGallery
-        for (indexInGallery in action.removedIndexesInGallery) {
-            //Check if current item index changed (an item before it was removed)
-            if (indexInGallery < originalCurrentIndex) currentIndexInGallery--
+        //Check if current item was removed
+        val newSelectedItemIndex = viewerGallery.indexOf(viewerItems[currentIndexInViewer])
+        if (newSelectedItemIndex == -1) {
+            //Item was removed -> Close viewer
+            finish()
+            return
         }
-        selectItem(currentIndexInGallery)
+
+        //Update selected item
+        selectItem(newSelectedItemIndex)
     }
 
     //Viewer

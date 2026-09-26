@@ -82,8 +82,7 @@ class AlbumActivity : BaseActivity() {
     private lateinit var albumDecorator: GridListSeparator
     private lateinit var albumAdapter: AlbumAdapter
 
-    private val gallery: List<Item>
-        get() = Library.gallery
+    private val gallery: Album get() = Library.gallery
 
     private val selectedIndexes: MutableSet<Int> = LinkedHashSet()
     private lateinit var currentAlbum: Album
@@ -416,7 +415,7 @@ class AlbumActivity : BaseActivity() {
             if (selectedIndexes.size != 1) return@OptionsItem
 
             //Rename
-            Library.renameItem(this, gallery[selectedIndexes.iterator().next()])
+            Library.renameItem(this, gallery.get(selectedIndexes.iterator().next()))
         }
 
         optionEdit = OptionsItem(R.drawable.icon_action_edit, R.string.context_option_edit) {
@@ -424,7 +423,7 @@ class AlbumActivity : BaseActivity() {
             if (selectedIndexes.size != 1) return@OptionsItem
 
             //Edit
-            Library.editItem(this, gallery[selectedIndexes.iterator().next()])
+            Library.editItem(this, gallery.get(selectedIndexes.iterator().next()))
         }
 
         optionShare = OptionsItem(R.drawable.icon_action_share, R.string.context_option_share) {
@@ -437,7 +436,7 @@ class AlbumActivity : BaseActivity() {
             if (selectedIndexes.size != 1) return@OptionsItem
 
             //Set as
-            Library.setItemAs(this, gallery[selectedIndexes.iterator().next()])
+            Library.setItemAs(this, gallery.get(selectedIndexes.iterator().next()))
         }
 
         optionFavourite = OptionsItem(R.drawable.icon_action_favourite_on, R.string.context_option_favourite) {
@@ -585,15 +584,8 @@ class AlbumActivity : BaseActivity() {
             return
         }
 
-        //Renamed file
-        if (action.isOfType(Action.TYPE_RENAME)) {
-            //Unselect item
-            deselectAll()
-            return
-        }
-
         //Update items
-        for (indexInGallery in action.modifiedIndexesInGallery) {
+        for (indexInGallery in action.itemIndexesModifiedInGallery) {
             albumAdapter.notifyItemChanged(albumAdapter.getPositionFromIndex(indexInGallery))
 
             //Refresh banner
@@ -601,9 +593,9 @@ class AlbumActivity : BaseActivity() {
         }
 
         //Remove items
-        if (action.removedIndexesInGallery.isNotEmpty()) {
+        if (action.itemIndexesRemovedFromGallery.isNotEmpty()) {
             //Remove items
-            for (indexInGallery in action.removedIndexesInGallery) {
+            for (indexInGallery in action.itemIndexesRemovedFromGallery) {
                 selectedIndexes.remove(indexInGallery)
                 albumAdapter.notifyItemRemoved(albumAdapter.getPositionFromIndex(indexInGallery))
             }
@@ -613,8 +605,23 @@ class AlbumActivity : BaseActivity() {
             albumAdapter.notifyItemChanged(0)
         }
 
-        //Remove select back callback if no more items are selected
-        if (selectedIndexes.isEmpty()) deselectAll()
+        //Moved items
+        if (action.itemsReorderedInGallery.isNotEmpty()) {
+            //Add items
+            for (pair in action.itemsReorderedInGallery) {
+                selectedIndexes.remove(pair.first)
+                val newPosition = albumAdapter.getPositionFromIndex(gallery.indexOf(pair.second))
+                albumAdapter.notifyItemMoved(albumAdapter.getPositionFromIndex(pair.first), newPosition)
+                albumAdapter.notifyItemChanged(newPosition)
+            }
+
+            //Refresh banner
+            updateHeaderSubtitle()
+            albumAdapter.notifyItemChanged(0)
+        }
+
+        //Remove select back callback if no more items are selected or we performed a rename
+        if (selectedIndexes.isEmpty() || action.isOfType(Action.TYPE_RENAME)) deselectAll()
     }
 
     //Album
@@ -629,7 +636,7 @@ class AlbumActivity : BaseActivity() {
         (albumList.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
 
         //Init album adapter
-        albumAdapter = AlbumAdapter(this, gallery, "", "", 0, selectedIndexes, Storage.getBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON))
+        albumAdapter = AlbumAdapter(this, gallery.items, "", "", 0, selectedIndexes, Storage.getBool(StoragePairs.ALBUM_SHOW_MISSING_METADATA_ICON))
         albumList.setAdapter(albumAdapter)
 
         //Init home fast scroller
@@ -674,7 +681,7 @@ class AlbumActivity : BaseActivity() {
         if (isPicking) {
             //Pick item
             val resultIntent = Intent()
-            resultIntent.data = Orion.getFileUriFromFilePath(this, gallery[index].file.absolutePath)
+            resultIntent.data = Orion.getFileUriFromFilePath(this, gallery.get(index).file.absolutePath)
             resultIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             setResult(RESULT_OK, resultIntent)
             finish()
@@ -715,9 +722,9 @@ class AlbumActivity : BaseActivity() {
                 if (isSelectingSingle) add(optionSetAs)
             }))
             options.add(OptionsGroup(mutableListOf<OptionsItem>().apply {
-                if (selectedIndexes.all { gallery[it].isFavourite }) {
+                if (selectedIndexes.all { gallery.items[it].isFavourite }) {
                     add(optionUnfavourite)
-                } else if (selectedIndexes.all { !gallery[it].isFavourite }) {
+                } else if (selectedIndexes.all { !gallery.items[it].isFavourite }) {
                     add(optionFavourite)
                 }
                 if (isSelecting) add(optionMove)
@@ -745,7 +752,7 @@ class AlbumActivity : BaseActivity() {
     //Selection
     private fun getSelectedItems(): Array<Item> {
         val selectedFiles = ArrayList<Item>(selectedIndexes.size)
-        for (index in selectedIndexes) selectedFiles.add(gallery[index])
+        for (index in selectedIndexes) selectedFiles.add(gallery.get(index))
         return selectedFiles.toTypedArray<Item>()
     }
 
@@ -979,7 +986,7 @@ class AlbumActivity : BaseActivity() {
 
     private fun updateHeaderSubtitle() {
         val id = if (currentSearch.isEmpty()) R.string.album_header else R.string.album_header_search
-        albumAdapter.subtitle = getString(id, gallery.size, currentSearch)
+        albumAdapter.subtitle = getString(id, gallery.items.size, currentSearch)
     }
 
     private fun updateSearchMethod() {

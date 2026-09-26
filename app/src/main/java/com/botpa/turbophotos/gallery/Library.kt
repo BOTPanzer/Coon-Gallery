@@ -72,9 +72,9 @@ object Library {
     val trash: Album = Album("Trash")
 
     //Gallery
-    private var galleryAlbum: Album? = null
+    private var galleryOriginalAlbum: Album? = null
 
-    val gallery: List<Item> field: MutableList<Item> = ArrayList() //Currently open album items (could be filtered)
+    val gallery: Album = Album("Gallery") //Currently open album items (could be filtered)
 
 
     //Library (events)
@@ -191,10 +191,10 @@ object Library {
                 lastUpdate = 0
 
                 //Clear items from albums
-                all.reset()
-                favourites.reset()
-                trash.reset()
-                for (album in albums) album.reset()
+                all.clear()
+                favourites.clear()
+                trash.clear()
+                for (album in albums) album.clear()
 
                 //Albums map doesn't get cleared so that the gallery can stay on the selected album on reload :D
             }
@@ -482,11 +482,10 @@ object Library {
 
     fun setGalleryInfo(album: Album?, items: MutableList<Item>) {
         //Save album
-        galleryAlbum = album
+        galleryOriginalAlbum = album
 
         //Clear gallery & add new items
-        gallery.clear()
-        gallery.addAll(items)
+        gallery.clearAndCopy(items)
     }
 
     //Actions (events)
@@ -519,7 +518,7 @@ object Library {
 
         //Remove item
         all.removeAt(indexInAll)
-        action.modifiedAlbums.add(all)
+        action.albumsModified.add(all)
     }
 
     private fun performRemoveFromFavourites(action: Action, indexInFavourites: Int) {
@@ -528,7 +527,7 @@ object Library {
 
         //Remove item
         favourites.removeAt(indexInFavourites)
-        action.modifiedAlbums.add(favourites)
+        action.albumsModified.add(favourites)
     }
 
     private fun performRemoveFromGallery(action: Action, indexInGallery: Int) {
@@ -536,7 +535,7 @@ object Library {
         if (indexInGallery == -1) return
 
         //Mark it as removed (will get removed in evaluateAction())
-        action.removedIndexesInGallery.add(indexInGallery)
+        action.itemIndexesRemovedFromGallery.add(indexInGallery)
     }
 
     private fun performRemoveFromAlbum(action: Action, indexInAlbum: Int, indexOfAlbum: Int, album: Album) {
@@ -545,12 +544,12 @@ object Library {
 
         //Remove item
         album.removeAt(indexInAlbum)
-        action.modifiedAlbums.add(album)
+        action.albumsModified.add(album)
 
         //Check if album needs to be deleted or sorted
         if (album.isEmpty()) {
             //Album is empty -> Mark it as removed (will get removed in evaluateAction())
-            action.removedIndexesInAlbums.add(indexOfAlbum)
+            action.albumIndexesRemoved.add(indexOfAlbum)
         } else if (indexInAlbum == 0) {
             //Album isn't empty & first image was deleted -> Sort albums list in case the order changed
             action.hasSortedAlbumsList = true
@@ -563,7 +562,7 @@ object Library {
 
         //Remove item
         removeItemFromTrash(indexInTrash, originalAlbum)
-        action.modifiedAlbums.add(trash)
+        action.albumsModified.add(trash)
     }
 
     private fun performCheckForAlbumChanges(action: Action, indexInAlbum: Int, album: Album) {
@@ -582,7 +581,7 @@ object Library {
 
     private fun performAddToAlbum(action: Action, item: Item, album: Album): Int {
         val indexInAlbum = album.addSorted(item, sortMethod, sortDirection)
-        action.modifiedAlbums.add(album)
+        action.albumsModified.add(album)
         return indexInAlbum
     }
 
@@ -599,26 +598,26 @@ object Library {
 
     private fun evaluateAction(context: Context, action: Action) {
         //Check if gallery items were marked as removed
-        if (!action.removedIndexesInGallery.isEmpty()) {
+        if (!action.itemIndexesRemovedFromGallery.isEmpty()) {
             //Marked as removed -> Sort indexes
-            action.removedIndexesInGallery.sortByDescending { it } //Sort from last to first to allow using a foreach
+            action.itemIndexesRemovedFromGallery.sortByDescending { it } //Sort from last to first to allow using a foreach
 
             //Remove items
-            for (indexInGallery in action.removedIndexesInGallery) gallery.removeAt(indexInGallery)
+            for (indexInGallery in action.itemIndexesRemovedFromGallery) gallery.removeAt(indexInGallery)
         }
 
         //Check if albums were marked as removed
-        if (!action.removedIndexesInAlbums.isEmpty()) {
+        if (!action.albumIndexesRemoved.isEmpty()) {
             //Marked as removed -> Sort indexes
-            action.removedIndexesInAlbums.sortByDescending { it } //Sort from last to first to allow using a foreach
+            action.albumIndexesRemoved.sortByDescending { it } //Sort from last to first to allow using a foreach
 
             //Remove albums
-            for (indexInAlbums in action.removedIndexesInAlbums) {
+            for (indexInAlbums in action.albumIndexesRemoved) {
                 //Remove album
                 removeAlbum(indexInAlbums)
 
                 //Album was the first -> Mark "all" as updated
-                if (indexInAlbums == 0) action.modifiedAlbums.add(all)
+                if (indexInAlbums == 0) action.albumsModified.add(all)
             }
         }
 
@@ -712,6 +711,16 @@ object Library {
                     album.setMetadataKey(newName, album.getMetadataKey(oldName))
                     album.removeMetadataKey(oldName)
                     album.saveMetadata()
+                }
+
+                //Check if item position should change after being renamed
+                val helper = action.getHelper(item)
+                album.removeAt(helper.indexInAlbum)
+                val newIndexInAlbum = album.addSorted(item, sortMethod, sortDirection)
+                if (newIndexInAlbum != helper.indexInAlbum) {
+                    //Position changed -> Sort gallery & notify of item movement
+                    gallery.sort(sortMethod, sortDirection)
+                    action.itemsReorderedInGallery.add(Pair(helper.indexInGallery, item))
                 }
 
                 //Evaluate rename
@@ -984,7 +993,7 @@ object Library {
             helper.indexInFavourites = performAddToAlbum(action, item, favourites)
 
             //Mark as modified to update star icon
-            action.modifiedIndexesInGallery.add(helper.indexInGallery)
+            action.itemIndexesModifiedInGallery.add(helper.indexInGallery)
         }
 
         //Evaluate action
@@ -1028,12 +1037,12 @@ object Library {
             performRemoveFromFavourites(action, helper.indexInFavourites)
 
             //Check gallery album
-            if (galleryAlbum == favourites) {
+            if (galleryOriginalAlbum == favourites) {
                 //Favourites album only shows favourites
                 performRemoveFromGallery(action, helper.indexInGallery)
             } else {
                 //Mark as modified to update star icon
-                action.modifiedIndexesInGallery.add(helper.indexInGallery)
+                action.itemIndexesModifiedInGallery.add(helper.indexInGallery)
             }
         }
 
@@ -1096,7 +1105,7 @@ object Library {
 
             //Add item to trash
             helper.indexInTrash = addItemToTrash(item, originalAlbum)
-            action.modifiedAlbums.add(trash)
+            action.albumsModified.add(trash)
 
             //Remove item from all, favourites, gallery & album
             performRemoveFromAll(action, helper.indexInAll)
@@ -1216,10 +1225,11 @@ object Library {
 
     fun deleteItems(context: Context, items: Array<Item>) {
         //Create message
-        val message = if (items.size <= 1)
+        val message = if (items.size <= 1) {
             context.getString(R.string.dialog_delete_message_single, items[0].name)
-        else
+        } else {
             context.getString(R.string.dialog_delete_message_multi, items.size)
+        }
 
         //Show confirmation dialog
         MaterialAlertDialogBuilder(context)

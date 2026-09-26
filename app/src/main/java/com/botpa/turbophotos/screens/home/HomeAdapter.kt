@@ -40,7 +40,7 @@ class HomeAdapter(
         val pinnedAlbum = Library.albumsMap.getOrDefault(pinnedFile.absolutePath, null)
         val isPinnedValid = pinnedFile.exists() && pinnedFile.isDirectory
         val pinnedName = if (isPinnedValid) pinnedFile.name else context.getString(R.string.library_album_pinned)
-        val pinnedSize = pinnedAlbum?.size() ?: 0
+        val pinnedSize = pinnedAlbum?.size ?: 0
 
         //Load album covers
         val isAllLoaded = loadAlbumCover(holder.allImage, Library.all)
@@ -57,9 +57,9 @@ class HomeAdapter(
         holder.pinnedIcon.visibility = if (isPinnedLoaded) View.GONE else View.VISIBLE
 
         //Update text
-        holder.allInfo.text = context.getString(R.string.items, Library.all.size())
-        holder.trashInfo.text = context.getString(R.string.items, Library.trash.size())
-        holder.favouritesInfo.text = context.getString(R.string.items, Library.favourites.size())
+        holder.allInfo.text = context.getString(R.string.items, Library.all.size)
+        holder.trashInfo.text = context.getString(R.string.items, Library.trash.size)
+        holder.favouritesInfo.text = context.getString(R.string.items, Library.favourites.size)
         holder.pinnedName.text = pinnedName
         holder.pinnedInfo.text = context.getString(R.string.items, pinnedSize)
 
@@ -95,7 +95,7 @@ class HomeAdapter(
 
         //Update text
         holder.name.text = album.name
-        holder.info.text = context.getString(R.string.items, album.size())
+        holder.info.text = context.getString(R.string.items, album.size)
 
         //Add listeners
         addAlbumListener(holder.root, album)

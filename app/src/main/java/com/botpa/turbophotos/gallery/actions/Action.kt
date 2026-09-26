@@ -12,12 +12,15 @@ class Action(val type: Int, @JvmField val items: Array<Item>) {
     //Results (async actions)
     var pending: MutableMap<Uri, Item> = HashMap()
 
-    //Results (albums & gallery)
+    //Results (albums)
     var hasSortedAlbumsList: Boolean = false
-    var modifiedAlbums: MutableSet<Album> = HashSet()
-    var removedIndexesInAlbums: MutableList<Int> = ArrayList()
-    var removedIndexesInGallery: MutableList<Int> = ArrayList()
-    var modifiedIndexesInGallery: MutableList<Int> = ArrayList()
+    var albumsModified: MutableSet<Album> = HashSet()
+    var albumIndexesRemoved: MutableList<Int> = ArrayList()
+
+    //Results (items)
+    var itemsReorderedInGallery: MutableList<Pair<Int, Item>> = ArrayList()
+    var itemIndexesModifiedInGallery: MutableList<Int> = ArrayList()
+    var itemIndexesRemovedFromGallery: MutableList<Int> = ArrayList()
 
 
     //Action

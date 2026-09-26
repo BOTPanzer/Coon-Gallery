@@ -460,9 +460,9 @@ class HomeActivity : BaseActivity() {
             homeAdapter.notifyDataSetChanged()
         } else {
             //Check if albums were deleted
-            if (!action.removedIndexesInAlbums.isEmpty()) {
+            if (!action.albumIndexesRemoved.isEmpty()) {
                 //Albums were deleted -> Notify items removed
-                for (albumIndex in action.removedIndexesInAlbums) {
+                for (albumIndex in action.albumIndexesRemoved) {
                     //Notify position removed
                     homeAdapter.notifyItemRemoved(homeAdapter.getPositionFromIndex(albumIndex))
                 }
@@ -470,9 +470,9 @@ class HomeActivity : BaseActivity() {
 
             //Check if albums were sorted
             var specialAlbumWasModified = false
-            if (!action.modifiedAlbums.isEmpty()) {
-                //Albums were sorted -> Notify items changed
-                for (album in action.modifiedAlbums) {
+            if (!action.albumsModified.isEmpty()) {
+                //Albums were modified -> Notify items changed
+                for (album in action.albumsModified) {
                     //Check if album is special
                     if (album.isSpecial) {
                         specialAlbumWasModified = true

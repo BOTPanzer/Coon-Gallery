@@ -14,6 +14,7 @@ class Album(val name: String, val albumFolder: File? = null, private var link: L
     val items: List<Item> field: MutableList<Item> = ArrayList()
     val isSpecial: Boolean = albumFolder == null
 
+    val size: Int get() = items.size
     val lastModified: Long get() = if (items.isEmpty()) 0 else items[0].lastModified
 
     //Album metadata
@@ -35,12 +36,13 @@ class Album(val name: String, val albumFolder: File? = null, private var link: L
         items.sortWith<Item>(Item.getComparator(sortMethod, sortDirection))
     }
 
-    fun reset() {
+    fun clear() {
         items.clear()
     }
 
-    fun size(): Int {
-        return items.size
+    fun clearAndCopy(newItems: List<Item>) {
+        clear()
+        items.addAll(newItems)
     }
 
     fun isEmpty(): Boolean {
