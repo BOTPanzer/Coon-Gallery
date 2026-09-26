@@ -21,19 +21,17 @@ class Action(val type: Int, @JvmField val items: Array<Item>) {
 
 
     //Action
-    fun getHelper(file: Item): ActionHelper {
-        return ActionHelper(file)
+    fun getHelper(item: Item): ActionHelper {
+        return ActionHelper(item)
     }
 
     fun isOfType(type: Int): Boolean {
         return this.type == type
     }
 
-
     //Static
     companion object {
 
-        //Normal actions
         const val TYPE_NONE:        Int = 0
         const val TYPE_DELETE:      Int = 1
         const val TYPE_TRASH:       Int = 2
