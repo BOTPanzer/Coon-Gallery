@@ -6,6 +6,7 @@ import android.net.Uri
 import android.webkit.MimeTypeMap
 import android.widget.ImageView
 import com.botpa.turbophotos.util.Orion
+import com.botpa.turbophotos.util.Orion.compareToAlphanumeric
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
@@ -59,10 +60,10 @@ class Item(
         //Comparators
         val COMPARATOR_DATE_ASCENDING = Comparator<Item> { i1, i2 -> i1.lastModified.compareTo(i2.lastModified) }
         val COMPARATOR_DATE_DESCENDING = Comparator<Item> { i1, i2 -> i2.lastModified.compareTo(i1.lastModified) }
-        val COMPARATOR_NAME_ASCENDING = Comparator<Item> { i1, i2 -> i1.name.compareTo(i2.name) }
-        val COMPARATOR_NAME_DESCENDING = Comparator<Item> { i1, i2 -> i2.name.compareTo(i1.name) }
+        val COMPARATOR_NAME_ASCENDING = Comparator<Item> { i1, i2 -> i1.name.compareToAlphanumeric(i2.name) }
+        val COMPARATOR_NAME_DESCENDING = Comparator<Item> { i1, i2 -> i2.name.compareToAlphanumeric(i1.name) }
 
-        fun getComparator(sortMethod: SortMethod = SortMethod.Date, sortDirection: SortDirection = SortDirection.Descending): Comparator<Item> {
+        fun getComparator(sortMethod: SortMethod, sortDirection: SortDirection): Comparator<Item> {
             when (sortMethod) {
                 //Date
                 SortMethod.Date -> {

@@ -1036,4 +1036,67 @@ object Orion {
             .filter { it.isNotEmpty() }
     }
 
+    fun String.compareToAlphanumeric(other: String, ignoreCase: Boolean = true): Int {
+        var i = 0
+        var j = 0
+        val len1 = this.length
+        val len2 = other.length
+
+        while (i < len1 && j < len2) {
+            val c1 = this[i]
+            val c2 = other[j]
+
+            if (c1.isDigit() && c2.isDigit()) {
+                // Skip leading zeros
+                var iStart = i
+                while (iStart < len1 && this[iStart] == '0') iStart++
+
+                var jStart = j
+                while (jStart < len2 && other[jStart] == '0') jStart++
+
+                // Find end of digit sequences
+                var iEnd = iStart
+                while (iEnd < len1 && this[iEnd].isDigit()) iEnd++
+
+                var jEnd = jStart
+                while (jEnd < len2 && other[jEnd].isDigit()) jEnd++
+
+                val digLen1 = iEnd - iStart
+                val digLen2 = jEnd - jStart
+
+                // 1. The longer digit sequence is numerically larger
+                if (digLen1 != digLen2) return digLen1 - digLen2
+
+                // 2. Equal length: compare digit by digit
+                var p1 = iStart
+                var p2 = jStart
+                while (p1 < iEnd) {
+                    if (this[p1] != other[p2]) {
+                        return this[p1] - other[p2]
+                    }
+                    p1++
+                    p2++
+                }
+
+                // 3. Same numeric value: resolve tie by number of leading zeros (fewer zeros comes first)
+                val zeroDiff = (iStart - i) - (jStart - j)
+                if (zeroDiff != 0) return zeroDiff
+
+                i = iEnd
+                j = jEnd
+            } else {
+                val cmp = if (ignoreCase) {
+                    c1.lowercaseChar().compareTo(c2.lowercaseChar())
+                } else {
+                    c1.compareTo(c2)
+                }
+                if (cmp != 0) return cmp
+                i++
+                j++
+            }
+        }
+
+        return len1 - len2
+    }
+
 }

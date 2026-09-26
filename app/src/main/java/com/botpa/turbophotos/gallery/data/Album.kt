@@ -31,7 +31,7 @@ class Album(val name: String, val albumFolder: File? = null, private var link: L
 
 
     //Items
-    fun sort(sortMethod: SortMethod = SortMethod.Date, sortDirection: SortDirection = SortDirection.Descending) {
+    fun sort(sortMethod: SortMethod, sortDirection: SortDirection) {
         items.sortWith<Item>(Item.getComparator(sortMethod, sortDirection))
     }
 
@@ -59,7 +59,7 @@ class Album(val name: String, val albumFolder: File? = null, private var link: L
         items.add(item)
     }
 
-    fun addSorted(item: Item, sortMethod: SortMethod = SortMethod.Date, sortDirection: SortDirection = SortDirection.Descending): Int {
+    fun addSorted(item: Item, sortMethod: SortMethod, sortDirection: SortDirection): Int {
         val searchIndex = items.binarySearch(item, Item.getComparator(sortMethod, sortDirection))
         val index = if (searchIndex < 0) -searchIndex - 1 else searchIndex
         items.add(index, item)
