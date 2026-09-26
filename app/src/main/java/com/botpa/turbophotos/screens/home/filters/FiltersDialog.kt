@@ -13,11 +13,10 @@ import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.modals.core.CustomDialog
 import com.botpa.turbophotos.gallery.views.lists.ListSeparator
-import com.botpa.turbophotos.screens.home.sorting.SortInfo
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.util.regex.Pattern
 
-class FiltersDialog(context: Context, filters: List<Filter>, private val onSelected: (Filter) -> Unit) : CustomDialog(context, R.layout.dialog_filters) {
+class FiltersDialog(context: Context, filters: List<FiltersItem>, private val onSelected: (FiltersItem) -> Unit) : CustomDialog(context, R.layout.dialog_filters) {
 
     //Views
     private lateinit var listLayout: View

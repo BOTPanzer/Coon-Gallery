@@ -22,6 +22,7 @@ import com.botpa.turbophotos.gallery.data.Link.Companion.loadLinks
 import com.botpa.turbophotos.gallery.data.Link.Companion.relinkWithAlbum
 import com.botpa.turbophotos.gallery.data.SortDirection
 import com.botpa.turbophotos.gallery.data.SortMethod
+import com.botpa.turbophotos.gallery.data.SortRules
 import com.botpa.turbophotos.gallery.modals.AlbumsDialog
 import com.botpa.turbophotos.gallery.modals.ErrorsDialog
 import com.botpa.turbophotos.gallery.modals.InputDialog
@@ -50,10 +51,13 @@ object Library {
         private set
     val isFiltered: Boolean get() = filter != "*/*"
 
-    var sortMethod: SortMethod = Storage.getEnum(StoragePairs.LIBRARY_SORT_METHOD, SortMethod.Date)
-        private set
-    var sortDirection: SortDirection = Storage.getEnum(StoragePairs.LIBRARY_SORT_DIRECTION, SortDirection.Descending)
-        private set
+    var sortRules: SortRules = SortRules(
+        Storage.getEnum(StoragePairs.LIBRARY_SORT_METHOD, SortMethod.Date),
+        Storage.getEnum(StoragePairs.LIBRARY_SORT_DIRECTION, SortDirection.Descending)
+    )
+
+    val sortMethod: SortMethod get() = sortRules.method
+    val sortDirection: SortDirection get() = sortRules.direction
 
     //Albums
     val albumsMap: Map<String, Album> field: MutableMap<String, Album> = HashMap() //Uses album path as key for easy finding
@@ -156,18 +160,18 @@ object Library {
 
     fun refreshSortingInfo() {
         //Update info
-        sortMethod = Storage.getEnum(StoragePairs.LIBRARY_SORT_METHOD, SortMethod.Date)
-        sortDirection = Storage.getEnum(StoragePairs.LIBRARY_SORT_DIRECTION, SortDirection.Descending)
+        sortRules.method = Storage.getEnum(StoragePairs.LIBRARY_SORT_METHOD, SortMethod.Date)
+        sortRules.direction = Storage.getEnum(StoragePairs.LIBRARY_SORT_DIRECTION, SortDirection.Descending)
     }
 
-    fun setSortingInfo(method: SortMethod, direction: SortDirection) {
+    fun setSortingInfo(newSortRules: SortRules) {
         //Update info
-        sortMethod = method
-        sortDirection = direction
+        sortRules.method = newSortRules.method
+        sortRules.direction = newSortRules.direction
 
         //Save info
-        Storage.putString(StoragePairs.LIBRARY_SORT_METHOD, method.name)
-        Storage.putString(StoragePairs.LIBRARY_SORT_DIRECTION, direction.name)
+        Storage.putString(StoragePairs.LIBRARY_SORT_METHOD, sortMethod.name)
+        Storage.putString(StoragePairs.LIBRARY_SORT_DIRECTION, sortDirection.name)
 
         //Sort library
         sort()
@@ -363,18 +367,16 @@ object Library {
         when (sortMethod) {
             //Date
             SortMethod.Date -> {
-                if (sortDirection == SortDirection.Ascending) {
-                    albums.sortBy { it.lastModified }
-                } else {
-                    albums.sortByDescending { it.lastModified }
+                when (sortDirection) {
+                    SortDirection.Ascending -> albums.sortBy { it.lastModified }
+                    SortDirection.Descending -> albums.sortByDescending { it.lastModified }
                 }
             }
             //Name
             SortMethod.Name -> {
-                if (sortDirection == SortDirection.Ascending) {
-                    albums.sortBy { it.name }
-                } else {
-                    albums.sortByDescending { it.name }
+                when (sortDirection) {
+                    SortDirection.Ascending -> albums.sortBy { it.name }
+                    SortDirection.Descending -> albums.sortByDescending { it.name }
                 }
             }
         }
@@ -400,7 +402,7 @@ object Library {
     //Trash
     private fun addItemToTrash(item: Item, originalAlbum: Album): Int {
         //Add to trash
-        val index = trash.addSorted(item)
+        val index = trash.addSorted(item, sortMethod, sortDirection)
         trashMap[originalAlbum] = trashMap.getOrDefault(originalAlbum, 0) + 1
         return index
     }
@@ -579,7 +581,7 @@ object Library {
     }
 
     private fun performAddToAlbum(action: Action, item: Item, album: Album): Int {
-        val indexInAlbum = album.addSorted(item)
+        val indexInAlbum = album.addSorted(item, sortMethod, sortDirection)
         action.modifiedAlbums.add(album)
         return indexInAlbum
     }

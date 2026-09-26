@@ -41,9 +41,9 @@ import com.botpa.turbophotos.gallery.modals.UpdateDialog
 import com.botpa.turbophotos.gallery.views.lists.GridHeaderLayoutManager
 import com.botpa.turbophotos.gallery.views.lists.GridListSeparator
 import com.botpa.turbophotos.screens.album.AlbumActivity
-import com.botpa.turbophotos.screens.home.filters.Filter
+import com.botpa.turbophotos.screens.home.filters.FiltersItem
 import com.botpa.turbophotos.screens.home.filters.FiltersDialog
-import com.botpa.turbophotos.screens.home.sorting.SortInfo
+import com.botpa.turbophotos.screens.home.sorting.SortingItem
 import com.botpa.turbophotos.screens.home.sorting.SortingDialog
 import com.botpa.turbophotos.screens.settings.SettingsActivity
 import com.botpa.turbophotos.screens.sync.SyncActivity
@@ -287,10 +287,10 @@ class HomeActivity : BaseActivity() {
         optionSorting = OptionsItem(R.drawable.icon_sort, R.string.dialog_sorting_title) {
             //Create dialog
             SortingDialog(this, listOf(
-                SortInfo(SortMethod.Date, SortDirection.Ascending),
-                SortInfo(SortMethod.Date, SortDirection.Descending),
-                SortInfo(SortMethod.Name, SortDirection.Ascending),
-                SortInfo(SortMethod.Name, SortDirection.Descending)
+                SortingItem(SortMethod.Date, SortDirection.Ascending),
+                SortingItem(SortMethod.Date, SortDirection.Descending),
+                SortingItem(SortMethod.Name, SortDirection.Ascending),
+                SortingItem(SortMethod.Name, SortDirection.Descending)
             )) { _ ->
                 //Scroll to top
                 homeList.smoothScrollToPosition(0)
@@ -300,9 +300,9 @@ class HomeActivity : BaseActivity() {
         optionFilters = OptionsItem(R.drawable.icon_filter, R.string.dialog_filters_title) {
             //Create dialog
             FiltersDialog(this, listOf(
-                Filter(R.drawable.icon_filter_all, R.string.dialog_filters_option_all, "*/*"),
-                Filter(R.drawable.icon_filter_image, R.string.dialog_filters_option_images, "image/*"),
-                Filter(R.drawable.icon_filter_video, R.string.dialog_filters_option_videos, "video/*")
+                FiltersItem(R.drawable.icon_filter_all, R.string.dialog_filters_option_all, "*/*"),
+                FiltersItem(R.drawable.icon_filter_image, R.string.dialog_filters_option_images, "image/*"),
+                FiltersItem(R.drawable.icon_filter_video, R.string.dialog_filters_option_videos, "video/*")
             )) { _ ->
                 //Scroll to top
                 homeList.smoothScrollToPosition(0)

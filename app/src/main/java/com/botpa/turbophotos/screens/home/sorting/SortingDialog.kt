@@ -9,7 +9,7 @@ import com.botpa.turbophotos.gallery.modals.core.CustomDialog
 import com.botpa.turbophotos.gallery.views.lists.ListSeparator
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
-class SortingDialog(context: Context, items: List<SortInfo>, private val onSelected: (SortInfo) -> Unit) : CustomDialog(context, R.layout.dialog_selectable) {
+class SortingDialog(context: Context, items: List<SortingItem>, private val onSelected: (SortingItem) -> Unit) : CustomDialog(context, R.layout.dialog_selectable) {
 
     //Views
     private lateinit var list: RecyclerView
@@ -35,7 +35,7 @@ class SortingDialog(context: Context, items: List<SortInfo>, private val onSelec
         //Add listeners (list)
         adapter.onClick = { item, position ->
             //Update method
-            Library.setSortingInfo(item.method, item.direction)
+            Library.setSortingInfo(item)
 
             //Call event
             onSelected.invoke(item)

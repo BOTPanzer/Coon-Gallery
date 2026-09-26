@@ -9,14 +9,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.modals.core.SimpleCustomAdapter
 
-class FiltersDialogAdapter(context: Context, items: List<Filter>) : SimpleCustomAdapter<Filter, FiltersDialogAdapter.FilterHolder>(context, items) {
+class FiltersDialogAdapter(context: Context, items: List<FiltersItem>) : SimpleCustomAdapter<FiltersItem, FiltersDialogAdapter.FilterHolder>(context, items) {
 
     //Adapter
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): FilterHolder {
         return FilterHolder(inflateView(context, R.layout.dialog_filters_item, viewGroup))
     }
 
-    override fun onInitItemHolder(holder: FilterHolder, item: Filter) {
+    override fun onInitItemHolder(holder: FilterHolder, item: FiltersItem) {
         //Update info
         holder.icon.setImageResource(item.icon)
         holder.name.text = context.getString(item.name)

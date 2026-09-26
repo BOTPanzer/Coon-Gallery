@@ -11,14 +11,14 @@ import com.botpa.turbophotos.gallery.data.SortDirection
 import com.botpa.turbophotos.gallery.data.SortMethod
 import com.botpa.turbophotos.gallery.modals.core.SimpleCustomAdapter
 
-class SortingDialogAdapter(context: Context, items: List<SortInfo>) : SimpleCustomAdapter<SortInfo, SortingDialogAdapter.FilterHolder>(context, items) {
+class SortingDialogAdapter(context: Context, items: List<SortingItem>) : SimpleCustomAdapter<SortingItem, SortingDialogAdapter.FilterHolder>(context, items) {
 
     //Adapter
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): FilterHolder {
         return FilterHolder(inflateView(context, R.layout.dialog_selectable_item, viewGroup))
     }
 
-    override fun onInitItemHolder(holder: FilterHolder, item: SortInfo) {
+    override fun onInitItemHolder(holder: FilterHolder, item: SortingItem) {
         //Update info
         holder.selected.visibility = if (item.isSelected) View.VISIBLE else View.GONE
         holder.name.text = localizeMethod(item.method, item.direction)

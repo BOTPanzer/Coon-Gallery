@@ -23,7 +23,7 @@ class Item(
     @JvmField var size: Long,               //The size of the file in bytes
     @JvmField var isTrashed: Boolean,       //If the file is in the trash
     @JvmField var isFavourite: Boolean,     //If the file is favourite
-) : Comparable<Item> {
+) {
 
     //Item info
     @JvmField var name: String = file.name
@@ -53,12 +53,33 @@ class Item(
         }
     }
 
-    override fun compareTo(other: Item): Int {
-        return lastModified.compareTo(other.lastModified)
-    }
-
     //Static helpers
     companion object {
+
+        //Comparators
+        val COMPARATOR_DATE_ASCENDING = Comparator<Item> { i1, i2 -> i1.lastModified.compareTo(i2.lastModified) }
+        val COMPARATOR_DATE_DESCENDING = Comparator<Item> { i1, i2 -> i2.lastModified.compareTo(i1.lastModified) }
+        val COMPARATOR_NAME_ASCENDING = Comparator<Item> { i1, i2 -> i1.name.compareTo(i2.name) }
+        val COMPARATOR_NAME_DESCENDING = Comparator<Item> { i1, i2 -> i2.name.compareTo(i1.name) }
+
+        fun getComparator(sortMethod: SortMethod = SortMethod.Date, sortDirection: SortDirection = SortDirection.Descending): Comparator<Item> {
+            when (sortMethod) {
+                //Date
+                SortMethod.Date -> {
+                    return when (sortDirection) {
+                        SortDirection.Ascending -> COMPARATOR_DATE_ASCENDING
+                        SortDirection.Descending -> COMPARATOR_DATE_DESCENDING
+                    }
+                }
+                //Name
+                SortMethod.Name -> {
+                    return when (sortDirection) {
+                        SortDirection.Ascending -> COMPARATOR_NAME_ASCENDING
+                        SortDirection.Descending -> COMPARATOR_NAME_DESCENDING
+                    }
+                }
+            }
+        }
 
         //Load item preview into ImageView
         fun load(context: Context, imageView: ImageView, item: Item) {
