@@ -14,6 +14,8 @@ class Album(val name: String, val albumFolder: File? = null, private var link: L
     val items: List<Item> field: MutableList<Item> = ArrayList()
     val isSpecial: Boolean = albumFolder == null
 
+    val lastModified: Long get() = if (items.isEmpty()) 0 else items[0].lastModified
+
     //Album metadata
     private val metadataModifiedKeys: HashSet<String> = HashSet()
 
@@ -29,8 +31,25 @@ class Album(val name: String, val albumFolder: File? = null, private var link: L
 
 
     //Items
-    fun sort() {
-        items.sortByDescending { it }
+    fun sort(sortMethod: SortMethod = SortMethod.Date, sortDirection: SortDirection = SortDirection.Descending) {
+        when (sortMethod) {
+            //Date
+            SortMethod.Date -> {
+                if (sortDirection == SortDirection.Ascending) {
+                    items.sortBy { it.lastModified }
+                } else {
+                    items.sortByDescending { it.lastModified }
+                }
+            }
+            //Name
+            SortMethod.Name -> {
+                if (sortDirection == SortDirection.Ascending) {
+                    items.sortBy { it.name }
+                } else {
+                    items.sortByDescending { it.name }
+                }
+            }
+        }
     }
 
     fun reset() {
@@ -138,7 +157,7 @@ class Album(val name: String, val albumFolder: File? = null, private var link: L
                     }
                 }
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             metadata.clear()
         }
 

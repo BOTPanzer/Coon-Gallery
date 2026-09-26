@@ -14,6 +14,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.botpa.turbophotos.R
+import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.gallery.data.Link
 import com.botpa.turbophotos.gallery.search.models.DownloadState
@@ -99,6 +100,8 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         //Library
         json.put(StoragePairs.LIBRARY_LINKS_KEY, Storage.getString(StoragePairs.LIBRARY_LINKS_KEY, ""))
         json.put(StoragePairs.LIBRARY_AUTOMATIC_METADATA_MODIFICATION.key, Storage.getBool(StoragePairs.LIBRARY_AUTOMATIC_METADATA_MODIFICATION))
+        json.put(StoragePairs.LIBRARY_SORT_METHOD.key, Storage.getString(StoragePairs.LIBRARY_SORT_METHOD))
+        json.put(StoragePairs.LIBRARY_SORT_DIRECTION.key, Storage.getString(StoragePairs.LIBRARY_SORT_DIRECTION))
 
         //Home screen
         json.put(StoragePairs.HOME_ITEMS_PER_ROW.key, Storage.getInt(StoragePairs.HOME_ITEMS_PER_ROW))
@@ -171,13 +174,19 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
         //Library
         loadStringSettingFromJson(json, StoragePairs.LIBRARY_LINKS_KEY) { value ->
-            //Too lazy to recreate all links so the library gets reloaded on exit (✿◡‿◡)
             Storage.putString(StoragePairs.LIBRARY_LINKS_KEY, value)
         }
         loadBoolSettingFromJson(json, StoragePairs.LIBRARY_AUTOMATIC_METADATA_MODIFICATION.key) { value ->
             libraryMetadataModification = value
             Storage.putBool(StoragePairs.LIBRARY_AUTOMATIC_METADATA_MODIFICATION, value)
         }
+        loadStringSettingFromJson(json, StoragePairs.ALBUM_SEARCH_METHOD.key) { value ->
+            Storage.putString(StoragePairs.LIBRARY_SORT_METHOD, value)
+        }
+        loadStringSettingFromJson(json, StoragePairs.ALBUM_SEARCH_METHOD.key) { value ->
+            Storage.putString(StoragePairs.LIBRARY_SORT_DIRECTION, value)
+        }
+        Library.refreshSortingInfo()
 
         //Home screen
         loadIntSettingFromJson(json, StoragePairs.HOME_ITEMS_PER_ROW.key) { value ->

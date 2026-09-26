@@ -11,7 +11,6 @@ import android.provider.Settings
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
@@ -36,12 +35,16 @@ import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.options.OptionsManager
 import com.botpa.turbophotos.gallery.PermissionType
 import com.botpa.turbophotos.gallery.UpdateChecker
+import com.botpa.turbophotos.gallery.data.SortDirection
+import com.botpa.turbophotos.gallery.data.SortMethod
 import com.botpa.turbophotos.gallery.modals.UpdateDialog
 import com.botpa.turbophotos.gallery.views.lists.GridHeaderLayoutManager
 import com.botpa.turbophotos.gallery.views.lists.GridListSeparator
 import com.botpa.turbophotos.screens.album.AlbumActivity
 import com.botpa.turbophotos.screens.home.filters.Filter
 import com.botpa.turbophotos.screens.home.filters.FiltersDialog
+import com.botpa.turbophotos.screens.home.sorting.SortInfo
+import com.botpa.turbophotos.screens.home.sorting.SortingDialog
 import com.botpa.turbophotos.screens.settings.SettingsActivity
 import com.botpa.turbophotos.screens.sync.SyncActivity
 import com.botpa.turbophotos.util.Orion
@@ -119,6 +122,7 @@ class HomeActivity : BaseActivity() {
 
     private lateinit var optionSync: OptionsItem
     private lateinit var optionSettings: OptionsItem
+    private lateinit var optionSorting: OptionsItem
     private lateinit var optionFilters: OptionsItem
 
       /*$$$$$    /$$     /$$
@@ -266,7 +270,7 @@ class HomeActivity : BaseActivity() {
         //Options
         optionSync = OptionsItem(R.drawable.icon_sync, R.string.sync_title) {
             //Block action if library is filtered
-            if (Library.isLibraryFiltered) {
+            if (Library.isFiltered) {
                 Orion.snack(this@HomeActivity, R.string.home_error_remove_filters)
                 return@OptionsItem
             }
@@ -280,16 +284,29 @@ class HomeActivity : BaseActivity() {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
 
+        optionSorting = OptionsItem(R.drawable.icon_sort, R.string.dialog_sorting_title) {
+            //Create dialog
+            SortingDialog(this, listOf(
+                SortInfo(SortMethod.Date, SortDirection.Ascending),
+                SortInfo(SortMethod.Date, SortDirection.Descending),
+                SortInfo(SortMethod.Name, SortDirection.Ascending),
+                SortInfo(SortMethod.Name, SortDirection.Descending)
+            )) { _ ->
+                //Scroll to top
+                homeList.smoothScrollToPosition(0)
+            }.buildAndShow()
+        }
+
         optionFilters = OptionsItem(R.drawable.icon_filter, R.string.dialog_filters_title) {
-            //Create filters list
-            val filters = listOf(
+            //Create dialog
+            FiltersDialog(this, listOf(
                 Filter(R.drawable.icon_filter_all, R.string.dialog_filters_option_all, "*/*"),
                 Filter(R.drawable.icon_filter_image, R.string.dialog_filters_option_images, "image/*"),
                 Filter(R.drawable.icon_filter_video, R.string.dialog_filters_option_videos, "video/*")
-            )
-
-            //Create dialog
-            FiltersDialog(this, filters).buildAndShow()
+            )) { _ ->
+                //Scroll to top
+                homeList.smoothScrollToPosition(0)
+            }.buildAndShow()
         }
     }
 
@@ -558,6 +575,7 @@ class HomeActivity : BaseActivity() {
             add(optionSettings)
         }))
         options.add(OptionsGroup(mutableListOf<OptionsItem>().apply {
+            add(optionSorting)
             add(optionFilters)
         }))
     }
@@ -599,7 +617,7 @@ class HomeActivity : BaseActivity() {
     //Navbar
     private fun updateNavbarTitle() {
         //Check if a filter is applied & toggle title
-        val filter = Library.libraryFilter
+        val filter = Library.filter
         val isFiltered = filter != "*/*"
         navbarTitle.visibility = if (isFiltered) View.VISIBLE else View.GONE
         if (!isFiltered) return

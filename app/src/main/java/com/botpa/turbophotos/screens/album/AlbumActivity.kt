@@ -984,11 +984,7 @@ class AlbumActivity : BaseActivity() {
 
     private fun updateSearchMethod() {
         //Update method
-        currentSearchMethod = try {
-            SearchMethod.valueOf(Storage.getString(StoragePairs.ALBUM_SEARCH_METHOD)?: "")
-        } catch (e: IllegalArgumentException) {
-            SearchMethod.ContainsWords
-        }
+        currentSearchMethod = Storage.getEnum(StoragePairs.ALBUM_SEARCH_METHOD, SearchMethod.ContainsWords)
 
         //Update text
         searchMethodName.text = getSearchMethodName(currentSearchMethod)

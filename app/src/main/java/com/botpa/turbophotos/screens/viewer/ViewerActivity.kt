@@ -384,7 +384,7 @@ class ViewerActivity : BaseActivity() {
         if (currentItem.updateLastModified()) {
             //Item was modified -> Refresh viewer & sort library
             viewerAdapter.notifyItemChanged(currentIndexInViewer)
-            Library.sortLibrary()
+            Library.sort()
         }
 
         //Update overlay buttons

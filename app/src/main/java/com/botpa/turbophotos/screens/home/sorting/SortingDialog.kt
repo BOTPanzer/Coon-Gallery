@@ -1,20 +1,21 @@
-package com.botpa.turbophotos.screens.video.tracks
+package com.botpa.turbophotos.screens.home.sorting
 
 import android.content.Context
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
+import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.modals.core.CustomDialog
 import com.botpa.turbophotos.gallery.views.lists.ListSeparator
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
-class TracksDialog(context: Context, tracks: List<TrackInfo>, private val title: String, private val onTrackSelected: (TrackInfo) -> Unit) : CustomDialog(context, R.layout.dialog_selectable) {
+class SortingDialog(context: Context, items: List<SortInfo>, private val onSelected: (SortInfo) -> Unit) : CustomDialog(context, R.layout.dialog_selectable) {
 
     //Views
     private lateinit var list: RecyclerView
 
     //Adapter
-    private var adapter: TracksDialogAdapter = TracksDialogAdapter(context, tracks)
+    private var adapter: SortingDialogAdapter = SortingDialogAdapter(context, items)
 
 
     //Init
@@ -26,15 +27,18 @@ class TracksDialog(context: Context, tracks: List<TrackInfo>, private val title:
     override fun initDialog(builder: MaterialAlertDialogBuilder): MaterialAlertDialogBuilder {
         //Init dialog
         return builder
-            .setTitle(title)
-            .setNegativeButton("Cancel", null)
+            .setTitle(R.string.dialog_sorting_title)
+            .setNegativeButton(R.string.dialog_cancel, null)
     }
 
     override fun initListeners() {
-        //Add listeners
-        adapter.onClick = { track, position ->
-            //Select track
-            onTrackSelected.invoke(track)
+        //Add listeners (list)
+        adapter.onClick = { item, position ->
+            //Update method
+            Library.setSortingInfo(item.method, item.direction)
+
+            //Call event
+            onSelected.invoke(item)
 
             //Close dialog
             dialog.dismiss()

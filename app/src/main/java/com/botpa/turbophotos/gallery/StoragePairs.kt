@@ -1,5 +1,7 @@
 package com.botpa.turbophotos.gallery
 
+import com.botpa.turbophotos.gallery.data.SortDirection
+import com.botpa.turbophotos.gallery.data.SortMethod
 import com.botpa.turbophotos.gallery.search.SearchMethod
 import com.botpa.turbophotos.util.Storage
 
@@ -12,6 +14,8 @@ object StoragePairs {
     //Library
     const val LIBRARY_LINKS_KEY: String = "Library.links"
     val LIBRARY_AUTOMATIC_METADATA_MODIFICATION: Storage.StoragePair<Boolean> = Storage.StoragePair("Library.automaticMetadataModification", true)
+    val LIBRARY_SORT_METHOD: Storage.StoragePair<String> = Storage.StoragePair("Library.sortMethod", SortMethod.Date.name)
+    val LIBRARY_SORT_DIRECTION: Storage.StoragePair<String> = Storage.StoragePair("Library.sortDirection", SortDirection.Descending.name)
 
     //Home screen
     val HOME_ITEMS_PER_ROW: Storage.StoragePair<Int> = Storage.StoragePair("Home.itemsPerRow", 2)

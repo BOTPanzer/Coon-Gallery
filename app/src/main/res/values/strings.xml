@@ -236,6 +236,12 @@
     <string name="dialog_filters_custom_hint">MIME type</string>
     <string name="dialog_filters_select_button">Select filter</string>
     <string name="dialog_filters_error_invalid_mime">The specified MIME type is invalid.</string>
+    <!-- Dialog: Sorting -->
+    <string name="dialog_sorting_title">Sorting</string>
+    <string name="dialog_sorting_date_ascending">Date (ascending)</string>
+    <string name="dialog_sorting_date_descending">Date (descending)</string>
+    <string name="dialog_sorting_name_ascending">Name (ascending)</string>
+    <string name="dialog_sorting_name_descending">Name (descending)</string>
     <!-- Dialog: Search -->
     <string name="dialog_search_title">Search method</string>
     <string name="dialog_search_method_good_for">Good for:</string>

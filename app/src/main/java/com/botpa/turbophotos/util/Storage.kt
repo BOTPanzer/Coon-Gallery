@@ -117,6 +117,12 @@ object Storage {
         putLong(pair.key, value)
     }
 
+    //Enum
+    inline fun <reified T : Enum<T>> getEnum(pair: StoragePair<String>, default: T): T {
+        val name = getString(pair) ?: return default
+        return runCatching { enumValueOf(name) as T }.getOrDefault(default)
+    }
+
     //Storage pairs
     class StoragePair<T>(val key: String, val value: T)
 

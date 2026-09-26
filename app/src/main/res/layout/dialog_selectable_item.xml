@@ -17,12 +17,13 @@
             android:layout_height="match_parent"
             android:background="?attr/selectableItemBackground"
             android:gravity="center_vertical"
+            android:minHeight="50dp"
             android:orientation="horizontal"
             android:paddingHorizontal="16dp"
             android:paddingVertical="10dp">
 
             <ImageView
-                android:id="@+id/trackSelected"
+                android:id="@+id/itemSelected"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:layout_marginEnd="10dp"
@@ -30,10 +31,10 @@
                 app:tint="?attr/colorPrimary" />
 
             <TextView
-                android:id="@+id/trackName"
+                android:id="@+id/itemName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Track name"
+                android:text="Item name"
                 android:textColor="?attr/colorOnSurface" />
 
         </LinearLayout>

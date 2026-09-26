@@ -20,12 +20,15 @@ import com.botpa.turbophotos.gallery.data.Item
 import com.botpa.turbophotos.gallery.data.Link
 import com.botpa.turbophotos.gallery.data.Link.Companion.loadLinks
 import com.botpa.turbophotos.gallery.data.Link.Companion.relinkWithAlbum
+import com.botpa.turbophotos.gallery.data.SortDirection
+import com.botpa.turbophotos.gallery.data.SortMethod
 import com.botpa.turbophotos.gallery.modals.AlbumsDialog
 import com.botpa.turbophotos.gallery.modals.ErrorsDialog
 import com.botpa.turbophotos.gallery.modals.InputDialog
 import com.botpa.turbophotos.gallery.search.SearchHelper
 import com.botpa.turbophotos.gallery.search.SearchMethod
 import com.botpa.turbophotos.util.Orion
+import com.botpa.turbophotos.util.Storage
 import com.botpa.turbophotos.util.Storage.getBool
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.io.File
@@ -43,9 +46,14 @@ object Library {
     private val recentlyAddedFiles: MutableCollection<File> = HashSet() //Recently added items that should be ignored when refreshing to avoid duplicates
     private var lastUpdate: Long = 0
 
-    var libraryFilter: String = "*/*" //Mime type used to filter the library
+    var filter: String = "*/*" //Mime type used to filter the library
         private set
-    val isLibraryFiltered: Boolean get() = libraryFilter != "*/*"
+    val isFiltered: Boolean get() = filter != "*/*"
+
+    var sortMethod: SortMethod = Storage.getEnum(StoragePairs.LIBRARY_SORT_METHOD, SortMethod.Date)
+        private set
+    var sortDirection: SortDirection = Storage.getEnum(StoragePairs.LIBRARY_SORT_DIRECTION, SortDirection.Descending)
+        private set
 
     //Albums
     val albumsMap: Map<String, Album> field: MutableMap<String, Album> = HashMap() //Uses album path as key for easy finding
@@ -130,27 +138,45 @@ object Library {
         return cursor!!
     }
 
-    private fun sortLibrary(refresh: Boolean) {
+    private fun sort(refresh: Boolean) {
         //Sort albums
-        trash.sort()
-        all.sort()
-        favourites.sort()
-        for (album in albums) album.sort()
+        trash.sort(sortMethod, sortDirection)
+        all.sort(sortMethod, sortDirection)
+        favourites.sort(sortMethod, sortDirection)
+        for (album in albums) album.sort(sortMethod, sortDirection)
         sortAlbumsList()
 
         //Invoke on refresh
         invokeOnRefresh(refresh)
     }
 
-    fun sortLibrary() {
-        //Sort albums
-        sortLibrary(true)
+    fun sort() {
+        sort(true)
+    }
+
+    fun refreshSortingInfo() {
+        //Update info
+        sortMethod = Storage.getEnum(StoragePairs.LIBRARY_SORT_METHOD, SortMethod.Date)
+        sortDirection = Storage.getEnum(StoragePairs.LIBRARY_SORT_DIRECTION, SortDirection.Descending)
+    }
+
+    fun setSortingInfo(method: SortMethod, direction: SortDirection) {
+        //Update info
+        sortMethod = method
+        sortDirection = direction
+
+        //Save info
+        Storage.putString(StoragePairs.LIBRARY_SORT_METHOD, method.name)
+        Storage.putString(StoragePairs.LIBRARY_SORT_DIRECTION, direction.name)
+
+        //Sort library
+        sort()
     }
 
     private fun loadLibrary(context: Context, reset: Boolean, filterMimeType: String) {
         synchronized(this) {
             //Save filter
-            libraryFilter = filterMimeType
+            filter = filterMimeType
 
             //Load links & trash
             loadLinks(reset)
@@ -266,12 +292,12 @@ object Library {
             }
 
             //Sort albums
-            sortLibrary(reset || itemsAdded > 0)
+            sort(reset || itemsAdded > 0)
         }
     }
 
     fun loadLibrary(context: Context, reset: Boolean) {
-        loadLibrary(context, reset, libraryFilter)
+        loadLibrary(context, reset, filter)
     }
 
     fun loadLibrary(context: Context, filterType: String) {
@@ -334,7 +360,24 @@ object Library {
     }
 
     private fun sortAlbumsList() {
-        albums.sortByDescending { it.get(0).lastModified }
+        when (sortMethod) {
+            //Date
+            SortMethod.Date -> {
+                if (sortDirection == SortDirection.Ascending) {
+                    albums.sortBy { it.lastModified }
+                } else {
+                    albums.sortByDescending { it.lastModified }
+                }
+            }
+            //Name
+            SortMethod.Name -> {
+                if (sortDirection == SortDirection.Ascending) {
+                    albums.sortBy { it.name }
+                } else {
+                    albums.sortByDescending { it.name }
+                }
+            }
+        }
     }
 
     private fun isAlbumInUse(album: Album): Boolean {

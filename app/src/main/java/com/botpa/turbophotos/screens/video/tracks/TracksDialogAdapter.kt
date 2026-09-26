@@ -12,7 +12,7 @@ class TracksDialogAdapter(context: Context, items: List<TrackInfo>) : SimpleCust
 
     //Adapter
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): TrackHolder {
-        return TrackHolder(inflateView(context, R.layout.dialog_tracks_item, viewGroup))
+        return TrackHolder(inflateView(context, R.layout.dialog_selectable_item, viewGroup))
     }
 
     override fun onInitItemHolder(holder: TrackHolder, item: TrackInfo) {
@@ -30,8 +30,8 @@ class TracksDialogAdapter(context: Context, items: List<TrackInfo>) : SimpleCust
     class TrackHolder(root: View) : RecyclerView.ViewHolder(root) {
 
         val item: View = root
-        val selected: View = root.findViewById(R.id.trackSelected)
-        val name: TextView = root.findViewById(R.id.trackName)
+        val selected: View = root.findViewById(R.id.itemSelected)
+        val name: TextView = root.findViewById(R.id.itemName)
 
     }
 
