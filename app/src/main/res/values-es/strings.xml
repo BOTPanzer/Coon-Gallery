@@ -55,6 +55,8 @@
     <string name="home_pinned_album">Se ha fijado el álbum "%s" en la parte superior.</string>
     <string name="home_pinned_reset">El álbum fijado ha sido restablecido.</string>
     <string name="home_pinned_tutorial">Mantén presionado en un álbum para fijarlo.</string>
+    <string name="home_search_hint">Buscar albumes</string>
+    <string name="home_search_navbar">Buscando %s</string>
     <string name="home_refresh_pull">Desliza para actualizar</string>
     <string name="home_refresh_release">Suelta para actualizar</string>
     <string name="home_refresh_refreshing">Actualizando…</string>
@@ -66,7 +68,7 @@
     <string name="album_loading_selection_items">%d elementos seleccionados</string>
     <string name="album_header">%d elementos</string>
     <string name="album_header_search">%d elementos - Buscando %s</string>
-    <string name="album_search_hint">Buscar</string>
+    <string name="album_search_hint">Buscar items</string>
     <string name="album_search_method">Método:</string>
     <!-- Screen: Video -->
     <string name="video_state_play">Reproducir</string>

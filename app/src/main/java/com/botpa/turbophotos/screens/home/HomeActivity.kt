@@ -8,12 +8,18 @@ import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import android.text.Editable
+import android.text.TextWatcher
+import android.view.KeyEvent
 import android.view.View
+import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.activity.BackEventCompat
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
+import androidx.compose.ui.text.toLowerCase
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -38,6 +44,7 @@ import com.botpa.turbophotos.gallery.actions.ActionResult
 import com.botpa.turbophotos.gallery.data.SortDirection
 import com.botpa.turbophotos.gallery.data.SortMethod
 import com.botpa.turbophotos.gallery.modals.UpdateDialog
+import com.botpa.turbophotos.gallery.search.SearchMethod
 import com.botpa.turbophotos.gallery.views.lists.GridHeaderLayoutManager
 import com.botpa.turbophotos.gallery.views.lists.GridListSeparator
 import com.botpa.turbophotos.screens.album.AlbumActivity
@@ -47,10 +54,13 @@ import com.botpa.turbophotos.screens.home.sorting.SortingItem
 import com.botpa.turbophotos.screens.home.sorting.SortingDialog
 import com.botpa.turbophotos.screens.settings.SettingsActivity
 import com.botpa.turbophotos.screens.sync.SyncActivity
+import com.botpa.turbophotos.util.BackAnimationEvent
+import com.botpa.turbophotos.util.Ease
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Orion.pxToDp
 import com.botpa.turbophotos.util.Storage
 import com.scwang.smart.refresh.layout.SmartRefreshLayout
+import java.util.Locale
 
 @SuppressLint("SetTextI18n", "NotifyDataSetChanged")
 class HomeActivity : BaseActivity() {
@@ -72,7 +82,7 @@ class HomeActivity : BaseActivity() {
     private var isLibraryLoaded = false
     private var isInit = false
 
-    private val isLibraryAvailable get(): Boolean = !isLibraryLoading && isLibraryLoaded
+    private val isWorking get(): Boolean = isLibraryLoading || !isLibraryLoaded
 
     //Permissions
     private val requestPermissionMedia = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted: Map<String, Boolean> ->
@@ -97,6 +107,8 @@ class HomeActivity : BaseActivity() {
     }
 
     //List
+    private var homeAlbumsList: MutableList<Album> = ArrayList()
+
     private lateinit var homeLayoutManager: GridLayoutManager
     private lateinit var homeDecorator: GridListSeparator
     private lateinit var homeAdapter: HomeAdapter
@@ -104,6 +116,9 @@ class HomeActivity : BaseActivity() {
     private lateinit var homeRefreshLayout: SmartRefreshLayout
     private lateinit var homeList: RecyclerView
     private lateinit var homeFastScroller: FastScroller
+
+    //Search
+    private var currentSearch: String = ""
 
       /*$$$$$              /$$     /$$
      /$$__  $$            | $$    |__/
@@ -139,9 +154,15 @@ class HomeActivity : BaseActivity() {
     private lateinit var systemNavigationBar: View
 
     //Views (navbar)
-    private lateinit var navbar: View
+    private lateinit var navbarLayout: View
     private lateinit var navbarTitle: TextView
     private lateinit var navbarOptions: View
+    private lateinit var navbarSearch: View
+
+    //Views (search)
+    private lateinit var searchLayout: View
+    private lateinit var searchInput: EditText
+    private lateinit var searchClose: View
 
     //Views (loading indicator)
     private lateinit var loadingIndicator: View
@@ -169,9 +190,15 @@ class HomeActivity : BaseActivity() {
 
     override fun onInitViews() {
         //Navbar
-        navbar = findViewById(R.id.navbar)
+        navbarLayout = findViewById(R.id.navbarLayout)
         navbarTitle = findViewById(R.id.navbarTitle)
         navbarOptions = findViewById(R.id.navbarOptions)
+        navbarSearch = findViewById(R.id.navbarSearch)
+
+        //Search
+        searchLayout = findViewById(R.id.searchLayout)
+        searchInput = findViewById(R.id.searchInput)
+        searchClose = findViewById(R.id.searchClose)
 
         //List
         homeRefreshLayout = findViewById(R.id.refreshLayout)
@@ -239,11 +266,29 @@ class HomeActivity : BaseActivity() {
         //Navbar
         navbarOptions.setOnClickListener { view: View ->
             //Not available
-            if (!isLibraryAvailable) return@setOnClickListener
+            if (isWorking) return@setOnClickListener
 
             //Open options
             optionsManager.toggle(true)
         }
+
+        navbarSearch.setOnClickListener { view: View -> showSearchLayout(true) }
+
+        //Search
+        searchInput.setOnKeyListener { view: View, i: Int, keyEvent: KeyEvent ->
+            if (keyEvent.keyCode == KeyEvent.KEYCODE_ENTER) searchClose.performClick()
+            false
+        }
+
+        searchInput.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(text: Editable?) {}
+            override fun beforeTextChanged(text: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+            override fun onTextChanged(text: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                filterAlbums(searchInput.text.toString())
+            }
+        })
+
+        searchClose.setOnClickListener { view: View -> showSearchLayout(false) }
 
         //List
         homeRefreshLayout.setOnRefreshListener { layout ->
@@ -315,7 +360,7 @@ class HomeActivity : BaseActivity() {
     override fun onAfterInitViews() {
         //Hide UI
         homeList.visibility = View.GONE
-        navbar.visibility = View.GONE
+        navbarLayout.visibility = View.GONE
 
         //Init components
         initHomeList()
@@ -389,10 +434,10 @@ class HomeActivity : BaseActivity() {
 
                 //Show UI
                 Orion.animateShow(homeList)
-                Orion.animateShow(navbar)
+                Orion.animateShow(navbarLayout)
 
                 //Reload albums list
-                homeAdapter.notifyDataSetChanged()
+                filterAlbums()
             }
 
             //Mark as loaded
@@ -499,10 +544,10 @@ class HomeActivity : BaseActivity() {
         (homeList.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
 
         //Init home adapter
-        homeAdapter = HomeAdapter(this, Library.albums)
+        homeAdapter = HomeAdapter(this, homeAlbumsList)
         homeAdapter.onClick = HomeAdapter.ClickListener { view: View, album: Album ->
             //Not available
-            if (!isLibraryAvailable) return@ClickListener
+            if (isWorking) return@ClickListener
 
             //Create open animation
             val startX = view.left + (view.width / 2)
@@ -541,7 +586,7 @@ class HomeActivity : BaseActivity() {
         }
         homeAdapter.onLongClick = HomeAdapter.ClickListener { view: View, album: Album ->
             //Not available
-            if (!isLibraryAvailable) return@ClickListener
+            if (isWorking) return@ClickListener
 
             //Pin album
             Storage.putString(StoragePairs.HOME_PINNED_ALBUM, album.albumPath)
@@ -615,25 +660,119 @@ class HomeActivity : BaseActivity() {
 
     //Navbar
     private fun updateNavbarTitle() {
-        //Check if a filter is applied & toggle title
+        //Check if a search query is applied
+        val isSearching = currentSearch != ""
+
+        //Check if a filter is applied
         val filter = Library.filter
         val isFiltered = filter != "*/*"
-        navbarTitle.visibility = if (isFiltered) View.VISIBLE else View.GONE
-        if (!isFiltered) return
 
-        //Parse filter
-        val parts = filter.split("/")
-        val type = parts[0]
-        val format = parts[1]
+        //Toggle navbar visibility
+        val isVisible = isSearching || isFiltered
+        navbarTitle.visibility = if (isVisible) View.VISIBLE else View.GONE
+        if (!isVisible) return
+
+        //Create title
+        val title = StringBuilder()
+
+        //Add search text
+        if (isSearching) {
+            title.append(getString(R.string.home_search_navbar, currentSearch))
+        }
+
+        //Add separator
+        if (isSearching && isFiltered) {
+            title.append(" | ")
+        }
+
+        //Add filter text
+        if (isFiltered) {
+            //Parse filter
+            val parts = filter.split("/")
+            val type = parts[0]
+            val format = parts[1]
+            title.append(getString(when (type) {
+                "image" -> R.string.home_filtered_images
+                "video" -> R.string.home_filtered_videos
+                else -> R.string.home_filtered_custom
+            }))
+            if (format != "*") title.append(" ($format)")
+        }
 
         //Update title
-        val title = StringBuilder(getString(when (type) {
-            "image" -> R.string.home_filtered_images
-            "video" -> R.string.home_filtered_videos
-            else -> R.string.home_filtered_custom
-        }))
-        if (format != "*") title.append(" ($format)")
         navbarTitle.text = title.toString()
+    }
+
+    //Search
+    private fun filterAlbums(query: String = "") {
+        //Check if filtering
+        val isFiltering = !query.isEmpty()
+
+        //Update search info
+        currentSearch = query
+        updateNavbarTitle()
+
+        //Update back manager
+        if (isFiltering) {
+            //Register back event
+            backManager.register("search", object : BackAnimationEvent {
+
+                override fun onProgress(backEvent: BackEventCompat) {
+                    //Get info
+                    val easeOut = Ease.outCubic(backEvent.progress)
+
+                    //Animate
+                    homeList.alpha = 1.0f - easeOut * 0.8f
+                }
+
+                override fun onInvoked() {
+                    //Filter items
+                    filterAlbums()
+                }
+
+            })
+        } else {
+            //Unregister back event
+            backManager.unregister("search")
+        }
+
+        //Filter items
+        homeAlbumsList.clear()
+        for (album in Library.albums) {
+            if (album.name.lowercase().contains(query.lowercase())) {
+                homeAlbumsList.add(album)
+            }
+        }
+        homeAdapter.notifyDataSetChanged()
+
+        //Scroll to top
+        homeList.stopScroll()
+        homeList.scrollToPosition(0)
+    }
+
+    private fun showSearchLayout(show: Boolean) {
+        if (show) {
+            //Toggle search
+            Orion.animateHide(navbarLayout) { Orion.animateShow(searchLayout) }
+
+            //Focus text & show keyboard
+            searchInput.requestFocus()
+            searchInput.selectAll()
+            Orion.showKeyboard(this)
+
+            //Back button
+            backManager.register("searchMenu") { showSearchLayout(false) }
+        } else {
+            //Close keyboard
+            Orion.hideKeyboard(this)
+            Orion.clearFocus(this)
+
+            //Toggle search
+            Orion.animateHide(searchLayout) { Orion.animateShow(navbarLayout) }
+
+            //Back button
+            backManager.unregister("searchMenu")
+        }
     }
 
 }

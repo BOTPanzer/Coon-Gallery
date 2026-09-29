@@ -71,6 +71,8 @@ class AlbumActivity : BaseActivity() {
     private var isSearching = false
     private var isInit = false
 
+    private val isWorking get(): Boolean = isLibraryLoading || isSearching
+
     //Events
     private val onRefresh = RefreshEvent { updated -> this.manageRefresh(updated) }
     private val onAction = ActionEvent { action -> this.manageAction(action) }
@@ -158,8 +160,8 @@ class AlbumActivity : BaseActivity() {
     //Views (navbar)
     private lateinit var navbarLayout: View
     private lateinit var navbarTitle: TextView
-    private lateinit var navbarSearch: View
     private lateinit var navbarOptions: View
+    private lateinit var navbarSearch: View
 
     //Views (search)
     private lateinit var searchLayout: View
@@ -218,8 +220,8 @@ class AlbumActivity : BaseActivity() {
         //Navbar
         navbarLayout = findViewById(R.id.navbarLayout)
         navbarTitle = findViewById(R.id.navbarTitle)
-        navbarSearch = findViewById(R.id.navbarSearch)
         navbarOptions = findViewById(R.id.navbarOptions)
+        navbarSearch = findViewById(R.id.navbarSearch)
 
         //Search
         searchLayout = findViewById(R.id.searchLayout)
@@ -314,15 +316,15 @@ class AlbumActivity : BaseActivity() {
 
     override fun onInitListeners() {
         //Navbar
-        navbarSearch.setOnClickListener { view: View -> showSearchLayout(true) }
-
         navbarOptions.setOnClickListener { view: View ->
             //Not available
-            if (isLibraryLoading) return@setOnClickListener
+            if (isWorking) return@setOnClickListener
 
             //Open options
             optionsManager.toggle(true)
         }
+
+        navbarSearch.setOnClickListener { view: View -> showSearchLayout(true) }
 
         //List
         (albumRefreshLayout.refreshHeader as SimpleRefreshHeader).onMoved = { view, percent ->
@@ -364,7 +366,7 @@ class AlbumActivity : BaseActivity() {
             },
             onSingleTap = { index ->
                 //Not available
-                if (isLibraryLoading) return@DragSelectTouchListener
+                if (isWorking) return@DragSelectTouchListener
 
                 //Perform action
                 if (selectedIndexes.isNotEmpty()) {
@@ -389,7 +391,7 @@ class AlbumActivity : BaseActivity() {
 
         searchSearch.setOnClickListener { view ->
             //Not available
-            if (isLibraryLoading) return@setOnClickListener
+            if (isWorking) return@setOnClickListener
 
             //Filter items with search
             val search = searchInput.text.toString()
@@ -905,7 +907,7 @@ class AlbumActivity : BaseActivity() {
         //Loading or searching
         if (isSearching || (!isMetadataLoaded && isFiltering)) return
 
-        //Start search
+        //Update search info
         isSearching = true
         currentSearch = query
         searchInput.setText(query)

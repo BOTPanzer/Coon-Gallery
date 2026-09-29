@@ -55,6 +55,8 @@
     <string name="home_pinned_album">Album \"%s\" was pinned to the top.</string>
     <string name="home_pinned_reset">The pinned album has been reset.</string>
     <string name="home_pinned_tutorial">Tap and hold on an album to pin it.</string>
+    <string name="home_search_hint">Search albums</string>
+    <string name="home_search_navbar">Searching %s</string>
     <string name="home_refresh_pull">Pull to refresh</string>
     <string name="home_refresh_release">Release to refresh</string>
     <string name="home_refresh_refreshing">Refreshing…</string>
@@ -66,7 +68,7 @@
     <string name="album_loading_selection_items">%d items selected</string>
     <string name="album_header">%d items</string>
     <string name="album_header_search">%d items - Searching for %s</string>
-    <string name="album_search_hint">Search</string>
+    <string name="album_search_hint">Search items</string>
     <string name="album_search_method">Method:</string>
     <!-- Screen: Video -->
     <string name="video_state_play">Play</string>
