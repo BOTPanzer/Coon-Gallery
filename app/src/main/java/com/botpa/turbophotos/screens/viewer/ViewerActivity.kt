@@ -441,11 +441,10 @@ class ViewerActivity : BaseActivity() {
         }
 
         //Check if current item was removed
-        val newSelectedItemIndex = gallery.indexOf(viewerItems[currentIndexInViewer])
+        var newSelectedItemIndex = gallery.indexOf(viewerItems[currentIndexInViewer])
         if (newSelectedItemIndex == -1) {
-            //Item was removed -> Close viewer
-            finish()
-            return
+            //Item was removed -> Select closest possible
+            newSelectedItemIndex = if (currentIndexInGallery >= gallery.size) gallery.size - 1 else currentIndexInGallery
         }
 
         //Update selected item
