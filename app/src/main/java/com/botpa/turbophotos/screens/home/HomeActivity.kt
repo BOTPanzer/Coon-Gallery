@@ -290,7 +290,9 @@ class HomeActivity : BaseActivity() {
                 SortingItem(SortMethod.Date, SortDirection.Ascending),
                 SortingItem(SortMethod.Date, SortDirection.Descending),
                 SortingItem(SortMethod.Name, SortDirection.Ascending),
-                SortingItem(SortMethod.Name, SortDirection.Descending)
+                SortingItem(SortMethod.Name, SortDirection.Descending),
+                SortingItem(SortMethod.Size, SortDirection.Ascending),
+                SortingItem(SortMethod.Size, SortDirection.Descending)
             )) { _ ->
                 //Scroll to top
                 homeList.smoothScrollToPosition(0)

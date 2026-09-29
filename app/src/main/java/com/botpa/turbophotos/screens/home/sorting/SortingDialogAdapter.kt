@@ -32,16 +32,25 @@ class SortingDialogAdapter(context: Context, items: List<SortingItem>) : SimpleC
     //Util
     private fun localizeMethod(method: SortMethod, direction: SortDirection): String {
         return context.getString(when (method) {
+            //Date
             SortMethod.Date -> {
                 when (direction) {
                     SortDirection.Ascending -> R.string.dialog_sorting_date_ascending
                     SortDirection.Descending -> R.string.dialog_sorting_date_descending
                 }
             }
+            //Name
             SortMethod.Name -> {
                 when (direction) {
                     SortDirection.Ascending -> R.string.dialog_sorting_name_ascending
                     SortDirection.Descending -> R.string.dialog_sorting_name_descending
+                }
+            }
+            //Size
+            SortMethod.Size -> {
+                when (direction) {
+                    SortDirection.Ascending -> R.string.dialog_sorting_size_ascending
+                    SortDirection.Descending -> R.string.dialog_sorting_size_descending
                 }
             }
         })

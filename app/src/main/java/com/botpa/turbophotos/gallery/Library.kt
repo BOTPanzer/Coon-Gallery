@@ -372,8 +372,8 @@ object Library {
             //Date
             SortMethod.Date -> {
                 when (sortDirection) {
-                    SortDirection.Ascending -> albums.sortBy { it.lastModified }
-                    SortDirection.Descending -> albums.sortByDescending { it.lastModified }
+                    SortDirection.Ascending -> albums.sortBy { it.firstItem?.lastModified ?: 0 }
+                    SortDirection.Descending -> albums.sortByDescending { it.firstItem?.lastModified ?: 0 }
                 }
             }
             //Name
@@ -381,6 +381,13 @@ object Library {
                 when (sortDirection) {
                     SortDirection.Ascending -> albums.sortBy { it.name }
                     SortDirection.Descending -> albums.sortByDescending { it.name }
+                }
+            }
+            //Size
+            SortMethod.Size -> {
+                when (sortDirection) {
+                    SortDirection.Ascending -> albums.sortBy { it.firstItem?.size ?: 0 }
+                    SortDirection.Descending -> albums.sortByDescending { it.firstItem?.size ?: 0 }
                 }
             }
         }

@@ -242,6 +242,8 @@
     <string name="dialog_sorting_date_descending">Fecha (Nuevo → Antiguo)</string>
     <string name="dialog_sorting_name_ascending">Nombre (A → Z)</string>
     <string name="dialog_sorting_name_descending">Nombre (Z → A)</string>
+    <string name="dialog_sorting_size_ascending">Tamaño (Pequeño → Grande)</string>
+    <string name="dialog_sorting_size_descending">Tamaño (Grande → Pequeño)</string>
     <!-- Dialog: Search -->
     <string name="dialog_search_title">Método de busqueda</string>
     <string name="dialog_search_method_good_for">Bueno para:</string>

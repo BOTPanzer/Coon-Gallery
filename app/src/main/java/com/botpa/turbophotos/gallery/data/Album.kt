@@ -15,7 +15,7 @@ class Album(val name: String, val albumFolder: File? = null, private var link: L
     val isSpecial: Boolean = albumFolder == null
 
     val size: Int get() = items.size
-    val lastModified: Long get() = if (items.isEmpty()) 0 else items[0].lastModified
+    val firstItem: Item? get() = if (items.isEmpty()) null else items[0]
 
     //Album metadata
     private val metadataModifiedKeys: HashSet<String> = HashSet()

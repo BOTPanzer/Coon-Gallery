@@ -62,6 +62,8 @@ class Item(
         val COMPARATOR_DATE_DESCENDING = Comparator<Item> { i1, i2 -> i2.lastModified.compareTo(i1.lastModified) }
         val COMPARATOR_NAME_ASCENDING = Comparator<Item> { i1, i2 -> i1.name.compareToAlphanumeric(i2.name) }
         val COMPARATOR_NAME_DESCENDING = Comparator<Item> { i1, i2 -> i2.name.compareToAlphanumeric(i1.name) }
+        val COMPARATOR_SIZE_ASCENDING = Comparator<Item> { i1, i2 -> i1.size.compareTo(i2.size) }
+        val COMPARATOR_SIZE_DESCENDING = Comparator<Item> { i1, i2 -> i2.size.compareTo(i1.size) }
 
         fun getComparator(sortMethod: SortMethod, sortDirection: SortDirection): Comparator<Item> {
             when (sortMethod) {
@@ -77,6 +79,13 @@ class Item(
                     return when (sortDirection) {
                         SortDirection.Ascending -> COMPARATOR_NAME_ASCENDING
                         SortDirection.Descending -> COMPARATOR_NAME_DESCENDING
+                    }
+                }
+                //Size
+                SortMethod.Size -> {
+                    return when (sortDirection) {
+                        SortDirection.Ascending -> COMPARATOR_SIZE_ASCENDING
+                        SortDirection.Descending -> COMPARATOR_SIZE_DESCENDING
                     }
                 }
             }
