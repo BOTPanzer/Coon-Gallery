@@ -56,7 +56,7 @@
     <string name="home_pinned_reset">The pinned album has been reset.</string>
     <string name="home_pinned_tutorial">Tap and hold on an album to pin it.</string>
     <string name="home_search_hint">Search albums</string>
-    <string name="home_search_navbar">Searching %s</string>
+    <string name="home_search_navbar">Searching \"%s\"</string>
     <string name="home_refresh_pull">Pull to refresh</string>
     <string name="home_refresh_release">Release to refresh</string>
     <string name="home_refresh_refreshing">Refreshing…</string>

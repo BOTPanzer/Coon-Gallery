@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.activity.BackEventCompat
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
@@ -34,6 +33,7 @@ import com.botpa.turbophotos.gallery.data.Item
 import com.botpa.turbophotos.gallery.options.OptionsGroup
 import com.botpa.turbophotos.gallery.options.OptionsItem
 import com.botpa.turbophotos.gallery.options.OptionsManager
+import com.botpa.turbophotos.gallery.search.ListSearchHelper
 import com.botpa.turbophotos.gallery.search.SearchDialog
 import com.botpa.turbophotos.gallery.search.SearchMethod
 import com.botpa.turbophotos.gallery.views.lists.GridHeaderLayoutManager
@@ -42,8 +42,6 @@ import com.botpa.turbophotos.gallery.views.lists.fastscroller.FastScroller
 import com.botpa.turbophotos.gallery.views.lists.fastscroller.FastScrollerBuilder
 import com.botpa.turbophotos.gallery.views.refresh.SimpleRefreshHeader
 import com.botpa.turbophotos.screens.viewer.ViewerActivity
-import com.botpa.turbophotos.util.BackAnimationEvent
-import com.botpa.turbophotos.util.Ease
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Orion.pxToDp
 import com.botpa.turbophotos.util.Storage
@@ -68,10 +66,9 @@ class AlbumActivity : BaseActivity() {
 
     private var isLibraryLoading = false
     private var isMetadataLoaded = false
-    private var isSearching = false
     private var isInit = false
 
-    private val isWorking get(): Boolean = isLibraryLoading || isSearching
+    private val isWorking get(): Boolean = isLibraryLoading || searchHelper.isSearching
 
     //Events
     private val onRefresh = RefreshEvent { updated -> this.manageRefresh(updated) }
@@ -97,7 +94,8 @@ class AlbumActivity : BaseActivity() {
 
     //Search
     private var currentSearchMethod: SearchMethod = SearchMethod.ContainsWords
-    private var currentSearch: String = ""
+
+    private var searchHelper: ListSearchHelper<Item> = ListSearchHelper()
 
     //Viewer
     private var viewerIndex: Int = -1
@@ -324,7 +322,7 @@ class AlbumActivity : BaseActivity() {
             optionsManager.toggle(true)
         }
 
-        navbarSearch.setOnClickListener { view: View -> showSearchLayout(true) }
+        navbarSearch.setOnClickListener { view: View -> searchHelper.toggleLayout(true) }
 
         //List
         (albumRefreshLayout.refreshHeader as SimpleRefreshHeader).onMoved = { view, percent ->
@@ -393,9 +391,9 @@ class AlbumActivity : BaseActivity() {
             //Not available
             if (isWorking) return@setOnClickListener
 
-            //Filter items with search
-            val search = searchInput.text.toString()
-            filterItems(search)
+            //Filter items with search query
+            val query = searchInput.text.toString()
+            searchHelper.filter(query)
         }
 
         searchMethod.setOnClickListener { view: View ->
@@ -405,12 +403,12 @@ class AlbumActivity : BaseActivity() {
                 searchMethodName.text = getSearchMethodName(currentSearchMethod)
                 Storage.putString(StoragePairs.ALBUM_SEARCH_METHOD, currentSearchMethod.name)
 
-                //Filter
-                if (currentSearch.isNotEmpty()) filterItems(currentSearch)
+                //Refresh search
+                if (searchHelper.currentQuery.isNotEmpty()) searchHelper.refresh()
             }.buildAndShow()
         }
 
-        searchClose.setOnClickListener { view: View -> showSearchLayout(false) }
+        searchClose.setOnClickListener { view: View -> searchHelper.toggleLayout(false) }
 
         //Options
         optionRename = OptionsItem(R.drawable.icon_action_rename, R.string.context_option_rename) {
@@ -637,6 +635,9 @@ class AlbumActivity : BaseActivity() {
         albumFastScroller = FastScrollerBuilder(albumList)
             .setHasHeader(true)
             .build()
+
+        //Init search helper
+        searchHelper.init(this, backManager, navbarLayout, searchLayout, searchInput, albumList, this@AlbumActivity::onBeforeSearchFilter, this@AlbumActivity::onSearchFilter, this@AlbumActivity::onAfterSearchFilter)
     }
 
     private fun selectAlbum(album: Album) {
@@ -658,7 +659,7 @@ class AlbumActivity : BaseActivity() {
 
         //Load album
         loadMetadata(album)
-        filterItems()
+        searchHelper.filter()
     }
 
     private fun getLocalizedAlbumName(album: Album): String {
@@ -900,85 +901,9 @@ class AlbumActivity : BaseActivity() {
     }
 
     //Items & search
-    private fun filterItems(query: String = "") {
-        //Check if filtering
-        val isFiltering = !query.isEmpty()
-
-        //Loading or searching
-        if (isSearching || (!isMetadataLoaded && isFiltering)) return
-
-        //Update search info
-        isSearching = true
-        currentSearch = query
-        searchInput.setText(query)
-        searchMethodName.text = getSearchMethodName(currentSearchMethod)
-        if (isFiltering) loadingIndicatorManager.search()
-        showSearchLayout(false)
-
-        //Update back manager
-        if (isFiltering) {
-            //Register back event
-            backManager.register("search", object : BackAnimationEvent {
-                override fun onProgress(backEvent: BackEventCompat) {
-                    //Get info
-                    val easeOut = Ease.outCubic(backEvent.progress)
-
-                    //Animate
-                    albumList.alpha = 1.0f - easeOut * 0.8f
-                }
-
-                override fun onInvoked() {
-                    //Filter items
-                    filterItems()
-                }
-            })
-        } else {
-            //Unregister back event
-            backManager.unregister("search")
-        }
-
-        //Clear selected items
-        selectedIndexes.clear()
-
-        //Filter items
-        Thread {
-            //Filter album list
-            val filteredAlbumItems = Library.filterAlbum(this@AlbumActivity, query, currentAlbum, currentSearchMethod)
-
-            //Update items
-            runOnUiThread {
-                //Hide list, update items & show list again
-                albumList.animate()
-                    .alpha(0.0f)
-                    .setDuration((Orion.DEFAULT_ANIMATION_DURATION * albumList.alpha).toLong())
-                    .withEndAction {
-                        //Update items
-                        Library.setGalleryInfo(currentAlbum, filteredAlbumItems) //List changes must be done in UI thread
-                        updateHeaderSubtitle()
-                        albumAdapter.notifyDataSetChanged()
-
-                        //Scroll to top
-                        albumList.stopScroll()
-                        albumList.scrollToPosition(0)
-
-                        //Finish searching
-                        if (isFiltering) loadingIndicatorManager.hide()
-                        isSearching = false
-
-                        //Show list
-                        albumList.animate()
-                            .alpha(1.0f)
-                            .setDuration(Orion.DEFAULT_ANIMATION_DURATION.toLong())
-                            .start()
-                    }
-                    .start()
-            }
-        }.start()
-    }
-
     private fun updateHeaderSubtitle() {
-        val id = if (currentSearch.isEmpty()) R.string.album_header else R.string.album_header_search
-        albumAdapter.subtitle = getString(id, gallery.items.size, currentSearch)
+        val id = if (searchHelper.currentQuery.isEmpty()) R.string.album_header else R.string.album_header_search
+        albumAdapter.subtitle = getString(id, gallery.items.size, searchHelper.currentQuery)
     }
 
     private fun updateSearchMethod() {
@@ -997,32 +922,35 @@ class AlbumActivity : BaseActivity() {
         })
     }
 
-    private fun showSearchLayout(show: Boolean) {
-        if (show) {
-            //Loading or searching
-            if (isSearching) return
+    private fun onBeforeSearchFilter(isFiltering: Boolean, query: String): Boolean {
+        //Not available
+        if (isWorking || (!isMetadataLoaded && isFiltering)) return false
 
-            //Toggle search
-            Orion.animateHide(navbarLayout) { Orion.animateShow(searchLayout) }
+        //Update UI
+        searchInput.setText(query)
+        searchMethodName.text = getSearchMethodName(currentSearchMethod)
+        if (isFiltering) loadingIndicatorManager.search()
+        searchHelper.toggleLayout(false)
 
-            //Focus text & show keyboard
-            searchInput.requestFocus()
-            searchInput.selectAll()
-            Orion.showKeyboard(this)
+        //Clear selected items
+        selectedIndexes.clear()
 
-            //Back button
-            backManager.register("searchMenu") { showSearchLayout(false) }
-        } else {
-            //Hide keyboard
-            Orion.hideKeyboard(this)
-            Orion.clearFocus(this)
+        //Filter
+        return true
+    }
 
-            //Toggle search
-            Orion.animateHide(searchLayout) { Orion.animateShow(navbarLayout) }
+    private fun onSearchFilter(isFiltering: Boolean, query: String): MutableList<Item> {
+        //Filter album list
+        return Library.filterAlbum(this@AlbumActivity, query, currentAlbum, currentSearchMethod)
+    }
 
-            //Back button
-            backManager.unregister("searchMenu")
-        }
+    private fun onAfterSearchFilter(isFiltering: Boolean, query: String, items: MutableList<Item>) {
+        //Update items
+        Library.setGalleryInfo(currentAlbum, items) //List changes must be done in UI thread
+        updateHeaderSubtitle()
+
+        //Finish searching
+        if (isFiltering) loadingIndicatorManager.hide()
     }
 
 }

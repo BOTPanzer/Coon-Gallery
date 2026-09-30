@@ -56,7 +56,7 @@
     <string name="home_pinned_reset">El álbum fijado ha sido restablecido.</string>
     <string name="home_pinned_tutorial">Mantén presionado en un álbum para fijarlo.</string>
     <string name="home_search_hint">Buscar albumes</string>
-    <string name="home_search_navbar">Buscando %s</string>
+    <string name="home_search_navbar">Buscando \"%s\"</string>
     <string name="home_refresh_pull">Desliza para actualizar</string>
     <string name="home_refresh_release">Suelta para actualizar</string>
     <string name="home_refresh_refreshing">Actualizando…</string>
