@@ -19,7 +19,6 @@ import androidx.activity.BackEventCompat
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
-import androidx.compose.ui.text.toLowerCase
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -31,27 +30,26 @@ import com.botpa.turbophotos.gallery.BaseActivity
 import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.Library.ActionEvent
 import com.botpa.turbophotos.gallery.Library.RefreshEvent
-import com.botpa.turbophotos.gallery.StoragePairs
-import com.botpa.turbophotos.gallery.data.Album
-import com.botpa.turbophotos.gallery.views.lists.fastscroller.FastScroller
-import com.botpa.turbophotos.gallery.views.lists.fastscroller.FastScrollerBuilder
-import com.botpa.turbophotos.gallery.options.OptionsGroup
-import com.botpa.turbophotos.gallery.options.OptionsItem
-import com.botpa.turbophotos.gallery.options.OptionsManager
 import com.botpa.turbophotos.gallery.PermissionType
+import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.gallery.UpdateChecker
 import com.botpa.turbophotos.gallery.actions.ActionResult
+import com.botpa.turbophotos.gallery.data.Album
 import com.botpa.turbophotos.gallery.data.SortDirection
 import com.botpa.turbophotos.gallery.data.SortMethod
 import com.botpa.turbophotos.gallery.modals.UpdateDialog
-import com.botpa.turbophotos.gallery.search.SearchMethod
+import com.botpa.turbophotos.gallery.options.OptionsGroup
+import com.botpa.turbophotos.gallery.options.OptionsItem
+import com.botpa.turbophotos.gallery.options.OptionsManager
 import com.botpa.turbophotos.gallery.views.lists.GridHeaderLayoutManager
 import com.botpa.turbophotos.gallery.views.lists.GridListSeparator
+import com.botpa.turbophotos.gallery.views.lists.fastscroller.FastScroller
+import com.botpa.turbophotos.gallery.views.lists.fastscroller.FastScrollerBuilder
 import com.botpa.turbophotos.screens.album.AlbumActivity
-import com.botpa.turbophotos.screens.home.filters.FiltersItem
 import com.botpa.turbophotos.screens.home.filters.FiltersDialog
-import com.botpa.turbophotos.screens.home.sorting.SortingItem
+import com.botpa.turbophotos.screens.home.filters.FiltersItem
 import com.botpa.turbophotos.screens.home.sorting.SortingDialog
+import com.botpa.turbophotos.screens.home.sorting.SortingItem
 import com.botpa.turbophotos.screens.settings.SettingsActivity
 import com.botpa.turbophotos.screens.sync.SyncActivity
 import com.botpa.turbophotos.util.BackAnimationEvent
@@ -60,7 +58,6 @@ import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Orion.pxToDp
 import com.botpa.turbophotos.util.Storage
 import com.scwang.smart.refresh.layout.SmartRefreshLayout
-import java.util.Locale
 
 @SuppressLint("SetTextI18n", "NotifyDataSetChanged")
 class HomeActivity : BaseActivity() {
@@ -80,6 +77,7 @@ class HomeActivity : BaseActivity() {
 
     private var isLibraryLoading = false
     private var isLibraryLoaded = false
+    private var isSearching = false
     private var isInit = false
 
     private val isWorking get(): Boolean = isLibraryLoading || !isLibraryLoaded
@@ -119,6 +117,7 @@ class HomeActivity : BaseActivity() {
 
     //Search
     private var currentSearch: String = ""
+    private var ignoreSearchInput: Boolean = false
 
       /*$$$$$              /$$     /$$
      /$$__  $$            | $$    |__/
@@ -284,6 +283,7 @@ class HomeActivity : BaseActivity() {
             override fun afterTextChanged(text: Editable?) {}
             override fun beforeTextChanged(text: CharSequence?, p1: Int, p2: Int, p3: Int) {}
             override fun onTextChanged(text: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                if (ignoreSearchInput) return
                 filterAlbums(searchInput.text.toString())
             }
         })
@@ -498,6 +498,13 @@ class HomeActivity : BaseActivity() {
     }
 
     private fun manageAction(action: ActionResult) {
+        //Check if searching
+        if (currentSearch.isNotEmpty()) {
+            //Searching -> Clear search (updates the list to match the albums one)
+            filterAlbums()
+            return
+        }
+
         //Check if albums list was changed
         if (action.hasSortedAlbumsList) {
             //Sorted albums list -> Notify all
@@ -582,6 +589,7 @@ class HomeActivity : BaseActivity() {
             } else {
                 //Regular open
                 startActivity(intent, options.toBundle())
+                showSearchLayout(false)
             }
         }
         homeAdapter.onLongClick = HomeAdapter.ClickListener { view: View, album: Album ->
@@ -636,10 +644,10 @@ class HomeActivity : BaseActivity() {
     //List grid
     private val listItemsPerRow: Int get() {
         //Check if in horizontal orientation
-        val isHorizontal = getResources().configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        val isHorizontal = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
         //Get portrait aspect ratio
-        val metrics = getResources().displayMetrics
+        val metrics = resources.displayMetrics
         val ratio = (metrics.widthPixels.toFloat() / metrics.heightPixels.toFloat())
 
         //Get portrait items per row
@@ -709,6 +717,7 @@ class HomeActivity : BaseActivity() {
         val isFiltering = !query.isEmpty()
 
         //Update search info
+        isSearching = true
         currentSearch = query
         updateNavbarTitle()
 
@@ -716,7 +725,6 @@ class HomeActivity : BaseActivity() {
         if (isFiltering) {
             //Register back event
             backManager.register("search", object : BackAnimationEvent {
-
                 override fun onProgress(backEvent: BackEventCompat) {
                     //Get info
                     val easeOut = Ease.outCubic(backEvent.progress)
@@ -729,25 +737,67 @@ class HomeActivity : BaseActivity() {
                     //Filter items
                     filterAlbums()
                 }
-
             })
+
+            //Move search menu event before the search cancel one
+            backManager.moveFirst("searchMenu")
         } else {
             //Unregister back event
             backManager.unregister("search")
         }
 
-        //Filter items
+        //Clear text
+        if (!isFiltering) clearSearchInput()
+
+        //Filter albums
+        val lowercaseQuery = query.lowercase()
         homeAlbumsList.clear()
         for (album in Library.albums) {
-            if (album.name.lowercase().contains(query.lowercase())) {
+            if (album.name.lowercase().contains(lowercaseQuery)) {
                 homeAlbumsList.add(album)
             }
         }
-        homeAdapter.notifyDataSetChanged()
 
-        //Scroll to top
-        homeList.stopScroll()
-        homeList.scrollToPosition(0)
+        //Prepare end
+        val end = Runnable {
+            //Update albums
+            homeAdapter.notifyDataSetChanged()
+
+            //Scroll to top
+            homeList.stopScroll()
+            homeList.scrollToPosition(0)
+
+            //Finish searching
+            isSearching = false
+        }
+
+        //End
+        if (homeList.alpha != 1f) {
+            //Hide list, update items & show list again
+            homeList.animate()
+                .alpha(0f)
+                .setDuration((Orion.DEFAULT_ANIMATION_DURATION * homeList.alpha).toLong())
+                .withEndAction {
+                    //Finish searching
+                    end.run()
+
+                    //Show list
+                    homeList.animate()
+                        .alpha(1.0f)
+                        .setDuration(Orion.DEFAULT_ANIMATION_DURATION.toLong())
+                        .start()
+                }
+                .start()
+        } else {
+            //Update items
+            end.run()
+        }
+    }
+
+    private fun clearSearchInput() {
+        ignoreSearchInput = true
+        searchInput.setText("")
+        ignoreSearchInput = false
     }
 
     private fun showSearchLayout(show: Boolean) {
@@ -763,7 +813,7 @@ class HomeActivity : BaseActivity() {
             //Back button
             backManager.register("searchMenu") { showSearchLayout(false) }
         } else {
-            //Close keyboard
+            //Clear text & hide keyboard
             Orion.hideKeyboard(this)
             Orion.clearFocus(this)
 

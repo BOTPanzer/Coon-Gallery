@@ -919,7 +919,6 @@ class AlbumActivity : BaseActivity() {
         if (isFiltering) {
             //Register back event
             backManager.register("search", object : BackAnimationEvent {
-
                 override fun onProgress(backEvent: BackEventCompat) {
                     //Get info
                     val easeOut = Ease.outCubic(backEvent.progress)
@@ -932,7 +931,6 @@ class AlbumActivity : BaseActivity() {
                     //Filter items
                     filterItems()
                 }
-
             })
         } else {
             //Unregister back event
@@ -1015,7 +1013,7 @@ class AlbumActivity : BaseActivity() {
             //Back button
             backManager.register("searchMenu") { showSearchLayout(false) }
         } else {
-            //Close keyboard
+            //Hide keyboard
             Orion.hideKeyboard(this)
             Orion.clearFocus(this)
 

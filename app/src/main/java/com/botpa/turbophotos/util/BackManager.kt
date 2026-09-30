@@ -75,6 +75,11 @@ class BackManager(owner: LifecycleOwner, dispatcher: OnBackPressedDispatcher) {
         onBackPressed.isEnabled = onBackPressedOrder.isNotEmpty()
     }
 
+    fun moveFirst(name: String) {
+        val removed = onBackPressedOrder.remove(name)
+        if (removed) onBackPressedOrder.add(name)
+    }
+
 }
 
 interface BackAnimationEvent {
