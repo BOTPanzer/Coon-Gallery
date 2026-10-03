@@ -404,7 +404,7 @@ class AlbumActivity : BaseActivity() {
                 Storage.putString(StoragePairs.ALBUM_SEARCH_METHOD, currentSearchMethod.name)
 
                 //Refresh search
-                if (searchHelper.currentQuery.isNotEmpty()) searchHelper.refresh()
+                if (searchHelper.isFiltered) searchHelper.refresh()
             }.buildAndShow()
         }
 
@@ -902,7 +902,7 @@ class AlbumActivity : BaseActivity() {
 
     //Items & search
     private fun updateHeaderSubtitle() {
-        val id = if (searchHelper.currentQuery.isEmpty()) R.string.album_header else R.string.album_header_search
+        val id = if (searchHelper.isFiltered) R.string.album_header_search else R.string.album_header
         albumAdapter.subtitle = getString(id, gallery.items.size, searchHelper.currentQuery)
     }
 

@@ -497,10 +497,11 @@ class HomeActivity : BaseActivity() {
 
     //Events
     private fun manageRefresh(updated: Boolean) {
-        runOnUiThread {
-            //Didn't update
-            if (!updated) return@runOnUiThread
+        //Didn't update
+        if (!updated) return
 
+        //Refresh
+        runOnUiThread {
             //Refresh list
             searchHelper.refresh()
 
@@ -510,22 +511,18 @@ class HomeActivity : BaseActivity() {
     }
 
     private fun manageAction(action: ActionResult) {
-        //Check if searching
-        if (searchHelper.currentQuery.isNotEmpty()) {
-            //Searching -> Refresh search
+        //Check if searching or albums were sorted
+        if (searchHelper.isFiltered || action.hasSortedAlbumsList) {
+            //Searching or albums were sorted -> Refresh
             searchHelper.refresh()
-            return
-        }
-
-        //Check if albums list was changed
-        if (action.hasSortedAlbumsList) {
-            //Sorted albums list -> Notify all
-            homeAdapter.notifyDataSetChanged()
         } else {
             //Check if albums were deleted
             if (!action.removedAlbumIndexes.isEmpty()) {
                 //Albums were deleted -> Notify items removed
                 for (albumIndex in action.removedAlbumIndexes) {
+                    //Remove album from list
+                    homeAlbumsList.removeAt(albumIndex)
+
                     //Notify position removed
                     homeAdapter.notifyItemRemoved(homeAdapter.getPositionFromIndex(albumIndex))
                 }
@@ -547,7 +544,11 @@ class HomeActivity : BaseActivity() {
                     homeAdapter.notifyItemChanged(homeAdapter.getPositionFromIndex(albumIndex))
                 }
             }
-            if (specialAlbumWasModified) homeAdapter.notifyItemChanged(0)
+
+            //Update header if an special album was modified
+            if (specialAlbumWasModified) {
+                homeAdapter.notifyItemChanged(0)
+            }
         }
     }
 
@@ -735,7 +736,7 @@ class HomeActivity : BaseActivity() {
 
     private fun onBeforeSearchFilter(isFiltering: Boolean, query: String): Boolean {
         //Not available
-        if (isWorking) return false
+        if (searchHelper.isSearching) return false
 
         //Clear text
         if (!isFiltering) clearSearchInput()

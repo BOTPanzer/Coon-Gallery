@@ -30,6 +30,7 @@ class ListSearchHelper<T> {
         private set
     var currentQuery: String = ""
         private set
+    val isFiltered: Boolean get() = currentQuery.isNotEmpty()
 
 
     //Actions
