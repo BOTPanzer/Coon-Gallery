@@ -116,7 +116,7 @@ class HomeActivity : BaseActivity() {
     //Search
     private var ignoreSearchInput: Boolean = false
 
-    private var searchHelper: ListSearchHelper<Album> = ListSearchHelper()
+    private var searchHelper: ListSearchHelper<Album> = ListSearchHelper(false)
 
       /*$$$$$              /$$     /$$
      /$$__  $$            | $$    |__/
@@ -735,9 +735,6 @@ class HomeActivity : BaseActivity() {
     }
 
     private fun onBeforeSearchFilter(isFiltering: Boolean, query: String): Boolean {
-        //Not available
-        if (searchHelper.isSearching) return false
-
         //Clear text
         if (!isFiltering) clearSearchInput()
 

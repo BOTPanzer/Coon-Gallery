@@ -95,7 +95,7 @@ class AlbumActivity : BaseActivity() {
     //Search
     private var currentSearchMethod: SearchMethod = SearchMethod.ContainsWords
 
-    private var searchHelper: ListSearchHelper<Item> = ListSearchHelper()
+    private var searchHelper: ListSearchHelper<Item> = ListSearchHelper(true)
 
     //Viewer
     private var viewerIndex: Int = -1

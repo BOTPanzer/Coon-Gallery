@@ -12,7 +12,7 @@ import com.botpa.turbophotos.util.Ease
 import com.botpa.turbophotos.util.Orion
 
 @SuppressLint("NotifyDataSetChanged")
-class ListSearchHelper<T> {
+class ListSearchHelper<T>(private val useFilterThread: Boolean) {
 
     //Helper
     private lateinit var activity: Activity
@@ -84,6 +84,57 @@ class ListSearchHelper<T> {
         }
     }
 
+    private fun applyFilterChanges(isFiltering: Boolean, query: String, items: MutableList<T>) {
+        val runnable = Runnable {
+            //On after filter
+            onAfterFilter.invoke(isFiltering, query, items)
+
+            //Update albums
+            list.adapter?.notifyDataSetChanged()
+
+            //Scroll to top
+            list.stopScroll()
+            list.scrollToPosition(0)
+
+            //Finish searching
+            isSearching = false
+        }
+
+        when (list.alpha) {
+            1f -> {
+                //On after filter
+                runnable.run()
+            }
+            0f -> {
+                //On after filter
+                runnable.run()
+
+                //Show list
+                list.animate()
+                    .alpha(1.0f)
+                    .setDuration(Orion.DEFAULT_ANIMATION_DURATION.toLong())
+                    .start()
+            }
+            else -> {
+                //Hide list, update items & show list again
+                list.animate()
+                    .alpha(0f)
+                    .setDuration((Orion.DEFAULT_ANIMATION_DURATION * list.alpha).toLong())
+                    .withEndAction {
+                        //On after filter
+                        runnable.run()
+
+                        //Show list
+                        list.animate()
+                            .alpha(1.0f)
+                            .setDuration(Orion.DEFAULT_ANIMATION_DURATION.toLong())
+                            .start()
+                    }
+                    .start()
+            }
+        }
+    }
+
     fun filter(query: String = "") {
         //Check if filtering
         val fixedQuery = query.trim()
@@ -123,63 +174,21 @@ class ListSearchHelper<T> {
         }
 
         //Filter
-        Thread {
-            //On filter
-            val items = onFilter.invoke(isFiltering, query)
+        if (useFilterThread) {
+            //Filter in separate thread
+            Thread {
+                //Filter
+                val items = onFilter.invoke(isFiltering, query)
 
-            //Prepare on after filter
-            val onAfterFilterRunnable = Runnable {
-                //On after filter
-                onAfterFilter.invoke(isFiltering, query, items)
-
-                //Update albums
-                list.adapter?.notifyDataSetChanged()
-
-                //Scroll to top
-                list.stopScroll()
-                list.scrollToPosition(0)
-
-                //Finish searching
-                isSearching = false
-            }
-
-            //Update items
-            activity.runOnUiThread {
-                when (list.alpha) {
-                    1f -> {
-                        //On after filter
-                        onAfterFilterRunnable.run()
-                    }
-                    0f -> {
-                        //On after filter
-                        onAfterFilterRunnable.run()
-
-                        //Show list
-                        list.animate()
-                            .alpha(1.0f)
-                            .setDuration(Orion.DEFAULT_ANIMATION_DURATION.toLong())
-                            .start()
-                    }
-                    else -> {
-                        //Hide list, update items & show list again
-                        list.animate()
-                            .alpha(0f)
-                            .setDuration((Orion.DEFAULT_ANIMATION_DURATION * list.alpha).toLong())
-                            .withEndAction {
-                                //On after filter
-                                onAfterFilterRunnable.run()
-
-                                //Show list
-                                list.animate()
-                                    .alpha(1.0f)
-                                    .setDuration(Orion.DEFAULT_ANIMATION_DURATION.toLong())
-                                    .start()
-                            }
-                            .start()
-                    }
+                //Update items
+                activity.runOnUiThread {
+                    applyFilterChanges(isFiltering, query, items)
                 }
-            }
-        }.start()
+            }.start()
+        } else {
+            //Filter in current thread
+            applyFilterChanges(isFiltering, query, onFilter.invoke(isFiltering, query))
+        }
     }
 
     fun refresh() {
