@@ -86,7 +86,8 @@ class ListSearchHelper<T> {
 
     fun filter(query: String = "") {
         //Check if filtering
-        val isFiltering = !query.isEmpty()
+        val fixedQuery = query.trim()
+        val isFiltering = fixedQuery.isNotEmpty()
 
         //On before filter
         val shouldFilter = onBeforeFilter.invoke(isFiltering, query)
@@ -144,25 +145,38 @@ class ListSearchHelper<T> {
 
             //Update items
             activity.runOnUiThread {
-                if (list.alpha != 1f) {
-                    //Hide list, update items & show list again
-                    list.animate()
-                        .alpha(0f)
-                        .setDuration((Orion.DEFAULT_ANIMATION_DURATION * list.alpha).toLong())
-                        .withEndAction {
-                            //On after filter
-                            onAfterFilterRunnable.run()
+                when (list.alpha) {
+                    1f -> {
+                        //On after filter
+                        onAfterFilterRunnable.run()
+                    }
+                    0f -> {
+                        //On after filter
+                        onAfterFilterRunnable.run()
 
-                            //Show list
-                            list.animate()
-                                .alpha(1.0f)
-                                .setDuration(Orion.DEFAULT_ANIMATION_DURATION.toLong())
-                                .start()
-                        }
-                        .start()
-                } else {
-                    //On after filter
-                    onAfterFilterRunnable.run()
+                        //Show list
+                        list.animate()
+                            .alpha(1.0f)
+                            .setDuration(Orion.DEFAULT_ANIMATION_DURATION.toLong())
+                            .start()
+                    }
+                    else -> {
+                        //Hide list, update items & show list again
+                        list.animate()
+                            .alpha(0f)
+                            .setDuration((Orion.DEFAULT_ANIMATION_DURATION * list.alpha).toLong())
+                            .withEndAction {
+                                //On after filter
+                                onAfterFilterRunnable.run()
+
+                                //Show list
+                                list.animate()
+                                    .alpha(1.0f)
+                                    .setDuration(Orion.DEFAULT_ANIMATION_DURATION.toLong())
+                                    .start()
+                            }
+                            .start()
+                    }
                 }
             }
         }.start()

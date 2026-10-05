@@ -555,17 +555,18 @@ class AlbumActivity : BaseActivity() {
 
     //Events
     private fun manageRefresh(updated: Boolean) {
+        //Didn't update
+        if (!updated) return
+
+        //Check if gallery is empty
+        if (currentAlbum.isEmpty()) {
+            //Is empty -> Close screen
+            finish()
+            return
+        }
+
+        //Refresh
         runOnUiThread {
-            //Nothing updated
-            if (!updated) return@runOnUiThread
-
-            //Check if gallery is empty
-            if (currentAlbum.isEmpty()) {
-                //Is empty -> Close screen
-                finish()
-                return@runOnUiThread
-            }
-
             //Unselect all
             deselectAll()
 
