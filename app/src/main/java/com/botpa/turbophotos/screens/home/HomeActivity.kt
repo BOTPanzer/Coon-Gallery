@@ -154,6 +154,7 @@ class HomeActivity : BaseActivity() {
     //Views (navbar)
     private lateinit var navbarLayout: View
     private lateinit var navbarTitle: TextView
+    private lateinit var navbarSubtitle: TextView
     private lateinit var navbarOptions: View
     private lateinit var navbarSearch: View
 
@@ -190,6 +191,7 @@ class HomeActivity : BaseActivity() {
         //Navbar
         navbarLayout = findViewById(R.id.navbarLayout)
         navbarTitle = findViewById(R.id.navbarTitle)
+        navbarSubtitle = findViewById(R.id.navbarSubtitle)
         navbarOptions = findViewById(R.id.navbarOptions)
         navbarSearch = findViewById(R.id.navbarSearch)
 
@@ -685,46 +687,40 @@ class HomeActivity : BaseActivity() {
     //Navbar
     private fun updateNavbarTitle() {
         //Check if a search query is applied
-        val isSearching = searchHelper.currentQuery != ""
+        val isSearching = searchHelper.isFiltered
 
         //Check if a filter is applied
         val filter = Library.filter
         val isFiltered = filter != "*/*"
 
-        //Toggle navbar visibility
-        val isVisible = isSearching || isFiltered
-        navbarTitle.visibility = if (isVisible) View.VISIBLE else View.GONE
-        if (!isVisible) return
+        //Toggle text visibility
+        val isTitleVisible = isSearching || isFiltered
+        val isSubtitleVisible = isSearching && isFiltered
+        navbarTitle.visibility = if (isTitleVisible) View.VISIBLE else View.GONE
+        navbarSubtitle.visibility = if (isSubtitleVisible) View.VISIBLE else View.GONE
+        if (!isTitleVisible) return
 
-        //Create title
-        val title = StringBuilder()
+        //Get search text
+        val searchText = getString(R.string.home_search_navbar, searchHelper.currentQuery)
 
-        //Add search text
-        if (isSearching) {
-            title.append(getString(R.string.home_search_navbar, searchHelper.currentQuery))
-        }
-
-        //Add separator
-        if (isSearching && isFiltered) {
-            title.append(" | ")
-        }
-
-        //Add filter text
+        //Get filter text
+        val filterText = StringBuilder()
         if (isFiltered) {
             //Parse filter
             val parts = filter.split("/")
             val type = parts[0]
             val format = parts[1]
-            title.append(getString(when (type) {
+            filterText.append(getString(when (type) {
                 "image" -> R.string.home_filtered_images
                 "video" -> R.string.home_filtered_videos
                 else -> R.string.home_filtered_custom
             }))
-            if (format != "*") title.append(" ($format)")
+            if (format != "*") filterText.append(" ($format)")
         }
 
-        //Update title
-        navbarTitle.text = title.toString()
+        //Update title & subtitle
+        navbarTitle.text = if (isSearching) searchText else filterText.toString()
+        navbarSubtitle.text = if (isFiltered) filterText.toString() else ""
     }
 
     //Search

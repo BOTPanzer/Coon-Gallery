@@ -158,6 +158,7 @@ class AlbumActivity : BaseActivity() {
     //Views (navbar)
     private lateinit var navbarLayout: View
     private lateinit var navbarTitle: TextView
+    private lateinit var navbarSubtitle: TextView
     private lateinit var navbarOptions: View
     private lateinit var navbarSearch: View
 
@@ -218,6 +219,7 @@ class AlbumActivity : BaseActivity() {
         //Navbar
         navbarLayout = findViewById(R.id.navbarLayout)
         navbarTitle = findViewById(R.id.navbarTitle)
+        navbarSubtitle = findViewById(R.id.navbarSubtitle)
         navbarOptions = findViewById(R.id.navbarOptions)
         navbarSearch = findViewById(R.id.navbarSearch)
 
@@ -779,13 +781,13 @@ class AlbumActivity : BaseActivity() {
 
     //Navbar
     private fun updateNavbarTitle() {
-        //Update navbar title
-        if (selectedIndexes.isEmpty()) {
-            navbarTitle.visibility = View.GONE
-        } else {
-            navbarTitle.visibility = View.VISIBLE
-            navbarTitle.text = getString(if (selectedIndexes.size <= 1) R.string.album_loading_selection_item else R.string.album_loading_selection_items, selectedIndexes.size)
-        }
+        //Toggle text visibility
+        val isTitleVisible = selectedIndexes.isNotEmpty()
+        navbarTitle.visibility = if (isTitleVisible) View.VISIBLE else View.GONE
+        if (!isTitleVisible) return
+
+        //Update title
+        navbarTitle.text = getString(if (selectedIndexes.size <= 1) R.string.album_loading_selection_item else R.string.album_loading_selection_items, selectedIndexes.size)
     }
 
     //Metadata
