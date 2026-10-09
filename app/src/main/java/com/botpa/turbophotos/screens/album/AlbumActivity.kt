@@ -708,7 +708,7 @@ class AlbumActivity : BaseActivity() {
 
     private fun onUpdateOptions() {
         //Get state info
-        val isSelecting = !selectedIndexes.isEmpty()
+        val isSelecting = selectedIndexes.isNotEmpty()
         val isSelectingSingle = selectedIndexes.size == 1
 
         //Update options list
@@ -757,10 +757,10 @@ class AlbumActivity : BaseActivity() {
     //List grid
     private val listItemsPerRow: Int get() {
         //Check if in horizontal orientation
-        val isHorizontal = getResources().configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        val isHorizontal = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
         //Get portrait aspect ratio
-        val metrics = getResources().displayMetrics
+        val metrics = resources.displayMetrics
         val ratio = (metrics.widthPixels.toFloat() / metrics.heightPixels.toFloat())
 
         //Get portrait items per row
@@ -927,7 +927,7 @@ class AlbumActivity : BaseActivity() {
 
     private fun onBeforeSearchFilter(isFiltering: Boolean, query: String): Boolean {
         //Not available
-        if (isWorking || (!isMetadataLoaded && isFiltering)) return false
+        if (searchHelper.isSearching || (!isMetadataLoaded && isFiltering)) return false
 
         //Update UI
         searchInput.setText(query)
@@ -937,6 +937,9 @@ class AlbumActivity : BaseActivity() {
 
         //Clear selected items
         selectedIndexes.clear()
+
+        //Disable refresh
+        albumRefreshLayout.setEnableRefresh(false)
 
         //Filter
         return true
@@ -951,6 +954,9 @@ class AlbumActivity : BaseActivity() {
         //Update items
         Library.setGalleryInfo(currentAlbum, items) //List changes must be done in UI thread
         updateHeaderSubtitle()
+
+        //Enable refresh
+        albumRefreshLayout.setEnableRefresh(true)
 
         //Finish searching
         if (isFiltering) loadingIndicatorManager.hide()
