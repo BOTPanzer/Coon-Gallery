@@ -467,7 +467,7 @@ object Library {
         //Check if filtering
         val trimmedQuery = query.trim()
         val normalizedQuery = Orion.normalizeText(query)
-        val isFiltering = !trimmedQuery.isEmpty()
+        val isFiltering = trimmedQuery.isNotEmpty()
 
         //Check if filtering
         if (!isFiltering) {
@@ -713,8 +713,8 @@ object Library {
 
                 //Copy item metadata to new key
                 val album = item.album
-                if (album.hasMetadataKey(oldName) && getBool(StoragePairs.LIBRARY_AUTOMATIC_METADATA_MODIFICATION)) {
-                    album.setMetadataKey(newName, album.getMetadataKey(oldName))
+                if (album.hasMetadataOfKey(oldName) && getBool(StoragePairs.LIBRARY_AUTOMATIC_METADATA_MODIFICATION)) {
+                    album.setMetadataKey(newName, album.getMetadataOfKey(oldName))
                     album.removeMetadataKey(oldName)
                     album.saveMetadata()
                 }
@@ -833,9 +833,9 @@ object Library {
             performCheckForAlbumChanges(action, helper.indexInAlbum, newAlbum)
 
             //Move item metadata from old album to new album
-            if (oldAlbum.hasMetadataKey(item.name) && getBool(StoragePairs.LIBRARY_AUTOMATIC_METADATA_MODIFICATION)) {
+            if (oldAlbum.hasMetadataOfKey(item.name) && getBool(StoragePairs.LIBRARY_AUTOMATIC_METADATA_MODIFICATION)) {
                 //Copy metadata to new album
-                newAlbum.setMetadataKey(item.name, oldAlbum.getMetadataKey(item.name))
+                newAlbum.setMetadataKey(item.name, oldAlbum.getMetadataOfKey(item.name))
                 newAlbum.saveMetadata()
 
                 //Remove metadata from old album
@@ -896,8 +896,8 @@ object Library {
             performCheckForAlbumChanges(action, indexInAlbum, newAlbum)
 
             //Copy item metadata from old album to new album
-            if (oldAlbum.hasMetadataKey(item.name) && getBool(StoragePairs.LIBRARY_AUTOMATIC_METADATA_MODIFICATION)) {
-                newAlbum.setMetadataKey(item.name, oldAlbum.getMetadataKey(item.name))
+            if (oldAlbum.hasMetadataOfKey(item.name) && getBool(StoragePairs.LIBRARY_AUTOMATIC_METADATA_MODIFICATION)) {
+                newAlbum.setMetadataKey(item.name, oldAlbum.getMetadataOfKey(item.name))
                 newAlbum.saveMetadata()
             }
         }
@@ -1223,7 +1223,7 @@ object Library {
             }
 
             //Delete item metadata from album
-            if (album.hasMetadataKey(item.name) && getBool(StoragePairs.LIBRARY_AUTOMATIC_METADATA_MODIFICATION)) {
+            if (album.hasMetadataOfKey(item.name) && getBool(StoragePairs.LIBRARY_AUTOMATIC_METADATA_MODIFICATION)) {
                 album.removeMetadataKey(item.name)
                 album.saveMetadata()
             }

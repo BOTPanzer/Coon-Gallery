@@ -33,11 +33,11 @@ class Item(
 
     //Metadata
     fun hasMetadata(): Boolean {
-        return album.hasMetadataKey(name)
+        return album.hasMetadataOfKey(name)
     }
 
     fun getMetadata(): ItemMetadataInfo? {
-        return album.getMetadataKey(name)
+        return album.getMetadataOfKey(name)
     }
 
     //Helpers

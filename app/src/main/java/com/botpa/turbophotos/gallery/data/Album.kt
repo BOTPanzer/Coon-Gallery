@@ -161,7 +161,7 @@ class Album(val name: String, val albumFolder: File? = null, private var link: L
                 db.transaction {
                     for (key in metadataModifiedKeys) {
                         //Get metadata
-                        val info = getMetadataKey(key)
+                        val info = getMetadataOfKey(key)
 
                         //Check action
                         if (info == null) {
@@ -197,11 +197,11 @@ class Album(val name: String, val albumFolder: File? = null, private var link: L
     }
 
     //Metadata actions
-    fun hasMetadataKey(key: String): Boolean {
+    fun hasMetadataOfKey(key: String): Boolean {
         return metadata.containsKey(key)
     }
 
-    fun getMetadataKey(key: String): ItemMetadataInfo? {
+    fun getMetadataOfKey(key: String): ItemMetadataInfo? {
         return metadata.getOrDefault(key, null)
     }
 

@@ -334,6 +334,13 @@ class AlbumActivity : BaseActivity() {
         }
 
         albumRefreshLayout.setOnRefreshListener {
+            //Not available
+            if (isWorking) {
+                //Stop refreshing
+                albumRefreshLayout.finishRefresh()
+                return@setOnRefreshListener
+            }
+
             //Mark as loading
             isLibraryLoading = true
 
@@ -572,8 +579,9 @@ class AlbumActivity : BaseActivity() {
             //Unselect all
             deselectAll()
 
-            //Refresh list
-            selectAlbum(currentAlbum)
+            //Refresh list & load metadata
+            searchHelper.filter()
+            loadMetadata(currentAlbum)
         }
     }
 
@@ -660,9 +668,9 @@ class AlbumActivity : BaseActivity() {
         //Update navbar title
         updateNavbarTitle()
 
-        //Load album
-        loadMetadata(album)
+        //Refresh list & load metadata
         searchHelper.filter()
+        loadMetadata(album)
     }
 
     private fun getLocalizedAlbumName(album: Album): String {
