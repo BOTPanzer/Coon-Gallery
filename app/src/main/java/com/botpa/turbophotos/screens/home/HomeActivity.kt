@@ -318,10 +318,6 @@ class HomeActivity : BaseActivity() {
                 //Stop refreshing
                 runOnUiThread {
                     homeRefreshLayout.finishRefresh()
-
-                    //Mark as loaded
-                    isLibraryLoading = false
-                    isLibraryLoaded = true
                 }
             }.start()
         }
@@ -416,7 +412,10 @@ class HomeActivity : BaseActivity() {
     override fun onPermissionsGranted() {
         //Already loading or loaded
         if (isLibraryLoading || isLibraryLoaded) return
+
+        //Mark as loading
         isLibraryLoading = true
+        isLibraryLoaded = false
 
         //Check intent
         val filter: String
@@ -453,10 +452,6 @@ class HomeActivity : BaseActivity() {
                 //Refresh albums list
                 searchHelper.filter()
             }
-
-            //Mark as loaded
-            isLibraryLoaded = true
-            isLibraryLoading = false
         }.start()
 
         //Mark as init
@@ -499,6 +494,10 @@ class HomeActivity : BaseActivity() {
 
     //Events
     private fun manageRefresh(updated: Boolean) {
+        //Mark as loaded
+        isLibraryLoaded = true
+        isLibraryLoading = false
+
         //Didn't update
         if (!updated) return
 
@@ -731,6 +730,9 @@ class HomeActivity : BaseActivity() {
     }
 
     private fun onBeforeSearchFilter(isFiltering: Boolean, query: String): Boolean {
+        //Not available
+        if (isWorking) return false
+
         //Clear text
         if (!isFiltering) clearSearchInput()
 

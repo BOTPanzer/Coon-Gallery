@@ -352,9 +352,6 @@ class AlbumActivity : BaseActivity() {
                 //Stop refreshing
                 runOnUiThread {
                     albumRefreshLayout.finishRefresh()
-
-                    //Mark as loaded
-                    isLibraryLoading = false
                 }
             }.start()
         }
@@ -564,6 +561,9 @@ class AlbumActivity : BaseActivity() {
 
     //Events
     private fun manageRefresh(updated: Boolean) {
+        //Mark as loaded
+        isLibraryLoading = false
+
         //Didn't update
         if (!updated) return
 
@@ -935,7 +935,7 @@ class AlbumActivity : BaseActivity() {
 
     private fun onBeforeSearchFilter(isFiltering: Boolean, query: String): Boolean {
         //Not available
-        if (searchHelper.isSearching || (!isMetadataLoaded && isFiltering)) return false
+        if (isWorking || (!isMetadataLoaded && isFiltering)) return false
 
         //Update UI
         searchInput.setText(query)
