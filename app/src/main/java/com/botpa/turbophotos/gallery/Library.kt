@@ -33,10 +33,12 @@ import com.botpa.turbophotos.gallery.modals.InputDialog
 import com.botpa.turbophotos.gallery.search.SearchHelper
 import com.botpa.turbophotos.gallery.search.SearchMethod
 import com.botpa.turbophotos.util.Orion
+import com.botpa.turbophotos.util.Orion.compareToAlphanumeric
 import com.botpa.turbophotos.util.Storage
 import com.botpa.turbophotos.util.Storage.getBool
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.io.File
+import kotlin.collections.sortWith
 
 object Library {
 
@@ -379,8 +381,8 @@ object Library {
             //Name
             SortMethod.Name -> {
                 when (sortDirection) {
-                    SortDirection.Ascending -> albums.sortBy { it.name }
-                    SortDirection.Descending -> albums.sortByDescending { it.name }
+                    SortDirection.Ascending -> albums.sortWith({ i1, i2 -> i1.name.compareToAlphanumeric(i2.name) })
+                    SortDirection.Descending -> albums.sortWith({ i1, i2 -> i2.name.compareToAlphanumeric(i1.name) })
                 }
             }
             //Size

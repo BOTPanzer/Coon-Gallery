@@ -33,7 +33,7 @@ class Album(val name: String, val albumFolder: File? = null, private var link: L
 
     //Items
     fun sort(sortMethod: SortMethod, sortDirection: SortDirection) {
-        items.sortWith<Item>(Item.getComparator(sortMethod, sortDirection))
+        items.sortWith(Item.getComparator(sortMethod, sortDirection))
     }
 
     fun clear() {
