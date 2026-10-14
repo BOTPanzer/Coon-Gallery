@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
@@ -57,10 +56,8 @@ import com.botpa.turbophotos.gallery.modals.BulletPointsDialog
 import com.botpa.turbophotos.gallery.modals.FileExplorerDialog
 import com.botpa.turbophotos.gallery.modals.FolderExplorerDialog
 import com.botpa.turbophotos.gallery.search.models.DownloadState
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.io.File
 
-@OptIn(ExperimentalMaterial3Api::class)
 class SettingsActivity : AppCompatActivity() {
 
     //View model
