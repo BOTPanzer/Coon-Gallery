@@ -134,16 +134,11 @@ class ViewerActivity : BaseActivity() {
     private lateinit var overlayIsFavourite: View
 
     //Views (overlay shortcuts & options)
-    private lateinit var overlayInfoContainer: View
     private lateinit var overlayInfo: View
-    private lateinit var overlayEditContainer: View
     private lateinit var overlayEdit: View
-    private lateinit var overlayShareContainer: View
     private lateinit var overlayShare: View
-    private lateinit var overlayFavouriteContainer: View
     private lateinit var overlayFavourite: View
     private lateinit var overlayFavouriteImage: ImageView
-    private lateinit var overlayTrashContainer: View
     private lateinit var overlayTrash: View
     private lateinit var overlayTrashImage: ImageView
     private lateinit var overlayOptions: View
@@ -178,16 +173,11 @@ class ViewerActivity : BaseActivity() {
         overlayIsFavourite = findViewById(R.id.overlayIsFavourite)
 
         //Overlay buttons
-        overlayInfoContainer = findViewById(R.id.overlayInfoContainer)
         overlayInfo = findViewById(R.id.overlayInfo)
-        overlayEditContainer = findViewById(R.id.overlayEditContainer)
         overlayEdit = findViewById(R.id.overlayEdit)
-        overlayShareContainer = findViewById(R.id.overlayShareContainer)
         overlayShare = findViewById(R.id.overlayShare)
-        overlayFavouriteContainer = findViewById(R.id.overlayFavouriteContainer)
         overlayFavourite = findViewById(R.id.overlayFavourite)
         overlayFavouriteImage = findViewById(R.id.overlayFavouriteImage)
-        overlayTrashContainer = findViewById(R.id.overlayTrashContainer)
         overlayTrash = findViewById(R.id.overlayTrash)
         overlayTrashImage = findViewById(R.id.overlayTrashImage)
         overlayOptions = findViewById(R.id.overlayOptions)
@@ -540,11 +530,11 @@ class ViewerActivity : BaseActivity() {
     }
 
     private fun updateOverlayButtons() {
-        overlayInfoContainer.visibility = if (showProperties) View.VISIBLE else View.GONE
-        overlayEditContainer.visibility = if (showEdit) View.VISIBLE else View.GONE
-        overlayShareContainer.visibility = if (showShare) View.VISIBLE else View.GONE
-        overlayFavouriteContainer.visibility = if (showFavourite) View.VISIBLE else View.GONE
-        overlayTrashContainer.visibility = if (showTrash) View.VISIBLE else View.GONE
+        overlayInfo.visibility = if (showProperties) View.VISIBLE else View.GONE
+        overlayEdit.visibility = if (showEdit) View.VISIBLE else View.GONE
+        overlayShare.visibility = if (showShare) View.VISIBLE else View.GONE
+        overlayFavourite.visibility = if (showFavourite) View.VISIBLE else View.GONE
+        overlayTrash.visibility = if (showTrash) View.VISIBLE else View.GONE
     }
 
     //Current item
