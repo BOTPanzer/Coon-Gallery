@@ -162,12 +162,14 @@
     <string name="settings_viewer_shortcuts_title">Accesos directos</string>
     <string name="settings_viewer_shortcuts_properties_title">Propiedades</string>
     <string name="settings_viewer_shortcuts_properties_description">Mostrar un acceso directo a propiedades en la parte inferior de la pantalla.</string>
-    <string name="settings_viewer_shortcuts_edit_title">Editar</string>
-    <string name="settings_viewer_shortcuts_edit_description">Mostrar un acceso directo a editar en la parte inferior de la pantalla.</string>
     <string name="settings_viewer_shortcuts_share_title">Compartir</string>
     <string name="settings_viewer_shortcuts_share_description">Mostrar un acceso directo a compartir en la parte inferior de la pantalla.</string>
+    <string name="settings_viewer_shortcuts_edit_title">Editar</string>
+    <string name="settings_viewer_shortcuts_edit_description">Mostrar un acceso directo a editar en la parte inferior de la pantalla.</string>
     <string name="settings_viewer_shortcuts_favourite_title">Favoritos</string>
     <string name="settings_viewer_shortcuts_favourite_description">Mostrar un acceso directo a añadir a favoritos en la parte inferior de la pantalla.</string>
+    <string name="settings_viewer_shortcuts_trash_title">Mover a papelera</string>
+    <string name="settings_viewer_shortcuts_trash_description">Mostrar un acceso directo a mover a papelera en la parte inferior de la pantalla.</string>
     <string name="settings_video_player_title">Reproductor</string>
     <string name="settings_video_player_skip_backwards_title">Retroceder · %ds</string>
     <string name="settings_video_player_skip_backwards_description">La cantidad de segundos que se retrocederá al tocar dos veces la parte izquierda de la pantalla.</string>

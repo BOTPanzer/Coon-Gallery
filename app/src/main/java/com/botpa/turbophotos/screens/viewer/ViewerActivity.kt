@@ -81,9 +81,10 @@ class ViewerActivity : BaseActivity() {
 
     private var useInternalVideoPlayer: Boolean = true
     private var showProperties: Boolean = true
-    private var showEdit: Boolean = false
     private var showShare: Boolean = false
+    private var showEdit: Boolean = false
     private var showFavourite: Boolean = false
+    private var showTrash: Boolean = false
 
     private lateinit var currentItem: Item
 
@@ -142,6 +143,9 @@ class ViewerActivity : BaseActivity() {
     private lateinit var overlayFavouriteContainer: View
     private lateinit var overlayFavourite: View
     private lateinit var overlayFavouriteImage: ImageView
+    private lateinit var overlayTrashContainer: View
+    private lateinit var overlayTrash: View
+    private lateinit var overlayTrashImage: ImageView
     private lateinit var overlayOptions: View
 
 
@@ -183,6 +187,9 @@ class ViewerActivity : BaseActivity() {
         overlayFavouriteContainer = findViewById(R.id.overlayFavouriteContainer)
         overlayFavourite = findViewById(R.id.overlayFavourite)
         overlayFavouriteImage = findViewById(R.id.overlayFavouriteImage)
+        overlayTrashContainer = findViewById(R.id.overlayTrashContainer)
+        overlayTrash = findViewById(R.id.overlayTrash)
+        overlayTrashImage = findViewById(R.id.overlayTrashImage)
         overlayOptions = findViewById(R.id.overlayOptions)
 
 
@@ -222,6 +229,8 @@ class ViewerActivity : BaseActivity() {
         overlayShare.setOnClickListener { optionShare.action.invoke() }
 
         overlayFavourite.setOnClickListener { (if (currentItem.isFavourite) optionUnfavourite else optionFavourite).action.invoke() }
+
+        overlayTrash.setOnClickListener { (if (currentItem.isTrashed) optionRestore else optionTrash).action.invoke() }
 
         overlayOptions.setOnClickListener { optionsManager.toggle(true) }
 
@@ -367,6 +376,7 @@ class ViewerActivity : BaseActivity() {
         showEdit = Storage.getBool(StoragePairs.VIEWER_SHOW_EDIT)
         showShare = Storage.getBool(StoragePairs.VIEWER_SHOW_SHARE)
         showFavourite = Storage.getBool(StoragePairs.VIEWER_SHOW_FAVOURITE)
+        showTrash = Storage.getBool(StoragePairs.VIEWER_SHOW_TRASH)
 
         //Check for permissions
         if (!permissionManager.hasAllPermissions) {
@@ -534,6 +544,7 @@ class ViewerActivity : BaseActivity() {
         overlayEditContainer.visibility = if (showEdit) View.VISIBLE else View.GONE
         overlayShareContainer.visibility = if (showShare) View.VISIBLE else View.GONE
         overlayFavouriteContainer.visibility = if (showFavourite) View.VISIBLE else View.GONE
+        overlayTrashContainer.visibility = if (showTrash) View.VISIBLE else View.GONE
     }
 
     //Current item
@@ -579,7 +590,10 @@ class ViewerActivity : BaseActivity() {
         //Change image name & favourite state
         overlayTitle.text = currentItem.name
         overlayIsFavourite.visibility = if (currentItem.isFavourite) View.VISIBLE else View.GONE
+
+        //Update shortcuts
         overlayFavouriteImage.setImageResource(if (currentItem.isFavourite) R.drawable.icon_action_favourite_off else R.drawable.icon_action_favourite_on)
+        overlayTrashImage.setImageResource(if (currentItem.isTrashed) R.drawable.icon_action_restore else R.drawable.icon_action_trash)
     }
 
     //PiP

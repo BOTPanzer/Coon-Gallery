@@ -162,12 +162,14 @@
     <string name="settings_viewer_shortcuts_title">Shortcuts</string>
     <string name="settings_viewer_shortcuts_properties_title">Properties</string>
     <string name="settings_viewer_shortcuts_properties_description">Show a properties shortcut at the bottom of the screen.</string>
-    <string name="settings_viewer_shortcuts_edit_title">Edit</string>
-    <string name="settings_viewer_shortcuts_edit_description">Show an edit shortcut at the bottom of the screen.</string>
     <string name="settings_viewer_shortcuts_share_title">Share</string>
     <string name="settings_viewer_shortcuts_share_description">Show a share shortcut at the bottom of the screen.</string>
+    <string name="settings_viewer_shortcuts_edit_title">Edit</string>
+    <string name="settings_viewer_shortcuts_edit_description">Show an edit shortcut at the bottom of the screen.</string>
     <string name="settings_viewer_shortcuts_favourite_title">Favourite</string>
     <string name="settings_viewer_shortcuts_favourite_description">Show an add to favourites shortcut at the bottom of the screen.</string>
+    <string name="settings_viewer_shortcuts_trash_title">Move to trash</string>
+    <string name="settings_viewer_shortcuts_trash_description">Show a move to trash shortcut at the bottom of the screen.</string>
     <string name="settings_video_player_title">Player</string>
     <string name="settings_video_player_skip_backwards_title">Skip backwards · %ds</string>
     <string name="settings_video_player_skip_backwards_description">The amount of seconds to skip backwards when double tapping the screen on the left.</string>

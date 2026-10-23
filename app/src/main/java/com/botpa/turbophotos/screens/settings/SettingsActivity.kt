@@ -873,25 +873,6 @@ class SettingsActivity : AppCompatActivity() {
                             //Divider
                             GroupDivider()
 
-                            //Edit shortcut
-                            GroupItem {
-                                SettingsItem(
-                                    title = R.string.settings_viewer_shortcuts_edit_title,
-                                    description = R.string.settings_viewer_shortcuts_edit_description
-                                ) {
-                                    //Value
-                                    Switch(
-                                        checked = view.viewerShowEdit,
-                                        onCheckedChange = { isChecked ->
-                                            view.updateViewerShowEdit(isChecked)
-                                        }
-                                    )
-                                }
-                            }
-
-                            //Divider
-                            GroupDivider()
-
                             //Share shortcut
                             GroupItem {
                                 SettingsItem(
@@ -911,6 +892,25 @@ class SettingsActivity : AppCompatActivity() {
                             //Divider
                             GroupDivider()
 
+                            //Edit shortcut
+                            GroupItem {
+                                SettingsItem(
+                                    title = R.string.settings_viewer_shortcuts_edit_title,
+                                    description = R.string.settings_viewer_shortcuts_edit_description
+                                ) {
+                                    //Value
+                                    Switch(
+                                        checked = view.viewerShowEdit,
+                                        onCheckedChange = { isChecked ->
+                                            view.updateViewerShowEdit(isChecked)
+                                        }
+                                    )
+                                }
+                            }
+
+                            //Divider
+                            GroupDivider()
+
                             //Favourite shortcut
                             GroupItem {
                                 SettingsItem(
@@ -922,6 +922,25 @@ class SettingsActivity : AppCompatActivity() {
                                         checked = view.viewerShowFavourite,
                                         onCheckedChange = { isChecked ->
                                             view.updateViewerShowFavourite(isChecked)
+                                        }
+                                    )
+                                }
+                            }
+
+                            //Divider
+                            GroupDivider()
+
+                            //Trash shortcut
+                            GroupItem {
+                                SettingsItem(
+                                    title = R.string.settings_viewer_shortcuts_trash_title,
+                                    description = R.string.settings_viewer_shortcuts_trash_description
+                                ) {
+                                    //Value
+                                    Switch(
+                                        checked = view.viewerShowTrash,
+                                        onCheckedChange = { isChecked ->
+                                            view.updateViewerShowTrash(isChecked)
                                         }
                                     )
                                 }

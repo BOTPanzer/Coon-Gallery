@@ -73,9 +73,10 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     //Viewer screen
     var viewerShowInfo by mutableStateOf(Storage.getBool(StoragePairs.VIEWER_SHOW_PROPERTIES))
-    var viewerShowEdit by mutableStateOf(Storage.getBool(StoragePairs.VIEWER_SHOW_EDIT))
     var viewerShowShare by mutableStateOf(Storage.getBool(StoragePairs.VIEWER_SHOW_SHARE))
+    var viewerShowEdit by mutableStateOf(Storage.getBool(StoragePairs.VIEWER_SHOW_EDIT))
     var viewerShowFavourite by mutableStateOf(Storage.getBool(StoragePairs.VIEWER_SHOW_FAVOURITE))
+    var viewerShowTrash by mutableStateOf(Storage.getBool(StoragePairs.VIEWER_SHOW_TRASH))
 
     //Video player
     var videoSkipBackwardsAmount by mutableFloatStateOf(Storage.getLong(StoragePairs.VIDEO_SKIP_BACKWARDS).toFloat())
@@ -290,19 +291,24 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         Storage.putBool(StoragePairs.VIEWER_SHOW_PROPERTIES, isChecked)
     }
 
-    fun updateViewerShowEdit(isChecked: Boolean) {
-        viewerShowEdit = isChecked
-        Storage.putBool(StoragePairs.VIEWER_SHOW_EDIT, isChecked)
-    }
-
     fun updateViewerShowShare(isChecked: Boolean) {
         viewerShowShare = isChecked
         Storage.putBool(StoragePairs.VIEWER_SHOW_SHARE, isChecked)
     }
 
+    fun updateViewerShowEdit(isChecked: Boolean) {
+        viewerShowEdit = isChecked
+        Storage.putBool(StoragePairs.VIEWER_SHOW_EDIT, isChecked)
+    }
+
     fun updateViewerShowFavourite(isChecked: Boolean) {
         viewerShowFavourite = isChecked
         Storage.putBool(StoragePairs.VIEWER_SHOW_FAVOURITE, isChecked)
+    }
+
+    fun updateViewerShowTrash(isChecked: Boolean) {
+        viewerShowTrash = isChecked
+        Storage.putBool(StoragePairs.VIEWER_SHOW_TRASH, isChecked)
     }
 
     //Video player

@@ -27,10 +27,11 @@ object StoragePairs {
     val ALBUM_SEARCH_METHOD: Storage.StoragePair<String> = Storage.StoragePair("Album.searchMethod", SearchMethod.ContainsWords.name)
 
     //Viewer screen
-    val VIEWER_SHOW_PROPERTIES: Storage.StoragePair<Boolean> = Storage.StoragePair("Viewer.showProperties", true)
-    val VIEWER_SHOW_EDIT: Storage.StoragePair<Boolean> = Storage.StoragePair("Viewer.showEdit", true)
     val VIEWER_SHOW_SHARE: Storage.StoragePair<Boolean> = Storage.StoragePair("Viewer.showShare", true)
+    val VIEWER_SHOW_EDIT: Storage.StoragePair<Boolean> = Storage.StoragePair("Viewer.showEdit", true)
     val VIEWER_SHOW_FAVOURITE: Storage.StoragePair<Boolean> = Storage.StoragePair("Viewer.showFavourite", false)
+    val VIEWER_SHOW_TRASH: Storage.StoragePair<Boolean> = Storage.StoragePair("Viewer.showTrash", false)
+    val VIEWER_SHOW_PROPERTIES: Storage.StoragePair<Boolean> = Storage.StoragePair("Viewer.showProperties", true)
 
     //Video player
     val VIDEO_LOOP: Storage.StoragePair<Boolean> = Storage.StoragePair("Video.loop", true)
