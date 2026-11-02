@@ -44,6 +44,8 @@ abstract class CustomHeaderAdapter<T, HeaderVH, ItemVH: RecyclerView.ViewHolder>
 
     fun getPositionFromIndex(index: Int): Int = index + positionOffset
 
+    fun getIndexFromPosition(position: Int): Int = position - positionOffset
+
     fun inflateView(context: Context, layout: Int, root: ViewGroup): View {
         return CustomAdapter.inflateView(context, layout, root)
     }

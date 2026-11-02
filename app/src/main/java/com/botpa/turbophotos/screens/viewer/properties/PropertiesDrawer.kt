@@ -243,24 +243,15 @@ class PropertiesDrawer(
 
         //Get info (file)
         val path = item.file.parent ?: ""
-        val date = Date(item.lastModified * 1000).toInstant()
-        val datePattern = DateFormat.getBestDateTimePattern(locale, "EEEyMMMd")
-        val timePattern = DateFormat.getBestDateTimePattern(locale, if (DateFormat.is24HourFormat(context)) "HHmmss" else "hhmmss a")
-        val dateFormatter = DateTimeFormatter.ofPattern(datePattern, locale).withZone(ZoneId.systemDefault())
-        val timeFormatter = DateTimeFormatter.ofPattern(timePattern, locale).withZone(ZoneId.systemDefault())
-        val size = round(item.size.toFloat() / 10) / 100
-        val sizeFormatter = NumberFormat.getNumberInstance(locale).apply {
-            minimumFractionDigits = 0
-            maximumFractionDigits = 2
-        }
+        val date = Date(item.lastModified * 1000)
         val resolution = getItemResolution(item, exif)
         val location = exif.latLong
 
         //Create items list (file)
         infoFileItems.add(PropertiesInfo(R.string.drawer_properties_info_file_name, item.name))
         infoFileItems.add(PropertiesInfo(R.string.drawer_properties_info_file_path, path))
-        infoFileItems.add(PropertiesInfo(R.string.drawer_properties_info_file_date, "${dateFormatter.format(date)} · ${timeFormatter.format(date)}"))
-        infoFileItems.add(PropertiesInfo(R.string.drawer_properties_info_file_size, if (size > 1000) "${sizeFormatter.format(size / 1000)} MB" else "${sizeFormatter.format(size)} KB"))
+        infoFileItems.add(PropertiesInfo(R.string.drawer_properties_info_file_date, Orion.formatDateAndTime(context, date, locale)))
+        infoFileItems.add(PropertiesInfo(R.string.drawer_properties_info_file_size, Orion.formatSize(item.size, locale)))
         if (resolution.first > 0 && resolution.second > 0) {
             infoFileItems.add(PropertiesInfo(R.string.drawer_properties_info_file_resolution, "${resolution.first}x${resolution.second}"))
         }

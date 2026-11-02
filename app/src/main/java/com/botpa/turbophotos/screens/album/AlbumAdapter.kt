@@ -10,10 +10,17 @@ import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
+import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.data.Item
+import com.botpa.turbophotos.gallery.data.SortDirection
+import com.botpa.turbophotos.gallery.data.SortMethod
 import com.botpa.turbophotos.gallery.modals.core.CustomHeaderAdapter
+import com.botpa.turbophotos.gallery.views.lists.fastscroller.IFastScrollerPopup
+import com.botpa.turbophotos.util.Orion
+import com.botpa.turbophotos.util.Orion.compareToAlphanumeric
 import com.bumptech.glide.Glide
 import com.google.android.material.card.MaterialCardView
+import java.util.Date
 
 @SuppressLint("SetTextI18n")
 class AlbumAdapter(
@@ -24,7 +31,7 @@ class AlbumAdapter(
     var topMargin: Int,
     private val selectedIndexes: Set<Int>,
     val showMissingMetadataIcon: Boolean
-) : CustomHeaderAdapter<Item, AlbumAdapter.HeaderHolder, AlbumAdapter.ItemHolder>(context, items) {
+) : IFastScrollerPopup, CustomHeaderAdapter<Item, AlbumAdapter.HeaderHolder, AlbumAdapter.ItemHolder>(context, items) {
 
     //Adapter
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -85,6 +92,33 @@ class AlbumAdapter(
         //Cancel pending loads
         if (holder is ItemHolder) {
             Glide.with(context).clear(holder.image)
+        }
+    }
+
+    override fun getPopupStringForPosition(position: Int): String? {
+        //Get item
+        var index = getIndexFromPosition(position)
+        if (index < 0) {
+            index = 0
+        } else if (index >= items.size) {
+            return null
+        }
+        val item = items[index]
+
+        //Return popup string
+        return when (Library.sortMethod) {
+            //Date
+            SortMethod.Date -> {
+                Orion.formatDate(context, Date(item.lastModified * 1000))
+            }
+            //Name
+            SortMethod.Name -> {
+                item.name
+            }
+            //Size
+            SortMethod.Size -> {
+                Orion.formatSize(item.size)
+            }
         }
     }
 

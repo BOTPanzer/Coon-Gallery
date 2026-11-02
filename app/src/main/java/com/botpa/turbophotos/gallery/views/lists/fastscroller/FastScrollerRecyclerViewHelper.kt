@@ -20,17 +20,17 @@ internal class FastScrollerRecyclerViewHelper(private val view: RecyclerView) : 
     private var cachedItemHeight: Int = -1
 
     override val scrollRange: Int get() {
-        val itemCount = this.itemCount
+        val itemCount = itemCount
         if (itemCount == 0) {
             return 0
         }
-        val regularHeight = this.itemHeight
+        val regularHeight = itemHeight
         if (regularHeight == 0) {
             return 0
         }
 
         return if (hasHeader) {
-            val firstHeight = this.headerHeight.let { if (it > 0) it else regularHeight }
+            val firstHeight = headerHeight.let { if (it > 0) it else regularHeight }
             view.paddingTop + firstHeight + (itemCount - 1) * regularHeight + view.paddingBottom
         } else {
             view.paddingTop + itemCount * regularHeight + view.paddingBottom
@@ -38,15 +38,15 @@ internal class FastScrollerRecyclerViewHelper(private val view: RecyclerView) : 
     }
 
     override val scrollOffset: Int get() {
-        val firstRowPosition = this.firstItemPosition
+        val firstRowPosition = firstItemPosition
         if (firstRowPosition == RecyclerView.NO_POSITION) {
             return 0
         }
-        val regularHeight = this.itemHeight
-        val firstItemTop = this.firstItemOffset
+        val regularHeight = itemHeight
+        val firstItemTop = firstItemOffset
 
         return if (hasHeader) {
-            val firstHeight = this.headerHeight.let { if (it > 0) it else regularHeight }
+            val firstHeight = headerHeight.let { if (it > 0) it else regularHeight }
             if (firstRowPosition == 0) {
                 view.paddingTop - firstItemTop
             } else {
@@ -56,6 +56,16 @@ internal class FastScrollerRecyclerViewHelper(private val view: RecyclerView) : 
             firstRowPosition * regularHeight + (view.paddingTop - firstItemTop)
         }
     }
+
+    override val popupText: CharSequence?
+        get() {
+            val firstPos = firstItemAdapterPosition
+            if (firstPos == RecyclerView.NO_POSITION) {
+                return null
+            }
+            val adapter = view.adapter as? IFastScrollerPopup ?: return null
+            return adapter.getPopupStringForPosition(firstPos)
+        }
 
     override fun addOnPreDrawListener(onPreDraw: Runnable) {
         view.addItemDecoration(object : ItemDecoration() {

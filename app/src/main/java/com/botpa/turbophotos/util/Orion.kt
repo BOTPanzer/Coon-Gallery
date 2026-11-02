@@ -21,6 +21,7 @@ import android.os.Environment
 import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.text.TextUtils
+import android.text.format.DateFormat
 import android.util.Log
 import android.util.TypedValue
 import android.view.LayoutInflater
@@ -62,9 +63,16 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.text.Normalizer
+import java.text.NumberFormat
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Date
 import java.util.Locale
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.round
+import kotlin.text.format
 
 object Orion {
 
@@ -1097,6 +1105,40 @@ object Orion {
         }
 
         return len1 - len2
+    }
+
+    fun formatDate(context: Context, date: Date, locale: Locale = Locale.getDefault()): String {
+        //Prepare pattern
+        val datePattern = DateFormat.getBestDateTimePattern(locale, "EEEyMMMd")
+        val dateFormatter = DateTimeFormatter.ofPattern(datePattern, locale).withZone(ZoneId.systemDefault())
+
+        //Format date
+        val instant = date.toInstant()
+        return dateFormatter.format(instant)
+    }
+
+    fun formatDateAndTime(context: Context, date: Date, locale: Locale = Locale.getDefault()): String {
+        //Prepare pattern
+        val datePattern = DateFormat.getBestDateTimePattern(locale, "EEEyMMMd")
+        val timePattern = DateFormat.getBestDateTimePattern(locale, if (DateFormat.is24HourFormat(context)) "HHmmss" else "hhmmss a")
+        val dateFormatter = DateTimeFormatter.ofPattern(datePattern, locale).withZone(ZoneId.systemDefault())
+        val timeFormatter = DateTimeFormatter.ofPattern(timePattern, locale).withZone(ZoneId.systemDefault())
+
+        //Format date
+        val instant = date.toInstant()
+        return "${dateFormatter.format(instant)} · ${timeFormatter.format(instant)}"
+    }
+
+    fun formatSize(size: Long, locale: Locale = Locale.getDefault()): String {
+        //Prepare pattern
+        val sizeFormatter = NumberFormat.getNumberInstance(locale).apply {
+            minimumFractionDigits = 0
+            maximumFractionDigits = 2
+        }
+
+        //Format Size
+        val fixedSize = round(size.toFloat() / 10) / 100
+        return if (size > 1000) "${sizeFormatter.format(fixedSize / 1000)} MB" else "${sizeFormatter.format(fixedSize)} KB"
     }
 
 }

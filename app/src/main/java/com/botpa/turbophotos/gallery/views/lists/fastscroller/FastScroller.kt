@@ -11,7 +11,10 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.core.content.ContextCompat
 import androidx.core.math.MathUtils
+import com.botpa.turbophotos.R
+import com.botpa.turbophotos.util.Orion.dpToPx
 import kotlin.math.abs
 import kotlin.math.max
 
@@ -39,6 +42,7 @@ class FastScroller(
 
     private var scrollbarEnabled = false
     private var thumbOffset = 0
+    private var popupOffset = 24.dpToPx
 
     private var downX = 0f
     private var downY = 0f
@@ -56,65 +60,48 @@ class FastScroller(
         val context = view.context
         touchSlop = ViewConfiguration.get(context).scaledTouchSlop
 
+        //Get sizes
         trackWidth = requireNonNegative(trackDrawable.intrinsicWidth, "trackDrawable.intrinsicWidth < 0")
         thumbWidth = requireNonNegative(thumbDrawable.intrinsicWidth, "thumbDrawable.intrinsicWidth < 0")
         thumbHeight = requireNonNegative(thumbDrawable.intrinsicHeight, "thumbDrawable.intrinsicHeight < 0")
 
+        //Create track & thumb views
         trackView = View(context)
         trackView.background = trackDrawable
         thumbView = View(context)
         thumbView.background = thumbDrawable
-        popupView = AppCompatTextView(context)
+
+        //Create popup view
+        popupView = AppCompatTextView(context).apply {
+            background = ContextCompat.getDrawable(context, R.drawable.scrollbar_popup)
+
+            val typedValue = android.util.TypedValue()
+            context.theme.resolveAttribute(com.google.android.material.R.attr.colorOnPrimary, typedValue, true)
+            setTextColor(ContextCompat.getColor(context, typedValue.resourceId))
+
+            gravity = Gravity.CENTER
+
+            setPadding(16.dpToPx, 0, 16.dpToPx, 0)
+        }
         popupView.layoutParams = FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
 
+        //Add views to container
         val overlay = view.overlay
         overlay.add(trackView)
         overlay.add(thumbView)
         overlay.add(popupView)
 
+        //Hide views
         postAutoHideScrollbar()
         popupView.alpha = 0f
 
+        //Register events
         viewHelper.addOnPreDrawListener { this.onPreDraw() }
         viewHelper.addOnScrollChangedListener { this.onScrollChanged() }
         viewHelper.addOnTouchEventListener { event -> this.onTouchEvent(event) }
     }
 
-    fun setPadding(left: Int, top: Int, right: Int, bottom: Int) {
-        if (userPadding != null && userPadding!!.left == left && userPadding!!.top == top && userPadding!!.right == right && userPadding!!.bottom == bottom) {
-            return
-        }
-        if (userPadding == null) {
-            userPadding = Rect()
-        }
-        userPadding!!.set(left, top, right, bottom)
-        view.invalidate()
-    }
-
-    private var padding: Rect?
-        get() {
-            if (userPadding != null) {
-                tempRect.set(userPadding!!)
-            } else {
-                tempRect.set(view.paddingLeft, view.paddingTop, view.paddingRight, view.paddingBottom)
-            }
-            return tempRect
-        }
-        set(padding) {
-            if (userPadding == padding) {
-                return
-            }
-            if (padding != null) {
-                if (userPadding == null) {
-                    userPadding = Rect()
-                }
-                userPadding!!.set(padding)
-            } else {
-                userPadding = null
-            }
-            view.invalidate()
-        }
-
+    //Rendering
     private fun onPreDraw() {
         updateScrollbarState()
         trackView.visibility = if (scrollbarEnabled) View.VISIBLE else View.INVISIBLE
@@ -153,10 +140,11 @@ class FastScroller(
             }
             val popupWidth = popupView.measuredWidth
             val popupHeight = popupView.measuredHeight
-            val popupLeft = if (isLayoutRtl)
-                padding.left + thumbWidth + popupLayoutParams.leftMargin
-            else
-                (viewWidth - padding.right - thumbWidth - popupLayoutParams.rightMargin - popupWidth)
+            val popupLeft = if (isLayoutRtl) {
+                padding.left + thumbWidth + popupOffset + popupLayoutParams.leftMargin
+            } else {
+                (viewWidth - padding.right - thumbWidth - popupOffset - popupLayoutParams.rightMargin - popupWidth)
+            }
             val popupAnchorY: Int = when (popupLayoutParams.gravity and Gravity.HORIZONTAL_GRAVITY_MASK) {
                 Gravity.LEFT -> 0
                 Gravity.CENTER_HORIZONTAL -> popupHeight / 2
@@ -186,18 +174,49 @@ class FastScroller(
         }
     }
 
-    private fun updateScrollbarState() {
-        val scrollOffsetRange = this.scrollOffsetRange
-        scrollbarEnabled = scrollOffsetRange > 0
-        thumbOffset = if (scrollbarEnabled) (this.thumbOffsetRange.toLong() * viewHelper.scrollOffset / scrollOffsetRange).toInt() else 0
-    }
-
+    //layout
     private fun layoutView(view: View, left: Int, top: Int, right: Int, bottom: Int) {
         val scrollX = view.scrollX
         val scrollY = view.scrollY
         view.layout(scrollX + left, scrollY + top, scrollX + right, scrollY + bottom)
     }
 
+    fun setPadding(left: Int, top: Int, right: Int, bottom: Int) {
+        if (userPadding != null && userPadding!!.left == left && userPadding!!.top == top && userPadding!!.right == right && userPadding!!.bottom == bottom) {
+            return
+        }
+        if (userPadding == null) {
+            userPadding = Rect()
+        }
+        userPadding!!.set(left, top, right, bottom)
+        view.invalidate()
+    }
+
+    private var padding: Rect?
+        get() {
+            if (userPadding != null) {
+                tempRect.set(userPadding!!)
+            } else {
+                tempRect.set(view.paddingLeft, view.paddingTop, view.paddingRight, view.paddingBottom)
+            }
+            return tempRect
+        }
+        set(padding) {
+            if (userPadding == padding) {
+                return
+            }
+            if (padding != null) {
+                if (userPadding == null) {
+                    userPadding = Rect()
+                }
+                userPadding!!.set(padding)
+            } else {
+                userPadding = null
+            }
+            view.invalidate()
+        }
+
+    //Events
     private fun onScrollChanged() {
         updateScrollbarState()
         if (!scrollbarEnabled) {
@@ -257,6 +276,7 @@ class FastScroller(
         return isDragging
     }
 
+    //Location
     private fun isInView(view: View, x: Float, y: Float): Boolean {
         val scrollX = view.scrollX
         val scrollY = view.scrollY
@@ -287,6 +307,13 @@ class FastScroller(
 
         // 3. Return true if touch is within these expanded bounds
         return position >= expandedStart && position < expandedEnd
+    }
+
+    //Scrollbar
+    private fun updateScrollbarState() {
+        val scrollOffsetRange = this.scrollOffsetRange
+        scrollbarEnabled = scrollOffsetRange > 0
+        thumbOffset = if (scrollbarEnabled) (this.thumbOffsetRange.toLong() * viewHelper.scrollOffset / scrollOffsetRange).toInt() else 0
     }
 
     private fun scrollToThumbOffset(thumbOffset: Int) {
@@ -349,33 +376,31 @@ class FastScroller(
         view.removeCallbacks(autoHideScrollbarRunnable)
     }
 
+    //Helpers
     interface ViewHelper {
-        fun addOnPreDrawListener(onPreDraw: Runnable)
-
-        fun addOnScrollChangedListener(onScrollChanged: Runnable)
-
-        fun addOnTouchEventListener(onTouchEvent: (MotionEvent) -> Boolean)
-
+        //Scrollbar
         val scrollRange: Int
-
         val scrollOffset: Int
-
         fun scrollTo(offset: Int)
 
+        //Popup
         val popupText: CharSequence? get() = null
+
+        //Events
+        fun addOnPreDrawListener(onPreDraw: Runnable)
+        fun addOnScrollChangedListener(onScrollChanged: Runnable)
+        fun addOnTouchEventListener(onTouchEvent: (MotionEvent) -> Boolean)
     }
 
     interface AnimationHelper {
+        //Scrollbar
         fun showScrollbar(trackView: View, thumbView: View)
-
         fun hideScrollbar(trackView: View, thumbView: View)
-
         val isScrollbarAutoHideEnabled: Boolean
-
         val scrollbarAutoHideDelayMillis: Int
 
+        //Popup
         fun showPopup(popupView: View)
-
         fun hidePopup(popupView: View)
     }
 
