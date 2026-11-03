@@ -332,7 +332,7 @@ object Library {
         return album
     }
 
-    private fun getOrCreateAlbumFromFolder(folder: File): Album {
+    fun getOrCreateAlbumFromFolder(folder: File): Album {
         //Temp album var
         val album: Album?
 

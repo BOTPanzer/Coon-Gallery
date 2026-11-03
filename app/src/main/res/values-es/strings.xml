@@ -52,9 +52,11 @@
     <string name="home_filtered_images">Mostrando solo imágenes</string>
     <string name="home_filtered_videos">Mostrando solo videos</string>
     <string name="home_filtered_custom">Mostrando solo personalizado</string>
-    <string name="home_pinned_album">Se ha fijado el álbum "%s" en la parte superior.</string>
+    <string name="home_pinned_title">Fijados</string>
+    <string name="home_pinned_album">Se ha fijado el álbum \"%s\" en la parte superior.</string>
     <string name="home_pinned_reset">El álbum fijado ha sido restablecido.</string>
     <string name="home_pinned_tutorial">Mantén presionado en un álbum para fijarlo.</string>
+    <string name="home_albums_title">Albumes</string>
     <string name="home_search_hint">Buscar albumes</string>
     <string name="home_search_navbar">Buscando %s</string>
     <string name="home_refresh_pull">Desliza para actualizar</string>

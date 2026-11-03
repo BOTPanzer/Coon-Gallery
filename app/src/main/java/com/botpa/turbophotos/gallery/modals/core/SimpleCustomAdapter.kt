@@ -10,9 +10,14 @@ abstract class SimpleCustomAdapter<T, VH: RecyclerView.ViewHolder>(
 
     //Listeners
     var onClick: ClickListener<T>? = null
+    var onLongClick: LongClickListener<T>? = null
 
     fun interface ClickListener<T> {
         fun run(item: T, position: Int)
+    }
+
+    fun interface LongClickListener<T> {
+        fun run(item: T, position: Int): Boolean
     }
 
 }

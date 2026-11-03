@@ -57,6 +57,7 @@ import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Orion.pxToDp
 import com.botpa.turbophotos.util.Storage
 import com.scwang.smart.refresh.layout.SmartRefreshLayout
+import java.io.File
 
 @SuppressLint("SetTextI18n", "NotifyDataSetChanged")
 class HomeActivity : BaseActivity() {
@@ -104,6 +105,7 @@ class HomeActivity : BaseActivity() {
 
     //List
     private var homeAlbumsList: MutableList<Album> = ArrayList()
+    private var homePinsList: MutableList<Album> = ArrayList()
 
     private lateinit var homeLayoutManager: GridLayoutManager
     private lateinit var homeDecorator: GridListSeparator
@@ -518,7 +520,7 @@ class HomeActivity : BaseActivity() {
             searchHelper.refresh()
         } else {
             //Check if albums were deleted
-            if (!action.removedAlbumIndexes.isEmpty()) {
+            if (action.removedAlbumIndexes.isNotEmpty()) {
                 //Albums were deleted -> Notify items removed
                 for (albumIndex in action.removedAlbumIndexes) {
                     //Remove album from list
@@ -531,7 +533,7 @@ class HomeActivity : BaseActivity() {
 
             //Check if albums were sorted
             var specialAlbumWasModified = false
-            if (!action.modifiedAlbums.isEmpty()) {
+            if (action.modifiedAlbums.isNotEmpty()) {
                 //Albums were modified -> Notify items changed
                 for (album in action.modifiedAlbums) {
                     //Check if album is special
@@ -548,7 +550,7 @@ class HomeActivity : BaseActivity() {
 
             //Update header if an special album was modified
             if (specialAlbumWasModified) {
-                homeAdapter.notifyItemChanged(0)
+                homeAdapter.pinsAdapter.notifyDataSetChanged()
             }
         }
     }
@@ -564,8 +566,25 @@ class HomeActivity : BaseActivity() {
         homeList.addItemDecoration(homeDecorator)
         (homeList.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
 
+        //Init pins
+        homePinsList.apply {
+            //Regular pins
+            add(Library.all)
+            add(Library.trash)
+            add(Library.favourites)
+
+            //Custom pin
+            val pinnedFolder = File(Storage.getString(StoragePairs.HOME_PINNED_ALBUM) ?: "")
+            val pinnedAlbum = if (pinnedFolder.exists() && pinnedFolder.isDirectory) {
+                Library.getOrCreateAlbumFromFolder(pinnedFolder)
+            } else {
+                null
+            }
+            if (pinnedAlbum != null) homePinsList.add(pinnedAlbum)
+        }
+
         //Init home adapter
-        homeAdapter = HomeAdapter(this, homeAlbumsList)
+        homeAdapter = HomeAdapter(this, homeAlbumsList, homePinsList)
         homeAdapter.onClick = HomeAdapter.ClickListener { view: View, album: Album ->
             //Not available
             if (isWorking) return@ClickListener
@@ -613,9 +632,17 @@ class HomeActivity : BaseActivity() {
             //Ignore special albums
             if (album.isSpecial) return@ClickListener
 
-            //Pin album
+            //Remove previous pinned album
+            for (i in homePinsList.size - 1 downTo 0) {
+                if (!homePinsList[i].isSpecial) {
+                    homePinsList.removeAt(i)
+                }
+            }
+
+            //Pin new album
             Storage.putString(StoragePairs.HOME_PINNED_ALBUM, album.albumPath)
-            homeAdapter.notifyItemChanged(0)
+            homePinsList.add(album)
+            homeAdapter.pinsAdapter.notifyDataSetChanged()
             Orion.snack(this, getString(R.string.home_pinned_album, album.name), duration = Orion.snackDurationLong)
         }
         homeList.setAdapter(homeAdapter)

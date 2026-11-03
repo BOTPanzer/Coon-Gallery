@@ -7,23 +7,28 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
-import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.gallery.data.Album
 import com.botpa.turbophotos.gallery.data.Item
 import com.botpa.turbophotos.gallery.modals.core.CustomHeaderAdapter
+import com.botpa.turbophotos.gallery.views.lists.ListSeparator
+import com.botpa.turbophotos.screens.home.pins.PinsAdapter
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
 import com.bumptech.glide.Glide
-import java.io.File
 
 @SuppressLint("SetTextI18n")
 class HomeAdapter(
     context: Context,
-    albums: List<Album>
+    albums: List<Album>,
+    private val pins: MutableList<Album>
 ) : CustomHeaderAdapter<Album, HomeAdapter.HeaderHolder, HomeAdapter.AlbumHolder>(context, albums) {
+
+    //Pins
+    val pinsAdapter = PinsAdapter(context, pins, false)
 
     //Adapter
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -35,58 +40,27 @@ class HomeAdapter(
     }
 
     override fun onInitHeaderHolder(holder: HeaderHolder) {
-        //Get pinned album
-        val pinnedFile = File(Storage.getString(StoragePairs.HOME_PINNED_ALBUM) ?: "")
-        val pinnedAlbum = Library.albumsMap.getOrDefault(pinnedFile.absolutePath, null)
-        val isPinnedValid = pinnedFile.exists() && pinnedFile.isDirectory
-        val pinnedName = if (isPinnedValid) pinnedFile.name else context.getString(R.string.library_album_pinned)
-        val pinnedSize = pinnedAlbum?.size ?: 0
-
-        //Load album covers
-        val isAllLoaded = loadAlbumCover(holder.allImage, Library.all)
-        holder.allImage.visibility = if (isAllLoaded) View.VISIBLE else View.GONE
-        holder.allIcon.visibility = if (isAllLoaded) View.GONE else View.VISIBLE
-        val isTrashLoaded = loadAlbumCover(holder.trashImage, Library.trash)
-        holder.trashImage.visibility = if (isTrashLoaded) View.VISIBLE else View.GONE
-        holder.trashIcon.visibility = if (isTrashLoaded) View.GONE else View.VISIBLE
-        val isFavouritesLoaded = loadAlbumCover(holder.favouritesImage, Library.favourites)
-        holder.favouritesImage.visibility = if (isFavouritesLoaded) View.VISIBLE else View.GONE
-        holder.favouritesIcon.visibility = if (isFavouritesLoaded) View.GONE else View.VISIBLE
-        val isPinnedLoaded = loadAlbumCover(holder.pinnedImage, pinnedAlbum)
-        holder.pinnedImage.visibility = if (isPinnedLoaded) View.VISIBLE else View.GONE
-        holder.pinnedIcon.visibility = if (isPinnedLoaded) View.GONE else View.VISIBLE
-
-        //Update text
-        holder.allInfo.text = context.getString(R.string.items, Library.all.size)
-        holder.trashInfo.text = context.getString(R.string.items, Library.trash.size)
-        holder.favouritesInfo.text = context.getString(R.string.items, Library.favourites.size)
-        holder.pinnedName.text = pinnedName
-        holder.pinnedInfo.text = context.getString(R.string.items, pinnedSize)
-
-        //Add listeners
-        addAlbumListener(holder.all, Library.all)
-        addAlbumListener(holder.trash, Library.trash)
-        addAlbumListener(holder.favourites, Library.favourites)
-
-        holder.pinned.setOnClickListener { view ->
-            if (!isPinnedValid) {
-                //Tell user how to pin an album
-                Orion.snack(context as Activity, R.string.home_pinned_tutorial, duration = Orion.snackDurationLong)
-            } else if (pinnedAlbum != null && pinnedAlbum.isNotEmpty()) {
-                //Open album
-                onClick?.run(view, pinnedAlbum)
-            }
+        //Create adapter
+        pinsAdapter.onClick = { album, position ->
+            onItemClick(holder.list.layoutManager?.findViewByPosition(position)!!, album)
         }
 
-        holder.pinned.setOnLongClickListener { view ->
-            if (isPinnedValid) {
-                //Reset pinned album
+        pinsAdapter.onLongClick = { album, position ->
+            //Reset pinned album
+            if (!album.isSpecial) {
                 Storage.putString(StoragePairs.HOME_PINNED_ALBUM, "")
-                notifyItemChanged(0)
+                pins.removeAt(position)
+                pinsAdapter.notifyItemRemoved(position)
                 Orion.snack(context as Activity, R.string.home_pinned_reset, duration = Orion.snackDurationLong)
             }
             true
         }
+
+        //Init list
+        holder.list.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+        holder.list.adapter = pinsAdapter
+        for (i in 0 until holder.list.itemDecorationCount) holder.list.removeItemDecorationAt(0)
+        holder.list.addItemDecoration(ListSeparator(3, true))
     }
 
     override fun onInitItemHolder(holder: AlbumHolder, album: Album) {
@@ -123,13 +97,21 @@ class HomeAdapter(
 
     private fun addAlbumListener(view: View, album: Album?) {
         view.setOnClickListener { view ->
-            if (album != null && album.isNotEmpty()) onClick?.run(view, album)
+            onItemClick(view, album)
         }
 
         view.setOnLongClickListener { view ->
-            if (album != null && album.isNotEmpty()) onLongClick?.run(view, album)
-            true
+            onItemLongClick(view, album)
         }
+    }
+
+    private fun onItemClick(view: View, album: Album?) {
+        if (album != null && album.isNotEmpty()) onClick?.run(view, album)
+    }
+
+    private fun onItemLongClick(view: View, album: Album?): Boolean {
+        if (album != null && album.isNotEmpty()) onLongClick?.run(view, album)
+        return true
     }
 
     fun getIndexFromAlbum(album: Album): Int = items.indexOf(album)
@@ -145,26 +127,7 @@ class HomeAdapter(
     //Holders
     class HeaderHolder(root: View) : RecyclerView.ViewHolder(root) {
 
-        val all: View = root.findViewById(R.id.all)
-        val allImage: ImageView = root.findViewById(R.id.allImage)
-        val allIcon: ImageView = root.findViewById(R.id.allIcon)
-        val allInfo: TextView = root.findViewById(R.id.allInfo)
-
-        val trash: View = root.findViewById(R.id.trash)
-        val trashImage: ImageView = root.findViewById(R.id.trashImage)
-        val trashIcon: ImageView = root.findViewById(R.id.trashIcon)
-        val trashInfo: TextView = root.findViewById(R.id.trashInfo)
-
-        val favourites: View = root.findViewById(R.id.favourites)
-        val favouritesImage: ImageView = root.findViewById(R.id.favouritesImage)
-        val favouritesIcon: ImageView = root.findViewById(R.id.favouritesIcon)
-        val favouritesInfo: TextView = root.findViewById(R.id.favouritesInfo)
-
-        val pinned: View = root.findViewById(R.id.pinned)
-        val pinnedImage: ImageView = root.findViewById(R.id.pinnedImage)
-        val pinnedIcon: ImageView = root.findViewById(R.id.pinnedIcon)
-        val pinnedName: TextView = root.findViewById(R.id.pinnedName)
-        val pinnedInfo: TextView = root.findViewById(R.id.pinnedInfo)
+        val list: RecyclerView = root.findViewById(R.id.pinsList)
 
     }
 

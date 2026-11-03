@@ -15,7 +15,8 @@ class ReorderableDrawer<T, VH: RecyclerView.ViewHolder>(
     activity: Activity,
     private val adapter: CustomAdapter<T, VH>,
     private val items: MutableList<T>,
-    private val onConfirm: () -> Unit
+    private val onConfirm: () -> Unit,
+    private val canSwipeToRemove: Boolean = false
 ) : CustomDrawer(activity, R.layout.drawer_reorderable) {
 
     //Views
@@ -32,10 +33,12 @@ class ReorderableDrawer<T, VH: RecyclerView.ViewHolder>(
     }
 
     override fun initListeners() {
+        //Cancel
         reorderableCancel.setOnClickListener {
             dialog.dismiss()
         }
 
+        //Confirm
         reorderableConfirm.setOnClickListener {
             onConfirm.invoke()
             dialog.dismiss()
@@ -51,7 +54,7 @@ class ReorderableDrawer<T, VH: RecyclerView.ViewHolder>(
         //Attach drag helper
         ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
             ItemTouchHelper.UP or ItemTouchHelper.DOWN,
-            0 //0 = swipe to dismiss is disabled
+            if (canSwipeToRemove) 0 else ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT //0 = disabled
         ) {
             override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
                 //Get positions
@@ -65,7 +68,12 @@ class ReorderableDrawer<T, VH: RecyclerView.ViewHolder>(
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                //Handle swipe-to-dismiss (if enabled)
+                //Get position
+                val position = viewHolder.bindingAdapterPosition
+
+                //Remove item
+                items.removeAt(position)
+                adapter.notifyItemRemoved(position)
             }
         }).attachToRecyclerView(reorderableList)
     }
