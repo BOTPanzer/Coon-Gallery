@@ -25,17 +25,25 @@ class HomeAdapter(
     context: Context,
     albums: List<Album>,
     private val pins: MutableList<Album>
-) : CustomHeaderAdapter<Album, HomeAdapter.HeaderHolder, HomeAdapter.AlbumHolder>(context, albums) {
+) : CustomHeaderAdapter<Album, HomeAdapter.HeaderHolder, HomeAdapter.AlbumHolder, RecyclerView.ViewHolder>(
+    context,
+    albums,
+    true,
+    false
+) {
 
     //Pins
     val pinsAdapter = PinsAdapter(context, pins, false)
 
     //Adapter
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        return if (viewType == TYPE_HEADER) {
-            HeaderHolder(inflateView(context, R.layout.home_header, parent))
-        } else {
-            AlbumHolder(inflateView(context, R.layout.home_item, parent))
+        return when (viewType) {
+            TYPE_HEADER -> {
+                HeaderHolder(inflateView(context, R.layout.home_header, parent))
+            }
+            else -> {
+                AlbumHolder(inflateView(context, R.layout.home_item, parent))
+            }
         }
     }
 
@@ -54,6 +62,10 @@ class HomeAdapter(
                 Orion.snack(context as Activity, R.string.home_pinned_reset, duration = Orion.snackDurationLong)
             }
             true
+        }
+
+        pinsAdapter.onEdit = {
+            onEditPins?.run()
         }
 
         //Init list
@@ -106,22 +118,36 @@ class HomeAdapter(
     }
 
     private fun onItemClick(view: View, album: Album?) {
-        if (album != null && album.isNotEmpty()) onClick?.run(view, album)
+        if (album != null && album.isNotEmpty()) {
+            onClick?.run(view, album)
+        }
     }
 
     private fun onItemLongClick(view: View, album: Album?): Boolean {
-        if (album != null && album.isNotEmpty()) onLongClick?.run(view, album)
-        return true
+        return if (album != null && album.isNotEmpty()) {
+            onLongClick?.run(view, album) ?: true
+        } else {
+            true
+        }
     }
 
     fun getIndexFromAlbum(album: Album): Int = items.indexOf(album)
 
     //Listeners
+    var onEditPins: SimpleClickListener? = null
     var onClick: ClickListener? = null
-    var onLongClick: ClickListener? = null
+    var onLongClick: LongClickListener? = null
+
+    fun interface SimpleClickListener {
+        fun run()
+    }
 
     fun interface ClickListener {
         fun run(view: View, album: Album)
+    }
+
+    fun interface LongClickListener {
+        fun run(view: View, album: Album): Boolean
     }
 
     //Holders

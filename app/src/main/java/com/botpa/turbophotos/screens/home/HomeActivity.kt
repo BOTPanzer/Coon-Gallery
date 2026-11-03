@@ -37,6 +37,7 @@ import com.botpa.turbophotos.gallery.actions.ActionResult
 import com.botpa.turbophotos.gallery.data.Album
 import com.botpa.turbophotos.gallery.data.SortDirection
 import com.botpa.turbophotos.gallery.data.SortMethod
+import com.botpa.turbophotos.gallery.modals.ReorderableDrawer
 import com.botpa.turbophotos.gallery.modals.UpdateDialog
 import com.botpa.turbophotos.gallery.options.OptionsGroup
 import com.botpa.turbophotos.gallery.options.OptionsItem
@@ -49,6 +50,7 @@ import com.botpa.turbophotos.gallery.views.lists.fastscroller.FastScrollerBuilde
 import com.botpa.turbophotos.screens.album.AlbumActivity
 import com.botpa.turbophotos.screens.home.filters.FiltersDialog
 import com.botpa.turbophotos.screens.home.filters.FiltersItem
+import com.botpa.turbophotos.screens.home.pins.PinsAdapter
 import com.botpa.turbophotos.screens.home.sorting.SortingDialog
 import com.botpa.turbophotos.screens.home.sorting.SortingItem
 import com.botpa.turbophotos.screens.settings.SettingsActivity
@@ -580,7 +582,7 @@ class HomeActivity : BaseActivity() {
             } else {
                 null
             }
-            if (pinnedAlbum != null) homePinsList.add(pinnedAlbum)
+            if (pinnedAlbum != null) homePinsList.add(0, pinnedAlbum)
         }
 
         //Init home adapter
@@ -625,25 +627,49 @@ class HomeActivity : BaseActivity() {
                 searchHelper.toggleLayout(false)
             }
         }
-        homeAdapter.onLongClick = HomeAdapter.ClickListener { view: View, album: Album ->
+        homeAdapter.onLongClick = HomeAdapter.LongClickListener { view: View, album: Album ->
             //Not available
-            if (isWorking) return@ClickListener
+            if (isWorking) return@LongClickListener true
 
             //Ignore special albums
-            if (album.isSpecial) return@ClickListener
+            if (album.isSpecial) return@LongClickListener true
 
             //Remove previous pinned album
             for (i in homePinsList.size - 1 downTo 0) {
-                if (!homePinsList[i].isSpecial) {
+                val item = homePinsList[i]
+                if (!item.isSpecial) {
                     homePinsList.removeAt(i)
                 }
             }
 
             //Pin new album
             Storage.putString(StoragePairs.HOME_PINNED_ALBUM, album.albumPath)
-            homePinsList.add(album)
+            homePinsList.add(0, album)
             homeAdapter.pinsAdapter.notifyDataSetChanged()
             Orion.snack(this, getString(R.string.home_pinned_album, album.name), duration = Orion.snackDurationLong)
+
+            //Finish
+            return@LongClickListener true
+        }
+        homeAdapter.onEditPins = {
+            //Create temp pins list
+            val tempList = ArrayList<Album>()
+            tempList.addAll(homePinsList)
+
+            //Create reorderable pins adapter
+            val adapter = PinsAdapter(this@HomeActivity, tempList, true)
+            adapter.onClick = { item, position -> }
+
+            //Create reorderable pins drawer
+            ReorderableDrawer(this@HomeActivity, adapter, tempList, {
+                //Update pins
+                homePinsList.clear()
+                homePinsList.addAll(tempList)
+                homeAdapter.pinsAdapter.notifyDataSetChanged()
+
+                //Scroll to start
+                homeAdapter.pinsAdapter.list?.smoothScrollToPosition(0)
+            }).buildAndShow()
         }
         homeList.setAdapter(homeAdapter)
 

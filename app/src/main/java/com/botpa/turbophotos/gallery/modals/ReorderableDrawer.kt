@@ -13,7 +13,7 @@ import java.util.Collections
 
 class ReorderableDrawer<T, VH: RecyclerView.ViewHolder>(
     activity: Activity,
-    private val adapter: CustomAdapter<T, VH>,
+    private val adapter: RecyclerView.Adapter<VH>,
     private val items: MutableList<T>,
     private val onConfirm: () -> Unit,
     private val canSwipeToRemove: Boolean = false

@@ -12,12 +12,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Library
 import com.botpa.turbophotos.gallery.data.Item
-import com.botpa.turbophotos.gallery.data.SortDirection
 import com.botpa.turbophotos.gallery.data.SortMethod
 import com.botpa.turbophotos.gallery.modals.core.CustomHeaderAdapter
 import com.botpa.turbophotos.gallery.views.lists.fastscroller.IFastScrollerPopup
 import com.botpa.turbophotos.util.Orion
-import com.botpa.turbophotos.util.Orion.compareToAlphanumeric
 import com.bumptech.glide.Glide
 import com.google.android.material.card.MaterialCardView
 import java.util.Date
@@ -31,14 +29,22 @@ class AlbumAdapter(
     var topMargin: Int,
     private val selectedIndexes: Set<Int>,
     val showMissingMetadataIcon: Boolean
-) : IFastScrollerPopup, CustomHeaderAdapter<Item, AlbumAdapter.HeaderHolder, AlbumAdapter.ItemHolder>(context, items) {
+) : IFastScrollerPopup, CustomHeaderAdapter<Item, AlbumAdapter.HeaderHolder, AlbumAdapter.ItemHolder, RecyclerView.ViewHolder>(
+    context,
+    items,
+    true,
+    false
+) {
 
     //Adapter
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        return if (viewType == TYPE_HEADER) {
-            HeaderHolder(inflateView(context, R.layout.album_header, parent))
-        } else {
-            ItemHolder(inflateView(context, R.layout.album_item, parent))
+        return when (viewType) {
+            TYPE_HEADER -> {
+                HeaderHolder(inflateView(context, R.layout.album_header, parent))
+            }
+            else -> {
+                ItemHolder(inflateView(context, R.layout.album_item, parent))
+            }
         }
     }
 
