@@ -610,6 +610,9 @@ class HomeActivity : BaseActivity() {
             //Not available
             if (isWorking) return@ClickListener
 
+            //Ignore special albums
+            if (album.isSpecial) return@ClickListener
+
             //Pin album
             Storage.putString(StoragePairs.HOME_PINNED_ALBUM, album.albumPath)
             homeAdapter.notifyItemChanged(0)
