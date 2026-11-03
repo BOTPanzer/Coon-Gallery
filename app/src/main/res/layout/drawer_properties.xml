@@ -319,11 +319,14 @@
                 android:layout_weight="1"
                 android:text="@string/drawer_properties_edit_actions_cancel" />
 
+            <View
+                android:layout_width="10dp"
+                android:layout_height="0dp" />
+
             <Button
                 android:id="@+id/editSave"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
                 android:layout_weight="1"
                 android:text="@string/drawer_properties_edit_actions_save" />
 

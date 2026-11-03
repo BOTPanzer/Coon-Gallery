@@ -1,7 +1,6 @@
 package com.botpa.turbophotos.screens.home
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
@@ -10,14 +9,11 @@ import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
-import com.botpa.turbophotos.gallery.StoragePairs
 import com.botpa.turbophotos.gallery.data.Album
 import com.botpa.turbophotos.gallery.data.Item
 import com.botpa.turbophotos.gallery.modals.core.CustomHeaderAdapter
 import com.botpa.turbophotos.gallery.views.lists.ListSeparator
 import com.botpa.turbophotos.screens.home.pins.PinsAdapter
-import com.botpa.turbophotos.util.Orion
-import com.botpa.turbophotos.util.Storage
 import com.bumptech.glide.Glide
 
 @SuppressLint("SetTextI18n")
@@ -53,18 +49,7 @@ class HomeAdapter(
             onItemClick(holder.list.layoutManager?.findViewByPosition(position)!!, album)
         }
 
-        pinsAdapter.onLongClick = { album, position ->
-            //Reset pinned album
-            if (!album.isSpecial) {
-                Storage.putString(StoragePairs.HOME_PINNED_ALBUM, "")
-                pins.removeAt(position)
-                pinsAdapter.notifyItemRemoved(position)
-                Orion.snack(context as Activity, R.string.home_pinned_reset, duration = Orion.snackDurationLong)
-            }
-            true
-        }
-
-        pinsAdapter.onEdit = {
+        pinsAdapter.onEditPins = {
             onEditPins?.run()
         }
 
@@ -107,7 +92,7 @@ class HomeAdapter(
         }
     }
 
-    private fun addAlbumListener(view: View, album: Album?) {
+    private fun addAlbumListener(view: View, album: Album) {
         view.setOnClickListener { view ->
             onItemClick(view, album)
         }
@@ -117,37 +102,29 @@ class HomeAdapter(
         }
     }
 
-    private fun onItemClick(view: View, album: Album?) {
-        if (album != null && album.isNotEmpty()) {
-            onClick?.run(view, album)
-        }
+    private fun onItemClick(view: View, album: Album) {
+        if (album.isNotEmpty()) onClick?.run(view, album)
     }
 
-    private fun onItemLongClick(view: View, album: Album?): Boolean {
-        return if (album != null && album.isNotEmpty()) {
-            onLongClick?.run(view, album) ?: true
-        } else {
-            true
-        }
+    private fun onItemLongClick(view: View, album: Album): Boolean {
+        if (album.isNotEmpty()) onLongClick?.run(view, album)
+        return true
     }
 
     fun getIndexFromAlbum(album: Album): Int = items.indexOf(album)
 
     //Listeners
     var onEditPins: SimpleClickListener? = null
-    var onClick: ClickListener? = null
-    var onLongClick: LongClickListener? = null
 
     fun interface SimpleClickListener {
         fun run()
     }
 
+    var onClick: ClickListener? = null
+    var onLongClick: ClickListener? = null
+
     fun interface ClickListener {
         fun run(view: View, album: Album)
-    }
-
-    fun interface LongClickListener {
-        fun run(view: View, album: Album): Boolean
     }
 
     //Holders

@@ -9,23 +9,43 @@ object Storage {
 
     //Storage specific
     private lateinit var preferences: SharedPreferences
-    private val isInit: Boolean get() = Storage::preferences.isInitialized
-    private const val LIST_SPLIT: String = "‚‗‚"
+    const val LIST_SPLIT: String = "‚‗‚"
+    var isInit: Boolean = false
+        private set
 
 
     //Init storage preferences
     fun init(activity: Activity) {
-        if (!isInit) preferences = activity.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+        if (!isInit) {
+            preferences = activity.getSharedPreferences("preferences", Context.MODE_PRIVATE)
+            isInit = true
+        }
+    }
+
+    fun clear() {
+        if (isInit) {
+            preferences.edit { clear() }
+        }
     }
 
     //String list
-    fun getStringList(key: String): MutableList<String> {
+    fun parseStringList(unparsedList: String): MutableList<String> {
         val list = ArrayList<String>()
-        if (isInit) {
-            val listString = preferences.getString(key, null)
-            if (listString != null) list.addAll(listString.split(LIST_SPLIT))
-        }
+        list.addAll(unparsedList.split(LIST_SPLIT))
         return list
+    }
+
+    fun getStringList(key: String, fallback: MutableList<String> = mutableListOf()): MutableList<String> {
+        if (isInit) {
+            val unparsedList = preferences.getString(key, null)
+            return if (unparsedList == null) {
+                fallback
+            } else {
+                parseStringList(unparsedList)
+            }
+        } else {
+            return fallback
+        }
     }
 
     fun putStringList(key: String, value: MutableList<String>) {

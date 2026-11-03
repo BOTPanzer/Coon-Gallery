@@ -568,22 +568,8 @@ class HomeActivity : BaseActivity() {
         homeList.addItemDecoration(homeDecorator)
         (homeList.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
 
-        //Init pins
-        homePinsList.apply {
-            //Regular pins
-            add(Library.all)
-            add(Library.trash)
-            add(Library.favourites)
-
-            //Custom pin
-            val pinnedFolder = File(Storage.getString(StoragePairs.HOME_PINNED_ALBUM) ?: "")
-            val pinnedAlbum = if (pinnedFolder.exists() && pinnedFolder.isDirectory) {
-                Library.getOrCreateAlbumFromFolder(pinnedFolder)
-            } else {
-                null
-            }
-            if (pinnedAlbum != null) homePinsList.add(0, pinnedAlbum)
-        }
+        //Init pinned items list
+        loadPinnedItems()
 
         //Init home adapter
         homeAdapter = HomeAdapter(this, homeAlbumsList, homePinsList)
@@ -627,14 +613,14 @@ class HomeActivity : BaseActivity() {
                 searchHelper.toggleLayout(false)
             }
         }
-        homeAdapter.onLongClick = HomeAdapter.LongClickListener { view: View, album: Album ->
+        homeAdapter.onLongClick = HomeAdapter.ClickListener { view: View, album: Album ->
             //Not available
-            if (isWorking) return@LongClickListener true
+            if (isWorking) return@ClickListener
 
             //Ignore special albums
-            if (album.isSpecial) return@LongClickListener true
+            if (album.isSpecial) return@ClickListener
 
-            //Remove previous pinned album
+            //Remove previously pinned albums
             for (i in homePinsList.size - 1 downTo 0) {
                 val item = homePinsList[i]
                 if (!item.isSpecial) {
@@ -643,29 +629,32 @@ class HomeActivity : BaseActivity() {
             }
 
             //Pin new album
-            Storage.putString(StoragePairs.HOME_PINNED_ALBUM, album.albumPath)
             homePinsList.add(0, album)
             homeAdapter.pinsAdapter.notifyDataSetChanged()
-            Orion.snack(this, getString(R.string.home_pinned_album, album.name), duration = Orion.snackDurationLong)
+            savePinnedItems()
 
-            //Finish
-            return@LongClickListener true
+            //Scroll to start
+            homeAdapter.pinsAdapter.list?.smoothScrollToPosition(0)
+
+            //Notify
+            Orion.snack(this, getString(R.string.home_pinned_album, album.name), duration = Orion.snackDurationLong)
         }
         homeAdapter.onEditPins = {
             //Create temp pins list
-            val tempList = ArrayList<Album>()
-            tempList.addAll(homePinsList)
+            val tempPins = ArrayList<Album>()
+            tempPins.addAll(homePinsList)
 
             //Create reorderable pins adapter
-            val adapter = PinsAdapter(this@HomeActivity, tempList, true)
+            val adapter = PinsAdapter(this@HomeActivity, tempPins, true)
             adapter.onClick = { item, position -> }
 
             //Create reorderable pins drawer
-            ReorderableDrawer(this@HomeActivity, adapter, tempList, {
+            ReorderableDrawer(this@HomeActivity, adapter, tempPins, {
                 //Update pins
                 homePinsList.clear()
-                homePinsList.addAll(tempList)
+                homePinsList.addAll(tempPins)
                 homeAdapter.pinsAdapter.notifyDataSetChanged()
+                savePinnedItems()
 
                 //Scroll to start
                 homeAdapter.pinsAdapter.list?.smoothScrollToPosition(0)
@@ -680,6 +669,42 @@ class HomeActivity : BaseActivity() {
 
         //Init search helper
         searchHelper.init(this, backManager, navbarLayout, searchLayout, searchInput, homeList, this@HomeActivity::onBeforeSearchFilter, this@HomeActivity::onSearchFilter, this@HomeActivity::onAfterSearchFilter)
+    }
+
+    private fun loadPinnedItems() {
+        homePinsList.clear()
+        homePinsList.apply {
+            //Get stored pins
+            val storedPinPaths = Storage.getStringList(StoragePairs.HOME_PINNED_ITEMS.key, Storage.parseStringList(StoragePairs.HOME_PINNED_ITEMS.value))
+
+            //Parse albums from stored pins
+            for (pinPath in storedPinPaths) {
+                when (pinPath) {
+                    "all" -> add(Library.all)
+                    "trash" -> add(Library.trash)
+                    "favourites" -> add(Library.favourites)
+                    else -> {
+                        val pinFolder = File(pinPath)
+                        if (pinFolder.exists() && pinFolder.isDirectory) {
+                            homePinsList.add(Library.getOrCreateAlbumFromFolder(pinFolder))
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun savePinnedItems() {
+        val items = ArrayList<String>()
+        for (album in homePinsList) {
+            when (album) {
+                Library.all -> items.add("all")
+                Library.trash -> items.add("trash")
+                Library.favourites -> items.add("favourites")
+                else -> items.add(album.albumPath)
+            }
+        }
+        Storage.putStringList(StoragePairs.HOME_PINNED_ITEMS.key, items)
     }
 
       /*$$$$$              /$$     /$$

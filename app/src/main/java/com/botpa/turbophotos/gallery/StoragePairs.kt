@@ -19,7 +19,7 @@ object StoragePairs {
 
     //Home screen
     val HOME_ITEMS_PER_ROW: Storage.StoragePair<Int> = Storage.StoragePair("Home.itemsPerRow", 2)
-    val HOME_PINNED_ALBUM: Storage.StoragePair<String> = Storage.StoragePair("Home.pinnedAlbum", "")
+    val HOME_PINNED_ITEMS: Storage.StoragePair<String> = Storage.StoragePair("Home.pinnedItems", "all${Storage.LIST_SPLIT}trash${Storage.LIST_SPLIT}favourites")
 
     //Album screen
     val ALBUM_ITEMS_PER_ROW: Storage.StoragePair<Int> = Storage.StoragePair("Album.itemsPerRow", 3)

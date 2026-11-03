@@ -106,6 +106,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
         //Home screen
         json.put(StoragePairs.HOME_ITEMS_PER_ROW.key, Storage.getInt(StoragePairs.HOME_ITEMS_PER_ROW))
+        json.put(StoragePairs.HOME_PINNED_ITEMS.key, Storage.getString(StoragePairs.HOME_PINNED_ITEMS))
 
         //Album screen
         json.put(StoragePairs.ALBUM_ITEMS_PER_ROW.key, Storage.getInt(StoragePairs.ALBUM_ITEMS_PER_ROW))
@@ -193,6 +194,9 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         loadIntSettingFromJson(json, StoragePairs.HOME_ITEMS_PER_ROW.key) { value ->
             homeItemsPerRow = value.toFloat()
             Storage.putInt(StoragePairs.HOME_ITEMS_PER_ROW, value)
+        }
+        loadStringSettingFromJson(json, StoragePairs.HOME_PINNED_ITEMS.key) { value ->
+            Storage.putString(StoragePairs.HOME_PINNED_ITEMS, value)
         }
 
         //Album screen

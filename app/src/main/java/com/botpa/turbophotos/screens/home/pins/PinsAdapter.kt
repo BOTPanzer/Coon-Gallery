@@ -39,7 +39,7 @@ class PinsAdapter(
     override fun onInitFooterHolder(holder: FooterHolder) {
         //Add listeners
         holder.card.setOnClickListener { view ->
-            onEdit?.run()
+            onEditPins?.run()
         }
     }
 
@@ -63,10 +63,6 @@ class PinsAdapter(
         holder.card.setOnClickListener { view ->
             onClick?.run(album, holder.bindingAdapterPosition)
         }
-
-        holder.card.setOnLongClickListener { view ->
-            onLongClick?.run(album, holder.bindingAdapterPosition) ?: true
-        }
     }
 
     //List
@@ -84,9 +80,8 @@ class PinsAdapter(
     }
 
     //Listeners
-    var onEdit: SimpleClickListener? = null
+    var onEditPins: SimpleClickListener? = null
     var onClick: ClickListener<Album>? = null
-    var onLongClick: LongClickListener<Album>? = null
 
     fun interface SimpleClickListener {
         fun run()
@@ -94,10 +89,6 @@ class PinsAdapter(
 
     fun interface ClickListener<T> {
         fun run(item: T, position: Int)
-    }
-
-    fun interface LongClickListener<T> {
-        fun run(item: T, position: Int): Boolean
     }
 
     //Util
