@@ -29,36 +29,10 @@
                 android:gravity="right"
                 android:orientation="vertical">
 
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:alpha="0.8"
-                    android:background="@drawable/gradient_top_to_bottom"
-                    android:backgroundTint="?attr/colorSurface" />
-
-                <Space
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:layout_weight="1" />
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:alpha="0.8"
-                    android:background="@drawable/gradient_bottom_to_top"
-                    android:backgroundTint="?attr/colorSurface" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="right"
-                android:orientation="vertical"
-                android:padding="6dp">
-
                 <androidx.cardview.widget.CardView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_margin="6dp"
                     app:cardBackgroundColor="?attr/colorSurface"
                     app:cardCornerRadius="30dp"
                     app:cardElevation="0dp">
@@ -72,6 +46,17 @@
                         app:tint="?attr/colorPrimary" />
                 </androidx.cardview.widget.CardView>
 
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:alpha="0.9"
+                    android:background="@drawable/gradient_bottom_to_top"
+                    android:backgroundTint="?attr/colorSurface" />
             </LinearLayout>
 
         </RelativeLayout>
