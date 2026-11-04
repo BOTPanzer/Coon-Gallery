@@ -84,6 +84,14 @@ class HomeActivity : BaseActivity() {
 
     private val isWorking get(): Boolean = isLibraryLoading || !isLibraryLoaded || searchHelper.isSearching
 
+    companion object {
+        private var arePinsDirty: Boolean = false
+
+        fun markPinsAsDirty() {
+            arePinsDirty = true
+        }
+    }
+
     //Permissions
     private val requestPermissionMedia = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted: Map<String, Boolean> ->
         permissionManager.notifyPermissionChanged(PermissionType.Media)
@@ -488,6 +496,12 @@ class HomeActivity : BaseActivity() {
 
         //Update list items per row
         updateListItemsPerRow()
+
+        //Refresh pins
+        if (arePinsDirty) {
+            loadPinnedItems()
+            arePinsDirty = false
+        }
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {

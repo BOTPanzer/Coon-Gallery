@@ -20,6 +20,7 @@ import com.botpa.turbophotos.gallery.data.Link
 import com.botpa.turbophotos.gallery.search.models.DownloadState
 import com.botpa.turbophotos.gallery.search.models.ModelDownloadWorker
 import com.botpa.turbophotos.gallery.search.models.ModelManager
+import com.botpa.turbophotos.screens.home.HomeActivity
 import com.botpa.turbophotos.util.Orion
 import com.botpa.turbophotos.util.Storage
 import com.fasterxml.jackson.databind.node.ObjectNode
@@ -197,6 +198,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         }
         loadStringSettingFromJson(json, StoragePairs.HOME_PINNED_ITEMS.key) { value ->
             Storage.putString(StoragePairs.HOME_PINNED_ITEMS, value)
+            HomeActivity.markPinsAsDirty()
         }
 
         //Album screen
