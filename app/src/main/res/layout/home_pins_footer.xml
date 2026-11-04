@@ -53,7 +53,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="2dp"
                     android:singleLine="true"
-                    android:text="@string/home_pinned_action_edit"
+                    android:text="@string/home_pinned_edit"
                     android:textColor="?attr/colorOnSurface"
                     android:textSize="14sp" />
 

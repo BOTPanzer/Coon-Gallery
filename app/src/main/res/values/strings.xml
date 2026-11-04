@@ -53,10 +53,9 @@
     <string name="home_filtered_videos">Showing only videos</string>
     <string name="home_filtered_custom">Showing only custom</string>
     <string name="home_pinned_title">Pinned</string>
-    <string name="home_pinned_album">Album \"%s\" was pinned to the top.</string>
-    <string name="home_pinned_reset">The pinned album has been reset.</string>
-    <string name="home_pinned_tutorial">Tap and hold on an album to pin it.</string>
-    <string name="home_pinned_action_edit">Edit</string>
+    <string name="home_pinned_edit">Edit</string>
+    <string name="home_pinned_add_title">Add to pinned</string>
+    <string name="home_pinned_add_album">Album</string>
     <string name="home_albums_title">Albums</string>
     <string name="home_search_hint">Search albums</string>
     <string name="home_search_navbar">Searching for %s</string>

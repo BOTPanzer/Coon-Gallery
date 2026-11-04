@@ -1,0 +1,95 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="14dp"
+        android:fontFamily="@font/opificio_bold_rounded"
+        android:text="@string/home_pinned_title"
+        android:textColor="?attr/colorPrimary"
+        android:textSize="16sp" />
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="20dp"
+        app:cardBackgroundColor="#00FFFFFF"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="0dp">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/pinsList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:overScrollMode="never" />
+    </androidx.cardview.widget.CardView>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="14dp"
+        android:fontFamily="@font/opificio_bold_rounded"
+        android:text="@string/home_pinned_add_title"
+        android:textColor="?attr/colorPrimary"
+        android:textSize="16sp" />
+
+    <com.google.android.material.button.MaterialButtonGroup
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:spacing="6dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/pinsAddAll"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/library_album_all"
+            app:icon="@drawable/icon_filter_all"
+            app:iconGravity="textStart"
+            app:materialSizeOverlay="@style/SizeOverlay.Material3Expressive.Button.Small.Square" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/pinsAddTrash"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/library_album_trash"
+            app:icon="@drawable/icon_action_trash"
+            app:iconGravity="textStart"
+            app:materialSizeOverlay="@style/SizeOverlay.Material3Expressive.Button.Small.Square" />
+
+    </com.google.android.material.button.MaterialButtonGroup>
+
+    <com.google.android.material.button.MaterialButtonGroup
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:spacing="6dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/pinsAddFavourites"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/library_album_favourites"
+            app:icon="@drawable/icon_action_favourite_off"
+            app:iconGravity="textStart"
+            app:materialSizeOverlay="@style/SizeOverlay.Material3Expressive.Button.Small.Square" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/pinsAddCustom"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/home_pinned_add_album"
+            app:icon="@drawable/icon_album"
+            app:iconGravity="textStart"
+            app:materialSizeOverlay="@style/SizeOverlay.Material3Expressive.Button.Small.Square" />
+
+    </com.google.android.material.button.MaterialButtonGroup>
+
+</LinearLayout>

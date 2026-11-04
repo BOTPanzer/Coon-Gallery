@@ -51,6 +51,7 @@ import com.botpa.turbophotos.screens.album.AlbumActivity
 import com.botpa.turbophotos.screens.home.filters.FiltersDialog
 import com.botpa.turbophotos.screens.home.filters.FiltersItem
 import com.botpa.turbophotos.screens.home.pins.PinsAdapter
+import com.botpa.turbophotos.screens.home.pins.ReorderPinsDrawer
 import com.botpa.turbophotos.screens.home.sorting.SortingDialog
 import com.botpa.turbophotos.screens.home.sorting.SortingItem
 import com.botpa.turbophotos.screens.settings.SettingsActivity
@@ -613,51 +614,26 @@ class HomeActivity : BaseActivity() {
                 searchHelper.toggleLayout(false)
             }
         }
-        homeAdapter.onLongClick = HomeAdapter.ClickListener { view: View, album: Album ->
+        homeAdapter.onEditPins = HomeAdapter.SimpleClickListener {
             //Not available
-            if (isWorking) return@ClickListener
+            if (isWorking) return@SimpleClickListener
 
-            //Ignore special albums
-            if (album.isSpecial) return@ClickListener
+            //Create pins adapter
+            val adapter = PinsAdapter(this@HomeActivity, homePinsList, true)
 
-            //Remove previously pinned albums
-            for (i in homePinsList.size - 1 downTo 0) {
-                val item = homePinsList[i]
-                if (!item.isSpecial) {
-                    homePinsList.removeAt(i)
-                }
-            }
-
-            //Pin new album
-            homePinsList.add(0, album)
-            homeAdapter.pinsAdapter.notifyDataSetChanged()
-            savePinnedItems()
-
-            //Scroll to start
-            homeAdapter.pinsAdapter.list?.smoothScrollToPosition(0)
-
-            //Notify
-            Orion.snack(this, getString(R.string.home_pinned_album, album.name), duration = Orion.snackDurationLong)
-        }
-        homeAdapter.onEditPins = {
-            //Create temp pins list
-            val tempPins = ArrayList<Album>()
-            tempPins.addAll(homePinsList)
-
-            //Create reorderable pins adapter
-            val adapter = PinsAdapter(this@HomeActivity, tempPins, true)
-            adapter.onClick = { item, position -> }
-
-            //Create reorderable pins drawer
-            ReorderableDrawer(this@HomeActivity, adapter, tempPins, {
+            //Create reorder pins drawer
+            ReorderPinsDrawer(this@HomeActivity, adapter, homePinsList, { position ->
                 //Update pins
-                homePinsList.clear()
-                homePinsList.addAll(tempPins)
-                homeAdapter.pinsAdapter.notifyDataSetChanged()
+                homeAdapter.pinsAdapter.notifyItemInserted(position)
                 savePinnedItems()
-
-                //Scroll to start
-                homeAdapter.pinsAdapter.list?.smoothScrollToPosition(0)
+            }, { fromPosition, toPosition ->
+                //Update pins
+                homeAdapter.pinsAdapter.notifyItemMoved(fromPosition, toPosition)
+                savePinnedItems()
+            }, { position ->
+                //Update pins
+                homeAdapter.pinsAdapter.notifyItemRemoved(position)
+                savePinnedItems()
             }).buildAndShow()
         }
         homeList.setAdapter(homeAdapter)

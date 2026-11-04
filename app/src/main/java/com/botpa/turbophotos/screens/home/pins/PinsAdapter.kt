@@ -16,12 +16,12 @@ import com.google.android.material.card.MaterialCardView
 class PinsAdapter(
     context: Context,
     items: List<Album>,
-    private val isSorting: Boolean
+    private val isReordering: Boolean
 ) : CustomHeaderAdapter<Album, RecyclerView.ViewHolder, PinsAdapter.AlbumHolder, PinsAdapter.FooterHolder>(
     context,
     items,
     false,
-    !isSorting
+    !isReordering
 ) {
 
     //Adapter
@@ -31,7 +31,7 @@ class PinsAdapter(
                 FooterHolder(inflateView(context, R.layout.home_pins_footer, parent))
             }
             else -> {
-                AlbumHolder(inflateView(context, if (isSorting) R.layout.home_pins_sort_item else R.layout.home_pins_item, parent))
+                AlbumHolder(inflateView(context, if (isReordering) R.layout.drawer_pins_reorder_item else R.layout.home_pins_item, parent))
             }
         }
     }
@@ -46,14 +46,20 @@ class PinsAdapter(
     override fun onInitItemHolder(holder: AlbumHolder, album: Album) {
         //Update image
         if (album.isEmpty()) {
-            holder.image.setImageDrawable(null)
-            holder.icon.setImageResource(getAlbumIcon(album))
-            holder.image.visibility = View.GONE
-            holder.icon.visibility = View.VISIBLE
+            //Default
+            holder.mainContainer.visibility = View.VISIBLE
+            holder.mainIcon.setImageResource(getAlbumIcon(album))
+
+            //Alt
+            holder.altContainer.visibility = View.GONE
         } else {
-            Item.load(context, holder.image, album.get(0))
-            holder.image.visibility = View.VISIBLE
-            holder.icon.visibility = View.GONE
+            //Default
+            holder.mainContainer.visibility = View.GONE
+
+            //Alt
+            holder.altContainer.visibility = View.VISIBLE
+            Item.load(context, holder.altImage, album.get(0))
+            holder.altIcon?.setImageResource(getAlbumIcon(album))
         }
 
         //Update name
@@ -98,7 +104,7 @@ class PinsAdapter(
             Library.all -> R.drawable.icon_filter_all
             Library.trash -> R.drawable.icon_action_trash
             Library.favourites -> R.drawable.icon_action_favourite_off
-            else -> R.drawable.icon_filter_all
+            else -> R.drawable.icon_album
         }
     }
 
@@ -121,9 +127,16 @@ class PinsAdapter(
     class AlbumHolder(root: View) : RecyclerView.ViewHolder(root) {
 
         val card: View = root.findViewById(R.id.itemCard)
-        val image: ImageView = root.findViewById(R.id.itemImage)
-        val icon: ImageView = root.findViewById(R.id.itemIcon)
         val name: TextView = root.findViewById(R.id.itemName)
+
+        //Main
+        val mainContainer: View = root.findViewById(R.id.itemMainContainer)
+        val mainIcon: ImageView = root.findViewById(R.id.itemMainIcon)
+
+        //Alt
+        val altContainer: View = root.findViewById(R.id.itemAltContainer)
+        val altIcon: ImageView? = root.findViewById(R.id.itemAltIcon)
+        val altImage: ImageView = root.findViewById(R.id.itemAltImage)
 
     }
 

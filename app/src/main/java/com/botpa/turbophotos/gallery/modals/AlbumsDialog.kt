@@ -13,7 +13,7 @@ class AlbumsDialog(
     context: Context,
     private val albums: List<Album>,
     private val onSelectAlbum: (Album) -> Unit,
-    private val onSelectFolder: (File) -> Unit
+    private val onSelectFolder: ((File) -> Unit)? = null
 ) : CustomDialog(context, R.layout.dialog_albums) {
 
     //Views
@@ -38,13 +38,16 @@ class AlbumsDialog(
 
     override fun initDialog(builder: MaterialAlertDialogBuilder): MaterialAlertDialogBuilder {
         //Init dialog
-        return builder
-            .setTitle(R.string.dialog_albums_title)
-            .setNegativeButton(R.string.dialog_cancel, null)
-            .setNeutralButton(R.string.dialog_albums_folder,{ dialogInterface, which ->
-                //Select from folder
-                FolderExplorerDialog(context, true, onSelectFolder).buildAndShow()
-            })
+        return builder.apply {
+            setTitle(R.string.dialog_albums_title)
+            setNegativeButton(R.string.dialog_cancel, null)
+            if (onSelectFolder != null) {
+                setNeutralButton(R.string.dialog_albums_folder,{ dialogInterface, which ->
+                    //Select from folder
+                    FolderExplorerDialog(context, true, onSelectFolder).buildAndShow()
+                })
+            }
+        }
     }
 
     override fun initListeners() {

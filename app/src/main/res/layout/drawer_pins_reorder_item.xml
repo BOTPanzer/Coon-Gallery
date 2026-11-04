@@ -20,28 +20,44 @@
             android:orientation="horizontal"
             android:padding="10dp">
 
-            <com.google.android.material.card.MaterialCardView
-                style="@style/Widget.Material3.CardView.Filled"
+            <RelativeLayout
                 android:layout_width="50dp"
                 android:layout_height="50dp"
-                android:layout_marginEnd="10dp"
-                app:cardBackgroundColor="#00757575"
-                app:cardCornerRadius="40dp">
+                android:layout_marginEnd="10dp">
 
-                <ImageView
-                    android:id="@+id/itemImage"
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/itemAltContainer"
+                    style="@style/Widget.Material3.CardView.Filled"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    android:layout_height="match_parent"
+                    app:cardBackgroundColor="#00757575"
+                    app:cardCornerRadius="40dp">
 
-                <ImageView
-                    android:id="@+id/itemIcon"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_gravity="center"
-                    app:srcCompat="@drawable/icon_filter_all"
-                    app:tint="?attr/colorPrimary" />
+                    <ImageView
+                        android:id="@+id/itemAltImage"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" />
 
-            </com.google.android.material.card.MaterialCardView>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/itemMainContainer"
+                    style="@style/Widget.Material3.CardView.Filled"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    app:cardBackgroundColor="?attr/colorSurfaceContainer"
+                    app:cardCornerRadius="40dp">
+
+                    <ImageView
+                        android:id="@+id/itemMainIcon"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
+                        app:srcCompat="@drawable/icon_filter_all"
+                        app:tint="?attr/colorPrimary" />
+
+                </com.google.android.material.card.MaterialCardView>
+            </RelativeLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
