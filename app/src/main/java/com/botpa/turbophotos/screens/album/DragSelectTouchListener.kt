@@ -174,8 +174,8 @@ class DragSelectTouchListener(
 
         //Select range
         onSelectRange(
-            min(startPosition, lastPosition) - startOffset,
-            max(startPosition, lastPosition) - startOffset,
+            startPosition - startOffset,
+            lastPosition - startOffset,
             minPosition - startOffset,
             maxPosition - startOffset
         )

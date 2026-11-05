@@ -361,12 +361,20 @@ class AlbumActivity : BaseActivity() {
             albumList,
             startOffset = 1,
             onSelectRange = { from, to, min, max ->
-                //Select range items
-                selectRange(from..to)
+                //Check selection direction
+                if (from <= to) {
+                    selectRange(from .. to)
+                } else {
+                    selectRange(from downTo to)
+                }
+
+                //Find selection min and max
+                val selectionMin = minOf(from, to)
+                val selectionMax = maxOf(from, to)
 
                 //Deselect extra items
-                if (min < from) deselectRange(min..(from - 1))
-                if (max > to) deselectRange((to + 1)..max)
+                if (min < selectionMin) deselectRange(min until selectionMin)
+                if (max > selectionMax) deselectRange((selectionMax + 1) .. max)
             },
             onSingleTap = { index ->
                 //Not available
@@ -821,11 +829,11 @@ class AlbumActivity : BaseActivity() {
     }
 
     //Selection
-    private fun selectRange(range: IntRange) {
+    private fun selectRange(range: IntProgression) {
         //Ignore if range is empty
         if (range.isEmpty()) return
 
-        //Check if its the first item to be selected
+        //Check if it's the first item to be selected
         if (selectedIndexes.isEmpty()) {
             //Add back event
             backManager.register("selected") { deselectAll() }
