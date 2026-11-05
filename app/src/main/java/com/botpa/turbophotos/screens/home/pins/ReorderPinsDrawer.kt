@@ -1,5 +1,8 @@
 package com.botpa.turbophotos.screens.home.pins
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.ValueAnimator
 import android.content.Context
 import android.widget.Button
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -74,7 +77,7 @@ class ReorderPinsDrawer(
         pinsList.addItemDecoration(ListSeparator(3))
 
         //Attach drag helper
-        ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
+        val touchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
             ItemTouchHelper.UP or ItemTouchHelper.DOWN,
             ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
         ) {
@@ -102,7 +105,9 @@ class ReorderPinsDrawer(
                 //Update add buttons state
                 updateAddButtons()
             }
-        }).attachToRecyclerView(pinsList)
+        })
+        pinsAdapter.touchHelper = touchHelper
+        touchHelper.attachToRecyclerView(pinsList)
 
         //Update add buttons state
         updateAddButtons()

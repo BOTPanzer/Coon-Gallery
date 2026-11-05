@@ -640,6 +640,9 @@ class HomeActivity : BaseActivity() {
                 //Update pins
                 homeAdapter.pinsAdapter.notifyItemInserted(position)
                 savePinnedItems()
+
+                //Scroll to start
+                homeAdapter.scrollPinsToPosition(position)
             }, { fromPosition, toPosition ->
                 //Update pins
                 homeAdapter.pinsAdapter.notifyItemMoved(fromPosition, toPosition)
@@ -649,6 +652,9 @@ class HomeActivity : BaseActivity() {
                 homeAdapter.pinsAdapter.notifyItemRemoved(position)
                 savePinnedItems()
             }).buildAndShow()
+
+            //Scroll to start
+            homeAdapter.scrollPinsToPosition(0)
         }
         homeList.setAdapter(homeAdapter)
 

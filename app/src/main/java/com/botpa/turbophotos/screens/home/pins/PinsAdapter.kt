@@ -1,10 +1,13 @@
 package com.botpa.turbophotos.screens.home.pins
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.botpa.turbophotos.R
 import com.botpa.turbophotos.gallery.Library
@@ -43,6 +46,7 @@ class PinsAdapter(
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onInitItemHolder(holder: AlbumHolder, album: Album) {
         //Update image
         if (album.isEmpty()) {
@@ -69,11 +73,19 @@ class PinsAdapter(
         holder.card.setOnClickListener { view ->
             onClick?.run(album, holder.bindingAdapterPosition)
         }
+
+        holder.handle?.setOnTouchListener { _, event ->
+            if (event.action == MotionEvent.ACTION_DOWN) {
+                touchHelper?.startDrag(holder)
+            }
+            false
+        }
     }
 
-    //List
+    //List & touch helper
     var list: RecyclerView? = null
         private set
+    var touchHelper: ItemTouchHelper? = null
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         super.onAttachedToRecyclerView(recyclerView)
@@ -128,6 +140,7 @@ class PinsAdapter(
 
         val card: View = root.findViewById(R.id.itemCard)
         val name: TextView = root.findViewById(R.id.itemName)
+        val handle: View? = root.findViewById(R.id.itemHandle)
 
         //Main
         val mainContainer: View = root.findViewById(R.id.itemMainContainer)

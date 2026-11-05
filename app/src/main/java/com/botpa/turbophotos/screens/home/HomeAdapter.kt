@@ -113,6 +113,16 @@ class HomeAdapter(
 
     fun getIndexFromAlbum(album: Album): Int = items.indexOf(album)
 
+    fun scrollPinsToPosition(position: Int) {
+        pinsAdapter.list?.post {
+            if (position == 0) {
+                pinsAdapter.list?.smoothScrollToPosition(position)
+            } else {
+                pinsAdapter.list?.smoothScrollToPosition(position)
+            }
+        }
+    }
+
     //Listeners
     var onEditPins: SimpleClickListener? = null
 
