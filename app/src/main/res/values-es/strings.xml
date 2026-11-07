@@ -38,6 +38,7 @@
     <string name="context_option_edit">Editar</string>
     <string name="context_option_share">Compartir</string>
     <string name="context_option_set">Establecer como</string>
+    <string name="context_option_jump">Saltar a</string>
     <string name="context_option_pip">Abrir en PiP</string>
     <string name="context_option_favourite">Añadir a favoritos</string>
     <string name="context_option_unfavourite">Quitar de favoritos</string>

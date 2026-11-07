@@ -132,6 +132,7 @@ class AlbumActivity : BaseActivity() {
     private lateinit var optionEdit: OptionsItem
     private lateinit var optionShare: OptionsItem
     private lateinit var optionSetAs: OptionsItem
+    private lateinit var optionJumpTo: OptionsItem
     private lateinit var optionFavourite: OptionsItem
     private lateinit var optionUnfavourite: OptionsItem
     private lateinit var optionMove: OptionsItem
@@ -454,6 +455,21 @@ class AlbumActivity : BaseActivity() {
             Library.setItemAs(this, gallery.get(selectedIndexes.iterator().next()))
         }
 
+        optionJumpTo = OptionsItem(R.drawable.icon_action_jump, R.string.context_option_jump) {
+            //Only allow 1 selection & if searching
+            if (selectedIndexes.size != 1 && searchHelper.isFiltered) return@OptionsItem
+
+            //Get item
+            val item = gallery.get(selectedIndexes.iterator().next())
+            deselectAll()
+
+            //Clear search and jump to item
+            searchHelper.filter(onFinished = {
+                val position = albumAdapter.getPositionFromIndex(currentAlbum.items.indexOf(item))
+                albumList.scrollToPosition(position)
+            })
+        }
+
         optionFavourite = OptionsItem(R.drawable.icon_action_favourite_on, R.string.context_option_favourite) {
             //Add to favourites
             favouriteItems(getSelectedItems())
@@ -734,6 +750,7 @@ class AlbumActivity : BaseActivity() {
                 if (isSelectingSingle) add(optionEdit)
                 if (isSelecting) add(optionShare)
                 if (isSelectingSingle) add(optionSetAs)
+                if (isSelectingSingle && searchHelper.isFiltered) add(optionJumpTo)
             }))
             options.add(OptionsGroup(mutableListOf<OptionsItem>().apply {
                 if (selectedIndexes.all { gallery.items[it].isFavourite }) {

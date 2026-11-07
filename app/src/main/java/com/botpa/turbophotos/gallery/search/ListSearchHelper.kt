@@ -84,7 +84,7 @@ class ListSearchHelper<T>(private val useFilterThread: Boolean) {
         }
     }
 
-    private fun applyFilterChanges(isFiltering: Boolean, query: String, items: MutableList<T>) {
+    private fun applyFilterChanges(isFiltering: Boolean, query: String, items: MutableList<T>, onFinished: (() -> Unit)? = null) {
         val runnable = Runnable {
             //On after filter
             onAfterFilter.invoke(isFiltering, query, items)
@@ -98,6 +98,9 @@ class ListSearchHelper<T>(private val useFilterThread: Boolean) {
 
             //Finish searching
             isSearching = false
+
+            //Run on finished
+            onFinished?.invoke()
         }
 
         when (list.alpha) {
@@ -135,7 +138,7 @@ class ListSearchHelper<T>(private val useFilterThread: Boolean) {
         }
     }
 
-    fun filter(query: String = "") {
+    fun filter(query: String = "", onFinished: (() -> Unit)? = null) {
         //Check if filtering
         val fixedQuery = query.trim()
         val isFiltering = fixedQuery.isNotEmpty()
@@ -182,12 +185,12 @@ class ListSearchHelper<T>(private val useFilterThread: Boolean) {
 
                 //Update items
                 activity.runOnUiThread {
-                    applyFilterChanges(isFiltering, query, items)
+                    applyFilterChanges(isFiltering, query, items, onFinished)
                 }
             }.start()
         } else {
             //Filter in current thread
-            applyFilterChanges(isFiltering, query, onFilter.invoke(isFiltering, query))
+            applyFilterChanges(isFiltering, query, onFilter.invoke(isFiltering, query), onFinished)
         }
     }
 
