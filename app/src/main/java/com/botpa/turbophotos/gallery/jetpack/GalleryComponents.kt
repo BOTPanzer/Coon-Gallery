@@ -65,7 +65,6 @@ fun Layout(title: String, content: @Composable (PaddingValues) -> Unit) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Layout(title: Int, content: @Composable (PaddingValues) -> Unit) {
     Layout(

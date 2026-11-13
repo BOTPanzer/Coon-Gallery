@@ -80,6 +80,10 @@ class PinsAdapter(
             }
             false
         }
+
+        holder.unpin?.setOnClickListener { view ->
+            onUnpin?.run(album, holder.bindingAdapterPosition)
+        }
     }
 
     //List & touch helper
@@ -99,6 +103,7 @@ class PinsAdapter(
 
     //Listeners
     var onEditPins: SimpleClickListener? = null
+    var onUnpin: ClickListener<Album>? = null
     var onClick: ClickListener<Album>? = null
 
     fun interface SimpleClickListener {
@@ -141,6 +146,7 @@ class PinsAdapter(
         val card: View = root.findViewById(R.id.itemCard)
         val name: TextView = root.findViewById(R.id.itemName)
         val handle: View? = root.findViewById(R.id.itemHandle)
+        val unpin: View? = root.findViewById(R.id.itemUnpin)
 
         //Main
         val mainContainer: View = root.findViewById(R.id.itemMainContainer)

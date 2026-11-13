@@ -1,8 +1,5 @@
 package com.botpa.turbophotos.screens.home.pins
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
-import android.animation.ValueAnimator
 import android.content.Context
 import android.widget.Button
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -18,7 +15,6 @@ import java.util.Collections
 
 class ReorderPinsDrawer(
     context: Context,
-    adapter: PinsAdapter,
     private val items: MutableList<Album>,
     private val onItemAdded: (position: Int) -> Unit,
     private val onItemMoved: (fromPosition: Int, toPosition: Int) -> Unit,
@@ -28,7 +24,7 @@ class ReorderPinsDrawer(
     //Pins list
     private lateinit var pinsList: RecyclerView
 
-    private val pinsAdapter: PinsAdapter = adapter
+    private val pinsAdapter: PinsAdapter = PinsAdapter(context, items, true)
 
     //Add
     private lateinit var addAll: Button
@@ -76,11 +72,21 @@ class ReorderPinsDrawer(
         pinsList.itemAnimator = null
         pinsList.addItemDecoration(ListSeparator(3))
 
+        //Attach unpin listener
+        pinsAdapter.onUnpin = { album, position ->
+            //Unpin item
+            unpinAlbum(position)
+        }
+
         //Attach drag helper
         val touchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
             ItemTouchHelper.UP or ItemTouchHelper.DOWN,
             ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
         ) {
+            override fun isLongPressDragEnabled(): Boolean {
+                return false
+            }
+
             override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
                 //Get positions
                 val fromPosition = viewHolder.bindingAdapterPosition
@@ -97,13 +103,8 @@ class ReorderPinsDrawer(
                 //Get position
                 val position = viewHolder.bindingAdapterPosition
 
-                //Remove item
-                items.removeAt(position)
-                pinsAdapter.notifyItemRemoved(position)
-                onItemRemoved.invoke(position)
-
-                //Update add buttons state
-                updateAddButtons()
+                //Unpin item
+                unpinAlbum(position)
             }
         })
         pinsAdapter.touchHelper = touchHelper
@@ -129,6 +130,16 @@ class ReorderPinsDrawer(
         items.add(position, album)
         pinsAdapter.notifyItemInserted(position)
         onItemAdded.invoke(position)
+
+        //Update add buttons state
+        updateAddButtons()
+    }
+
+    fun unpinAlbum(position: Int) {
+        //Remove item
+        items.removeAt(position)
+        pinsAdapter.notifyItemRemoved(position)
+        onItemRemoved.invoke(position)
 
         //Update add buttons state
         updateAddButtons()

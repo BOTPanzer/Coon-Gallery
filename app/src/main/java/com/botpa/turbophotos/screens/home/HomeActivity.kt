@@ -632,11 +632,8 @@ class HomeActivity : BaseActivity() {
             //Not available
             if (isWorking) return@SimpleClickListener
 
-            //Create pins adapter
-            val adapter = PinsAdapter(this@HomeActivity, homePinsList, true)
-
             //Create reorder pins drawer
-            ReorderPinsDrawer(this@HomeActivity, adapter, homePinsList, { position ->
+            ReorderPinsDrawer(this@HomeActivity, homePinsList, { position ->
                 //Update pins
                 homeAdapter.pinsAdapter.notifyItemInserted(position)
                 savePinnedItems()
