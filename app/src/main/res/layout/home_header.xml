@@ -28,7 +28,7 @@
         android:layout_marginBottom="14dp"
         android:fontFamily="@font/opificio_bold_rounded"
         android:text="@string/home_pinned_title"
-        android:textColor="?attr/colorPrimary"
+        android:textColor="?attr/colorOnSurface"
         android:textSize="16sp" />
 
     <LinearLayout
@@ -50,6 +50,6 @@
         android:layout_marginBottom="14dp"
         android:fontFamily="@font/opificio_bold_rounded"
         android:text="@string/home_albums_title"
-        android:textColor="?attr/colorPrimary"
+        android:textColor="?attr/colorOnSurface"
         android:textSize="16sp" />
 </LinearLayout>
