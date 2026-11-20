@@ -17,18 +17,18 @@ import com.bumptech.glide.signature.ObjectKey
 import java.io.File
 
 class Item(
-    @JvmField var file: File,               //The file in storage
-    @JvmField var album: Album,             //The album of the item
-    @JvmField var lastModified: Long,       //Timestamp of the last time the file was modified (in seconds)
-    @JvmField var mimeType: String,         //The type and format of the file
-    @JvmField var size: Long,               //The size of the file in bytes
-    @JvmField var isTrashed: Boolean,       //If the file is in the trash
-    @JvmField var isFavourite: Boolean,     //If the file is favourite
+    var file: File,               //The file in storage
+    var album: Album,             //The album of the item
+    var lastModified: Long,       //Timestamp of the last time the file was modified (in seconds)
+    var mimeType: String,         //The type and format of the file
+    var size: Long,               //The size of the file in bytes
+    var isTrashed: Boolean,       //If the file is in the trash
+    var isFavourite: Boolean,     //If the file is favourite
 ) {
 
     //Item info
-    @JvmField var name: String = file.name
-    @JvmField var isVideo: Boolean = mimeType.startsWith("video/") || name.contains(".MP.")
+    var name: String = if (isTrashed) parseNameFromTrash(file.name) else file.name
+    var isVideo: Boolean = mimeType.startsWith("video/") || name.contains(".MP.")
 
 
     //Metadata
@@ -58,12 +58,12 @@ class Item(
     companion object {
 
         //Comparators
-        val COMPARATOR_DATE_ASCENDING = Comparator<Item> { i1, i2 -> i1.lastModified.compareTo(i2.lastModified) }
-        val COMPARATOR_DATE_DESCENDING = Comparator<Item> { i1, i2 -> i2.lastModified.compareTo(i1.lastModified) }
-        val COMPARATOR_NAME_ASCENDING = Comparator<Item> { i1, i2 -> i1.name.compareToAlphanumeric(i2.name) }
-        val COMPARATOR_NAME_DESCENDING = Comparator<Item> { i1, i2 -> i2.name.compareToAlphanumeric(i1.name) }
-        val COMPARATOR_SIZE_ASCENDING = Comparator<Item> { i1, i2 -> i1.size.compareTo(i2.size) }
-        val COMPARATOR_SIZE_DESCENDING = Comparator<Item> { i1, i2 -> i2.size.compareTo(i1.size) }
+        private val COMPARATOR_DATE_ASCENDING = Comparator<Item> { i1, i2 -> i1.lastModified.compareTo(i2.lastModified) }
+        private val COMPARATOR_DATE_DESCENDING = Comparator<Item> { i1, i2 -> i2.lastModified.compareTo(i1.lastModified) }
+        private val COMPARATOR_NAME_ASCENDING = Comparator<Item> { i1, i2 -> i1.name.compareToAlphanumeric(i2.name) }
+        private val COMPARATOR_NAME_DESCENDING = Comparator<Item> { i1, i2 -> i2.name.compareToAlphanumeric(i1.name) }
+        private val COMPARATOR_SIZE_ASCENDING = Comparator<Item> { i1, i2 -> i1.size.compareTo(i2.size) }
+        private val COMPARATOR_SIZE_DESCENDING = Comparator<Item> { i1, i2 -> i2.size.compareTo(i1.size) }
 
         fun getComparator(sortMethod: SortMethod, sortDirection: SortDirection): Comparator<Item> {
             when (sortMethod) {
@@ -117,6 +117,13 @@ class Item(
 
             //Load item
             request.into(imageView)
+        }
+
+        //Name
+        private val trashedNameRegex = Regex("""^\.trashed-\d+-(.+)$""")
+
+        fun parseNameFromTrash(name: String): String {
+            return trashedNameRegex.matchEntire(name)?.groupValues?.get(1) ?: name;
         }
 
         //Factory

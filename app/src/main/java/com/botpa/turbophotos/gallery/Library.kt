@@ -1104,7 +1104,7 @@ object Library {
             val helper = action.getHelper(item)
 
             //Update item
-            item.name = newFile.name
+            item.name = Item.parseNameFromTrash(newFile.name)
             item.file = newFile
             item.album = trash
             item.isTrashed = true
