@@ -1084,11 +1084,7 @@ object Library {
 
     fun onTrashItemsResult(context: Context, action: Action) {
         //Update items
-        for (entry in action.pending.entries) {
-            //Get URI & item
-            val uri: Uri = entry.key
-            val item = entry.value
-
+        for ((uri, item) in action.pending) {
             //Get new item file
             val newFilePath = Orion.getFilePathFromMediaUri(context, uri)
             if (newFilePath == null) {
@@ -1108,6 +1104,7 @@ object Library {
             val helper = action.getHelper(item)
 
             //Update item
+            item.name = newFile.name
             item.file = newFile
             item.album = trash
             item.isTrashed = true
@@ -1152,11 +1149,7 @@ object Library {
 
     fun onRestoreItemsResult(context: Context, action: Action) {
         //Update items
-        for (entry in action.pending.entries) {
-            //Get URI & item
-            val uri: Uri = entry.key
-            val item = entry.value
-
+        for ((uri, item) in action.pending) {
             //Get new item file
             val newFilePath = Orion.getFilePathFromMediaUri(context, uri)
             if (newFilePath == null) {
@@ -1176,6 +1169,7 @@ object Library {
             val helper = action.getHelper(item)
 
             //Update item
+            item.name = newFile.name
             item.file = newFile
             item.album = originalAlbum
             item.isTrashed = false
