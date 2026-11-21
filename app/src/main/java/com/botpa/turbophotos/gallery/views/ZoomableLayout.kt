@@ -32,6 +32,8 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
         const val ZOOM: Int = 3
     }
     private var mode: Int = NONE
+    private var isQuickScaling: Boolean = false
+    private var isSecondTapDown: Boolean = false
 
     //Touch info
     private var lastTouch: PointF = PointF()
@@ -52,19 +54,22 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
 
     //Constructor
     init {
-        //Reduce delay for scaling detection
+        //Allow one-finger double-tap + vertical drag to zoom (quick-scale)
         scaleDetector.isQuickScaleEnabled = true
 
         //Set double-tap action
         clickHandler.onDefaultDoubleTapAction = {
-            transformHandler.animateResize(
-                if (transformHandler.isZoomedIn)
-                    transformHandler.fitScale
-                else if (doubleTapZoomsToCustom)
-                    doubleTapCustomZoom
-                else
-                    transformHandler.coverScale
-            )
+            if (!isQuickScaling) {
+                transformHandler.animateResize(
+                    if (transformHandler.isZoomedIn) {
+                        transformHandler.fitScale
+                    } else if (doubleTapZoomsToCustom) {
+                        doubleTapCustomZoom
+                    } else {
+                        transformHandler.coverScale
+                    }
+                )
+            }
         }
     }
 
@@ -84,6 +89,8 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
             MotionEvent.ACTION_DOWN -> {
                 //First pointer down -> Reset state
                 mode = NONE
+                isQuickScaling = false
+                isSecondTapDown = false
                 lastTouch.set(event.x, event.y)
                 startTouch.set(event.x, event.y)
             }
@@ -93,6 +100,7 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
                     val deltaFromStart = PointF(event.x - startTouch.x, event.y - startTouch.y)
                     if (deltaFromStart.length() >= swipeDistance) {
                         //Start dragging
+                        clickHandler.cancelSingleClick()
                         mode = DRAG
                         return true
                     }
@@ -117,18 +125,36 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> {
                 //Change mode
-                mode = if (pointers == 0) NONE else if (pointers == 1) TAP else ZOOM
+                mode = when {
+                    pointers <= 0 -> NONE
+                    pointers == 1 -> {
+                        if (clickHandler.hasActiveMultiClick()) {
+                            isSecondTapDown = true
+                            clickHandler.cancelSingleClick()
+                        } else {
+                            isSecondTapDown = false
+                        }
+                        TAP
+                    }
+                    else -> {
+                        isQuickScaling = false
+                        isSecondTapDown = false
+                        ZOOM
+                    }
+                }
 
                 //Save position
                 lastTouch.set(currentPosition)
                 startTouch.set(lastTouch)
 
                 //Stop active fling
+                transformHandler.cancelResizeAnimation()
                 flingHandler.stop()
             }
             MotionEvent.ACTION_POINTER_UP -> {
                 //Change mode
-                mode = if (pointers - 1 == 0) NONE else if (pointers - 1 == 1) DRAG else ZOOM
+                val remainingPointers = pointers - 1
+                mode = if (remainingPointers == 0) NONE else if (remainingPointers == 1) DRAG else ZOOM
 
                 //Find index of the pointer that will stay down (if 1 pointer remains)
                 val actionIndex = event.actionIndex
@@ -148,9 +174,11 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
                 onPointersChanged?.run()
             }
             MotionEvent.ACTION_UP -> {
-                //Check if clicked
-                if (mode == TAP) {
-                    //Clicked
+                //Disallow intercepting touch
+                parent?.requestDisallowInterceptTouchEvent(false)
+
+                //Check if clicked (allow normal double-tap, skip if quick-scaling)
+                if (mode == TAP && !isQuickScaling) {
                     performClick()
                 } else if (mode == DRAG && transformHandler.isZoomedIn) {
                     //Start fling
@@ -162,8 +190,10 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
                     }
                 }
 
-                //Reset mode
+                //Reset state
                 mode = NONE
+                isQuickScaling = false
+                isSecondTapDown = false
 
                 //Pointer up
                 pointers--
@@ -172,6 +202,9 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
             MotionEvent.ACTION_MOVE -> {
                 //Check if zooming/dragging or changing from tap to drag
                 if (mode == ZOOM || (mode == DRAG && transformHandler.isZoomedIn)) {
+                    //Allow intercepting touch
+                    parent?.requestDisallowInterceptTouchEvent(true)
+
                     //Calculate & process movement delta
                     val delta = PointF(currentPosition.x - lastTouch.x, currentPosition.y - lastTouch.y)
                     val clampedDelta = transformHandler.constrainDragDelta(delta)
@@ -183,16 +216,38 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
                     //Update last touch
                     lastTouch.set(currentPosition)
                 } else if (mode == TAP) {
+                    //Disallow intercepting touch
+                    parent?.requestDisallowInterceptTouchEvent(false)
+
                     //Calculate movement delta
                     val deltaFromStart = PointF(currentPosition.x - startTouch.x, currentPosition.y - startTouch.y)
                     if (deltaFromStart.length() >= swipeDistance) {
                         //Start dragging
+                        clickHandler.cancelSingleClick()
                         mode = DRAG
 
                         //Update last touch
                         lastTouch.set(currentPosition)
                     }
                 }
+            }
+            MotionEvent.ACTION_CANCEL -> {
+                //Disallow intercepting touch
+                parent?.requestDisallowInterceptTouchEvent(false)
+
+                //Cancel click callbacks
+                clickHandler.cancelPendingCallbacks()
+
+                //Cancel animations
+                transformHandler.cancelResizeAnimation()
+                flingHandler.stop()
+
+                //Reset state
+                mode = NONE
+                isQuickScaling = false
+                isSecondTapDown = false
+                pointers = 0
+                onPointersChanged?.run()
             }
         }
         return true
@@ -234,6 +289,7 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         clickHandler.cancelPendingCallbacks()
+        transformHandler.cancelResizeAnimation()
         flingHandler.recycle()
     }
 
@@ -241,6 +297,12 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
     private inner class ScaleListener : ScaleGestureDetector.SimpleOnScaleGestureListener() {
 
         override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
+            if (pointers <= 1) {
+                //Only 1 pointer is down -> Double-tap quick-scale gesture
+                isQuickScaling = true
+                clickHandler.cancelPendingCallbacks()
+            }
+            transformHandler.cancelResizeAnimation()
             mode = ZOOM
             return true
         }
@@ -248,6 +310,10 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
         override fun onScale(detector: ScaleGestureDetector): Boolean {
             transformHandler.onScale(detector)
             return true
+        }
+
+        override fun onScaleEnd(detector: ScaleGestureDetector) {
+            isQuickScaling = false
         }
 
     }
@@ -273,6 +339,8 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
 
 
         //Actions
+        fun hasActiveMultiClick(): Boolean = multiClickCount > 0 || lastClickTimestamp > 0L
+
         fun performClick(x: Float, y: Float): Boolean {
             //Get handler
             val handler = handler ?: return false
@@ -325,13 +393,25 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
             return true
         }
 
+        fun cancelSingleClick() {
+            //Get handler
+            val handler = handler ?: return
+
+            //Cancel single click
+            onSingleClick?.let { handler.removeCallbacks(it) }
+        }
+
         fun cancelPendingCallbacks() {
             //Get handler
             val handler = handler ?: return
 
-            //Cancel callbacks
+            //Cancel pending callbacks
             handler.removeCallbacks(finishMultiClickRunnable)
             onSingleClick?.let { handler.removeCallbacks(it) }
+
+            //Reset click info
+            multiClickCount = 0
+            lastClickTimestamp = 0
         }
 
     }
@@ -343,6 +423,9 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
 
         //Content
         private val child: View? get() = if (isNotEmpty()) getChildAt(0) else null
+
+        //Animations
+        private var resizeAnimator: ValueAnimator? = null
 
         //Sizes
         val viewSize = PointF()
@@ -498,6 +581,9 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
         }
 
         fun animateResize(scaleEnd: Float) {
+            //Stop animation
+            cancelResizeAnimation()
+
             //Get start scale
             val scaleStart = zoom * fitScale
 
@@ -527,7 +613,13 @@ open class ZoomableLayout(context: Context, attrs: AttributeSet?) : FrameLayout(
             }
 
             //Start animation
+            resizeAnimator = animator
             animator.start()
+        }
+
+        fun cancelResizeAnimation() {
+            resizeAnimator?.cancel()
+            resizeAnimator = null
         }
 
         //Helpers
