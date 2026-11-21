@@ -628,6 +628,27 @@ class HomeActivity : BaseActivity() {
                 searchHelper.toggleLayout(false)
             }
         }
+        homeAdapter.onLongClick = HomeAdapter.ClickListener { view: View, album: Album ->
+            //Not available
+            if (isWorking) return@ClickListener
+
+            //Ignore if already contained
+            if (homePinsList.contains(album)) return@ClickListener
+
+            //Add item
+            val position = 0
+            homePinsList.add(position, album)
+
+            //Update pins
+            homeAdapter.pinsAdapter.notifyItemInserted(position)
+            savePinnedItems()
+
+            //Scroll to start
+            homeAdapter.scrollPinsToPosition(position)
+
+            //Notify
+            Orion.snack(this@HomeActivity, getString(R.string.home_pinned_added, album.name))
+        }
         homeAdapter.onEditPins = HomeAdapter.SimpleClickListener {
             //Not available
             if (isWorking) return@SimpleClickListener

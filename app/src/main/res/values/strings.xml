@@ -57,6 +57,7 @@
     <string name="home_pinned_edit">Edit</string>
     <string name="home_pinned_add_title">Add to pinned</string>
     <string name="home_pinned_add_album">Album</string>
+    <string name="home_pinned_added">Album \"%s\" was pinned</string>
     <string name="home_albums_title">Albums</string>
     <string name="home_search_hint">Search albums</string>
     <string name="home_search_navbar">Searching for %s</string>

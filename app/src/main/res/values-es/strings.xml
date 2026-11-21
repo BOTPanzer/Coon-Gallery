@@ -57,6 +57,7 @@
     <string name="home_pinned_edit">Editar</string>
     <string name="home_pinned_add_title">Añadir a fijados</string>
     <string name="home_pinned_add_album">Álbum</string>
+    <string name="home_pinned_added">El álbum \"%s\" ha sido fijado</string>
     <string name="home_albums_title">Albumes</string>
     <string name="home_search_hint">Buscar albumes</string>
     <string name="home_search_navbar">Buscando %s</string>
